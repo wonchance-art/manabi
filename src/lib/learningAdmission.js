@@ -2,6 +2,7 @@
 import { UUID } from './learningSources.js';
 import { learningDay, schedulerTime } from './fsrsScheduler.js';
 import { isNewPerDayValue } from './vocabStudy.js';
+import { normalizeCardKinds } from './fsrsCardKinds.js';
 
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const id = value => typeof value === 'string' && UUID.test(value) && value === value.toLowerCase();
@@ -26,12 +27,16 @@ export const isAdmissionOfflineError = error => error?.code === LEARNING_ADMISSI
 export function normalizeAdmissionRequest(body, actorId) {
   if (!id(actorId)) reject('fsrs_auth_required', 401);
   if (!object(body) || !['admit', 'configure'].includes(body.action)) reject('fsrs_invalid_request', 400);
-  const keys = ['action', 'accountId', 'operationId', 'expectedPolicyRevision', body.action === 'admit' ? 'cardId' : 'dailyNewLimit'];
+  // configure의 선택 칸 cardKinds(CARD-TYPES-001 단계 2 — 켜진 카드 종류, 하루 새 단어 수와 같은 경로 · 같은 판본). 정해진 순서로 바꿔 보낸다.
+  const keys = ['action', 'accountId', 'operationId', 'expectedPolicyRevision', body.action === 'admit' ? 'cardId' : 'dailyNewLimit',
+    ...(body.action === 'configure' && Object.hasOwn(body, 'cardKinds') ? ['cardKinds'] : [])];
   if (Object.keys(body).length !== keys.length || Object.keys(body).some(key => !keys.includes(key))
     || !operationId(body.operationId) || !integer(body.expectedPolicyRevision)
     || (body.action === 'admit' ? !id(body.cardId) : !isNewPerDayValue(body.dailyNewLimit))) reject('fsrs_invalid_request', 400);
   if (body.accountId !== actorId) reject('fsrs_account_changed', 409);
-  return Object.fromEntries(keys.map(key => [key, body[key]]));
+  let cardKinds;
+  if (keys.includes('cardKinds')) { try { cardKinds = [...normalizeCardKinds(body.cardKinds)]; } catch { reject('fsrs_invalid_request', 400); } }
+  return Object.fromEntries(keys.map(key => [key, key === 'cardKinds' ? cardKinds : body[key]]));
 }
 
 export function normalizeAdmissionStatus(raw, { actorId } = {}) {
@@ -54,11 +59,18 @@ export function normalizeAdmissionStatus(raw, { actorId } = {}) {
       || !Array.isArray(raw.admittedLegacyCardIds) || raw.admittedLegacyCardIds.some(value => !id(value))
       || new Set(raw.admittedLegacyCardIds).size !== raw.admittedLegacyCardIds.length) reject();
   }
+  // 켜진 카드 종류(단계 2 서버만 싣는다) — 정해진 네 집합 중 하나 그대로여야 한다. 없으면 칸을 만들지 않는다(fsrsCardKinds admissionCardKinds = 단어 → 뜻 하나).
+  let cardKinds;
+  if (raw.cardKinds !== undefined) {
+    try { cardKinds = normalizeCardKinds(raw.cardKinds); } catch { reject(); }
+    if (!raw.installed || cardKinds.some((kind, index) => raw.cardKinds[index] !== kind)) reject();
+  }
   return { version: 1, actorId, installed: raw.installed, enabled: raw.enabled, active: raw.active,
     fsrsEnabled: raw.fsrsEnabled, startsAt, now, learningDay: raw.learningDay, timeZone: 'Asia/Seoul', rolloverHour: 4,
     limit: raw.limit, policyRevision: raw.policyRevision, used: raw.used, remaining: raw.remaining,
     fsrsUsed: raw.fsrsUsed, legacyUsed: raw.legacyUsed,
-    admittedLegacyCardIds: raw.admittedLegacyCardIds === null ? null : [...raw.admittedLegacyCardIds] };
+    admittedLegacyCardIds: raw.admittedLegacyCardIds === null ? null : [...raw.admittedLegacyCardIds],
+    ...(cardKinds ? { cardKinds: [...cardKinds] } : {}) };
 }
 
 export function canUseLegacyAdmissionCompatibility(status) {
@@ -84,6 +96,7 @@ export function validateAdmissionReceipt(raw, { request } = {}) {
   if (command.action === 'configure') {
     if (quota.policyRevision < command.expectedPolicyRevision + 1) reject();
     if (!raw.duplicate && (quota.policyRevision !== command.expectedPolicyRevision + 1 || quota.limit !== command.dailyNewLimit)) reject();
+    if (!raw.duplicate && command.cardKinds && JSON.stringify(quota.cardKinds) !== JSON.stringify(command.cardKinds)) reject();
     return { version: 1, actorId: raw.actorId, operationId: raw.operationId, duplicate: raw.duplicate, quota };
   }
   if (raw.cardId !== command.cardId || raw.admitted !== true || typeof raw.consumed !== 'boolean'

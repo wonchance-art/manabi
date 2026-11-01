@@ -6,6 +6,7 @@ import { UUID } from '../learningSources.js';
 import { DEFAULT_NEW_PER_DAY, isNewPerDayValue } from '../vocabStudy.js';
 import { readLearningAdmissionStatus } from './learningAdmission.js';
 import { normalizeAdmissionStatus } from '../learningAdmission.js';
+import { CARD_KINDS, fsrsTakesNewQuota } from '../fsrsCardKinds.js';
 
 const identity = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,200}$/.test(value);
 const canonical = value => JSON.stringify(value, Object.keys(value).sort());
@@ -13,8 +14,10 @@ const same = (left, right) => canonical(left) === canonical(right);
 // detail은 서버 로그 전용(응답 본문에 싣지 않는다) — 503이 어느 단계에서 났는지 남긴다(REVIEW-LOAD-TRANSIENT-001).
 const reject = (code, status = 503, detail) => { throw Object.assign(new Error(code), { code, status, ...(detail ? { detail } : {}) }); };
 const copy = value => JSON.parse(JSON.stringify(value));
+// 등록의 선택 칸(CARD-TYPES-001 단계 2): 종류 카드(뜻 → 단어 · 듣기) = 새 카드 id + 그 단어(vocabularyId) · 듣기는 예문 주장(hasExample).
+// 없으면 지금처럼 단어 → 뜻 카드(카드 id = 단어 id). 붙여도 되는지(켜진 종류 · 날 단위 졸업 다음 학습일 · 하루 한 장)는 DB가 정한다.
 const fields = {
-  enroll: [], question: ['attemptId', 'answerVisible', 'dailyNewLimit', 'expectedPolicyRevision'], reveal: ['attemptId', 'hint'],
+  enroll: ['cardKind', 'vocabularyId', 'hasExample'], question: ['attemptId', 'answerVisible', 'dailyNewLimit', 'expectedPolicyRevision'], reveal: ['attemptId', 'hint'],
   grade: ['attemptId', 'rating'], undo: ['targetOperationId'], abandon: ['attemptId'],
 };
 
@@ -93,6 +96,10 @@ export function parseFsrsRequest(body, userId) {
   if (body.expectedPolicyRevision !== undefined && (!Number.isSafeInteger(body.expectedPolicyRevision)
       || body.expectedPolicyRevision < 0 || body.expectedPolicyRevision >= Number.MAX_SAFE_INTEGER)) reject('fsrs_invalid_request', 400);
   for (const flag of ['answerVisible', 'hint']) if (body[flag] !== undefined && typeof body[flag] !== 'boolean') reject('fsrs_invalid_request', 400);
+  if (body.action === 'enroll' && ['cardKind', 'vocabularyId', 'hasExample'].some(key => body[key] !== undefined)
+      && (!['production', 'listening'].includes(body.cardKind) || !UUID.test(body.vocabularyId || '')
+        || body.vocabularyId.toLowerCase() === body.cardId.toLowerCase()
+        || (body.hasExample !== undefined && (body.cardKind !== 'listening' || typeof body.hasExample !== 'boolean')))) reject('fsrs_invalid_request', 400);
   const request = copy(body);
   if (body.action === 'question') {
     request.attemptId ??= body.operationId; request.answerVisible ??= false;
@@ -131,6 +138,9 @@ function checkedState(raw, userId, cardId = null) {
   if (!raw) return null;
   if (raw.userId !== userId || !UUID.test(raw.cardId || '') || (cardId && raw.cardId !== cardId)) reject('fsrs_card_not_found', 404);
   if (raw.card === null && raw.enrolled === false) return null;
+  // 종류 칸(단계 2 서버) — 없으면 단어 → 뜻(단계 2 전 서버 · 옛 연산 결과). 단어 → 뜻 카드의 단어 id = 카드 id(영구 CHECK).
+  if (raw.kind !== undefined && (!CARD_KINDS.includes(raw.kind) || !UUID.test(raw.vocabularyId || '')
+    || (raw.kind === 'recognition') !== (raw.vocabularyId === raw.cardId))) reject('fsrs_storage_unavailable', 503, 'state: card kind mismatch');
   try { validateFsrsCard(raw.card); } catch { reject('fsrs_storage_unavailable', 503, 'state: invalid card'); }
   if (raw.attempt && (raw.attempt.userId !== userId || raw.attempt.cardId !== raw.cardId
     || !identity(raw.attempt.id) || !['question', 'revealed', 'abandoned'].includes(raw.attempt.phase)
@@ -142,7 +152,9 @@ function publicState(raw) {
   return { cardId: raw.cardId, card: copy(raw.card), attempt: raw.attempt ? copy(raw.attempt) : null,
     enrolled: true, eligible: raw.eligible !== false && !raw.known && !raw.excluded,
     known: raw.known === true, excluded: raw.excluded === true, firstQuestionAt: raw.firstQuestionAt ?? null,
-    nextQuestionAt: raw.nextQuestionAt ?? raw.card.due };
+    nextQuestionAt: raw.nextQuestionAt ?? raw.card.due,
+    // 종류 카드에만 싣는다 — 단어 → 뜻 카드 항목은 지금 모양 그대로(칸이 없으면 단어 → 뜻 · 카드 id = 단어 id: fsrsCardKinds cardKindOf).
+    ...(raw.kind && raw.kind !== 'recognition' ? { kind: raw.kind, vocabularyId: raw.vocabularyId, resting: raw.resting === true } : {}) };
 }
 
 function result(raw, userId, now, operationId, duplicate = false, policyVersion = raw?.card?.policyVersion) {
@@ -198,12 +210,16 @@ function transition(state, request, userId, at, policyVersion) {
     cardId: request.cardId, expectedRevision: request.expectedRevision, request };
   if (request.action === 'enroll') {
     if (state) reject('fsrs_already_enrolled', 409);
-    return { ...base, nextCard: introduceFsrsCard(at, { policyVersion }) };
+    return { ...base, nextCard: introduceFsrsCard(at, { policyVersion }),
+      ...(request.cardKind ? { cardKind: request.cardKind, vocabularyId: request.vocabularyId.toLowerCase(),
+        ...(request.hasExample !== undefined ? { hasExample: request.hasExample } : {}) } : {}) };
   }
   if (!state) reject('fsrs_card_not_found', 404);
   if (state.card.revision !== request.expectedRevision) reject('fsrs_revision_conflict', 409);
   if (state.eligible === false || state.known || state.excluded) reject('fsrs_card_excluded', 409);
   if (request.action === 'question') {
+    // 꺼진 종류의 카드는 쉰다(기억 상태 보존 · 묻지 않음 — DB fsrs_card_kind_excluded와 같은 거절).
+    if (state.resting === true) reject('fsrs_card_excluded', 409);
     // 차례 전 질문은 거절 — 학습 · 재학습 카드만 기한 20분 전부터(미리 학습). 되돌리기 · 중단 뒤 30초는 그대로(fsrsQuestionBound).
     if (schedulerTime(at) < fsrsQuestionBound(state)) reject('fsrs_card_not_due', 409);
     // 같은 질문은 재전송으로 재개한다. 아직 평가할 수 있는 질문을 덮어쓰지 않는다.
@@ -255,7 +271,8 @@ export async function applyFsrsRequest({ authClient, serviceClient, userId, body
   const [contractRead, admissionRead, previousRead, rawRead] = await Promise.allSettled([contractPromise,
     preAdmission ? readLearningAdmissionStatus({ authClient, serviceClient, userId, knownFsrsEnabled: contractPromise.then(c => c.enabled), now }) : null,
     rpc(serviceClient, 'fsrs_read_operation', { p_actor: userId, p_card_id: request.cardId, p_operation_id: request.operationId }),
-    rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: request.cardId })]);
+    rpc(serviceClient, 'fsrs_read_state', { p_actor: userId, p_card_id: request.cardId })
+      .catch(error => { if (request.action === 'enroll' && request.cardKind && error?.code === 'fsrs_card_not_found') return null; throw error; })]);
   if (contractRead.status === 'rejected') throw contractRead.reason;
   const contract = contractRead.value;
   if (!contract.enabled) reject('fsrs_storage_unavailable');
@@ -405,7 +422,8 @@ export async function applyFsrsAnswer({ authClient, serviceClient, userId, body,
     // (복습실 줄과 같은 조건). 반영 함수가 같은 트랜잭션에서 거절한 것(경합)도 같은 이름이다 — 단어 페이지의 'new-limit'.
     if (!question && !open) {
       if (!admission.installed) reject('fsrs_admission_unavailable');
-      const firstQuestion = state.card.state === 'New' && !state.firstQuestionAt, limit = { limit: admission.limit };
+      // 하루 새 단어 몫은 단어 → 뜻의 첫 질문만(종류 카드는 몫을 쓰지 않는다 — CARD-TYPES-001 §3).
+      const firstQuestion = fsrsTakesNewQuota(state), limit = { limit: admission.limit };
       if (firstQuestion && !(admission.active && admission.remaining > 0)) refuse('fsrs_new_budget_exhausted', 409, limit);
       try {
         asked = !(await step({ action: 'question', operationId: ids.question, attemptId: ids.question, answerVisible: false,

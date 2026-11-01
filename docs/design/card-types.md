@@ -113,6 +113,62 @@
 | `src/views/VocabPage.jsx` | `admission.current.cardId === candidateWord.id` · `vocab.find(v => v.id === cardId)` · 줄 단계 `id = cardId` |
 | `src/views/LevelListPage.jsx` | 새 단어 저장 `cardId: newId()`(새 단어 = 새 단어 → 뜻 카드 id = 단어 id — 그대로) |
 
+### 4.3 단계 2 결정 (2026-11-01 KST · `supabase/migrations/20261101120000_fsrs_card_kinds.sql` · 복원 `docs/sql/fsrs-card-kinds-rollback.sql`)
+
+**동작 무변경(화면 3단계 전까지)**: 켜진 종류의 기본값이 단어 → 뜻 하나라 종류 카드가 하나도 생기지 않는다(등록 함수가 거절). 사후 검사가
+단어 · 카드가 있는 사용자 전원의 단어장 셋(snapshot · cards · light) · 입장 상태(덧붙인 `cardKinds` 제외) · 카드 목록(덧붙인 세 칸 제외)을 비교한다
+(PGlite: `post-observation-migrations.mjs` · `fsrs-card-kinds.mjs` ②).
+
+**3단계 스위치 = `fsrs_private.admission_settings.default_card_kinds` 한 값** (지금 `'{recognition}'`). 화면(3 · 4단계)이 생긴 뒤 마이그레이션 한 줄
+`UPDATE fsrs_private.admission_settings SET default_card_kinds = '{recognition,production,listening}'`(설계 §3 기본값: 뜻 → 단어 켬 · 듣기 켬)로 켠다 —
+데이터라 지문(core · admission)이 움직이지 않는다. 계정이 고른 값(`admission_policies.card_kinds`, NULL = 기본값)이 있으면 그것을 쓴다.
+JS에는 기본값이 없다 — 입장 상태에 `cardKinds`가 없으면 단어 → 뜻 하나로 본다(`fsrsCardKinds.admissionCardKinds` — 「모르면 지금처럼」).
+
+| 항목 | 단계 2 | 이유 |
+|---|---|---|
+| `fsrs_cards.vocabulary_id` | `ALTER COLUMN … DROP EXPRESSION`(값 그대로 · 재작성 없음) · NOT NULL · 기본값 없음 → 등록 경로가 `INSERT (card_id,user_id,card,vocabulary_id,kind)`로 명시 | 종류 카드의 card_id = 새 uuid. 빠뜨린 INSERT는 23502로 멈춘다 |
+| 지운 제약 | `fsrs_cards_kind_stage1_check` · 옛 `fsrs_cards_card_id_fkey` | 남는 것: 단어 FK(`vocabulary_id`, RESTRICT) · UNIQUE (user_id, vocabulary_id, kind) · 단어 → 뜻 = 단어 id CHECK(영구) · 세 값 CHECK |
+| 설정 저장 | `admission_policies.card_kinds text[]`(NULL = 기본값) · `admission_settings.default_card_kinds text[] NOT NULL DEFAULT '{recognition}'` · 둘 다 CHECK 네 집합(단어 → 뜻 늘 포함 · 정해진 순서) | 새 표 없음(§4 「입장 정책 행에 열 하나」) · 계정 값과 전체 기본값을 나눠야 기본값을 바꿀 때 고른 계정을 덮지 않는다 |
+| 설정 경로 | `learning_configure_admission`의 선택 칸 `cardKinds`(하루 새 단어 수와 같은 요청 · 같은 판본 +1 · 생략하면 그대로) · `admission_status.cardKinds` · JS `normalizeAdmissionRequest`(순서 정리) · 영수증 검증 | 같은 경로 하나(§4) — 시트의 「하루」 · 「카드」 줄이 같은 판본으로 경합을 막는다 |
+| 종류 카드 등록 | `enroll` 연산의 `cardKind`('production' · 'listening') · `vocabularyId`(그 단어) · 듣기는 `hasExample: true` · 새 함수 `fsrs_private.variant_enrollment_open` | 조건: ① 그 종류가 켜짐 ② 새 카드 id가 단어 id가 아님(자리 차지 금지) ③ 그 종류 카드가 없고 오늘(04:00 KST 학습일 — `admission_day`) 붙인 종류 카드가 없음(단어당 하루 한 장) ④ 단어 → 뜻이 Review이고 마지막 채점이 앞 학습일(= 날 단위로 넘어간 다음 학습일 이후 · 오늘 채점했으면 형제 규칙과 같이 다음 날) ⑤ 듣기: 뜻 → 단어가 앞 학습일에 생긴 뒤 — 뜻 → 단어가 꺼져 있고 없으면 단어 → 뜻 바로 뒤 |
+| 듣기의 예문 | 서버는 모른다 → 등록 요청이 `hasExample: true`를 주장해야 한다(없거나 false면 거절) | 레벨 단어의 예문은 정적 콘텐츠(`e.ex`)라 DB에 없다. 3단계 화면이 예문 유무로 보낸다 |
+| 하루 새 단어 몫 | 종류 카드의 첫 질문은 영수증(`fsrs_new_receipts`)을 남기지 않고 입장 허가도 받지 않는다 → 몫 = 단어 → 뜻 첫 질문만(§3) · `firstQuestionAt`은 늘 null | 몫 계산(`admission_status` · `guard_learning_first_question`)을 바꾸지 않고 몫에서 빠진다 |
+| 쉬는 종류 | 꺼진 종류의 카드는 남고(기억 상태 보존) 묻기만 거절(`fsrs_card_kind_excluded` → JS `fsrs_card_excluded`) · `fsrs_list_states` · `fsrs_read_state`에 `resting` | 다시 켜면 남은 간격 그대로(§3) |
+| 채점 이벤트 | `detail.word_id` = 단어 id(지금과 같은 값) · 종류 카드만 `card_id` · `card_kind` 덧붙임(되돌리기 이벤트도) | 단어 → 뜻 이벤트 모양은 그대로 · 통계(5단계)가 종류를 가른다 |
+| 단어 ↔ 카드 | 스냅샷 셋 · `vocabulary_registry_entry` = 그 단어의 단어 → 뜻 카드(`vocabulary_id = v.id AND kind = 'recognition'`, 단어당 한 줄) · `next_question_at`에 카드 id · `fsrs_read_state`(입력 = 카드 id → 단어 = `vocabulary_id`) · `fsrs_list_states`(+ `vocabularyId` · `kind` · `resting`, 제외 = 단어 단위) · `fsrs_legacy_boundary` · `learning_admit_legacy`(단어 단위) | 종류 카드는 카드 목록(복습실 상태 읽기)에만 있다. 3단계 단어 페이지가 단어장 읽기에서 종류 카드가 필요하면 그때 덧붙임 칸을 정한다 |
+| 그대로 둔 것 | 옛 경계 트리거 둘(`guard_legacy_event` · `guard_legacy_vocabulary`) · `next_question_at` · 입장 무결성 · 지문 함수 | 두 트리거 함수는 한국어 capability 지문 안이라 바꾸면 운영 한국어 학습이 꺼진다(PGlite 재현 — #1504 선례). 지금 식(`f.card_id` = 단어 id)도 같은 답이다: 종류 카드는 단어 → 뜻 카드가 있는 단어에만 생기고(④) 단어 → 뜻 카드 id = 단어 id(영구 CHECK) |
+| 응답 모양 | DB 응답(반영 · 상태 · 목록)에 `vocabularyId` · `kind` 덧붙임 · 서버 JS `publicState`는 **종류 카드에만** `kind` · `vocabularyId` · `resting`을 싣는다 | 단어 → 뜻 카드 항목 · HTTP 응답은 지금 모양 그대로 |
+| 지문 | core · manual(registry entry · snapshot) · admission 재게시(_live) · activity profile · 한국어 capability 그대로 | PGlite: manual 459a51a0… → cb6354bb…(OID 무관 — 본문 · 정의만) · core · admission은 지문 열쇠에 OID가 들어 실행 · 환경마다 값이 다르다(바뀜 · 일치만 검사) · profile 47c4c72c… 그대로 |
+| 복원 | 종류 카드 · 고른 종류가 없을 때만(잃는 정보 없음) — 12개 본문 옛 원문 · 새 함수 · 열 지우기 · 단계 1 CHECK · 옛 FK · `vocabulary_id`를 지우고 생성 열로 다시(재작성) | PostgreSQL은 보통 열을 생성 열로 바꾸지 못한다. 모양 · 본문 · 출력 · manual · profile은 정확히 돌아오고 core · admission 값은 열 번호가 바뀌어 다르다(일치는 그대로). 단계 1 복원이 이어서 돈다 |
+
+바꾼 함수 12개 · 새 함수 2개(본문 md5 — 단계 1 뒤 PGlite 재생 사슬 → 이 파일. 운영 `fsrs_apply_operation` 9bf0c861…은 사슬과 같다):
+
+| 함수 | md5 |
+|---|---|
+| `public.fsrs_apply_operation(uuid,jsonb)` | 9bf0c8612988174843d69731a953390c → 58997c6ff7c3a20ed32a47a4ab3da50f |
+| `public.fsrs_apply_learning_operation(uuid,jsonb)` | b30fcf098af0fb53e71b67b5529ae569 → c2f2e2e187263ef39a531541a941c60a |
+| `public.fsrs_read_state(uuid,uuid)` | 413224503b1a27dfc537b73ca7b2779e → 8f961a9e2e47bf027601b1b21188c9df |
+| `public.fsrs_list_states(uuid)` | 988a10d4324bc2b9fafc08322f4a3a2d → 8eb21a27465c303e872e7ff1c9bdaea5 |
+| `fsrs_private.vocabulary_registry_entry(uuid,uuid)` | 771d6c4f3ecc170b6ae0eb685771ce4e → 965f8d73cad6f2c38c939fb56fbc36b7 |
+| `public.fsrs_vocabulary_snapshot(uuid)` | 90cb5fb52d43d00eeb4b5c5a41ba8b19 → 32647a452dc4c8a8c5449ab6a93c4eb9 |
+| `public.fsrs_vocabulary_snapshot_cards(uuid,uuid[])` | 40cea98a04cf45be087f024b6b4aea67 → d33e1c2c65571c80bc4109fc0c5f0dae |
+| `public.fsrs_vocabulary_snapshot_light(uuid,text,boolean)` | 3093ad73ed356efd792114f5aab27985 → 32401c0c1e32163215c7edbbf692c7ba |
+| `public.fsrs_legacy_boundary(uuid,text,text)` | 3e907c04af571ac9f4c9554a277bed48 → c84cf97ea0e8ea3b3bd7819778dd5cdd |
+| `public.learning_admit_legacy(uuid,jsonb)` | 65e769b7f890cd88f04dc53ae0616c8c → bcb673e08e0726d36d4392c0ca8c8b99 |
+| `fsrs_private.admission_status(uuid,timestamptz)` | fc34a8acb06246ddbaf6ec7ffd0df5d4 → 20f1ca38a4c7bcd5d45344b7325cf5a0 |
+| `public.learning_configure_admission(uuid,jsonb)` | e49594d272b7336ab1a0047bcb0136ca → 88ef7531f27fdcaf67daa6262608bee9 |
+| `fsrs_private.card_kinds(uuid)` (새) | 277fe504e9fd1de2aabf0cbad9c40b14 |
+| `fsrs_private.variant_enrollment_open(uuid,uuid,uuid,text,boolean,timestamptz)` (새) | 791c633fb91a9d7c61f34da96fe6fef2 |
+
+공유 JS(화면 없음 — `src/lib/fsrsCardKinds.js`): `cardKindOf` · `cardVocabularyId`(칸이 없으면 단어 → 뜻 · 카드 id = 단어 id) · `normalizeCardKinds` ·
+`admissionCardKinds` · `fsrsTakesNewQuota`(몫 = 단어 → 뜻 첫 질문만) · `pickSiblings`(형제 규칙 — 오늘 채점한 카드는 이어 풀고, 같은 단어의 다른 카드를
+오늘 채점했으면 그날 처음 꺼낼 카드는 다음 학습일로, 아니면 기한이 이른 것 · 같으면 단어 → 뜻 · 뜻 → 단어 · 듣기 — 파생 규칙: 카드의 `lastReview` 학습일) ·
+`nextVariantKind`(등록 조건의 거울). 복습실 줄(`useFsrsReview`)이 `fsrsTakesNewQuota` · `pickSiblings`를 거친다 — 단어마다 카드가 한 장이면 줄 그대로(계약 테스트).
+이 화면은 아직 단어 → 뜻만 그리므로 보이는 카드 = 카드 id가 단어 id인 카드(`visibleWord(cardId)`) — 종류 카드는 4단계 화면 전까지 줄에 서지 않는다.
+단어 페이지(`levelWordSession`)는 단어장 읽기(단어당 단어 → 뜻 한 줄)를 쓰므로 단계 2에서 바꾸지 않는다(3단계). 서버 JS: `parseFsrsRequest` ·
+보낼함 `normalizeFsrsRequest`가 등록의 종류 칸을 받고, 종류 카드 등록은 아직 없는 카드 id라 상태 읽기의 「단어 없음」을 없는 카드로 본다 · 한 번 채점의
+첫 문제 몫 판정 = `fsrsTakesNewQuota`.
+
 ## 5. 화면
 
 - **보기 탭(단어 · 문장 · 뜻 · 소리 · 전체) 없앰** (A안): 카드 종류가 연습 탭을 흡수한다. 카드가 55px 위에서 시작.
@@ -134,7 +190,9 @@
 1. **스키마 1단계** — `vocabulary_id`(생성 열 = card_id) · `kind` 열 · 제약 추가 · 옛 card_id FK 유지 · 함수 본문 무변경(§4.1). 동작 무변경(스냅샷 · 목록 출력 동일 검사).
 2. **종류 카드 생성 · 형제 규칙 · 켜고 끄기(서버 설정)** — 생성식 걷기(DROP EXPRESSION) · 단계 1 전용 CHECK · 옛 card_id FK 지우기 · 14개 함수의 「단어 ↔ 카드」 잇기를 `vocabulary_id` + `kind`로(§4.2) ·
    뜻 → 단어 · 듣기 등록 경로(날 단위 졸업 다음 학습일) · 줄 짜기 형제 규칙 · configure.
+   → 한 결과는 §4.3(`20261101120000_fsrs_card_kinds`): 함수 12개 + 새 2개, 옛 경계 트리거 둘은 capability 지문 때문에 그대로(같은 답) · 기본값 = 단어 → 뜻 하나(꺼짐).
 3. **단어 페이지 화면** — 세 문제 면 · 답 면 · 「카드」 줄 · 보기 탭 제거 · 끝 화면 「전체 훑어보기」 · 영역 줄 재구성.
+   화면(3 · 4단계)이 다 생긴 뒤 스위치 `fsrs_private.admission_settings.default_card_kinds`를 켠다(§4.3 — 마이그레이션 UPDATE 한 줄).
 4. **복습실 화면** — 같은 줄 규칙 · 세 문제 면.
 5. **통계** — 단어 단위 · 종류별 기억률(통계 세션과).
 
