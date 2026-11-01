@@ -669,7 +669,7 @@ test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유�
     await context.route('**/rest/v1/user_vocabulary**', async (route) => {
       if (route.request().method() !== 'POST') { await route.fallback(); return; }
       await saveHeld;
-      await route.abort();
+      await route.fallback(); // 붙잡았던 저장은 기본 모의 응답(빈 결과 — 채점 실패 되돌리기)으로 보낸다
     });
     await page.getByRole('button', { name: '한 단어', exact: true }).click();
     await page.getByRole('button', { name: /정답 확인/ }).click();
