@@ -1,7 +1,7 @@
 /** 첫 문제 노출의 공통 한도 계약. 로컬 카운터나 어휘 이력으로 영수증을 만들지 않는다. */
 import { UUID } from './learningSources.js';
 import { learningDay, schedulerTime } from './fsrsScheduler.js';
-import { NEW_PER_DAY_OPTIONS } from './vocabStudy.js';
+import { isNewPerDayValue } from './vocabStudy.js';
 
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const id = value => typeof value === 'string' && UUID.test(value) && value === value.toLowerCase();
@@ -29,7 +29,7 @@ export function normalizeAdmissionRequest(body, actorId) {
   const keys = ['action', 'accountId', 'operationId', 'expectedPolicyRevision', body.action === 'admit' ? 'cardId' : 'dailyNewLimit'];
   if (Object.keys(body).length !== keys.length || Object.keys(body).some(key => !keys.includes(key))
     || !operationId(body.operationId) || !integer(body.expectedPolicyRevision)
-    || (body.action === 'admit' ? !id(body.cardId) : !NEW_PER_DAY_OPTIONS.includes(body.dailyNewLimit))) reject('fsrs_invalid_request', 400);
+    || (body.action === 'admit' ? !id(body.cardId) : !isNewPerDayValue(body.dailyNewLimit))) reject('fsrs_invalid_request', 400);
   if (body.accountId !== actorId) reject('fsrs_account_changed', 409);
   return Object.fromEntries(keys.map(key => [key, body[key]]));
 }
@@ -49,7 +49,7 @@ export function normalizeAdmissionStatus(raw, { actorId } = {}) {
     if (raw.enabled || raw.active || raw.fsrsEnabled || startsAt !== null
       || ['limit', 'policyRevision', 'used', 'remaining', 'fsrsUsed', 'legacyUsed', 'admittedLegacyCardIds'].some(key => raw[key] !== null)) reject();
   } else {
-    if (!NEW_PER_DAY_OPTIONS.includes(raw.limit) || !['policyRevision', 'used', 'remaining', 'fsrsUsed', 'legacyUsed'].every(key => integer(raw[key]))
+    if (!isNewPerDayValue(raw.limit) || !['policyRevision', 'used', 'remaining', 'fsrsUsed', 'legacyUsed'].every(key => integer(raw[key]))
       || raw.used !== raw.fsrsUsed + raw.legacyUsed || raw.remaining !== Math.max(0, raw.limit - raw.used)
       || !Array.isArray(raw.admittedLegacyCardIds) || raw.admittedLegacyCardIds.some(value => !id(value))
       || new Set(raw.admittedLegacyCardIds).size !== raw.admittedLegacyCardIds.length) reject();
