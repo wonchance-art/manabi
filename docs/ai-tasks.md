@@ -1408,6 +1408,13 @@
   VocabWorkspace 렌더 789 → 396 ms, 긴 작업 초과 503 → 266 ms, 검색 입력 한 글자 88 → 32 ms. 원인 = canLegacy의 배열 includes(첫 로드 15,080회),
   호출당 파이프라인 5회 · 백로그 기준 매번 다시 파싱. 등록 id Set · 언어 셈 한 번 · 기준 이분 탐색 · 기한 캐시 · 단어 id 색인. 옛 구현 그대로의 참조와
   무작위 160 스냅샷 × 4 범위 동일(toStrictEqual) · 돌연변이 9 전부 잡힘. 남음(오너 결정): 검색 입력마다 35 ms — now를 분 단위로 묶으면 없어지나 동작 변경.
+  → **#1632 squash `735d63b1`(20:51 KST 운영 16/16)**.
+- **FIRSTLOAD-AUTH-001 · THEME-INIT-001 첫 로드 (2026-11-01 KST, 최적화 목록 4 · 5번)**: AuthContext가 인증과 무관한 learnDashboard · learningActivity ·
+  refProgress를 정적으로 끌어와 모든 화면 첫 JS에 ts-fsrs(20 KB) 등이 실렸다 → 언어 칩 · 읽기 전용 프로필 갱신을 가벼운 모듈로 떼고 나머지는 쓸 때 import().
+  providers 정적 닫힘 201 → 105 KB, HTML이 가리키는 첫 JS(gzip) /discover · /materials −22 KB · /home · /vocab −8~9 KB. 시간은 대부분 잡음 안(손님 /home 붙기 −60 ms).
+  화면 10쌍 픽셀 동일 · 로그인 손님 상태 깜빡임 없음. 계약 authFirstLoad.test.js(실제 정적 import 그래프). 5번 chapters.json = 손님 첫 JS 0 바이트(서버 · 관리자
+  전용) — 변경 없음, 서버 청크 런타임 읽기는 BUILD-OOM-001 근본 후보로 별건. 테마 머리 스크립트를 useTheme 규칙(저장값 > OS)으로 맞춰 data-theme 쓰기 3 → 1회
+  (재계산 차 0~9 ms — 정합 정리). 계약 themeInit.test.js. 3번(테마 전환 INP)은 토글 제거(#1564)로 해당 없음.
 - **OFFLINE-GRADE-001 단어 페이지 오프라인 채점 — 보류(오너 2026-10-31 KST 「일단 내용 저장만 해둬」)**: 카드당 요청 구조는 유지(실측 서버
   0.16 s · 생각 7 s, 묶음 · 로컬 우선 배제). 빈틈 = 연결 끊김 시 채점 실패 · 미보관. 1단계(DB 무변경) 기기 보낼함 + 연결 시 순서대로 전송 ·
   오프라인 중 새 단어 미출제, 2단계(DB · 별도 승인) 누른 시각 수용. 설계 `docs/design/offline-level-grade.md`. 착수 전 오너 확인.
