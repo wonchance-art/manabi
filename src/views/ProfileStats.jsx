@@ -20,7 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/AuthContext';
-import { buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
+import { SAVED_SOURCES, buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { topLabeledWeakness, weaknessLine, weaknessProfile } from '../lib/weaknessProfile';
 import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
@@ -211,6 +211,7 @@ function WeeklyTile({ weekly, className = '' }) {
   const [value, label] = weekly.reviews.total > 0
     ? [`${weekly.reviews.total}`, `이번 주 복습${acc != null ? ` · ${acc}%` : ''}`]
     : weekly.newWords > 0 ? [`${weekly.newWords}`, '이번 주 담은 말']
+    : weekly.conversation?.turns > 0 ? [`${weekly.conversation.turns}`, '이번 주 대화'] // 복습 없이 대화만 한 주(오너 「권장대로」 — 담은 말 다음)
     : weekly.metWords > 0 ? [`${weekly.metWords}`, '이번 주 만난 말']
     : weekly.readsCompleted > 0 ? [`${weekly.readsCompleted}`, '이번 주 완독']
     : ['–', '이번 주'];
@@ -229,6 +230,9 @@ function WeeklyTile({ weekly, className = '' }) {
   );
 }
 
+/** 담은 곳 이름 — SAVED_SOURCES 순서 그대로. */
+const SAVED_SOURCE_LABEL = Object.freeze({ reading: '읽기', conversation: '대화', level: '단어 목록', study: '오늘 학습', manual: '직접' });
+
 /* ── 이번 주 카드(rfc-weekly-report 목업 A) — 거울이지 성적표가 아니다:
      지난주는 회색 병기만(증감 화살표·색상 없음), 0인 축은 그리지 않는다. ── */
 function WeeklyReportCard({ weekly, header = true, showWeakness = false }) {
@@ -239,6 +243,14 @@ function WeeklyReportCard({ weekly, header = true, showWeakness = false }) {
   if (weekly.newWords > 0) parts.push(`새로 담은 말 ${weekly.newWords}`);
   if (weekly.metWords > 0) parts.push(`만난 말 ${weekly.metWords}`);
   if (weekly.readsCompleted > 0) parts.push(`완독 ${weekly.readsCompleted}편`);
+  // 대화 성과 · 담은 곳(STATS-MAP-001 S7 — 2차 목업 02 「권장대로」). 0인 항목은 쓰지 않는다.
+  const conv = weekly.conversation || {};
+  const convParts = [];
+  if (conv.turns > 0) convParts.push(`대화 ${conv.turns}마디`);
+  if (conv.fixed > 0) convParts.push(`스스로 고친 문장 ${conv.fixed}`);
+  if (conv.reaskOk > 0) convParts.push(`다시 쓴 문형 ${conv.reaskOk}`);
+  const sourceParts = SAVED_SOURCES.filter(key => weekly.savedBySource?.[key] > 0)
+    .map(key => `${SAVED_SOURCE_LABEL[key]} ${weekly.savedBySource[key]}`);
   return (
     <div style={{ fontVariantNumeric: 'tabular-nums' }}>
       {header && (
@@ -258,9 +270,19 @@ function WeeklyReportCard({ weekly, header = true, showWeakness = false }) {
           )}
         </div>
       )}
+      {convParts.length > 0 && (
+        <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          {convParts.join(' · ')}
+        </div>
+      )}
       {parts.length > 0 && (
         <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
           {parts.join(' · ')}
+        </div>
+      )}
+      {weekly.newWords > 0 && sourceParts.length > 0 && (
+        <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          담은 곳 — {sourceParts.join(' · ')}
         </div>
       )}
       {showWeakness && <WeakSpotLine weekStartMs={weekly.week.startMs} />}

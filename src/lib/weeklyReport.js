@@ -5,6 +5,8 @@
  */
 
 import { learningWeekStartMs } from './growthStats';
+import { conversationCorrections } from './conversation/conversationLoop.js';
+import { STUDY_SOURCE_REF } from './reviewScopeUrl.js';
 
 const WEEK_MS = 7 * 86400000;
 
@@ -69,7 +71,37 @@ function reviewSlice(events, startMs, endMs) {
  * @returns 주간 요약 — { week, prevWeek, reviews, prevReviews, newWords, prevNewWords,
  *          metWords, prevMetWords, readsCompleted, prevReadsCompleted, hasAny }
  */
-export function buildWeeklyReport({ events, vocabRows, encounterRows, readRows, now = Date.now() } = {}) {
+/**
+ * 이번 주 대화 성과(STATS-MAP-001 S7, 오너 「권장대로」 2026-11-01 KST) — 대화 모드 자료(metadata.conversation)에서 유도만 한다(새 기록 0).
+ * 마디 = 내가 보낸 말 · 스스로 고친 문장 = 힌트 뒤 다시 말해 맞힌 것(state 'fixed') · 다시 쓴 문형 = 다시 꺼낸 문형을 맞게 쓴 것(reask ok).
+ * 대화 마치기 요약(conversationSummary)과 같은 정의다.
+ */
+function conversationSlice(rows, startMs, endMs) {
+  let turns = 0, fixed = 0, reaskOk = 0;
+  const within = at => Number.isFinite(Number(at)) && Number(at) >= startMs && Number(at) < endMs;
+  for (const row of rows || []) {
+    for (const t of row?.turns || []) if (t?.who === 'me' && within(t.at)) turns += 1;
+    for (const c of conversationCorrections({ turns: row?.turns })) if (c.state === 'fixed' && within(c.at)) fixed += 1;
+    for (const r of row?.reask || []) if (r?.ok === true && within(r.at)) reaskOk += 1;
+  }
+  return { turns, fixed, reaskOk };
+}
+
+/** 담은 곳 — 이번 주 담은 말을 출처로 나눈다(새 칸 없음: source_material_id · source_ref). 순서가 곧 화면 순서. */
+export const SAVED_SOURCES = Object.freeze(['reading', 'conversation', 'level', 'study', 'manual']);
+function savedSourceSlice(vocabRows, conversationIds, startMs, endMs) {
+  const out = Object.fromEntries(SAVED_SOURCES.map(key => [key, 0]));
+  for (const row of vocabRows || []) {
+    if (!row?.created_at || !inRange(row.created_at, startMs, endMs)) continue;
+    const material = row.source_material_id == null ? null : String(row.source_material_id);
+    const key = material ? (conversationIds.has(material) ? 'conversation' : 'reading')
+      : row.source_ref === STUDY_SOURCE_REF ? 'study' : row.source_ref ? 'level' : 'manual';
+    out[key] += 1;
+  }
+  return out;
+}
+
+export function buildWeeklyReport({ events, vocabRows, encounterRows, readRows, conversationRows, now = Date.now() } = {}) {
   const weekStart = learningWeekStartMs(now);
   const prevStart = weekStart - WEEK_MS;
 
@@ -82,6 +114,9 @@ export function buildWeeklyReport({ events, vocabRows, encounterRows, readRows, 
   const prevMetWords = countInRange(encounterRows, 'first_met_at', prevStart, weekStart);
   const readsCompleted = countInRange(readRows, 'completed_at', weekStart, weekStart + WEEK_MS);
   const prevReadsCompleted = countInRange(readRows, 'completed_at', prevStart, weekStart);
+  const conversation = conversationSlice(conversationRows, weekStart, weekStart + WEEK_MS);
+  const conversationIds = new Set((conversationRows || []).map(row => String(row?.id)));
+  const savedBySource = savedSourceSlice(vocabRows, conversationIds, weekStart, weekStart + WEEK_MS);
 
   return {
     week: { startMs: weekStart, endMs: weekStart + WEEK_MS },
@@ -94,8 +129,10 @@ export function buildWeeklyReport({ events, vocabRows, encounterRows, readRows, 
     prevMetWords,
     readsCompleted,
     prevReadsCompleted,
+    conversation,
+    savedBySource,
     // 전 축 0이면 카드 자체를 그리지 않는다(첫 주 — 0 무표기 결).
-    hasAny: reviews.total > 0 || newWords > 0 || metWords > 0 || readsCompleted > 0,
+    hasAny: reviews.total > 0 || newWords > 0 || metWords > 0 || readsCompleted > 0 || conversation.turns > 0,
   };
 }
 
