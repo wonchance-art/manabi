@@ -44,7 +44,9 @@ describe('FSRS personal review surface', () => {
     expect(source).not.toContain("setTab('fsrs')");
     expect(source).toContain('<FsrsReviewSession review={fsrsReview} embedded cardId={currentStep.id}');
     // REV-SCOPE-R1A: 오늘 줄 계산은 countReviewScope로 옮겼고, 등록 id 가드는 그 canLegacy 입력으로 넘긴다.
-    expect(source).toContain('canLegacy: id => !fsrsReview.enrolledIds.includes(id) && fsrsReview.controller.canLegacy(id)');
+    // 등록 id 묶음(enrolledIdSet)은 fsrsReview.enrolledIds 그대로다 — 배열 includes를 묶음으로만 바꿨다(VOCAB-SCOPE-PERF-001).
+    expect(source).toContain('const enrolledIdSet = useMemo(() => new Set(fsrsReview.enrolledIds), [fsrsReview.enrolledIds]);');
+    expect(source).toContain('canLegacy: id => !enrolledIdSet.has(id) && fsrsReview.controller.canLegacy(id)');
   });
   it('active manual save uses one atomic command and only confirmed disabled mode retains legacy insert', () => {
     const source = readFileSync(new URL('../VocabPage.jsx', import.meta.url), 'utf8');
