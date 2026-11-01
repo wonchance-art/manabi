@@ -272,7 +272,7 @@ describe('⑤ 줄 — 종류 카드 · 형제 규칙 · 차례로 붙이기', ()
     expect(fsrs).toContain('const response = await client.enrollVariant({ accountId, cardId, expectedRevision: 0, operationId: makeId(),');
     expect(fs.readFileSync('src/lib/fsrsLearningClient.js', 'utf8')).toMatch(/enrollVariant\(payload\) \{\n\s+assertOwner\(\);\n\s+if \(!payload\?\.cardKind\) throw problem\('fsrs_invalid_request'\);\n\s+return online\('enroll', payload\);/);
     // 한 번 읽을 때 붙이는 수는 page장까지
-    expect(screen).toContain('.slice(0, LEVEL_WORD_PREFS.page);');
+    expect(screen).toContain('.slice(0, quota);'); // 하루 생성 상한 — variantQuota(학습일마다 하루 새 단어 수 · 제한 없음이면 무한)
   });
 });
 const HOURS = (n) => n * 60 * MIN;

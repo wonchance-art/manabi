@@ -29,7 +29,7 @@ import {
 } from '@/lib/levelWordStatus';
 import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_UNLIMITED, isNewPerDayValue, loadNewPerDay } from '@/lib/vocabStudy';
 import { wordAreaRecall, wordAreaState } from '@/lib/levelWordAreas';
-import { RECOGNITION_ONLY } from '@/lib/fsrsCardKinds';
+import { RECOGNITION_ONLY, variantQuota } from '@/lib/fsrsCardKinds';
 import { levelCardKey, parseLevelCardKey, planLevelCardKinds, toggleLevelCardKind } from '@/lib/levelCardKinds';
 import { levelPackTiles } from '@/lib/levelCharTiles';
 import {
@@ -387,14 +387,16 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
     if (next !== session) setSession(next);
   }, [session, lineEntries, kindPlan, cardTable, cardKinds, byCard]);
   // 차례로 붙이기 — 단어 → 뜻이 날 단위로 넘어간 다음 학습일에 뜻 → 단어, 그다음 학습일에 듣기(nextVariantKind — 서버 등록 조건의 거울).
-  // 한 번 읽을 때 붙이는 수는 PAGE장까지(켠 날 밀린 단어가 한꺼번에 붙어 줄이 갑자기 늘지 않게 — 나머지는 다음 읽기에서). 거절(조건 어긋남 ·
+  // 하루에 붙이는 수는 하루 새 단어 수까지(켠 날 밀린 단어가 한꺼번에 붙어 줄이 갑자기 늘지 않게 — 나머지는 다음 학습일에). 거절(조건 어긋남 ·
   // 연결 끊김)은 조용히 넘긴다 — 다음 읽기가 다시 판정한다. 붙인 뒤 카드 목록을 다시 읽으면 위 효과가 줄에 더한다.
   const enrollTried = useRef(new Set());
   const started = !!session;
   useEffect(() => {
     if (!kindsOn || !started || !kindPlan.enroll.length) return;
     const day = learningDay(schedulerTime(Date.now()));
-    const todo = kindPlan.enroll.filter((it) => !enrollTried.current.has(`${day}:${it.vocabularyId}:${it.kind}`)).slice(0, LEVEL_WORD_PREFS.page);
+    // 오늘 더 붙일 수 있는 수 — 하루 새 단어 수와 같은 숫자를 학습일마다(오늘 이미 붙인 종류 카드를 뺀다 · 「제한 없음」이면 막지 않음 — variantQuota).
+    const quota = variantQuota({ cards: variantQuery.data?.cards || [], dailyNewLimit: newPerDay, at: schedulerTime(Date.now()) });
+    const todo = kindPlan.enroll.filter((it) => !enrollTried.current.has(`${day}:${it.vocabularyId}:${it.kind}`)).slice(0, quota);
     if (!todo.length) return;
     todo.forEach((it) => enrollTried.current.add(`${day}:${it.vocabularyId}:${it.kind}`));
     // 화면을 떠나도 보낸 것은 끝까지 보낸다(한 장씩 · 채점과 같은 줄) — 끊으면 「시도함」으로 적힌 단어가 그날 다시 붙지 않는다.
@@ -406,7 +408,7 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
       }
       if (added) queryClient.invalidateQueries({ queryKey: ['level-card-kinds', userId] });
     }).catch(() => {});
-  }, [kindsOn, started, kindPlan, userId, queryClient]);
+  }, [kindsOn, started, kindPlan, userId, queryClient, variantQuery.data, newPerDay]);
   // 미리 학습(LEARN-AHEAD-001 · 오너 승인 2026-11-01 KST — Anki 「learn ahead limit」 20분). 지금 채점할 줄(① + ②)이 비었을 때만, 기다리는 카드 중
   // 20분 안에 차례가 오는 학습 · 재학습 단계 카드를 기다리지 않고 바로 위 목록 · 한 단어 카드로 올린다(남은 시간 「4분 후」 · 네 칸 켜짐 ·
   // 간격은 지금부터). 줄에 채점할 카드가 남아 있는 동안은 지금 그대로(60초 창). 날 단위 복습 카드는 미리 올리지 않는다.

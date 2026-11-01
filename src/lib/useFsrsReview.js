@@ -5,7 +5,7 @@ import { createFsrsLearningClient } from './fsrsLearningClient';
 import { fsrsLearnsAhead, learningDaySpan, previewFsrsRatings, validateFsrsCard } from './fsrsScheduler';
 import { fsrsQuestionBound, fsrsQueueState } from './fsrsReviewSession';
 import { normalizeFsrsSaveRequest } from './fsrsOperationOutbox';
-import { admissionCardKinds, cardKindOf, cardVocabularyId, fsrsTakesNewQuota, nextVariantKind, pickSiblings } from './fsrsCardKinds';
+import { admissionCardKinds, cardKindOf, cardVocabularyId, fsrsTakesNewQuota, nextVariantKind, pickSiblings, variantQuota } from './fsrsCardKinds';
 import { learningDay } from './fsrsScheduler';
 import { normalizeAdmissionStatus } from './learningAdmission';
 import { logLearningFailure } from './useLearningAdmission';
@@ -39,8 +39,6 @@ export function fsrsIntervalLabel(due, at) {
   return `${Math.round(seconds / 86400)}d`;
 }
 
-/** 복습실이 한 번 읽을 때 붙이는 종류 카드 수(CARD-TYPES-001 4단계 — 단어 페이지의 한 번 page장과 같다). */
-export const VARIANT_BATCH = 20;
 
 /** ready가 아닌 상태(loading · error)에서 시작한 FSRS 목록 읽기가 이보다 오래 끝나지 않으면 오류로 내린다(다시 시도). 목록 요청 상한(15초)보다 조금 길다. */
 export const FSRS_LOADING_CAP_MS = 20000;
@@ -413,8 +411,8 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
   }
   // 차례로 붙이기(CARD-TYPES-001 §3 · 4단계) — 켜진 종류(입장 상태 cardKinds)가 단어 → 뜻 밖에도 있으면, 보이는 단어마다 지금 붙일 종류
   // (nextVariantKind — 서버 등록 조건의 거울: 단어 → 뜻이 날 단위로 넘어간 다음 학습일에 뜻 → 단어, 그다음 학습일에 듣기)를 바로 보내기로 붙인다.
-  // 듣기는 예문이 있는 단어만 — 복습실의 예문은 저장한 원문 문장(source_sentence). 한 번에 VARIANT_BATCH장까지(켠 날 밀린 단어가 한꺼번에 붙지
-  // 않게), 같은 학습일에 같은 단어 · 종류는 한 번만 시도한다. 거절은 조용히 넘기고(다음 읽기가 다시 판정), 붙였으면 목록을 다시 읽는다.
+  // 듣기는 예문이 있는 단어만 — 복습실의 예문은 저장한 원문 문장(source_sentence). 학습일마다 하루 새 단어 수만큼까지(variantQuota — 켠 날 밀린 단어가 한꺼번에
+  // 붙지 않게, 「제한 없음」이면 Anki처럼 막지 않음), 같은 학습일에 같은 단어 · 종류는 한 번만 시도한다. 거절은 조용히 넘기고(다음 읽기가 다시 판정), 붙였으면 목록을 다시 읽는다.
   // 단어 → 뜻만 켜져 있으면(기본값) 아무것도 하지 않는다.
   const variantTried = new Set();
   let introducing = false;
@@ -429,9 +427,12 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       if (!byWord.has(id)) byWord.set(id, []);
       byWord.get(id).push(entry);
     }
+    // 오늘 더 붙일 수 있는 수 — 하루 새 단어 수와 같은 숫자를 학습일마다(제한 없음이면 막지 않음 · variantQuota).
+    const quota = variantQuota({ cards: state.cards, dailyNewLimit: state.admission?.limit ?? null, at });
+    if (quota <= 0) return;
     const todo = [];
     for (const [wordId, cards] of byWord) {
-      if (todo.length >= VARIANT_BATCH) break;
+      if (todo.length >= quota) break;
       const word = visibleWord(wordId);
       if (!word) continue;
       const kind = nextVariantKind({ cards, cardKinds: kinds, hasExample: !!word.source_sentence, at });
