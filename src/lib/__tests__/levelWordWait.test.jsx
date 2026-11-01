@@ -11,7 +11,8 @@ import { sliceBetween } from './helpers/sliceBetween';
 // 계약: 단어 페이지 — 잠긴 카드 분리 · 대기 화면 · 시간 글자(LEVEL-WAIT-001 · 오너 승인 2026-11-01 KST 시안 「단어 페이지 대기 · 새 단어」).
 // 같은 날 오너 결정: 잠긴 카드(아직 채점할 수 없는 기다리는 카드)는 리스트에 아예 그리지 않는다(Anki처럼 — 「대기 N개」 칸도 없다).
 // 시간이 되면 위 목록에 「지금」으로 올라오고, 위 목록이 비면 「오늘 할 카드 끝」 · 「다음 카드는 N분 후에 위로 올라와요」만.
-// 「미리 학습 20분」(학습 단계 카드를 앞당겨 채점)은 서버 변경이 필요한 다음 PR이다 — 지금 규칙(차례 · 60초 창)에서 「드문 경우」 화면이 맞다.
+// 「미리 학습 20분」(LEARN-AHEAD-001 — 20분 안의 학습 · 재학습 카드를 앞당겨 채점)이 들어온 뒤 이 화면은 20분 넘게 남은 카드만 남을 때의 「드문 경우」다
+// (계약 learnAhead.test.jsx). 남은 시간은 그 카드가 위로 올라오는 시각(comesAt — 차례 · 미리 학습 창 중 이른 것)부터 센다.
 const L = { hw: 'ja', exReading: 'ja', head: (e) => ({ hw: e.word, sub: e.reading }), tag: (l) => `JLPT ${l}`, Reading: ({ text }) => <span>{text}</span> };
 const wrap = (node) => renderToStaticMarkup(<WordLangContext.Provider value={L}>{node}</WordLangContext.Provider>);
 const read = (f) => fs.readFileSync(f, 'utf8');
@@ -82,8 +83,8 @@ describe('리스트 — 위 목록은 지금 채점할 카드만 · 잠긴 카�
   it('위 목록을 다 풀고 기다리는 카드만 — 「오늘 할 카드 끝」 · 「다음 카드는 N분 후에 위로 올라와요」(1초마다) · 하루 몫이면 「새 단어 N개 더」', () => {
     const capped = sliceBetween(screen, '{!listed.active.length && listed.waiting.length > 0 && <div className="lw-capped" role="status">', '</div>}');
     expect(capped).toContain("{moreBatch > 0 ? <NewDayTitle started={startedToday} /> : '오늘 할 카드 끝'}");
-    expect(capped).toContain('<p className="lw-capped__s" aria-live="off"><WaitText at={nextAt}>'); // 매초 바뀌는 글은 알림 영역에서 읽지 않는다
-    expect(capped).toContain('<WaitText at={nextAt}>{(amount) => (amount ? `다음 카드는 ${amount} 후에 위로 올라와요` : \'다음 카드가 곧 위로 올라와요\')}</WaitText>');
+    expect(capped).toContain('<p className="lw-capped__s" aria-live="off"><WaitText at={comesAt}>'); // 매초 바뀌는 글은 알림 영역에서 읽지 않는다
+    expect(capped).toContain('<WaitText at={comesAt}>{(amount) => (amount ? `다음 카드는 ${amount} 후에 위로 올라와요` : \'다음 카드가 곧 위로 올라와요\')}</WaitText>');
     expect(capped).toContain('<MoreNewButton more={moreBatch} onMore={moreNew} />');
     expect(screen).toContain('{done && allEntries.length > 0 && doneScreen()}'); // 아무것도 안 남으면 끝 화면 그대로
   });
@@ -109,11 +110,11 @@ describe('한 단어 — 기다리는 카드만 남고 아직 채점할 수 없�
   });
   it('화면 — 줄이 비고 가장 빠른 카드도 채점할 수 없을 때만 · 카드 · 네 칸 대신 · 숫자 키도 받지 않는다 · 시간이 되면 카드가 저절로', () => {
     expect(screen).toMatch(/const oneWait = !!session && !!current && !practice && !browse && prefs\.mode === 'one' && !sessionOrder\(session, clock\)\.length\n\s+&& !!nextAt && !currentInfo\?\.previews;/);
-    expect(screen).toContain("{oneWait && <OneWordWait at={nextAt} onList={() => switchMode('list')} />}");
+    expect(screen).toContain("{oneWait && <OneWordWait at={comesAt} onList={() => switchMode('list')} />}");
     expect(screen).toContain('{session && current && !oneWait && <OneWordCard');
     expect(screen).toContain('{session && current && !oneWait && <GradeBar');
     expect(screen).toContain('keyState.current = { current: oneWait ? null : current,');
-    expect(screen).toContain('const t = setTimeout(() => setClock(Date.now()), Math.max(0, nextAt - Date.now()) + 50);');
+    expect(screen).toContain('const t = setTimeout(() => setClock(Date.now()), Math.max(0, comesAt - Date.now()) + 50);');
     expect(css).toMatch(/\.lw-wait\{[^}]*place-content:center/);
   });
 });

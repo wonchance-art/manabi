@@ -82,8 +82,9 @@ describe('한 번 채점 — 묻기 · 보이기 · 채점을 서버가 차례�
     expect(db.calls().fsrs_apply_learning_operation).toBe(2);
   });
 
+  // 학습 단계(10분) 카드는 미리 학습(LEARN-AHEAD-001 — 20분)으로 바로 물을 수 있어, 날 단위 복습 카드(쉬움 → Review)로 본다.
   it('차례가 아닌 카드는 반영 없이 거절 — 다음 질문 시각을 함께(단어 페이지가 곧 차례면 그만큼 기다린다)', async () => {
-    await answer();
+    await answer({ rating: 4 });
     db.resetCalls();
     const error = await answer({ operationId: 'tap-2' }).catch((e) => e);
     expect(error).toMatchObject({ code: 'fsrs_card_not_due', status: 409 });

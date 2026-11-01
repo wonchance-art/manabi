@@ -1,9 +1,9 @@
 // 한 번 채점(GRADE-ONE-REQUEST-001) 계약 테스트의 DB 대역 — 서버 RPC 경계(fsrs_* · learning_admission_status)만 메모리로 흉내 낸다.
 // 반영 함수(fsrs_apply_learning_operation)의 판정 중 이 계약이 기대는 것만 옮겼다: 같은 ID 재전송(같으면 이전 결과 · 다르면 충돌) ·
-// 첫 문제의 정책 대조와 하루 새 단어 몫 · 질문 시각 ≥ 차례 · 열린 시도 위 새 질문 거절 · 채점은 보인 시도만 · 반영 뒤 입장 상태(quota).
+// 첫 문제의 정책 대조와 하루 새 단어 몫 · 질문 시각 ≥ 차례(학습 · 재학습은 20분 미리) · 열린 시도 위 새 질문 거절 · 채점은 보인 시도만 · 반영 뒤 입장 상태(quota).
 // 권한 · 원자성 자체는 SQL 계약 테스트의 몫이다.
 import { vi } from 'vitest';
-import { introduceFsrsCard, learningDay } from '../../fsrsScheduler.js';
+import { fsrsAskableAt, introduceFsrsCard, learningDay } from '../../fsrsScheduler.js';
 
 export const owner = '10000000-0000-4000-8000-000000000001';
 export const cardIds = ['20000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000003'];
@@ -43,7 +43,8 @@ export function fsrsMemoryDb({ start = Date.parse('2026-10-30T03:00:00.000Z'), l
       const quota = db.status();
       if (op.request.expectedPolicyRevision !== quota.policyRevision || op.dailyNewLimit !== quota.limit) return fail('learning_policy_conflict');
       const at = Date.parse(op.nextAttempt.questionAt);
-      if (at < Date.parse(entry.card.due) || at < Date.parse(entry.nextQuestionAt || entry.card.due)) return fail('fsrs_card_not_due');
+      // 묻기 시각 ≥ 차례 — 학습 · 재학습 카드는 기한 20분 전부터(LEARN-AHEAD-001 · SQL과 같은 식), 되돌린 뒤 30초는 그대로.
+      if (at < Math.max(fsrsAskableAt(entry.card), entry.undoAt ?? -Infinity)) return fail('fsrs_card_not_due');
       if (entry.attempt && ['question', 'revealed'].includes(entry.attempt.phase)) return fail('invalid_attempt_phase');
       if (entry.card.state === 'New' && !db.receipts.has(op.cardId)) {
         if (quota.remaining <= 0) return fail('learning_daily_new_limit');
@@ -61,6 +62,7 @@ export function fsrsMemoryDb({ start = Date.parse('2026-10-30T03:00:00.000Z'), l
       if (!target || entry.attempt || JSON.stringify(target.operation.nextCard) !== JSON.stringify(entry.card)) return fail('invalid_fsrs_undo');
       entry.card = clone(op.nextCard); entry.attempt = null;
       entry.nextQuestionAt = new Date(Math.max(Date.parse(entry.card.due), Date.parse(op.log.reviewedAt) + 30000)).toISOString();
+      entry.undoAt = Date.parse(op.log.reviewedAt) + 30000;
     } else return fail('invalid_fsrs_operation');
     const result = { ...row(op.cardId), operationId: op.id, duplicate: false };
     db.operations.push({ id: op.id, cardId: op.cardId, operation: clone(op), result: clone(result) });

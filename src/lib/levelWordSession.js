@@ -5,8 +5,8 @@
 // ② 오늘 복습과 담지 않은 새 단어를 섞은 줄(둘 다 목록 순, 새 단어는 복습 사이에 고르게 — 복습실과 같은 intersperseNew,
 // Anki 「복습과 섞기」, 오너 「Anki와 동일하게」 2026-10-25 KST) ③ 기다리는 카드(남은 시간 짧은 순).
 // 채점해서 다음 차례가 오늘 안(다시 1분 · 어려움 6분 …)이면 그 시각까지 ③에서 기다리고, 내일 이후면 줄에서 빠진다.
-// 줄에 기다리는 카드만 남으면 한 단어 모드는 가장 먼저 될 카드를 앞당겨 보인다 — 채점할 수 없으면(60초 창 밖) 화면이 대기 화면을 낸다
-// (LEVEL-WAIT-001). 둘 다 비면 끝(「오늘 이 레벨 끝」).
+// 줄에 기다리는 카드만 남으면 20분 안의 학습 · 재학습 카드를 바로 물린다(미리 학습 sessionAhead — LEARN-AHEAD-001). 그것도 없으면 한 단어 모드는
+// 가장 먼저 될 카드를 앞당겨 보인다 — 채점할 수 없으면(60초 창 밖) 화면이 대기 화면을 낸다(LEVEL-WAIT-001). 둘 다 비면 끝(「오늘 이 레벨 끝」).
 // 되돌리기는 직전 상태로 — 화면이 기록 되돌리기와 같이 부른다.
 // 하루 새 단어(시안 ⑦-1 추천 · 2026-10-21 KST): ② 중 새 단어(담지 않은 단어 · 담기만 한 담음 단어)는 newCap개까지만 줄에 서고 나머지는 held에 남는다.
 // 줄이 비면 끝 화면이 「새 단어 N개 더」로 held에서 꺼낸다(막지 않는다). 복습할 때가 된 카드는 한도와 상관없이 다 선다.
@@ -112,6 +112,13 @@ export function pullLevelSession(session, key) {
 export const sessionDue = (session, at = Date.now()) => (session?.waiting || []).filter((w) => w.at <= at).map((w) => w.key);
 /** 기다리는 카드(③) — { key, at }, 남은 시간 짧은 순. */
 export const sessionWaiting = (session, at = Date.now()) => (session?.waiting || []).filter((w) => w.at > at);
+/**
+ * 미리 학습(LEARN-AHEAD-001 · 오너 승인 2026-11-01 KST — Anki 「learn ahead limit」 20분) — 지금 채점할 줄(① + ②)이 비었을 때만,
+ * 기다리는 카드(③) 중 지금 미리 물을 수 있는 것(canAhead(key) — 20분 안의 학습 · 재학습 단계 카드, 화면이 levelWordStatus learnAheadable로 판정)을
+ * 남은 시간 짧은 순으로. 줄에 채점할 카드가 남아 있으면 빈 줄 — 그동안은 지금처럼 차례가 온 카드만(60초 창은 그대로).
+ */
+export const sessionAhead = (session, at = Date.now(), canAhead = () => false) => (sessionOrder(session, at).length ? []
+  : sessionWaiting(session, at).filter((w) => canAhead(w.key)).map((w) => w.key));
 /** 지금 채점할 차례인 줄(① + ②). */
 export const sessionOrder = (session, at = Date.now()) => [...sessionDue(session, at), ...(session?.queue || [])];
 /** 다음에 시간이 될 시각 — 화면이 그때 다시 그린다. 없으면 null. */

@@ -11,6 +11,7 @@ import { recordReviewCompleted } from '../lib/learn/progressStore';
 import { useTTS } from '../lib/useTTS';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
 import { useFsrsReview, fsrsIntervalLabel, FSRS_LOADING_CAP_MS } from '../lib/useFsrsReview';
+import { fsrsQuestionBound } from '../lib/fsrsReviewSession';
 import { useLearningAdmission } from '../lib/useLearningAdmission';
 import { isAdmissionOfflineError } from '../lib/learningAdmission';
 import { LEGACY_REVIEW_SUPERSEDED_NOTICE } from '../lib/legacyReviewSupersede';
@@ -1077,7 +1078,26 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
   }
 
   // 세션 끝 — 낙관 전진을 서버 정본과 재동기한다.
-  const finishRun = () => {
+  // 미리 학습(LEARN-AHEAD-001 · 오너 승인 2026-11-01 KST — Anki 「learn ahead limit」 20분) — 줄을 다 풀었을 때만, 이 줄의 새 일정 카드 중
+  // 지금 물을 수 있는 학습 · 재학습 카드(기한 20분 전부터 — controller.ahead, 서버가 같은 20분 · 단계 조건을 다시 본다)를 끝 화면 없이 바로 잇는다.
+  // 날 단위 복습 카드는 넣지 않는다. 미리 열지 못해 건너뛴 카드(skipped)는 이 줄에서 다시 넣지 않는다(같은 카드를 되풀이해 열지 않게).
+  const aheadSteps = (queue = reviewQueueRef.current) => {
+    const inRun = new Set(queue.filter(step => step.engine === 'fsrs').map(step => step.id));
+    const failed = new Set(queue.filter(step => step.ahead && step.phase === 'skipped').map(step => step.id));
+    return (fsrsReview.controller.getSnapshot().ahead || []).filter(entry => inRun.has(entry.cardId) && !failed.has(entry.cardId) && fsrsStepValid(entry.cardId))
+      .map(entry => ({ id: entry.cardId, engine: 'fsrs', phase: 'learn', ahead: true }));
+  };
+  const finishRun = (queue = reviewQueueRef.current) => {
+    const ahead = aheadSteps(queue);
+    if (ahead.length) {
+      const next = [...queue, ...ahead];
+      reviewQueueRef.current = next;
+      reviewIdxRef.current = queue.length;
+      setReviewQueue(next);
+      setReviewIdx(queue.length);
+      setShowAnswer(false);
+      return;
+    }
     setReviewFinished(true);
     // 끝 토스트 없음(VOCAB-FLOW-001 B) — 화면 읽기는 끝 제목 초점, 못 받으면 review-finish-announce(onTitleNotFocused).
     // 세션 동안의 낙관 전진을 서버 정본과 재동기 — 채점 저장이 fire-and-forget이라
@@ -1098,7 +1118,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       reviewIdxRef.current = index + 1;
       setReviewIdx(index + 1);
       setShowAnswer(false);
-    } else finishRun();
+    } else finishRun(queue);
   };
 
   // 예전 일정 채점 · 미루기 뒤 — 「다시」는 이번 세션 끝에 재노출(줄 메타데이터만, 일정 저장은 채점 한 번).
@@ -1269,13 +1289,16 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
   const waitingFsrs = useMemo(() => {
     const cards = fsrsReview.cards.filter(entry => sessionFsrsIds.includes(entry.cardId) && ['Learning', 'Relearning'].includes(entry.card?.state));
     if (!cards.length) return null;
-    const readyIds = cards.filter(entry => fsrsReview.ready.some(row => row.cardId === entry.cardId)).map(entry => entry.cardId);
-    const times = cards.map(entry => Math.max(Date.parse(entry.card.due), entry.nextQuestionAt ? Date.parse(entry.nextQuestionAt) : 0)).filter(Number.isFinite);
-    return { count: cards.length, readyIds, ready: readyIds.length > 0, nextAt: times.length ? new Date(Math.min(...times)).toISOString() : null };
-  }, [fsrsReview.cards, fsrsReview.ready, sessionFsrsIds]);
+    // 미리 학습(LEARN-AHEAD-001) — 20분 안에 차례가 오는 카드(controller.ahead)도 지금 이어 할 수 있다. 시각은 물을 수 있게 되는 때(기한 − 20분 · 대기).
+    const isReady = id => fsrsReview.ready.some(row => row.cardId === id), isAhead = id => (fsrsReview.ahead || []).some(row => row.cardId === id);
+    const readyIds = cards.filter(entry => isReady(entry.cardId) || isAhead(entry.cardId)).map(entry => entry.cardId);
+    const times = cards.map(entry => { try { return fsrsQuestionBound(entry); } catch { return NaN; } }).filter(Number.isFinite);
+    return { count: cards.length, readyIds, aheadIds: readyIds.filter(id => !isReady(id)), ready: readyIds.length > 0,
+      nextAt: times.length ? new Date(Math.min(...times)).toISOString() : null };
+  }, [fsrsReview.cards, fsrsReview.ready, fsrsReview.ahead, sessionFsrsIds]);
   const resumeWaiting = () => {
     if (!waitingFsrs?.ready) return;
-    const next = [...reviewQueue, ...waitingFsrs.readyIds.map(id => ({ id, engine: 'fsrs', phase: 'learn' }))];
+    const next = [...reviewQueue, ...waitingFsrs.readyIds.map(id => ({ id, engine: 'fsrs', phase: 'learn', ...(waitingFsrs.aheadIds.includes(id) ? { ahead: true } : {}) }))];
     setReviewQueue(next);
     setReviewIdx(reviewQueue.length);
     setShowAnswer(false);
@@ -1818,7 +1841,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       ) : tab === 'review' ? (
         currentStep && !reviewFinished && currentStep.engine === 'fsrs' && currentStep.phase !== 'intro' ? (
           // 새 일정 카드 — 같은 카드 규격으로 controller가 연다(질문 · 노출 · 채점 · 학습 단계는 FSRS 경로 그대로).
-          <FsrsReviewSession review={fsrsReview} embedded cardId={currentStep.id} stepKey={questionKey} onExit={() => setTab('list')}
+          <FsrsReviewSession review={fsrsReview} embedded cardId={currentStep.id} stepKey={questionKey} ahead={!!currentStep.ahead} onExit={() => setTab('list')}
             onGraded={onFsrsGraded} onUnavailable={skipCard} speak={speak} ttsSupported={ttsSupported && fsrsStepWord?.language !== 'Korean'}
             onReveal={(trigger, word) => { lastTriggerRef.current = trigger; autoplay(word, trigger); }}
             onKnown={markKnownInSession} knownDisabled={knownWords.mutation.isPending} />

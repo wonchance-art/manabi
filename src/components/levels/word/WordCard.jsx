@@ -3,13 +3,13 @@
 // 네 칸은 카드마다 붙이지 않고 화면 아래 한 줄(가운데 카드를 채점 — 오너 확정 2026-10-19 KST 「아래 고정」). 단어 카드 창(grades)만 카드 안에 둔다.
 // 보기 탭이 전체가 아니면 고른 것 하나만 남기고, 누르면 나머지가 아래로 펼쳐진다. 카드를 누르면 그 카드가 채점 대상(onPick).
 // 레벨 태그 · 상태(☆ 담기 · 오늘 · 복습 · 졸업)는 찾기 · 예문 단어 창에서 연 카드(search)에만 — 레벨 페이지 카드는 이미 그 레벨이고 채점이 곧 담기다(오너 2026-10-20 KST).
-// 「지금」 · 「1일 후」는 줄을 늘리지 않고 카드 맨 아래 줄 오른쪽 끝에 회색 글자로(같은 줄 글자와 기준선 맞춤).
+// 「지금」 · 「4분 후」(미리 학습) · 「1일 후」는 줄을 늘리지 않고 카드 맨 아래 줄 오른쪽 끝에 회색 글자로(같은 줄 글자와 기준선 맞춤).
 // 어려운 단어(자주 틀린 단어 · N번)는 오늘 복습 카드에만. 오래된 단어의 반대 방향은 뜻 연습 탭이 맡는다(네 영역 체크 — 오너 승인 2026-10-21 KST).
 // 네 영역 줄(단어 · 문장 · 뜻 · 소리)과 「2일 후 복습」은 펼친 부분 맨 아래 · 전체 탭 카드 · 찾기 카드에만.
 import { useState } from 'react';
 import { reducedMotion } from '@/lib/reducedMotion';
 import { decodeExampleSeg, decodeFuri } from '@/lib/levelExampleCode';
-import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill } from './WordParts';
+import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill, WaitChip } from './WordParts';
 import { AreaRow } from './WordAreas';
 import { useWordLang } from './wordLang';
 
@@ -84,10 +84,11 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
 /**
  * info = { status, previews, hard(번) } — 화면이 상태 · 채점 미리보기를 계산해 넘긴다.
  * view = 'all' | 'word' | 'sentence' | 'meaning' | 'sound'. areas = 네 영역(levelWordAreas) · next = 「2일 후 복습」 · later = 접힌 복습 예정 카드의 「1일 후」 · 「졸업」.
+ * wait = 미리 올린 카드(미리 학습 LEARN-AHEAD-001)의 실제 차례 시각(ms) — 「4분 후」(WaitChip, 1초마다 줄어든다).
  * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다).
  */
 export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note,
-  grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, later = null, areas = null, next = null }) {
+  grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, later = null, areas = null, next = null }) {
   const L = useWordLang();
   const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
   const { hw, sub } = L.head(e);
@@ -105,7 +106,8 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   // 오늘 할 줄 표시 — 기다리다 차례가 온 카드는 「지금」(LEVEL-WAIT-001 · 오너 승인 2026-11-01 KST — 예전 「아까 본 단어」는 며칠 전에 본 카드에
   // 맞지 않았다). 기다리는 카드(아직 채점할 수 없음)는 리스트에 그리지 않는다(오너 결정 같은 날 — Anki처럼). 맨 아래 줄 끝에 붙인다.
   // 접힌 「복습 예정」 카드는 다음 복습까지(「1일 후」 · 「졸업」 — 시안 ⑨).
-  const time = due ? <span className="lw-time">지금</span> : later ? <span className="lw-time">{later}</span> : null;
+  // 미리 올린 카드(오늘 줄을 다 푼 뒤 20분 안의 학습 · 재학습 카드 — LEARN-AHEAD-001 · 오너 승인 2026-11-01 KST)는 「지금」이 아니라 남은 시간(「4분 후」).
+  const time = due ? <span className="lw-time">지금</span> : wait ? <WaitChip at={wait} /> : later ? <span className="lw-time">{later}</span> : null;
   const chips = info.hard ? <span className="lw-card__chips"><span className="lw-chip">자주 틀린 단어 · {info.hard}번</span></span> : null;
   const meanLine = (tail) => (tail ? <p className="lw-card__mean lw-tailrow"><span>{e.meaning}</span>{tail}</p> : <p className="lw-card__mean">{e.meaning}</p>);
   const mean = meanLine(null);
