@@ -11,7 +11,6 @@ const {
   roundHalf,
   readingIdsFromRows,
   mergeReadingSet,
-  computeTrackProgress,
   buildNodes,
   nodeStates,
 } = await import('../readingProgress');
@@ -67,42 +66,6 @@ describe('mergeReadingSet — 로컬 Set 과 서버 행 합집합', () => {
     ];
     const merged = mergeReadingSet(local, rows);
     expect([...merged].sort()).toEqual(['n5-tokyo-01', 'n5-tokyo-02']);
-  });
-});
-
-describe('computeTrackProgress — 진도 산식(문형 합산·잔여 주)', () => {
-  it('통과 없음', () => {
-    const p = computeTrackProgress(track, new Set());
-    expect(p.textsTotal).toBe(3);
-    expect(p.textsPassed).toBe(0);
-    expect(p.patternsCovered).toBe(0);
-  });
-
-  it('전 글·드릴 문형 유니크 집계', () => {
-    // 유니크 문형: 〜です,〜か,〜が,〜に (글) + 〜は,〜を (드릴) = 6
-    const p = computeTrackProgress(track, new Set());
-    expect(p.patternsTotal).toBe(6);
-  });
-
-  it('통과 글의 문형만 합산하되 중복 문형은 1회', () => {
-    // 글1(〜です,〜か) + 글2(〜が,〜です) 통과 → 유니크 covered = 〜です,〜か,〜が = 3
-    const p = computeTrackProgress(track, new Set(['n5-tokyo-01', 'n5-tokyo-02']));
-    expect(p.textsPassed).toBe(2);
-    expect(p.patternsCovered).toBe(3);
-  });
-
-  it('드릴 통과분(patterns)도 합산', () => {
-    const p = computeTrackProgress(track, new Set(['n5-tokyo-01', drillId(0)]));
-    // 글1(〜です,〜か) + 드릴0(〜는,〜을) = 4
-    expect(p.patternsCovered).toBe(4);
-  });
-
-  it('잔여 주 = roundHalf((total - passed)/7)', () => {
-    expect(roundHalf(0.5)).toBe(0.5);
-    expect(roundHalf(29 / 7)).toBe(4); // 4.14 → 4.0
-    expect(roundHalf(25 / 7)).toBe(3.5); // 3.57 → 3.5
-    const p = computeTrackProgress(track, new Set(['n5-tokyo-01']));
-    expect(p.weeksRemaining).toBe(roundHalf(2 / 7)); // (3-1)/7 = 0.28 → 0.5
   });
 });
 

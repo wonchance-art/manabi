@@ -252,7 +252,7 @@ describe('배선 — 리포트 한 줄은 모달을 열었을 때만', () => {
   const line = sliceBetween(stats, 'function WeakSpotLine(', '\n}');
 
   it('홈 첫 화면이 태그 유도용 조회를 치르지 않는다', () => {
-    expect(stats).toContain('<WeeklyReportCard weekly={weekly} header={false} showWeakness />');
+    expect(stats).toMatch(/<WeeklyReportCard weekly=\{weekly\} header=\{false\} showWeakness[ />]/);
     expect(line).toContain("queryKey: ['weak-spot', user?.id, weekStartMs]");
     expect(line).toContain('enabled: !!user?.id,');
   });

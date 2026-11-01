@@ -32,7 +32,9 @@ import { rankSuggestions } from '@/lib/suggestionRank';
 import { detectLang, langNameKo } from '@/lib/constants';
 import { canReadSuggestion, suggestionHref, TODAY_SUGGESTIONS_KEY, fetchTodaySuggestions } from '@/lib/suggestionReading';
 import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
-import { countReviewScope, reviewScopeQuota, serializeReviewScope } from '@/lib/reviewScope';
+import { learnReviewCount, reviewScopeQuota, serializeReviewScope } from '@/lib/reviewScope';
+// 홈 칸 숫자 함수는 완독 창도 쓴다(STATS-MAP-001 「복습 대기」 A안) — 정본은 lib/reviewScope, 여기선 다시 내보내기만.
+export { learnReviewCount };
 import { useLearningAdmission } from '@/lib/useLearningAdmission';
 import { DEFAULT_NEW_PER_DAY, loadIntroIds, loadNewPerDay } from '@/lib/vocabStudy';
 import { levelResumeCard, readLevelSnapshot } from '@/lib/levelList';
@@ -66,13 +68,6 @@ export async function fetchHomeData(userId, nowMs = Date.now()) {
   return { learning, now: effectiveNow, recentProgress: recentResult.data || [], vocab,
     vocabByLang: vocab.reduce((all, v) => { const key = v.language || detectLang(v.word_text || ''); all[key] = (all[key] || 0) + 1; return all; }, {}),
     forecastByLang };
-}
-
-/** 배움 단어 복습 칸 숫자 — 복습방과 같은 개수 함수(countReviewScope)의 total. 문법은 넣지 않는다. 한도를 모르면 null(숫자 없음). */
-export function learnReviewCount({ snapshot, lang, quota, now }) {
-  if (!snapshot || !quota || !lang) return null;
-  const result = countReviewScope({ snapshot, quota, scope: { lang, level: null, source: null, state: 'due' }, now });
-  return result.status === 'ready' ? result.total : null;
 }
 
 /** 오늘 문단 — 준비된(prefetched · 48시간 이내) 문단의 첫 문장. 테이블이 없거나 실패하면 null(다음 상태로). */
