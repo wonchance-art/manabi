@@ -35,10 +35,9 @@ function sourceFiles(dir) {
 function definedKeys() {
   const keys = new Set([HOME_DATA_KEY]);
   for (const file of sourceFiles('src')) {
-    const src = read(file);
-    for (const m of src.matchAll(/(?:queryKey:\s*|const key = )\[\s*'([\w-]+)'/g)) {
-      const line = src.slice(src.lastIndexOf('\n', m.index) + 1, src.indexOf('\n', m.index));
-      if (!INVALIDATE.test(line)) keys.add(m[1]);
+    for (const line of read(file).split('\n')) {
+      if (INVALIDATE.test(line)) continue;
+      for (const m of line.matchAll(/(?:queryKey:\s*|const key = )\[\s*'([\w-]+)'/g)) keys.add(m[1]);
     }
   }
   return keys;
