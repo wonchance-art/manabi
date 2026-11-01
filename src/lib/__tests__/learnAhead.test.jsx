@@ -155,6 +155,15 @@ describe('단어 페이지 — 채점할 카드가 남지 않았을 때만(ahead
     expect(sessionOrder(s, T)).toEqual([]);
     expect(sessionAhead(s, T, can)).toEqual(['b', 'a']); // c(35분 · 화면이 거른다)는 「오늘 할 카드 끝」 쪽
   });
+  it('방금 채점한 카드는 다른 미리 학습 카드가 있으면 한 칸 뒤로 — 하나뿐이면 그대로', () => {
+    let s = startLevelSession(['a', 'b'].map((key) => ({ key })), () => 'today', () => 0, T);
+    s = gradeLevelSession(s, 'a', 3, T + 8 * MIN);
+    s = gradeLevelSession(s, 'b', 1, T + MIN); // 방금 「다시」 — 가장 이르다
+    expect(sessionAhead(s, T, () => true)).toEqual(['a', 'b']);
+    let one = startLevelSession([{ key: 'a' }], () => 'today', () => 0, T);
+    one = gradeLevelSession(one, 'a', 1, T + MIN);
+    expect(sessionAhead(one, T, () => true)).toEqual(['a']);
+  });
 });
 
 describe('화면 — 미리 올린 카드 · 남은 시간 칩 「4분 후」 · 한 단어도 바로 이어서', () => {

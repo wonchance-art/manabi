@@ -117,8 +117,13 @@ export const sessionWaiting = (session, at = Date.now()) => (session?.waiting ||
  * 기다리는 카드(③) 중 지금 미리 물을 수 있는 것(canAhead(key) — 20분 안의 학습 · 재학습 단계 카드, 화면이 levelWordStatus learnAheadable로 판정)을
  * 남은 시간 짧은 순으로. 줄에 채점할 카드가 남아 있으면 빈 줄 — 그동안은 지금처럼 차례가 온 카드만(60초 창은 그대로).
  */
-export const sessionAhead = (session, at = Date.now(), canAhead = () => false) => (sessionOrder(session, at).length ? []
-  : sessionWaiting(session, at).filter((w) => canAhead(w.key)).map((w) => w.key));
+// 방금 채점한 카드(session.last — 「다시」 1분)가 가장 이르더라도 다른 미리 학습 카드가 있으면 한 칸 뒤로 — 답을 막 본 카드를 곧바로 다시
+// 묻지 않는다(오너 확인 2026-11-01 KST 권장안 · Anki는 기한 순 그대로라 바로 다시 나온다 — 부분 채택). 그 카드 하나뿐이면 그대로 묻는다.
+export const sessionAhead = (session, at = Date.now(), canAhead = () => false) => {
+  if (sessionOrder(session, at).length) return [];
+  const keys = sessionWaiting(session, at).filter((w) => canAhead(w.key)).map((w) => w.key);
+  return keys.length > 1 && keys[0] === session?.last ? [keys[1], keys[0], ...keys.slice(2)] : keys;
+};
 /** 지금 채점할 차례인 줄(① + ②). */
 export const sessionOrder = (session, at = Date.now()) => [...sessionDue(session, at), ...(session?.queue || [])];
 /** 다음에 시간이 될 시각 — 화면이 그때 다시 그린다. 없으면 null. */
@@ -142,7 +147,7 @@ export function gradeLevelSession(session, key, rating, againAt = null) {
   const { queue, waiting, held } = without(session, key);
   const { history, ...prev } = session;
   return { ...session, queue, held, waiting: againAt ? [...waiting, { key, at: againAt }].sort(byAt) : waiting,
-    graded: session.graded + 1, counts: { ...session.counts, [rating]: session.counts[rating] + 1 }, history: [...history.slice(-19), prev] };
+    graded: session.graded + 1, counts: { ...session.counts, [rating]: session.counts[rating] + 1 }, history: [...history.slice(-19), prev], last: key };
 }
 
 /**
