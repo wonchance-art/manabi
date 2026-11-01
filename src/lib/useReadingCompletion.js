@@ -9,7 +9,6 @@ import { buildReadingMetric } from './readingTimer';
 import { fetchMaterialRoundRows } from './readingSpeedRows';
 import { compareRound } from './readingSpeedHistory';
 import { fetchVocabularyLearningRows } from './vocabularyLearningRows';
-import { isVocabularyReviewDue } from './vocabularyLearningRead';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
 // 이 훅은 'use client'라 ViewerPage에 물리면 뷰어 번들이 폭발한다. 실사용은 멤버십 체크 1곳뿐.
@@ -41,15 +40,12 @@ export function useReadingCompletion({
       if (error) throw error;
 
       // 완독 저장은 이미 성공했다. 보조 조회 장애를 0개로 바꾸거나 완독 재시도로 보내지 않는다.
+      // 「오늘 복습」 숫자는 창이 홈과 같은 함수로 센다(useTodayReviewCount) — 여기선 snapshot만 넘긴다.
       try {
         const learning = await fetchVocabularyLearningRows(user.id, { fields: 'summary' });
-        const now = Math.max(Date.now(), Date.parse(learning.now));
-        return {
-          wordsSaved: learning.rows.filter(row => row.source_material_id === materialId).length,
-          dueCount: learning.projections.filter(p => isVocabularyReviewDue(p, now)).length,
-        };
+        return { wordsSaved: learning.rows.filter(row => row.source_material_id === materialId).length, learning };
       } catch {
-        return { wordsSaved: null, dueCount: null };
+        return { wordsSaved: null, learning: null };
       }
     },
     onSuccess: async (data) => {
@@ -82,7 +78,9 @@ export function useReadingCompletion({
       }
       const pendingCompletion = {
         wordsSaved: data.wordsSaved,
-        dueCount: data.dueCount,
+        learning: data.learning,      // 「오늘 복습」 — 창이 홈과 같은 함수로 센다
+        accountId: user.id,
+        lang: STUDY_LANGS.has(eventLang) ? eventLang : null,
         // 오늘 이미 활동했으면 그대로 · 끊겼으면 1 — 예전엔 늘 +1이라 같은 날 두 번째 완독에서 하루가 더 붙었다(STATS-MAP-001).
         streak: streakAfterActivity(profile),
         reading: metric,   // 없으면 완독 화면이 그 줄을 생략한다

@@ -84,7 +84,10 @@ describe('② 화면 배선 — 한 화면 이동에 같은 읽기는 하나', (
     expect(onQuota).toMatch(/if \(signature !== quotaSignature\.current\) \{\s*quotaSignature\.current = signature;\s*if \(meta\?\.source === 'admit' && fsrsControllerRef\.current\?\.adoptAdmission\?\.\(quota\)\) return;\s*fsrsControllerRef\.current\?\.refresh\(\);/u);
   });
   it('입장 한도 · FSRS 목록 훅은 화면마다 한 번만 만든다(배움 1 · 단어장 1 / 단어장 1)', () => {
-    expect(users(/(?<!function )\buseLearningAdmission\(\{/u)).toEqual(['src/views/HomePage.jsx', 'src/views/VocabPage.jsx']);
+    // 완독 창 「오늘 복습」(STATS-MAP-001 「복습 대기」 A안, 오너 2026-11-01 KST) — 홈과 같은 숫자를 내려면 같은 한도가 필요하다.
+    // 완독 창이 떠 있는 동안만 만든다(ViewerQuizModal의 CompletionWithReview — 뷰어 첫 로드 · 읽는 동안에는 없다).
+    expect(users(/(?<!function )\buseLearningAdmission\(\{/u)).toEqual(['src/lib/useTodayReviewCount.js', 'src/views/HomePage.jsx', 'src/views/VocabPage.jsx']);
+    expect(read('src/views/ViewerQuizModal.jsx')).toContain('completionModal && (completionModal.learning && completionModal.accountId\n        ? <CompletionWithReview');
     for (const rel of ['src/views/HomePage.jsx', 'src/views/VocabPage.jsx']) expect(read(rel).match(/\buseLearningAdmission\(\{/gu), rel).toHaveLength(1);
     expect(users(/(?<!function )\buseFsrsReview\(\{/u)).toEqual(['src/views/VocabPage.jsx']);
     expect(read('src/views/VocabPage.jsx').match(/\buseFsrsReview\(\{/gu)).toHaveLength(1);

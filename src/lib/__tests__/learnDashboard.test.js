@@ -24,15 +24,24 @@ const css = read('src/components/learn/learn.css');
 describe('배움 단어 복습 칸 — 숫자 출처는 countReviewScope 하나(정정 §2-4)', () => {
   it('배움 화면이 개수를 직접 세지 않는다 — countReviewScope 호출 지점 1곳, 그 total만 쓴다', () => {
     const code = codeOf(home);
-    expect(code.match(/countReviewScope\(/g)).toHaveLength(1);
-    const fn = sliceBetween(code, 'export function learnReviewCount(', '\n}');
+    // 홈은 직접 세지 않는다 — 숫자 함수(learnReviewCount)는 lib/reviewScope에 하나, 완독 창도 같은 함수(STATS-MAP-001 「복습 대기」 A안).
+    expect(code).not.toContain('countReviewScope(');
+    expect(code).toContain("import { learnReviewCount, reviewScopeQuota, serializeReviewScope } from '@/lib/reviewScope';");
+    const fn = sliceBetween(codeOf(read('src/lib/reviewScope.js')), 'export function learnReviewCount(', '\n}');
     expect(fn).toContain("countReviewScope({ snapshot, quota, scope: { lang, level: null, source: null, state: 'due' }, now })");
     expect(fn).toContain("return result.status === 'ready' ? result.total : null;");
     // 문법 복습은 칸 숫자에 넣지 않는다(grammarDue는 복습방의 별줄) — grammar를 넘기지도, grammarDue를 더하지도 않는다.
     expect(fn).not.toContain('grammar');
     expect(code).toContain('count={reviewCount}');
-    // 옛 홈의 독자 개수(isVocabularyReviewDue로 센 dueCount)가 되살아나지 않는다
+    // 옛 홈의 독자 개수(isVocabularyReviewDue로 센 dueCount)가 되살아나지 않는다 — 완독 창도 같은 정본(따로 세던 「복습 대기 중」 폐지).
     expect(code).not.toContain('dueCount');
+    const completion = codeOf(read('src/lib/useReadingCompletion.js'));
+    const modal = codeOf(read('src/views/ViewerQuizModal.jsx'));
+    expect(completion).not.toContain('isVocabularyReviewDue');
+    expect(completion).not.toContain('dueCount');
+    expect(modal).not.toContain('복습 대기 중');
+    expect(modal).toContain('<span className="completion-stat__label">오늘 복습</span>');
+    expect(codeOf(read('src/lib/useTodayReviewCount.js'))).toContain('return learnReviewCount({ snapshot: learning, lang, quota, now });');
   });
 
   it('칸은 숫자를 받아서 그리기만 한다 — 「N개 대기」는 그 total, 0이면 숫자 없이 최근 담은 표현만', () => {

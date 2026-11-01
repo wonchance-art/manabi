@@ -240,6 +240,13 @@ function languageBacklog(shared, lang) {
  * admission = useLearningAdmission 결과, newPerDay · introIds = 기기 설정(vocab_new_per_day · loadIntroIds),
  * vocabIds = 지금 계정에 있는 단어 id(지운 단어의 시작 기록은 빼고 센다). 한도를 아직 모르면 null.
  */
+/** 배움 단어 복습 칸 · 완독 창 「오늘 복습」 숫자 — 복습방과 같은 개수 함수(countReviewScope)의 total. 문법은 넣지 않는다. 한도를 모르면 null(숫자 없음). */
+export function learnReviewCount({ snapshot, lang, quota, now }) {
+  if (!snapshot || !quota || !lang) return null;
+  const result = countReviewScope({ snapshot, quota, scope: { lang, level: null, source: null, state: 'due' }, now });
+  return result.status === 'ready' ? result.total : null;
+}
+
 export function reviewScopeQuota(admission, { newPerDay = 0, introIds = [], vocabIds = null } = {}) {
   const quota = admission?.quota;
   if (!quota) return null;

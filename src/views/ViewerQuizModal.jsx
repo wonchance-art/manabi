@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import Spinner from '../components/Spinner';
 import { formatDuration } from '../lib/readingTimer';
 import { langNameKo } from '../lib/constants';
+import { serializeReviewScope } from '../lib/reviewScopeUrl';
+import { useTodayReviewCount } from '../lib/useTodayReviewCount';
 import Button from '../components/Button';
 
 /**
@@ -126,90 +128,103 @@ export default function ViewerQuizModal({
       )}
 
       {/* 읽기 완료 요약 모달 */}
-      {completionModal && (
-        <div className="modal-overlay completion-overlay">
-          <div ref={completionRef} className="modal completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-modal-title" tabIndex={-1}>
-            <h2 className="completion-modal__title" id="completion-modal-title">읽기 완료</h2>
-            <p className="completion-modal__subtitle">{material?.title}</p>
-
-            {/* 유창성 측정(v2-I R1a) — 조용히 1회만. 경쟁·랭킹 요소 없음(설계 §3).
-                200자 미만이거나 시간이 0이면 reading이 null이라 이 줄 자체가 없다. */}
-            {completionModal.reading && (
-              <p className="completion-modal__reading">
-                {completionModal.reading.chars}자 · {formatDuration(completionModal.reading.ms)} ·{' '}
-                <b>{completionModal.reading.cpm}자/분</b>
-              </p>
-            )}
-
-            {/* 회차 비교(I-a R2) — 같은 자료의 직전 회차와만. 첫 회차·페이서 회차면 없다.
-                느려진 회차에 화살표나 경고색을 쓰지 않는다: 재독이 느려지는 건 대개
-                더 꼼꼼히 읽었다는 뜻이지 실패가 아니다(설계 §11 "경쟁 요소 0"). */}
-            {completionModal.round && (
-              <p className={`completion-modal__round completion-modal__round--${completionModal.round.tone}`}>
-                지난번 {completionModal.round.prev}자/분 →{' '}
-                {completionModal.round.tone === 'same'
-                  ? '비슷한 속도'
-                  : <b>{completionModal.round.deltaPct > 0 ? '+' : '−'}{Math.abs(completionModal.round.deltaPct)}%</b>}
-              </p>
-            )}
-
-            <div className="completion-stats">
-              <div className="completion-stat">
-                <span className="completion-stat__value">{completionModal.wordsSaved ?? '–'}</span>
-                <span className="completion-stat__label">저장한 단어</span>
-              </div>
-              <div className="completion-stat completion-stat--divider" />
-              <div className="completion-stat">
-                <span className="completion-stat__value">{completionModal.streak}</span>
-                <span className="completion-stat__label">일 연속</span>
-              </div>
-              <div className="completion-stat completion-stat--divider" />
-              {completionModal.quizTotal != null ? (
-                <div className="completion-stat">
-                  <span className="completion-stat__value" style={{ color: completionModal.quizScore === completionModal.quizTotal ? 'var(--accent)' : 'var(--text-primary)' }}>
-                    {completionModal.quizScore}/{completionModal.quizTotal}
-                  </span>
-                  <span className="completion-stat__label">퀴즈 정답</span>
-                </div>
-              ) : (
-                <div className="completion-stat">
-                  <span className="completion-stat__value">{completionModal.dueCount ?? '–'}</span>
-                  <span className="completion-stat__label">복습 대기 중</span>
-                </div>
-              )}
-            </div>
-
-            <div className="completion-modal__actions">
-              {completionModal.dueCount > 0 && (
-                <a href="/vocab" className="btn btn--primary btn--md">
-                  지금 복습하기 ({completionModal.dueCount}개)
-                </a>
-              )}
-
-              {nextMaterial && (
-                <a href={`/viewer/${nextMaterial.id}`} className="completion-next-card">
-                  <span className="completion-next-card__badge">다음 추천</span>
-                  <span className="completion-next-card__flag">
-                    {langNameKo(nextMaterial.language)}
-                  </span>
-                  <span className="completion-next-card__title">{nextMaterial.title}</span>
-                  <span className="completion-next-card__arrow">→</span>
-                </a>
-              )}
-
-              {!nextMaterial && completionModal.dueCount === 0 && (
-                <a href="/materials" className="btn btn--primary btn--md">
-                  다른 자료 보기
-                </a>
-              )}
-
-              <button onClick={() => setCompletionModal(null)} className="btn btn--ghost btn--md">
-                계속 읽기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {completionModal && (completionModal.learning && completionModal.accountId
+        ? <CompletionWithReview completionModal={completionModal} setCompletionModal={setCompletionModal} material={material} nextMaterial={nextMaterial} completionRef={completionRef} />
+        : <CompletionModal completionModal={completionModal} setCompletionModal={setCompletionModal} material={material} nextMaterial={nextMaterial} completionRef={completionRef} reviewCount={null} reviewLang={null} />)}
     </>
+  );
+}
+
+/** 「오늘 복습」은 배움 홈 칸 · 복습실과 같은 숫자(useTodayReviewCount) — 한도 조회 훅은 완독 창이 떠 있는 동안만 산다. */
+function CompletionWithReview(props) {
+  const { completionModal } = props;
+  const count = useTodayReviewCount({ accountId: completionModal.accountId, learning: completionModal.learning, lang: completionModal.lang });
+  return <CompletionModal {...props} reviewCount={completionModal.lang ? count : null} reviewLang={completionModal.lang} />;
+}
+
+function CompletionModal({ completionModal, setCompletionModal, material, nextMaterial, completionRef, reviewCount, reviewLang }) {
+  return (
+    <div className="modal-overlay completion-overlay">
+      <div ref={completionRef} className="modal completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-modal-title" tabIndex={-1}>
+        <h2 className="completion-modal__title" id="completion-modal-title">읽기 완료</h2>
+        <p className="completion-modal__subtitle">{material?.title}</p>
+
+        {/* 유창성 측정(v2-I R1a) — 조용히 1회만. 경쟁·랭킹 요소 없음(설계 §3).
+            200자 미만이거나 시간이 0이면 reading이 null이라 이 줄 자체가 없다. */}
+        {completionModal.reading && (
+          <p className="completion-modal__reading">
+            {completionModal.reading.chars}자 · {formatDuration(completionModal.reading.ms)} ·{' '}
+            <b>{completionModal.reading.cpm}자/분</b>
+          </p>
+        )}
+
+        {/* 회차 비교(I-a R2) — 같은 자료의 직전 회차와만. 첫 회차·페이서 회차면 없다.
+            느려진 회차에 화살표나 경고색을 쓰지 않는다: 재독이 느려지는 건 대개
+            더 꼼꼼히 읽었다는 뜻이지 실패가 아니다(설계 §11 "경쟁 요소 0"). */}
+        {completionModal.round && (
+          <p className={`completion-modal__round completion-modal__round--${completionModal.round.tone}`}>
+            지난번 {completionModal.round.prev}자/분 →{' '}
+            {completionModal.round.tone === 'same'
+              ? '비슷한 속도'
+              : <b>{completionModal.round.deltaPct > 0 ? '+' : '−'}{Math.abs(completionModal.round.deltaPct)}%</b>}
+          </p>
+        )}
+
+        <div className="completion-stats">
+          <div className="completion-stat">
+            <span className="completion-stat__value">{completionModal.wordsSaved ?? '–'}</span>
+            <span className="completion-stat__label">저장한 단어</span>
+          </div>
+          <div className="completion-stat completion-stat--divider" />
+          <div className="completion-stat">
+            <span className="completion-stat__value">{completionModal.streak}</span>
+            <span className="completion-stat__label">일 연속</span>
+          </div>
+          <div className="completion-stat completion-stat--divider" />
+          {completionModal.quizTotal != null ? (
+            <div className="completion-stat">
+              <span className="completion-stat__value" style={{ color: completionModal.quizScore === completionModal.quizTotal ? 'var(--accent)' : 'var(--text-primary)' }}>
+                {completionModal.quizScore}/{completionModal.quizTotal}
+              </span>
+              <span className="completion-stat__label">퀴즈 정답</span>
+            </div>
+          ) : (
+            <div className="completion-stat">
+              <span className="completion-stat__value">{reviewCount ?? '–'}</span>
+              <span className="completion-stat__label">오늘 복습</span>
+            </div>
+          )}
+        </div>
+
+        <div className="completion-modal__actions">
+          {reviewCount > 0 && (
+            <a href={reviewLang ? serializeReviewScope({ lang: reviewLang }) : '/vocab'} className="btn btn--primary btn--md">
+              {reviewLang ? `${langNameKo(reviewLang)} ` : ''}복습하기 ({reviewCount}개)
+            </a>
+          )}
+
+          {nextMaterial && (
+            <a href={`/viewer/${nextMaterial.id}`} className="completion-next-card">
+              <span className="completion-next-card__badge">다음 추천</span>
+              <span className="completion-next-card__flag">
+                {langNameKo(nextMaterial.language)}
+              </span>
+              <span className="completion-next-card__title">{nextMaterial.title}</span>
+              <span className="completion-next-card__arrow">→</span>
+            </a>
+          )}
+
+          {!nextMaterial && reviewCount === 0 && (
+            <a href="/materials" className="btn btn--primary btn--md">
+              다른 자료 보기
+            </a>
+          )}
+
+          <button onClick={() => setCompletionModal(null)} className="btn btn--ghost btn--md">
+            계속 읽기
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
