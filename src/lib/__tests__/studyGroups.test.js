@@ -20,9 +20,10 @@ describe('kstWeekStartDate — 스냅샷 week_start(KST 월요일 날짜)', () =
   it('일요일(KST)도 그 주 월요일로 접힌다', () => {
     // 2026-08-23(일) 12:00 KST → 주 시작 2026-08-17(월)
     expect(kstWeekStartDate(Date.parse('2026-08-23T12:00:00+09:00'))).toBe('2026-08-17');
-    // 월요일 0시 정각(KST)은 자기 자신
-    expect(kstWeekStartDate(Date.parse('2026-08-17T00:00:00+09:00'))).toBe('2026-08-17');
-    // 월요일 직전(일요일 23:59 KST)은 이전 주
+    // 학습 주는 월요일 KST 04시에 시작한다 — 이번 주 리포트와 같은 주(STATS-MAP-001)
+    expect(kstWeekStartDate(Date.parse('2026-08-17T04:00:00+09:00'))).toBe('2026-08-17');
+    // 월요일 새벽(04시 전)은 아직 이전 주 — 스냅샷 값(이번 주 리포트)과 키가 같은 주를 가리킨다
+    expect(kstWeekStartDate(Date.parse('2026-08-17T03:59:59+09:00'))).toBe('2026-08-10');
     expect(kstWeekStartDate(Date.parse('2026-08-16T23:59:59+09:00'))).toBe('2026-08-10');
   });
 });

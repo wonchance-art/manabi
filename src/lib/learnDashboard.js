@@ -7,7 +7,7 @@
  * 언어 이름은 정본 LANG_NAME_KO만 쓴다 — 국기는 쓰지 않는다(D-X6, 2026-10-12).
  */
 import { LANG_NAME_KO, detectLang } from './constants.js';
-import { kstDayStartMs } from './growthStats.js';
+import { learningDayStartMs } from './growthStats.js';
 import { daysLeftUntil, perDayLabel } from './goalPace.js';
 import { liveStreakCount } from './learningActivity.js';
 
@@ -50,7 +50,8 @@ export function streakView(profile, now = Date.now()) {
   return { value, label, aria: `${said} — ${STREAK_HINT}`, title: STREAK_HINT };
 }
 
-const isToday = (ts, now) => !!ts && Date.parse(ts) >= kstDayStartMs(now) && Date.parse(ts) < kstDayStartMs(now) + 86400000;
+// 오늘 = 학습일(KST 04시부터) — FSRS 새 단어 몫 · 복습 일정과 같은 날(STATS-MAP-001).
+const isToday = (ts, now) => !!ts && Date.parse(ts) >= learningDayStartMs(now) && Date.parse(ts) < learningDayStartMs(now) + 86400000;
 
 /** 오늘 목표 달성률 — 복습 · 수집 목표 기준(예전 GoalTile 산식 그대로, 완독은 목표 설정만 지원). */
 export function todayGoalPct({ vocab = [], projections = [], profile, now = Date.now() } = {}) {

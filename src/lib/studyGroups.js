@@ -2,10 +2,10 @@
  * 학습 그룹 R1 — 함께 읽는 소그룹 (rfc-study-groups §4.1~4.2, 오너 §9 권고안 승인).
  * 원칙(§3): 개인 원장은 비공개 — 공유는 각자 스스로 밀어 넣는 주간 스냅샷 합계 숫자뿐.
  * 등수·정렬 없음(§9-7 그룹 합계만). 실패는 조용히(그룹 표면만 비활성 — 개인 학습 무영향).
- * 주간 경계는 growthStats.kstWeekStartMs 정본만 쓴다(신설 금지).
+ * 주간 경계는 growthStats.learningWeekStartMs(월요일 KST 04시 — 이번 주 리포트와 같은 주) 정본만 쓴다(신설 금지).
  */
 import { supabase } from './supabase';
-import { kstWeekStartMs } from './growthStats';
+import { learningWeekStartMs } from './growthStats';
 import { SERIES_TITLE_ILIKE } from './constants';
 
 /** 그룹 상한(§9-2 오너 확정) — 서버 RPC와 같은 값(계약 테스트로 동치 핀). */
@@ -13,7 +13,8 @@ export const MAX_GROUPS_PER_USER = 3;
 
 /** 이번 주 시작일 'YYYY-MM-DD'(KST) — 스냅샷 PK의 week_start. weekRangeLabel과 같은 변환. */
 export function kstWeekStartDate(nowMs = Date.now()) {
-  return new Date(kstWeekStartMs(nowMs) + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  // 학습 주의 월요일 날짜 — 스냅샷은 이번 주 리포트(learningWeekStartMs) 값이라 키도 같은 주를 가리켜야 한다(월 00–04시 어긋남 방지).
+  return new Date(learningWeekStartMs(nowMs) + 9 * 3600 * 1000).toISOString().slice(0, 10);
 }
 
 /**

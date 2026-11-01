@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getRefLang, REF_LANGS } from '@/content/refLangs';
 import StudyLibraryPage from '@/views/StudyLibraryPage';
-import { isKnownWord, kstWeekStartIso } from '@/lib/growthStats';
+import { isKnownWord, learningWeekStartIso } from '@/lib/growthStats';
 import { fsrsServiceClient } from '@/lib/server/fsrsLearning';
 import { readVocabularyLearningSnapshot } from '@/lib/server/fsrsVocabulary';
 import { projectVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
@@ -66,7 +66,7 @@ export default async function Page({ searchParams }) {
     }, () => {});
 
   // ── 성장 요약 (모두 방어적 count 조회) ──
-  const weekStartIso = kstWeekStartIso();
+  const weekStartIso = learningWeekStartIso();
   const countOf = async build => {
     let n = 0;
     await build().then(({ count }) => { n = count || 0; }, () => {});

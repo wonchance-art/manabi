@@ -7,7 +7,7 @@
  */
 
 import { isVocabularyLearningProjection } from './vocabularyLearningRead.js';
-import { learningDaySpan } from './fsrsScheduler.js';
+import { FSRS_POLICY, learningDaySpan } from './fsrsScheduler.js';
 import { METRICS } from './metrics/registry.js';
 
 /** 아는 단어 기준 — 읽기용 안정도가 이 일수 이상이면 '아는 단어'로 본다. */
@@ -142,8 +142,31 @@ export function kstWeekStartIso(nowMs = Date.now()) {
 }
 
 /**
+ * ── 학습일 경계(04시) — 표시 통계의 하루 · 한 주 정본 (오너 결정 2026-11-01 KST, STATS-MAP-001)
+ * 히트맵 · 이번 주 · 오늘 목표 · 서재 「이번 주 세션」 · 그룹 주간 합계가 FSRS 학습일(fsrsScheduler.learningDay, KST 04시)과
+ * 같은 날을 말하게 한다. 새벽 2시 복습이 히트맵에서는 「오늘」, 실제 기억률에서는 「어제」로 갈리던 것을 없앤다.
+ * KST 자정 함수(kst*)는 그대로 둔다 — 추천 글 날짜 키 · D-day 같은 달력 날짜는 자정이 맞다.
+ */
+export const LEARNING_DAY_OFFSET_MS = FSRS_POLICY.rolloverHour * 3600 * 1000;
+/** 이번 학습일의 시작(KST 04시)의 UTC 밀리초. 03:59 KST는 아직 전날 학습일이다. */
+export function learningDayStartMs(nowMs = Date.now()) {
+  return kstDayStartMs(nowMs - LEARNING_DAY_OFFSET_MS) + LEARNING_DAY_OFFSET_MS;
+}
+/** 이번 학습 주(월요일 KST 04시부터)의 시작 UTC 밀리초. */
+export function learningWeekStartMs(nowMs = Date.now()) {
+  return kstWeekStartMs(nowMs - LEARNING_DAY_OFFSET_MS) + LEARNING_DAY_OFFSET_MS;
+}
+export function learningWeekStartIso(nowMs = Date.now()) {
+  return new Date(learningWeekStartMs(nowMs)).toISOString();
+}
+/** 그 시각이 속한 학습일의 날짜 문자열(YYYY-MM-DD) — 히트맵 칸 키. */
+export function learningDateString(nowMs = Date.now()) {
+  return kstDateString(nowMs - LEARNING_DAY_OFFSET_MS);
+}
+
+/**
  * '이번 주 세션' 판정 — 세션 시각(used_at)이 KST 주 시작 이후.
- * 서버 쿼리의 `.gte('used_at', kstWeekStartIso())`와 동치(클라이언트 필터용).
+ * 서버 쿼리의 `.gte('used_at', learningWeekStartIso())`와 동치(클라이언트 필터용) — 학습 주(월요일 KST 04시) 기준.
  * @param {number|string|Date|null} usedAt - used_at (ms/ISO/Date)
  * @param {number} [nowMs=Date.now()]
  */
@@ -152,7 +175,7 @@ export function isThisWeekSession(usedAt, nowMs = Date.now()) {
   const t = usedAt instanceof Date ? usedAt.getTime()
     : typeof usedAt === 'number' ? usedAt
     : new Date(usedAt).getTime();
-  return Number.isFinite(t) && t >= kstWeekStartMs(nowMs);
+  return Number.isFinite(t) && t >= learningWeekStartMs(nowMs);
 }
 
 /**

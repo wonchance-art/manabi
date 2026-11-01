@@ -28,7 +28,7 @@ import { detectLang } from '../lib/constants';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 // 약점 칸 — import가 빠져 queryFn이 ReferenceError로 늘 실패했다(no-undef 전수, 2026-10-17 KST).
 import { fetchWeaknessRows } from '../lib/weaknessRows';
-import { kstDayStartMs, kstDateString } from '../lib/growthStats';
+import { learningDayStartMs, learningDateString } from '../lib/growthStats';
 import useLearnLanguage from '../components/learn/useLearnLanguage';
 import LangChips from '../components/learn/LangChips';
 import GoalTrackTile, { useGoalCatalog } from '../components/learn/GoalTrackTile';
@@ -52,12 +52,12 @@ const DAY_MS = 24 * 3600 * 1000;
 
 export async function fetchProfileStats(userId, now = Date.now()) {
   const learning = await fetchVocabularyLearningRows(userId, { fields: 'summary' });
-  const heatmapStart = kstDayStartMs(now) - (HEATMAP_DAYS - 1) * DAY_MS;
+  const heatmapStart = learningDayStartMs(now) - (HEATMAP_DAYS - 1) * DAY_MS;
   const heatmapDayCounts = {};
   for (const v of learning.rows) {
     const created = Date.parse(v.created_at);
     if (!Number.isFinite(created) || created < heatmapStart) continue;
-    const day = kstDateString(created);
+    const day = learningDateString(created);
     heatmapDayCounts[day] = (heatmapDayCounts[day] || 0) + 1;
   }
   return { vocab: learning.rows, projections: learning.projections, now: learning.now, heatmapDayCounts };
@@ -303,8 +303,8 @@ function TileModal({ title, onClose, children, className = '' }) {
 /* ── 히트맵 반쪽(2×1) — 최근 24주, 칸 10px · 간격 2px, 범례 없음(칸마다 개수 툴팁). 좌→우로 시간이 흐르고 맨 오른쪽 아래가 오늘. ── */
 
 function HeatmapCard({ dayCounts, className = '' }) {
-  const todayStart = kstDayStartMs(Date.now());
-  const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => kstDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
+  const todayStart = learningDayStartMs(Date.now());
+  const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => learningDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
   const maxCount = Math.max(1, ...Object.values(dayCounts));
   const shown = days.filter(key => dayCounts[key] > 0);
   const totalWords = shown.reduce((sum, key) => sum + dayCounts[key], 0);

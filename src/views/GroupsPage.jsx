@@ -554,7 +554,7 @@ export default function GroupsPage() {
     return byGroup;
   }, [groupIds, snapshots]);
   const sumsByGroup = useMemo(() => {
-    const weekStartMs = new Date(`${weekStart}T00:00:00+09:00`).getTime();
+    const weekStartMs = new Date(`${weekStart}T04:00:00+09:00`).getTime();
     const byGroup = {};
     for (const gid of groupIds) byGroup[gid] = { ...sumGroupSnapshots(rowsByGroup[gid]), weekStartMs };
     return byGroup;
