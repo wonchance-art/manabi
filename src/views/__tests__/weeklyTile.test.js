@@ -54,6 +54,7 @@ describe('홈 통계 그리드 — 오늘 활동 폐지·이번 주 타일화', 
   });
 
   it('대표 축 폴백 사슬 — 복습이 0이어도 빈 타일이 아니라 다음 축을 보여준다', () => {
-    expect(code).toMatch(/reviews\.total > 0[\s\S]{0,200}?newWords > 0[\s\S]{0,120}?metWords > 0[\s\S]{0,120}?readsCompleted/);
+    // 대화만 한 주(STATS-MAP-001 S7) — 담은 말 다음에 대화 마디가 앞면 후보로 낀다.
+    expect(code).toMatch(/reviews\.total > 0[\s\S]{0,200}?newWords > 0[\s\S]{0,120}?conversation\?\.turns > 0[\s\S]{0,220}?metWords > 0[\s\S]{0,120}?readsCompleted/);
   });
 });

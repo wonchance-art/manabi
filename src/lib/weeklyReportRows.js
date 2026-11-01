@@ -33,10 +33,11 @@ export async function fetchWeeklyReportRows(userId) {
       .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevStartIso),
     fetchUndoMarkers(userId, { sinceIso: prevStartIso }),
     // 대화 성과 — 최근 대화 자료 50개의 내 말 · 고친 말 · 다시 꺼내기(대화 모드 reaskFor와 같은 길, 새 기록 0).
-    supabase.from('reading_materials')
+    // 실패하면 대화 줄만 빈다(다른 축은 그대로) — 동기 오류도 같은 길로 받는다.
+    Promise.resolve().then(() => supabase.from('reading_materials')
       .select('id,turns:processed_json->metadata->conversation->turns,reask:processed_json->metadata->conversation->reask')
       .eq('owner_id', userId).not('processed_json->metadata->conversation', 'is', null)
-      .order('id', { ascending: false }).limit(50),
+      .order('id', { ascending: false }).limit(50)).catch(() => ({ data: [] })),
   ]);
   return {
     events: dropUndoneEvents(ev.data || [], undo),
