@@ -46,12 +46,28 @@ describe('공부한 날', () => {
     expect(studyDayLabel('2026-11-03', undefined)).toBe('11월 3일 · 쉼');
   });
 
-  it('현황 칸이 이 모듈을 쓴다 — 제목 「공부한 날」 · 위 오른쪽 「N일 · 지난 24주」', () => {
+  it('현황 칸이 이 모듈을 쓴다 — 제목 「공부한 날」 · 위 오른쪽 「1년 중 N일 · Z%」', () => {
     const src = read('src/views/ProfileStats.jsx');
-    expect(STUDY_DAYS_SPAN).toBe(168);
+    expect(STUDY_DAYS_SPAN).toBe(364); // 52주 — 오너 「ㅇㅋ」 시안 2(2026-11-01 KST)
     expect(src).toContain('<h2 className="learn-sec-title">공부한 날</h2>');
-    expect(src).toContain('{studied}일 · 지난 24주');
+    expect(src).toContain('1년 중 <b>{studied}일</b> · {percent}%');
+    expect(src).toContain('Math.round((studied / HEATMAP_DAYS) * 100)');
+    expect(src).not.toContain('지난 24주'); // 날짜 단위 둘이 붙어 읽히지 않던 머리글
     expect(src).toContain('title={studyDayLabel(key, dayCounts[key])}');
     expect(src).not.toContain('<h2 className="learn-sec-title">히트맵</h2>');
+  });
+
+  it('1년은 옆으로 밀어 본다 — 카드 · 칸 크기 그대로(보이는 폭에 24주), 처음엔 오늘이 맨 오른쪽', () => {
+    const src = read('src/views/ProfileStats.jsx');
+    const css = read('src/components/learn/learn.css');
+    expect(src).toContain('if (!touched.current) view.scrollLeft = view.scrollWidth;');
+    expect(src).toContain('new ResizeObserver(pin)'); // 늦게 정해지는 폭에도 오늘이 맨 오른쪽
+    expect(src).toContain('className={`learn-heatmap__view');
+    expect(src).toContain('tabIndex={0}'); // 키보드 ← →
+    expect(css).toMatch(/\.learn-heatmap__view\{container-type:inline-size;[^}]*overflow-x:auto/);
+    expect(css).toContain('--cell:calc((100cqi - 46px) / 24)');
+    expect(css).toMatch(/\.learn-heatmap\{grid-column:span 2;height:146px/); // 카드 높이 그대로
+    // 시안 2에서 뺀 것 — 버튼 · 달 이름 · 범례가 다시 붙지 않는다(「현안 심플함에서 너무 번잡해졌네」).
+    for (const banned of ['이전 반년', '다음 반년', 'learn-heatmap__months', '적음', '많음']) expect(src).not.toContain(banned);
   });
 });

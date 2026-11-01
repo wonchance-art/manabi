@@ -9,8 +9,8 @@ import { readCompleteLegacyRows } from './legacyReviewSync';
 import { learningDateString } from './growthStats';
 import { countsAsStudyAnswer } from './weeklyReport';
 
-/** 히트맵 기간 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
-export const STUDY_DAYS_SPAN = 168;
+/** 공부한 날 기간 — 최근 52주(364일 · 「1년」), 가장 오른쪽 아래가 오늘. 칸에는 24주가 보이고 나머지는 옆으로 밀어 본다(오너 「ㅇㅋ」 2026-11-01 KST). */
+export const STUDY_DAYS_SPAN = 364;
 
 export function fetchStudyAnswerRows(userId, sinceIso) {
   return readCompleteLegacyRows(() => supabase.from('review_events')
