@@ -207,44 +207,6 @@ export function createPassGate() {
 }
 
 /**
- * 진도 산식(순수) — 헤더 "글 n/30 · 문형 m/125 · 예상 잔여 ~k주".
- * - n = 통과 글 수
- * - m = 통과한 글의 newPatterns ∪ 통과한 드릴의 patterns (중복 문형은 1회만 계상)
- * - total 문형 = 전 글 newPatterns ∪ 전 드릴 patterns (= bunkei N5 125 전수)
- * - k = roundHalf((textsTotal - n) / 7)  — 하루 1글 기준 잔여 주수
- */
-export function computeTrackProgress(track, passedSet) {
-  const texts = track?.texts || [];
-  const drills = track?.drills || [];
-  const set = passedSet instanceof Set ? passedSet : new Set(passedSet || []);
-
-  const textsTotal = texts.length;
-  const textsPassed = texts.filter((t) => set.has(t.id)).length;
-
-  const allPatterns = new Set();
-  for (const t of texts) for (const p of t.newPatterns || []) allPatterns.add(p);
-  for (const d of drills) for (const p of d.patterns || []) allPatterns.add(p);
-
-  const covered = new Set();
-  for (const t of texts) {
-    if (!set.has(t.id)) continue;
-    for (const p of t.newPatterns || []) covered.add(p);
-  }
-  for (let i = 0; i < drills.length; i++) {
-    if (!set.has(drillId(i))) continue;
-    for (const p of drills[i].patterns || []) covered.add(p);
-  }
-
-  return {
-    textsTotal,
-    textsPassed,
-    patternsTotal: allPatterns.size,
-    patternsCovered: covered.size,
-    weeksRemaining: roundHalf((textsTotal - textsPassed) / 7),
-  };
-}
-
-/**
  * 동선 순 노드 목록(글 + 드릴) — 드릴은 afterOrder 위치(해당 글 뒤)에 끼워 넣는다.
  * 드릴도 잠금 체인에 포함되므로 통과 요건이다(RT-6·7).
  */
