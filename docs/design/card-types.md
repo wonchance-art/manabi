@@ -58,6 +58,61 @@
 - 설정: 계정별 `card_kinds`(켜진 종류 집합) — 입장 정책 행에 열 하나(새 표 없음). 하루 새 단어 수와 같은 configure 경로.
 - 마이그레이션은 단계로 나누고 각 단계가 **동작 무변경 → 검증 → 다음**이다(지문 재게시 · 복원 SQL · PGlite 관측 재생 — 20261101030000 틀).
 
+### 4.1 단계 1 결정 (2026-11-01 KST · `supabase/migrations/20261101090000_fsrs_cards_kind.sql`)
+
+| 항목 | 단계 1 | 이유 · 단계 2 |
+|---|---|---|
+| `vocabulary_id` 채우기 | `uuid NOT NULL GENERATED ALWAYS AS (card_id) STORED` | 등록 경로(`fsrs_apply_operation`의 `INSERT … (card_id,user_id,card)`)가 열을 몰라도 값이 정해진다 → 함수 본문 무변경(지문 재게시 최소). 숨은 BEFORE INSERT 트리거가 아니라 표 정의에 보이는 규칙이고, 트리거를 더하면 admission 추적 트리거 · 입장 무결성 검사(그 표의 사용자 트리거 = `learning_guard_enrollment` 하나)까지 건드린다. 채우기는 표 재작성 때 계산(UPDATE 없음 → 행 트리거 안 돎). 단계 2: `ALTER COLUMN vocabulary_id DROP EXPRESSION`(재작성 없음) + 등록 경로가 명시해 쓴다 |
+| `kind` | `text NOT NULL DEFAULT 'recognition'` · CHECK 세 값(영구) | 단계 2 등록 경로가 종류를 명시 |
+| 단어 → 뜻 = 단어 id | CHECK `kind <> 'recognition' OR vocabulary_id = card_id`(영구) | 연산 · 영수증 · 옛 입장 기록 · 화면 키가 「카드 id = 단어 id」로 이어진 것이 단어 → 뜻 카드에서는 영원히 맞는다 → 단계 2가 바꿀 곳이 종류 카드 경로로 줄어든다 |
+| 다른 종류 막기 | CHECK `kind = 'recognition'`(`fsrs_cards_kind_stage1_check`, 단계 1 전용) | 등록 경로 없이 생긴 종류 행이 단어 id 자리(card_id)를 차지하는 것을 막는다. 단계 2가 종류 카드를 만드는 마이그레이션에서 지운다 |
+| 옛 FK `card_id → user_vocabulary(id)` | **유지** | 모든 행이 여전히 만족하고(카드 = 단어 → 뜻뿐), 지우면 「카드 id = 단어 id」 보장이 생성 열 하나에만 남는다. 단계 2(종류 카드 = 새 uuid)에서 생성식 걷기와 함께 지운다 |
+| 새 FK · 고유 · 인덱스 | `vocabulary_id → user_vocabulary(id) ON DELETE RESTRICT`(옛 FK와 같은 동작) · `UNIQUE (user_id, vocabulary_id, kind)` · 인덱스 `(vocabulary_id)` | 인덱스: 단어 삭제 때 FK 검사가 `vocabulary_id = $1`로 찾는다(PK는 card_id라 못 씀) |
+| 지문 | core(public.fsrs_* 열 · 제약 · 인덱스) · admission(fsrs_cards 트리거 — FK가 내부 RI 트리거 둘을 단다) 재게시. manual · activity profile · 한국어 capability 그대로 | PGlite: 복원 뒤 네 게시값이 적용 전 값으로 정확히 돌아온다 |
+
+### 4.2 단계 2 인벤토리 — 「카드 id = 단어 id」를 전제하는 곳 (단계 1 PGlite 사슬의 실제 본문에서 읽음)
+
+`fsrs_cards`를 언급하는 DB 함수 14개(운영 카탈로그 2026-11-01 KST와 같은 목록). 「지금」은 단어 ↔ 카드를 잇는 식, 「단계 2」는 종류 카드가 생긴 뒤 바꿀 것.
+
+| 함수 | 지금 | 단계 2 |
+|---|---|---|
+| `public.fsrs_apply_operation` | `op.cardId`를 단어 id로 씀: `user_vocabulary WHERE id=cid` · `fsrs_cards WHERE card_id=cid` · 등록 `INSERT (card_id,user_id,card)` · `blocked(p_actor,cid)` · 등록 가능 검사 `review_events.detail.word_id=cid` · 채점 이벤트 `detail.word_id=cid` · `item_key=v.word_text` · 하루 새 단어 영수증 `fsrs_new_receipts(card_id)` | 카드를 먼저 읽고 단어는 `f.vocabulary_id`로 · 종류 카드 등록(`vocabulary_id` · `kind` 명시, 날 단위 졸업 다음 학습일 조건) · `blocked(p_actor, vocabulary_id)` · 이벤트 `word_id = vocabulary_id`(+ 종류) · 하루 몫은 `kind='recognition'` 첫 질문만 센다 |
+| `public.fsrs_apply_learning_operation` | `fsrs_cards WHERE card_id=cid`가 New이고 영수증이 없으면 입장 몫 · 허가 | 몫 · 허가는 `kind='recognition'`만(§3 하루 새 단어 몫) |
+| `public.fsrs_legacy_boundary` | `fsrs_cards f JOIN user_vocabulary v ON v.id=f.card_id` · `f.card_id=p_card_id` | `v.id=f.vocabulary_id` · `f.vocabulary_id=p_card_id`(부르는 쪽은 단어 id) |
+| `public.fsrs_list_states` | 카드 전부 · `cardId=f.card_id` · `blocked(p_actor,f.card_id)` · 영수증 `r.card_id=f.card_id` | 항목에 `vocabularyId` · `kind` · `blocked(p_actor,f.vocabulary_id)` · 쉬는 종류(켜고 끄기) 표시 |
+| `fsrs_private.admission_contract_hash_live` | `public.fsrs_cards` 트리거 · 규칙 추적(잇기 없음) | 본문 그대로 — 그 표 트리거 · FK를 바꾸면 admission 재게시(단계 1과 같음) |
+| `fsrs_private.guard_legacy_event` | `fsrs_cards f JOIN user_vocabulary v ON v.id=f.card_id` · `detail.word_id=f.card_id` | `v.id=f.vocabulary_id` · `word_id=f.vocabulary_id` |
+| `fsrs_private.guard_legacy_vocabulary` | `fsrs_cards f WHERE f.card_id=OLD.id` | `f.vocabulary_id=OLD.id`(단어 → 뜻이 늘 있어 지금 식도 맞지만, 인덱스 · 의미상 권장) |
+| `fsrs_private.next_question_at` | 카드 단위(`fsrs_cards.card_id` · `fsrs_operations.card_id`) | 본문 그대로 — 부르는 쪽이 단어 id(`v.id`)가 아니라 카드 id를 넘기게(스냅샷 셋) |
+| `fsrs_private.vocabulary_registry_entry` | `user_vocabulary.id=p_card_id` · `fsrs_cards.card_id=p_card_id` · 영수증 · `blocked` · `next_question_at` 모두 같은 id | 단어 항목 = `vocabulary_id=v.id AND kind='recognition'` · 종류 카드는 따로(항목 배열 또는 종류별 칸) |
+| `public.fsrs_read_state` | `user_vocabulary.id=p_card_id` · `fsrs_cards.card_id=p_card_id` · 연산 `card_id` | 입력 = 카드 id → 단어는 `f.vocabulary_id`(지금 식이면 종류 카드에서 `word_not_available`) · `blocked(p_actor, vocabulary_id)` |
+| `public.fsrs_vocabulary_snapshot` | 일관성 검사 `f LEFT JOIN v ON v.id=f.card_id` 둘 · 줄 `LEFT JOIN fsrs_cards f ON f.card_id=v.id` · `next_question_at(p_actor,v.id)` · 영수증 `r.card_id=x.id` · `cardId=v.id` | **꼭** — `vocabulary_id`로만 이으면 단어 줄이 종류 수만큼 늘어난다: 단어 줄은 `f.vocabulary_id=v.id AND f.kind='recognition'`, 종류 카드는 별도 목록 · 검사는 `f.vocabulary_id` · `next_question_at(p_actor,f.card_id)` · 영수증 `f.card_id` |
+| `public.fsrs_vocabulary_snapshot_cards` | 같은 WITH(스냅샷과 바이트 단위 같음) + `v.id=ANY(p_ids)` | 스냅샷과 같이(입력 id는 단어 id 유지) |
+| `public.fsrs_vocabulary_snapshot_light` | 같은 WITH + 언어 · 요약 · 기본 항목 생략 | 스냅샷과 같이 |
+| `public.learning_admit_legacy` | `fsrs_cards WHERE card_id=cid` → `learning_card_enrolled` | `vocabulary_id=cid`(단어의 카드 하나라도 있으면 등록됨 — 옛 입장은 단어 단위) |
+
+`fsrs_cards`를 이름으로 부르지 않지만 같은 전제를 쓰는 곳: `fsrs_private.guard_learning_enrollment`(BEFORE INSERT — `legacy_admissions.card_id=NEW.card_id`: 종류 카드는 검사 대상 아님) ·
+`fsrs_private.admission_status` · `guard_learning_first_question`(하루 몫 = `fsrs_new_receipts` 행 수 → 종류 카드 첫 질문은 영수증을 쓰지 않거나 종류로 걸러야 몫이 단어 → 뜻만 센다) ·
+`fsrs_private.blocked(actor, id)`(제외는 단어 단위 — 부르는 쪽이 `vocabulary_id`를 넘긴다) · `public.fsrs_save_manual_vocabulary`(새 단어 = 단어 → 뜻 등록 `cardId = 단어 id` — 그대로) ·
+`fsrs_read_operation` · `record_fsrs_activity` · `append_activity`(카드 단위 — 그대로).
+
+클라이언트(JS)에서 「registry/카드 `cardId` = 단어 `id`」를 전제하는 곳(단어 → 뜻 카드에는 계속 맞는다 — 종류 카드는 `vocabularyId` · `kind`로 단어를 찾게):
+
+| 파일 | 전제 |
+|---|---|
+| `src/lib/vocabularyLearningRead.js` | `registry.cardId !== vocabulary.id` · `attempt.cardId !== vocabulary.id`면 실패 |
+| `src/lib/server/fsrsVocabulary.js` | 스냅샷 검사 `entry.cardId !== row.id` · `attempt.cardId !== row.id` · id 묶음 거르기 `wanted.has(entry.cardId)` · 저장 영수증 `row.id === request.cardId` |
+| `src/lib/fsrsLearningClient.js` | `state.cardId === body.vocabularyId` · `vocabularyId === payload.cardId` |
+| `src/lib/levelFsrsGrade.js` | 채점 요청 `cardId: row.id`(단어 줄) |
+| `src/lib/useFsrsReview.js` | `visibleWord(cardId)` = `word.id === cardId` · 줄 항목 `id: entry.cardId` · 등록 `cardId: row.id` |
+| `src/lib/levelWordStatus.js` | 기본 항목 `{ cardId: row.id }` |
+| `src/lib/vocabularyLearningRows.js` · `vocabularyDueIndex.js` · `vocabularySnapshotLight.js` | registry를 `cardId`(= 단어 id) 열쇠로 · 단어당 기본 항목 하나 |
+| `src/lib/reviewScope.js` · `reviewRoomFirstScreen.js` | `cardId: p.vocabulary.id` · 카드 id 집합으로 단어 판정(`canLegacy`) |
+| `src/lib/fsrsLegacyBoundary.js` · `inlineGradeUndo.js` · `reviewEvents.js` · `learn/progressStore.js` · `fsrs.js` | 옛 경계 `cardId` = 단어 id(`detail.word_id`) — 단어 단위라 그대로 |
+| `src/lib/learningAdmission.js` · `useLearningAdmission.js` | 입장 `cardId` = 단어 id(단어 → 뜻만 — 그대로) |
+| `src/views/VocabPage.jsx` | `admission.current.cardId === candidateWord.id` · `vocab.find(v => v.id === cardId)` · 줄 단계 `id = cardId` |
+| `src/views/LevelListPage.jsx` | 새 단어 저장 `cardId: newId()`(새 단어 = 새 단어 → 뜻 카드 id = 단어 id — 그대로) |
+
 ## 5. 화면
 
 - **보기 탭(단어 · 문장 · 뜻 · 소리 · 전체) 없앰** (A안): 카드 종류가 연습 탭을 흡수한다. 카드가 55px 위에서 시작.
@@ -76,8 +131,9 @@
 
 ## 7. 단계 (각 단계 = PR 하나 · 운영 검수 뒤 다음)
 
-1. **스키마 1단계** — `vocabulary_id` · `kind` 열 추가 · 채우기 · FK 이전 · 14개 함수의 「단어 ↔ 카드」 잇기만 `vocabulary_id`로. 동작 무변경(스냅샷 출력 동일 검사).
-2. **종류 카드 생성 · 형제 규칙 · 켜고 끄기(서버 설정)** — 뜻 → 단어 · 듣기 등록 경로(날 단위 졸업 다음 학습일) · 줄 짜기 형제 규칙 · configure.
+1. **스키마 1단계** — `vocabulary_id`(생성 열 = card_id) · `kind` 열 · 제약 추가 · 옛 card_id FK 유지 · 함수 본문 무변경(§4.1). 동작 무변경(스냅샷 · 목록 출력 동일 검사).
+2. **종류 카드 생성 · 형제 규칙 · 켜고 끄기(서버 설정)** — 생성식 걷기(DROP EXPRESSION) · 단계 1 전용 CHECK · 옛 card_id FK 지우기 · 14개 함수의 「단어 ↔ 카드」 잇기를 `vocabulary_id` + `kind`로(§4.2) ·
+   뜻 → 단어 · 듣기 등록 경로(날 단위 졸업 다음 학습일) · 줄 짜기 형제 규칙 · configure.
 3. **단어 페이지 화면** — 세 문제 면 · 답 면 · 「카드」 줄 · 보기 탭 제거 · 끝 화면 「전체 훑어보기」 · 영역 줄 재구성.
 4. **복습실 화면** — 같은 줄 규칙 · 세 문제 면.
 5. **통계** — 단어 단위 · 종류별 기억률(통계 세션과).
