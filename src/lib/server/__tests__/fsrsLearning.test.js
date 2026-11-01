@@ -83,7 +83,7 @@ describe('새 FSRS 서버 경계', () => {
 
   it('오래된 계정·사용자 제공 메모리/시각/소유자·부정한 간격/평점을 DB 호출 전에 거절한다', async () => {
     await expect(request('question', { accountId: stranger })).rejects.toMatchObject({ code: 'fsrs_account_changed', status: 409 });
-    for (const forged of [{ nextCard: {} }, { due: instant(0) }, { at: instant(0) }, { userId: owner }, { expectedRevision: -1 }, { dailyNewLimit: 999 }]) {
+    for (const forged of [{ nextCard: {} }, { due: instant(0) }, { at: instant(0) }, { userId: owner }, { expectedRevision: -1 }, { dailyNewLimit: 1000 }]) {
       await expect(request('question', forged)).rejects.toMatchObject({ status: 400 });
     }
     await expect(request('grade', { attemptId: 'q', rating: '3' })).rejects.toMatchObject({ status: 400 });

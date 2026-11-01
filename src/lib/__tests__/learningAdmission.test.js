@@ -23,7 +23,7 @@ describe('공통 첫 문제 입장 계약', () => {
       expect(() => normalizeAdmissionRequest(request(extra), actorId)).toThrow();
     }
     expect(() => normalizeAdmissionRequest(request({ accountId: cardId }), actorId)).toThrow('fsrs_account_changed');
-    expect(() => normalizeAdmissionRequest({ ...configure, dailyNewLimit: 16 }, actorId)).toThrow();
+    expect(() => normalizeAdmissionRequest({ ...configure, dailyNewLimit: 1000 }, actorId)).toThrow(); // 0–999 · 9999 밖(직접 입력 범위 — LEVEL-NEW-CUSTOM-001)
     expect(() => normalizeAdmissionRequest(null, actorId)).toThrow();
   });
 

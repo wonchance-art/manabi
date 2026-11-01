@@ -14,14 +14,14 @@ describe('하루 새 단어 「제한 없음」', () => {
     expect(NEW_PER_DAY_OPTIONS.map(newPerDayLabel)).toEqual(['없음 (복습만)', '5개', '10개', '15개', '20개', '30개', '40개', '제한 없음']);
   });
 
-  it('요청 검사는 목록 값만 받는다 — 9999는 통과, 목록 밖은 거절', () => {
+  it('요청 검사 — 9999는 통과, 범위 밖은 거절(직접 입력 0–999는 LEVEL-NEW-CUSTOM-001 · newPerDayCustom.test.js)', () => {
     const base = { action: 'question', operationId: '00000000-0000-4000-8000-0000000000a1', cardId: '00000000-0000-4000-8000-0000000000b1', expectedRevision: 3 };
     const accept = n => { try { normalizeFsrsRequest({ ...base, ...(n === undefined ? {} : { dailyNewLimit: n }) }, '00000000-0000-4000-8000-0000000000c1'); return true; } catch (e) { return e?.code ?? e?.message; } };
     // 같은 바탕 요청이 한도 없이 통과하는지 먼저(바탕이 틀려 모두 거절되는 착시 방지).
     expect(accept(undefined)).toBe(true);
     expect(accept(9999)).toBe(true);
     expect(accept(15)).toBe(true);
-    expect(accept(100)).not.toBe(true);
+    expect(accept(1000)).not.toBe(true);
   });
 
   it('마이그레이션의 새 목록이 화면 목록과 같다', () => {
