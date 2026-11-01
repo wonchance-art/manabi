@@ -705,6 +705,8 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
   // 오늘 복습 개수와 시작할 줄 — countReviewScope 하나가 낸다(배움 칸 · 언어 칩 · 복습방 공용, 계약 reviewScopeCount).
   // 같은 결과의 queue(두 엔진이 섞인 한 줄 — R1-B-1)로 복습을 시작하므로 화면 숫자 = 시작하는 줄 길이다.
   // 출처 id(교재는 과까지)는 지금 범위와 같은 출처일 때만 쓴다 — 다른 출처(시트의 후보)는 조회 전이라 pending으로 센다.
+  // 등록 id 묶음 — countFor의 canLegacy가 예전 일정 표현마다 묻는다(배열 includes면 표현 수 × 카드 수, CPU×4 첫 화면 약 200ms — VOCAB-SCOPE-PERF-001).
+  const enrolledIdSet = useMemo(() => new Set(fsrsReview.enrolledIds), [fsrsReview.enrolledIds]);
   const countFor = useCallback(target => {
     const sameSource = scopeNeedsLookup(target.source) && formatScopeSource(target.source) === formatScopeSource(scope.source);
     return countReviewScope({
@@ -712,13 +714,13 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       sourceIds: sameSource ? scopeSourceIds : null, chapters: sameSource ? scopeChapters : null, quota: scopeQuota,
       fsrsEntries: fsrsReview.cards, fsrsEnabled: fsrsReview.enabled, pendingIds: fsrsReview.pending.map(entry => entry.cardId),
       // 예전 일정 줄은 FSRS에 등록된 id를 다시 내지 않는다(등록 id · 대기 연산 모두 — 기존 오늘 세션 계산과 같은 가드).
-      canLegacy: id => !fsrsReview.enrolledIds.includes(id) && fsrsReview.controller.canLegacy(id), grammar: grammarRows,
+      canLegacy: id => !enrolledIdSet.has(id) && fsrsReview.controller.canLegacy(id), grammar: grammarRows,
       fragileIds: practiceFragile,
     });
     // controller는 안정 객체라 canLegacy 판정 신호(registryAvailable · enrolledIds)를 명시한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projections, learningAvailable, scopeKey, effectiveNow, scopeLevels, scopeSourceIds, scopeChapters, zhHskLevels, reviewSupported, remainingNew,
-    admission.quota, fsrsReview.cards, fsrsReview.enabled, fsrsReview.pending, fsrsReview.enrolledIds, fsrsReview.registryAvailable, fsrsReview.controller, grammarRows, practiceFragile]);
+    admission.quota, fsrsReview.cards, fsrsReview.enabled, fsrsReview.pending, enrolledIdSet, fsrsReview.registryAvailable, fsrsReview.controller, grammarRows, practiceFragile]);
   const scopeCount = useRoomMemo(inSession, () => (admission.quota && learningAvailable ? countFor(scope) : null), [countFor, scope, admission.quota, learningAvailable]);
   const roomSession = scopeCount && scopeCount.status === 'ready' ? scopeCount : { status: 'pending', total: 0, due: 0, newAllowed: 0, newLocked: 0, deferred: 0,
     noMeaning: 0, backlog: null, byLang: scopeCount?.byLang || {}, queue: { items: [], ids: [], legacyIds: [], fsrsIds: [] } };

@@ -143,7 +143,7 @@ async function browserCounts(world, { koreanContract = true } = {}) {
     // VocabPage countFor와 같은 인자(아래 「호출 지점」 계약이 그 줄을 고정한다).
     const count = countReviewScope({ snapshot: { projections: learning.projections, enabled: true }, scope, now: effectiveNow, levels: null,
       sourceIds: null, reviewSupported, chapters: null, quota: scopeQuota, fsrsEntries: fsrs.cards, fsrsEnabled: fsrs.enabled,
-      pendingIds: fsrs.pending.map(entry => entry.cardId), canLegacy: id => !fsrs.enrolledIds.includes(id) && controller.canLegacy(id),
+      pendingIds: fsrs.pending.map(entry => entry.cardId), canLegacy: id => !new Set(fsrs.enrolledIds).has(id) && controller.canLegacy(id),
       grammar: [], fragileIds: [] });
     const practice = scopePracticeWords(learning.rows.filter(createScopeMatcher(scope).matches), learningById,
       { reviewSupported, state: 'due', fragileIds: [], now: effectiveNow }).length > 0;
@@ -218,7 +218,8 @@ describe('⑴ 서버 숫자 == 브라우저 숫자(같은 DB 응답 · 같은 �
     expect(countFor).toContain('...scopeArgs, scope: target, levels: target.level ? scopeLevels || zhHskLevels : null,');
     expect(countFor).toContain('sourceIds: sameSource ? scopeSourceIds : null, chapters: sameSource ? scopeChapters : null, quota: scopeQuota,');
     expect(countFor).toContain('fsrsEntries: fsrsReview.cards, fsrsEnabled: fsrsReview.enabled, pendingIds: fsrsReview.pending.map(entry => entry.cardId),');
-    expect(countFor).toContain('canLegacy: id => !fsrsReview.enrolledIds.includes(id) && fsrsReview.controller.canLegacy(id), grammar: grammarRows,');
+    expect(countFor).toContain('canLegacy: id => !enrolledIdSet.has(id) && fsrsReview.controller.canLegacy(id), grammar: grammarRows,');
+    expect(page).toContain('const enrolledIdSet = useMemo(() => new Set(fsrsReview.enrolledIds), [fsrsReview.enrolledIds]);');
     expect(page).toContain('const scopeArgs = { snapshot: { projections, enabled: learningAvailable }, scope, now: effectiveNow, levels: scopeLevels,');
     expect(page).toContain('const scopeQuota = reviewScopeQuota(admission, { newPerDay, introIds, vocabIds: allVocab.map(v => v.id) });');
     expect(page).toContain("const reviewSupported = useCallback(word => word?.language !== 'Korean' || koreanCapabilities.review, [koreanCapabilities.review]);");
