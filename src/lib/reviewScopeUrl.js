@@ -12,7 +12,7 @@ export const REVIEW_SCOPE_TYPES = EXPRESSION_KINDS;
 export const ZH_SCOPE_LEVELS = Object.freeze(['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'NONE']);
 export const BOOK_LESSONS = 42;
 export const STUDY_SOURCE_REF = '오늘 학습';
-// 기억 건강 「흐릿 · 위험」 경계(VocabStats 기억 건강과 같은 값 — 0.7 미만).
+// 기억 건강 「흐릿 · 위험」 경계(memoryHealth 「흐릿 · 위험」과 같은 값 — 0.7 미만).
 export const FRAGILE_RETRIEVABILITY = 0.7;
 export const MAX_SCOPE_MATERIALS = 20;
 export const SCOPE_LANG_LABELS = Object.freeze({ Japanese: '일본어', Chinese: '중국어', English: '영어', French: '프랑스어', Korean: '한국어' });

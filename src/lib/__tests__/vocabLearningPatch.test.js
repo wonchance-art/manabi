@@ -10,6 +10,7 @@ import { introduceFsrsCard, scheduleFsrsReview } from '../fsrsScheduler.js';
 import { wordStage } from '../growthStats.js';
 import { countReviewScope, scopedFsrsCardIds } from '../reviewScope.js';
 import { memoryHealth } from '../memoryHealth.js';
+import { HOME_DATA_KEY } from '../homeQueryKey';
 
 // 운영 실측 2026-10-23 KST: 단어장 복습 채점마다 전체 목록(fsrs_vocabulary_snapshot, 평균 2초)을 다시 읽어 작은 DB가
 // 시간 초과로 넘어갔다. 복습 중에는 저장한 값을 캐시에 바로 반영하고 목록은 낡음으로만 표시한다.
@@ -54,7 +55,7 @@ describe('vocabulary learning list patch after a legacy grade', () => {
     const client = new QueryClient();
     const vocab = vi.fn(async () => learning()), home = vi.fn(async () => ({}));
     // 화면에 떠 있는(활성) 두 목록 — 무효화가 어느 쪽을 지금 다시 읽는지 본다.
-    const observers = [[key, vocab], [['home-v2', actorId], home]].map(([queryKey, queryFn]) => new QueryObserver(client, { queryKey, queryFn }));
+    const observers = [[key, vocab], [[HOME_DATA_KEY, actorId], home]].map(([queryKey, queryFn]) => new QueryObserver(client, { queryKey, queryFn }));
     const stop = observers.map(observer => observer.subscribe(() => {}));
     await vi.waitFor(() => expect(client.getQueryData(key)).toBeTruthy());
     vocab.mockClear(); home.mockClear();
@@ -72,17 +73,17 @@ describe('vocabulary learning list patch after a legacy grade', () => {
   it('defers only the review-room queries while a session is running', async () => {
     expect(REVIEW_ROOM_DEFERRED).toEqual(['vocab-titles', 'confused-events']);
     const client = new QueryClient();
-    const fns = Object.fromEntries(['vocab-titles', 'confused-events', 'home-v2'].map(prefix => [prefix, vi.fn(async () => ({}))]));
+    const fns = Object.fromEntries(['vocab-titles', 'confused-events', HOME_DATA_KEY].map(prefix => [prefix, vi.fn(async () => ({}))]));
     const stop = Object.entries(fns).map(([prefix, queryFn]) =>
       new QueryObserver(client, { queryKey: [prefix, actorId], queryFn }).subscribe(() => {}));
-    await vi.waitFor(() => expect(client.getQueryData(['home-v2', actorId])).toBeTruthy());
+    await vi.waitFor(() => expect(client.getQueryData([HOME_DATA_KEY, actorId])).toBeTruthy());
     await vi.waitFor(() => expect(client.getQueryData(['confused-events', actorId])).toBeTruthy());
     Object.values(fns).forEach(fn => fn.mockClear());
     await invalidateVocabularyLearning(client, actorId, { refetchLearning: false, deferReviewRoom: true });
     expect(fns['vocab-titles']).not.toHaveBeenCalled();
     expect(fns['confused-events']).not.toHaveBeenCalled();
     expect(client.getQueryState(['confused-events', actorId]).isInvalidated).toBe(true);
-    expect(fns['home-v2']).toHaveBeenCalledTimes(1);
+    expect(fns[HOME_DATA_KEY]).toHaveBeenCalledTimes(1);
     await invalidateVocabularyLearning(client, actorId, { refetchLearning: false });
     expect(fns['vocab-titles']).toHaveBeenCalledTimes(1);
     expect(fns['confused-events']).toHaveBeenCalledTimes(1);

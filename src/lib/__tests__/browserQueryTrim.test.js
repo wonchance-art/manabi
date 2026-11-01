@@ -224,8 +224,11 @@ describe('⑤ 단어장 1000행 상한 — 브라우저 조회가 조용히 잘�
     expect(read('src/lib/vocabIO.js')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\s*\.from\('vocabulary_with_exclusions'\)\s*\.select\('\*', \{ count: 'exact' \}\)/);
     expect(read('src/lib/weeklyReportRows.js')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\.from\('user_vocabulary'\)\.select\('id, created_at', \{ count: 'exact' \}\)/);
     const account = read('src/components/AccountSettings.jsx');
-    for (const table of ['user_vocabulary', 'reading_materials', 'reading_progress', 'grammar_notes', 'writing_practice', 'uploaded_pdfs']) {
-      expect(account, table).toMatch(new RegExp(`exportRows\\('${table}', '(user_id|owner_id)', user\\.id`));
+    // 표 목록(EXPORT_TABLES) 한 곳 → 전부 exportRows(정본 완전 조회)로 읽는다. 학습 기록 표도 같은 길(STATS-MAP-001).
+    expect(account).toMatch(/\.\.\.EXPORT_TABLES\.map\(\(\[, table, ownerColumn, options\]\) => exportRows\(table, ownerColumn, user\.id, options\)\)/);
+    for (const table of ['user_vocabulary', 'reading_materials', 'reading_progress', 'grammar_notes', 'writing_practice', 'uploaded_pdfs',
+      'review_events', 'fsrs_cards', 'fsrs_operations', 'user_vocab_encounters', 'user_known_words', 'user_ref_progress']) {
+      expect(account, table).toMatch(new RegExp(`\\['\\w+', '${table}', '(user_id|owner_id)'`));
     }
     expect(account).not.toMatch(/supabase\.from\('(user_vocabulary|reading_materials|reading_progress|grammar_notes|writing_practice|uploaded_pdfs)'\)\.select\('\*'\)/);
   });

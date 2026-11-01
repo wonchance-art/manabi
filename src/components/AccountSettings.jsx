@@ -21,12 +21,39 @@ import { isPasswordPwned } from '../lib/pwnedPassword';
 import { PWNED_PASSWORD_MESSAGE } from '../lib/authErrors';
 import { ProfileGroup, ProfileRow, ProfileSheet } from './profile/ProfileParts';
 
-const EXPORT_KEYS = ['profile', 'vocab', 'materials', 'progress', 'notes', 'writings', 'pdfs'];
+// 내 데이터 내보내기 — 개인정보처리방침 §5 「내 데이터 전체」. [묶음 이름, 표, 소유자 칸, 완전 조회 옵션].
+// 학습 기록(채점 이벤트 · FSRS 카드와 연산 · 만난 말 · 아는 표시 · 챕터 진도 등)이 빠져 있었다(STATS-MAP-001).
+// id 칸이 없는 표는 그 표의 기본 키(소유자 칸 제외)를 key로 준다 — 순서 · 중복 판정이 그 키로 된다.
+const EXPORT_TABLES = [
+  ['vocab', 'user_vocabulary', 'user_id'],
+  // 자료 행은 본문·분석 JSON이 커서 page를 작게 나눈다.
+  ['materials', 'reading_materials', 'owner_id', { pageSize: 100 }],
+  ['progress', 'reading_progress', 'user_id'],
+  ['notes', 'grammar_notes', 'user_id'],
+  ['writings', 'writing_practice', 'user_id'],
+  ['pdfs', 'uploaded_pdfs', 'owner_id'],
+  ['review_events', 'review_events', 'user_id'],
+  ['fsrs_cards', 'fsrs_cards', 'user_id', { key: ['card_id'] }],
+  ['fsrs_operations', 'fsrs_operations', 'user_id'],
+  ['fsrs_new_receipts', 'fsrs_new_receipts', 'user_id', { key: ['card_id'] }],
+  ['encounters', 'user_vocab_encounters', 'user_id', { key: ['lang', 'word_text'] }],
+  ['known_words', 'user_known_words', 'user_id', { key: ['lang', 'word_text'] }],
+  ['word_facets', 'user_word_facets', 'user_id', { key: ['lang', 'word_text', 'facet'] }],
+  ['level_rounds', 'user_level_rounds', 'user_id', { key: ['lang', 'level', 'view', 'round_no'] }],
+  ['grammar_review', 'grammar_review', 'user_id', { key: ['lang', 'slug'] }],
+  ['chapter_progress', 'user_ref_progress', 'user_id', { key: ['lang', 'slug'] }],
+  ['study_plan', 'study_plan_progress', 'user_id', { key: ['lang'] }],
+  ['study_paragraphs', 'study_paragraphs', 'user_id', { pageSize: 200 }],
+  ['reading_activity', 'library_reading_activity', 'owner_id', { key: ['target_kind', 'target_id'] }],
+  ['reading_positions', 'original_reading_positions', 'owner_id', { key: ['material_id', 'source_key'] }],
+  ['achievements', 'user_achievements', 'user_id'],
+];
+export const EXPORT_KEYS = ['profile', ...EXPORT_TABLES.map(([name]) => name)];
 
 // 내보내기는 전부여야 한다 — PostgREST 기본 상한(1000행)에 조용히 잘리지 않게 정본 완전 조회(id 순 page ·
 // exact count)로 읽고, 결과는 unwrapAccountExportResults가 읽는 { data } / { error } 모양으로 돌려준다.
-function exportRows(table, ownerColumn, ownerId, pageSize = 1000) {
-  return readCompleteLegacyRows(() => supabase.from(table).select('*', { count: 'exact' }).eq(ownerColumn, ownerId), { pageSize })
+function exportRows(table, ownerColumn, ownerId, { pageSize = 1000, key } = {}) {
+  return readCompleteLegacyRows(() => supabase.from(table).select('*', { count: 'exact' }).eq(ownerColumn, ownerId), { pageSize, key })
     .then(data => ({ data, error: null }), error => ({ data: null, error }));
 }
 
@@ -105,20 +132,13 @@ export default function AccountSettings({ user, toast, signOut }) {
     try {
       const exportResults = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        exportRows('user_vocabulary', 'user_id', user.id),
-        // 자료 행은 본문·분석 JSON이 커서 page를 작게 나눈다.
-        exportRows('reading_materials', 'owner_id', user.id, 100),
-        exportRows('reading_progress', 'user_id', user.id),
-        exportRows('grammar_notes', 'user_id', user.id),
-        exportRows('writing_practice', 'user_id', user.id),
-        exportRows('uploaded_pdfs', 'owner_id', user.id),
+        ...EXPORT_TABLES.map(([, table, ownerColumn, options]) => exportRows(table, ownerColumn, user.id, options)),
       ]);
-      const { profile, vocab, materials, progress, notes, writings, pdfs } = unwrapAccountExportResults(exportResults);
-
       const bundle = {
         exported_at: new Date().toISOString(),
+        export_version: 2,
         user: { id: user.id, email: user.email },
-        profile, vocab, materials, progress, notes, writings, pdfs,
+        ...unwrapAccountExportResults(exportResults),
       };
 
       const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });

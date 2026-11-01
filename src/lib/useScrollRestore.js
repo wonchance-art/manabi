@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { createPositionWriter } from './readingPositionWriter';
 import { pagerFor, withFullReader } from './usePagedReader';
+import { HOME_DATA_KEY } from './homeQueryKey';
 
 /**
  * 자료 재진입 시 마지막 읽은 위치로 자동 스크롤 복원 + 스크롤 위치 저장 (debounce 2s).
@@ -39,7 +40,7 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
       // 마지막 위치가 서재 재조회보다 늦게 끝나도 반영되게, 정의 없는 옛 키 대신 실제 키를 무효화한다.
       queryClient.invalidateQueries({ queryKey: ['library-recent', owner] });
       queryClient.invalidateQueries({ queryKey: ['personal-library', owner] });
-      queryClient.invalidateQueries({ queryKey: ['home-v2', owner] });
+      queryClient.invalidateQueries({ queryKey: [HOME_DATA_KEY, owner] });
     }, error => { if (alive) setPositionError(!!error); });
     writerRef.current = { key, writer };
     const flush = () => writer.flush();

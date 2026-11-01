@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { recordActivity } from './streak';
+import { streakAfterActivity } from './learningActivity';
 import { friendlyToastMessage } from './errorMessage';
 import { logReviewEvents } from './reviewEvents';
 import { buildReadingMetric } from './readingTimer';
@@ -82,7 +83,8 @@ export function useReadingCompletion({
       const pendingCompletion = {
         wordsSaved: data.wordsSaved,
         dueCount: data.dueCount,
-        streak: (profile?.streak_count || 0) + 1,
+        // 오늘 이미 활동했으면 그대로 · 끊겼으면 1 — 예전엔 늘 +1이라 같은 날 두 번째 완독에서 하루가 더 붙었다(STATS-MAP-001).
+        streak: streakAfterActivity(profile),
         reading: metric,   // 없으면 완독 화면이 그 줄을 생략한다
         round,             // 첫 회차·페이서 회차면 null — 비교 줄이 없다
       };

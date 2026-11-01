@@ -33,13 +33,13 @@ import {
   joinGroup,
   kstWeekStartDate,
   leaveGroup,
-  pushGroupSnapshots,
   setGroupGoal,
   setGroupRead,
   sumGroupSnapshots,
 } from '../lib/studyGroups';
 import Button from '../components/Button';
 import { authEntryHref } from '../lib/authRedirect';
+import { useGroupSnapshotPush } from '../lib/useGroupSnapshotPush';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', Chinese: '중국어', French: '프랑스어' };
 
@@ -545,17 +545,8 @@ export default function GroupsPage() {
     enabled: !!user && groupIds.length > 0,
     staleTime: 1000 * 60 * 5,
   });
-  useEffect(() => {
-    if (!user || !weeklyRows || groupIds.length === 0) return;
-    const weekly = buildWeeklyReport(weeklyRows);
-    let alive = true;
-    pushGroupSnapshots(groupIds, user.id, weekly, typeof window !== 'undefined' ? window.sessionStorage : null)
-      .then(() => {
-        if (alive) queryClient.invalidateQueries({ queryKey: ['group-snapshots'] });
-      })
-      .catch(() => {});
-    return () => { alive = false; };
-  }, [user, weeklyRows, groupIds, queryClient]);
+  const myWeekly = useMemo(() => (weeklyRows ? buildWeeklyReport(weeklyRows) : null), [weeklyRows]);
+  useGroupSnapshotPush(user?.id, myWeekly);
 
   const rowsByGroup = useMemo(() => {
     const byGroup = {};
@@ -563,7 +554,7 @@ export default function GroupsPage() {
     return byGroup;
   }, [groupIds, snapshots]);
   const sumsByGroup = useMemo(() => {
-    const weekStartMs = new Date(`${weekStart}T00:00:00+09:00`).getTime();
+    const weekStartMs = new Date(`${weekStart}T04:00:00+09:00`).getTime();
     const byGroup = {};
     for (const gid of groupIds) byGroup[gid] = { ...sumGroupSnapshots(rowsByGroup[gid]), weekStartMs };
     return byGroup;

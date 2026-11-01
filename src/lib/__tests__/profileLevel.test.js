@@ -58,7 +58,7 @@ describe('학습 수준 정본 — 4언어 대칭', () => {
 
   it('컬럼 이름을 아는 곳이 여기 하나다 — 화면이 컬럼명을 알면 또 갈린다', () => {
     expect(Object.keys(PROFILE_LEVEL_COLUMN).sort()).toEqual(Object.keys(LEVELS).sort());
-    for (const f of ['src/views/MaterialsPage.jsx', 'src/views/VocabStats.jsx']) {
+    for (const f of ['src/views/MaterialsPage.jsx']) {
       expect(read(f), `${f}: 컬럼명 직접 참조 부활`).not.toContain('learning_level_japanese');
     }
   });

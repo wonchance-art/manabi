@@ -14,6 +14,9 @@ import {
   kstWeekStartMs,
   kstWeekStartIso,
   isThisWeekSession,
+  learningDayStartMs,
+  learningWeekStartMs,
+  learningDateString,
   GROWTH_LABELS,
   GROWTH_COPY,
 } from '../growthStats';
@@ -118,9 +121,22 @@ describe('kstWeekStart — KST 주 시작', () => {
   });
 });
 
+describe('학습일 경계(04시) — 표시 통계의 하루 · 한 주', () => {
+  it('KST 03:59는 전날 학습일, 04:00부터 오늘', () => {
+    expect(learningDateString(Date.parse('2026-11-02T03:59:59+09:00'))).toBe('2026-11-01');
+    expect(learningDateString(Date.parse('2026-11-02T04:00:00+09:00'))).toBe('2026-11-02');
+    expect(learningDayStartMs(Date.parse('2026-11-02T02:30:00+09:00'))).toBe(Date.parse('2026-11-01T04:00:00+09:00'));
+    expect(learningDayStartMs(Date.parse('2026-11-02T08:30:00+09:00'))).toBe(Date.parse('2026-11-02T04:00:00+09:00'));
+  });
+  it('학습 주는 월요일 KST 04시부터 — 월요일 새벽은 지난주', () => {
+    expect(learningWeekStartMs(Date.parse('2026-11-05T12:00:00+09:00'))).toBe(Date.parse('2026-11-02T04:00:00+09:00'));
+    expect(learningWeekStartMs(Date.parse('2026-11-02T03:00:00+09:00'))).toBe(Date.parse('2026-10-26T04:00:00+09:00'));
+  });
+});
+
 describe('isThisWeekSession — 이번 주 세션 판정', () => {
   const now = Date.UTC(2024, 0, 3, 12, 0, 0); // 수요일
-  const weekStart = kstWeekStartMs(now);
+  const weekStart = learningWeekStartMs(now); // 학습 주(월요일 KST 04시) — STATS-MAP-001
 
   it('주 시작 이후 시각 → true', () => {
     expect(isThisWeekSession(new Date(weekStart + 3600 * 1000).toISOString(), now)).toBe(true);
@@ -147,7 +163,7 @@ describe('isThisWeekSession — 이번 주 세션 판정', () => {
 
 describe('표시 문구 상수', () => {
   it('라벨·설명이 정의돼 있다', () => {
-    expect(GROWTH_LABELS.knownWords).toBe('아는 단어');
+    expect(GROWTH_LABELS.knownWords).toBe('기억한 단어');
     expect(GROWTH_LABELS.passedChapters).toBe('통과 챕터');
     expect(GROWTH_LABELS.weekSessions).toBe('이번 주 세션');
     expect(GROWTH_COPY.knownWordSub).toBe('일주일 넘게 기억한 단어');

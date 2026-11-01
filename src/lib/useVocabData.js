@@ -10,6 +10,7 @@ import { fetchVocabularyLearningRows, reprojectVocabularyLearningRow } from './v
 import { useContext, useEffect, useMemo, useRef } from 'react';
 import { persistVocabGrade } from './fsrs';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
+import { HOME_DATA_KEY } from './homeQueryKey';
 
 const EMPTY_ROWS = Object.freeze([]);
 const EMPTY_TITLES = new Map();
@@ -37,8 +38,8 @@ export async function fetchVocabLearningData(actorId, options = {}) {
  */
 export function invalidateVocabularyLearning(queryClient, actorId, { refetchLearning = true, deferReviewRoom = false } = {}) {
   if (typeof actorId !== 'string' || !actorId) return Promise.resolve([]);
-  return Promise.all(['vocab', 'vocab-words', 'vocab-titles', 'home-v2', 'profile-stats', 'output-words',
-    'book-review', 'due-vocab-index', 'weekly-report', 'goal-progress', 'goal-known', 'weak-spot', 'confused-events']
+  return Promise.all(['vocab', 'vocab-words', 'vocab-titles', HOME_DATA_KEY, 'profile-stats', 'output-words',
+    'book-review', 'due-vocab-index', 'weekly-report', 'goal-progress', 'weak-spot', 'confused-events']
     .map(prefix => queryClient.invalidateQueries({ queryKey: [prefix, actorId],
       ...((prefix === 'vocab' && !refetchLearning) || (deferReviewRoom && REVIEW_ROOM_DEFERRED.includes(prefix))
         ? { refetchType: 'none' } : {}) })));

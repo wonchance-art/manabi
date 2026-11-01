@@ -7,8 +7,9 @@
  * 언어 이름은 정본 LANG_NAME_KO만 쓴다 — 국기는 쓰지 않는다(D-X6, 2026-10-12).
  */
 import { LANG_NAME_KO, detectLang } from './constants.js';
-import { kstDayStartMs } from './growthStats.js';
+import { learningDayStartMs } from './growthStats.js';
 import { daysLeftUntil, perDayLabel } from './goalPace.js';
+import { liveStreakCount } from './learningActivity.js';
 
 export const LEARN_LANGS = Object.freeze(Object.keys(LANG_NAME_KO));
 export const LEARN_LANG_KEY = 'learn_lang';
@@ -39,9 +40,9 @@ export const learnLangLabel = lang => LANG_NAME_KO[lang] || lang;
 
 export const STREAK_HINT = '쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요';
 
-/** 연속 칸 — 「12일 / 연속 · 쉼 2」, 기록이 없으면 「– / 연속」. 방패 같은 그림 기호는 쓰지 않는다(오너 B안). */
-export function streakView(profile) {
-  const streak = Number(profile?.streak_count) || 0;
+/** 연속 칸 — 「12일 / 연속 · 쉼 2」, 기록이 없거나 끊겼으면 「– / 연속」. 방패 같은 그림 기호는 쓰지 않는다(오너 B안). */
+export function streakView(profile, now = Date.now()) {
+  const streak = liveStreakCount(profile, now);
   const rest = Number(profile?.streak_freeze_count) || 0;
   const value = streak > 0 ? `${streak}일` : '–';
   const label = streak > 0 && rest > 0 ? `연속 · 쉼 ${rest}` : '연속';
@@ -49,7 +50,8 @@ export function streakView(profile) {
   return { value, label, aria: `${said} — ${STREAK_HINT}`, title: STREAK_HINT };
 }
 
-const isToday = (ts, now) => !!ts && Date.parse(ts) >= kstDayStartMs(now) && Date.parse(ts) < kstDayStartMs(now) + 86400000;
+// 오늘 = 학습일(KST 04시부터) — FSRS 새 단어 몫 · 복습 일정과 같은 날(STATS-MAP-001).
+const isToday = (ts, now) => !!ts && Date.parse(ts) >= learningDayStartMs(now) && Date.parse(ts) < learningDayStartMs(now) + 86400000;
 
 /** 오늘 목표 달성률 — 복습 · 수집 목표 기준(예전 GoalTile 산식 그대로, 완독은 목표 설정만 지원). */
 export function todayGoalPct({ vocab = [], projections = [], profile, now = Date.now() } = {}) {

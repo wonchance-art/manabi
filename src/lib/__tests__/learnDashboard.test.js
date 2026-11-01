@@ -4,6 +4,7 @@ import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import { goalTrackView, learnLanguages, learnLangLabel, materialInLang, paragraphState, shortDateLabel, streakView, STREAK_HINT, todayGoalPct } from '../learnDashboard.js';
 import { serializeReviewScope } from '../reviewScopeUrl.js';
+import { liveStreakCount, streakAfterActivity } from '../learningActivity.js';
 import { buildPlan } from '../studyPlan.js';
 import { goalCatalog } from '../goalCatalog.js';
 import { buildContinueManifest } from '../../content/refManifest.js';
@@ -159,6 +160,30 @@ describe('표시 재료 — 순수 계산', () => {
       expect(read(f), f).not.toContain('🛡');
       expect(codeOf(read(f)), f).not.toContain('스트릭');
     }
+  });
+
+  // STATS-MAP-001: streak_count는 다음 활동 때에야 1로 돌아간다 — 며칠 쉰 뒤에도 예전 연속이 보이던 것을 화면에서 걸러 낸다.
+  it('연속은 마지막 활동일로 살아 있는지 본다 — 끊겼으면 「–」, 하루 빈 날은 쉼이 있을 때만 이어진다', () => {
+    const now = Date.parse('2026-11-05T12:00:00Z'); // 활동일(UTC) 11-05
+    const p = (last, rest = 0) => ({ streak_count: 12, streak_freeze_count: rest, last_streak_date: last });
+    expect(liveStreakCount(p('2026-11-05'), now)).toBe(12); // 오늘 했다
+    expect(liveStreakCount(p('2026-11-04'), now)).toBe(12); // 어제까지 — 오늘 하면 이어진다
+    expect(liveStreakCount(p('2026-11-03', 1), now)).toBe(12); // 하루 빈 날 + 쉼 1 — 오늘 하면 쉼이 메운다
+    expect(liveStreakCount(p('2026-11-03', 0), now)).toBe(0); // 쉼 없이 하루 빔 → 끊김
+    expect(liveStreakCount(p('2026-11-01', 2), now)).toBe(0); // 쉼은 하루만 메운다(replayActivityDays와 같은 규칙)
+    expect(liveStreakCount({ streak_count: 4 }, now)).toBe(4); // 마지막 날을 모르면 저장값 그대로
+    expect(streakView(p('2026-11-01'), now)).toMatchObject({ value: '–', label: '연속' });
+    expect(streakView(p('2026-11-04', 2), now)).toMatchObject({ value: '12일', label: '연속 · 쉼 2' });
+  });
+
+  it('완독 화면의 연속은 정본 재생으로 — 오늘 이미 셌으면 그대로, 이어지면 +1, 끊겼으면 1', () => {
+    const now = Date.parse('2026-11-05T12:00:00Z');
+    expect(streakAfterActivity({ streak_count: 5, streak_freeze_count: 0, last_streak_date: '2026-11-05' }, now)).toBe(5);
+    expect(streakAfterActivity({ streak_count: 5, streak_freeze_count: 0, last_streak_date: '2026-11-04' }, now)).toBe(6);
+    expect(streakAfterActivity({ streak_count: 5, streak_freeze_count: 0, last_streak_date: '2026-11-01' }, now)).toBe(1);
+    expect(streakAfterActivity(null, now)).toBe(1);
+    expect(read('src/lib/useReadingCompletion.js')).toContain('streak: streakAfterActivity(profile)');
+    expect(read('src/lib/useReadingCompletion.js')).not.toMatch(/streak_count \|\| 0\) \+ 1/);
   });
 
   it('오늘 목표 달성률은 예전 산식 그대로(복습 · 수집 목표 평균)', () => {

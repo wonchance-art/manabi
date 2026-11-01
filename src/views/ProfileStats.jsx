@@ -28,7 +28,7 @@ import { detectLang } from '../lib/constants';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 // 약점 칸 — import가 빠져 queryFn이 ReferenceError로 늘 실패했다(no-undef 전수, 2026-10-17 KST).
 import { fetchWeaknessRows } from '../lib/weaknessRows';
-import { kstDayStartMs, kstDateString } from '../lib/growthStats';
+import { learningDayStartMs, learningDateString } from '../lib/growthStats';
 import useLearnLanguage from '../components/learn/useLearnLanguage';
 import LangChips from '../components/learn/LangChips';
 import GoalTrackTile, { useGoalCatalog } from '../components/learn/GoalTrackTile';
@@ -43,6 +43,8 @@ import '../components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
 import GoalSheet from '../components/goal/GoalSheet';
+import { useGroupSnapshotPush } from '../lib/useGroupSnapshotPush';
+import { METRICS } from '../lib/metrics/registry';
 
 /** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = 168;
@@ -50,12 +52,12 @@ const DAY_MS = 24 * 3600 * 1000;
 
 export async function fetchProfileStats(userId, now = Date.now()) {
   const learning = await fetchVocabularyLearningRows(userId, { fields: 'summary' });
-  const heatmapStart = kstDayStartMs(now) - (HEATMAP_DAYS - 1) * DAY_MS;
+  const heatmapStart = learningDayStartMs(now) - (HEATMAP_DAYS - 1) * DAY_MS;
   const heatmapDayCounts = {};
   for (const v of learning.rows) {
     const created = Date.parse(v.created_at);
     if (!Number.isFinite(created) || created < heatmapStart) continue;
-    const day = kstDateString(created);
+    const day = learningDateString(created);
     heatmapDayCounts[day] = (heatmapDayCounts[day] || 0) + 1;
   }
   return { vocab: learning.rows, projections: learning.projections, now: learning.now, heatmapDayCounts };
@@ -88,6 +90,8 @@ export default function ProfileStats() {
     staleTime: 1000 * 60 * 5,
   });
   const weekly = useMemo(() => (weeklyRows ? buildWeeklyReport(weeklyRows) : null), [weeklyRows]);
+  // 그룹이 있으면 이 주간 값을 그룹 합계에도 올린다 — /groups를 안 여는 멤버가 「이번 주 우리」에서 빠지지 않게(STATS-MAP-001).
+  useGroupSnapshotPush(user?.id, weekly);
 
   // 아는 단어 — 칩 언어의 「이미 앎」 표시. 미적용 · 실패는 조용히(칸만 「–」).
   const knownLang = knownWordsLang(lang);
@@ -160,7 +164,7 @@ export default function ProfileStats() {
         <HeatmapCard dayCounts={data?.heatmapDayCounts || {}} className="learn-order-6" />
         {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
         {weekly ? <WeeklyTile weekly={weekly} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
-        <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label="아는 단어" className="learn-order-5" />
+        <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label={METRICS.knownMarked.label} className="learn-order-5" />
         <LevelVocabCard lang={lang} vocab={vocab} projections={projections} knownRows={knownRows || []} className="learn-order-7" />
         <MemoryHealthCard lang={lang} projections={projections} now={data?.now || Date.now()} className="learn-order-8"
           trueRetention={user ? { table: retention, loading: !retention && !recentRetention.isError } : null}
@@ -299,8 +303,8 @@ function TileModal({ title, onClose, children, className = '' }) {
 /* ── 히트맵 반쪽(2×1) — 최근 24주, 칸 10px · 간격 2px, 범례 없음(칸마다 개수 툴팁). 좌→우로 시간이 흐르고 맨 오른쪽 아래가 오늘. ── */
 
 function HeatmapCard({ dayCounts, className = '' }) {
-  const todayStart = kstDayStartMs(Date.now());
-  const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => kstDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
+  const todayStart = learningDayStartMs(Date.now());
+  const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => learningDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
   const maxCount = Math.max(1, ...Object.values(dayCounts));
   const shown = days.filter(key => dayCounts[key] > 0);
   const totalWords = shown.reduce((sum, key) => sum + dayCounts[key], 0);

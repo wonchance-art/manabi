@@ -20,7 +20,7 @@ vi.mock('../../lib/supabase', () => ({
   supabase: {},
 }));
 
-import { unwrapAccountExportResults } from '../AccountSettings';
+import { EXPORT_KEYS, unwrapAccountExportResults } from '../AccountSettings';
 import {
   handleConversationKeyDown,
   isConversationRequestCurrent,
@@ -136,15 +136,7 @@ describe('components C-04~C-13 reliability fixes', () => {
   });
 
   it('계정 export 쿼리 하나라도 실패하면 부분 bundle을 거부한다', () => {
-    const ok = [
-      { data: { id: 'u1' }, error: null },
-      { data: [], error: null },
-      { data: [], error: null },
-      { data: [], error: null },
-      { data: [], error: null },
-      { data: [], error: null },
-      { data: [], error: null },
-    ];
+    const ok = EXPORT_KEYS.map((key, index) => ({ data: index === 0 ? { id: 'u1' } : [], error: null }));
     expect(unwrapAccountExportResults(ok).profile).toEqual({ id: 'u1' });
 
     const partial = [...ok];
@@ -154,6 +146,14 @@ describe('components C-04~C-13 reliability fixes', () => {
     const missing = [...ok];
     missing[6] = undefined;
     expect(() => unwrapAccountExportResults(missing)).toThrow('pdfs');
+
+    // 학습 기록도 묶음에 든다 — 방침 §5 「내 데이터 전체」(STATS-MAP-001). 빠지면 부분 묶음으로 거절한다.
+    for (const key of ['review_events', 'fsrs_cards', 'fsrs_operations', 'encounters', 'known_words', 'chapter_progress']) {
+      expect(EXPORT_KEYS).toContain(key);
+      const short = [...ok];
+      short[EXPORT_KEYS.indexOf(key)] = undefined;
+      expect(() => unwrapAccountExportResults(short)).toThrow(key);
+    }
   });
 
   it('레슨 조회 실패를 전파하고 오류 안내를 렌더한다', async () => {

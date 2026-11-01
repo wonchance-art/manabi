@@ -47,6 +47,7 @@ import GoalTrackTile from '@/components/learn/GoalTrackTile';
 import { GuestLoginTile, ReviewTile, StreakTile, TodayGoalTile } from '@/components/learn/LearnTiles';
 import '@/components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
+import { HOME_DATA_KEY } from '@/lib/homeQueryKey';
 
 export async function fetchHomeData(userId, nowMs = Date.now()) {
   // 전체 두 코호트를 같은 snapshot에서 합친 뒤 센다. 구형 due WHERE로 먼저 자르지 않는다.
@@ -165,7 +166,7 @@ function StorageNote({ bookPromise, book: bookValue }) {
 export default function HomePage({ book = null, bookPromise, sessionHint }) {
   const { user, profile, loading: authLoading } = useAuth();
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['home-v3', user?.id], queryFn: () => fetchHomeData(user.id),
+    queryKey: [HOME_DATA_KEY, user?.id], queryFn: () => fetchHomeData(user.id),
     enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
   });
   const { langs, lang, choose } = useLearnLanguage(profile, data?.vocabByLang);

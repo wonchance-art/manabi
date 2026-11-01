@@ -20,9 +20,10 @@ describe('kstWeekStartDate — 스냅샷 week_start(KST 월요일 날짜)', () =
   it('일요일(KST)도 그 주 월요일로 접힌다', () => {
     // 2026-08-23(일) 12:00 KST → 주 시작 2026-08-17(월)
     expect(kstWeekStartDate(Date.parse('2026-08-23T12:00:00+09:00'))).toBe('2026-08-17');
-    // 월요일 0시 정각(KST)은 자기 자신
-    expect(kstWeekStartDate(Date.parse('2026-08-17T00:00:00+09:00'))).toBe('2026-08-17');
-    // 월요일 직전(일요일 23:59 KST)은 이전 주
+    // 학습 주는 월요일 KST 04시에 시작한다 — 이번 주 리포트와 같은 주(STATS-MAP-001)
+    expect(kstWeekStartDate(Date.parse('2026-08-17T04:00:00+09:00'))).toBe('2026-08-17');
+    // 월요일 새벽(04시 전)은 아직 이전 주 — 스냅샷 값(이번 주 리포트)과 키가 같은 주를 가리킨다
+    expect(kstWeekStartDate(Date.parse('2026-08-17T03:59:59+09:00'))).toBe('2026-08-10');
     expect(kstWeekStartDate(Date.parse('2026-08-16T23:59:59+09:00'))).toBe('2026-08-10');
   });
 });
@@ -171,8 +172,18 @@ describe('학습 그룹 배선 계약', () => {
     const src = read('src/views/GroupsPage.jsx');
     expect(src).toContain('등수 없음');
     expect(src).toContain("['weekly-report', user?.id]");
-    expect(src).toContain('pushGroupSnapshots');
+    expect(src).toContain('useGroupSnapshotPush(user?.id, myWeekly)');
     expect(src).not.toMatch(/순위|랭킹/); // 압박 배제 결
+  });
+
+  it('스냅샷 push는 훅 하나 — 그룹 화면과 현황이 같이 써서 현황만 보는 멤버도 합계에 든다(STATS-MAP-001)', () => {
+    const hook = read('src/lib/useGroupSnapshotPush.js');
+    expect(hook).toContain('pushGroupSnapshots(');
+    expect(hook).toContain("queryKey: ['study-groups', userId]");
+    expect(read('src/views/ProfileStats.jsx')).toContain('useGroupSnapshotPush(user?.id, weekly)');
+    for (const f of ['src/views/GroupsPage.jsx', 'src/views/ProfileStats.jsx']) {
+      expect(read(f), `${f}: push를 직접 부르지 않는다`).not.toMatch(/pushGroupSnapshots\(/);
+    }
   });
 
   it('홈 진입 카드(§9-5)가 홈에 배선되어 있다', () => {

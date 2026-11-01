@@ -23,7 +23,7 @@ describe('커버리지 배지 — 서재와 계산 동일성', () => {
 
   it('표본 미달은 무표기 — FIT_MIN_TYPES 게이트를 통과해야 배지가 산다', () => {
     expect(viewer).toContain('FIT_MIN_TYPES');
-    expect(viewer).toContain('아는 단어');
+    expect(viewer).toContain('이 글에서 아는 말');
     expect(viewer).toContain('새 단어');
   });
 

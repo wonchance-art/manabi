@@ -63,6 +63,33 @@ export function replayActivityDays(baseline, days) {
   return result;
 }
 
+const activityDayMs = day => Date.parse(`${day}T00:00:00.000Z`);
+
+/**
+ * 지금 살아 있는 연속 일수(STATS-MAP-001) — profiles.streak_count는 다음 활동 때에야 1로 돌아가서, 며칠 쉰 뒤에도 예전 연속이
+ * 그대로 보였다. 활동일(learningActivity.activityDay — DB와 같은 날 경계) 기준으로 마지막 활동일이 어제 · 오늘이거나,
+ * 하루 빈 날을 쉼이 메워 줄 수 있으면(replayActivityDays와 같은 규칙: 간격 2일 + 쉼 ≥ 1) 살아 있다. 그 밖은 0(끊김).
+ * 마지막 활동일을 모르면(옛 행) 저장된 값을 그대로 믿는다. 표시만 바꾸고 DB는 건드리지 않는다.
+ */
+export function liveStreakCount(profile, now = Date.now()) {
+  const streak = Number(profile?.streak_count) || 0;
+  const last = profile?.last_streak_date;
+  if (streak <= 0 || typeof last !== 'string') return Math.max(0, streak);
+  const gap = (activityDayMs(activityDay(new Date(now).toISOString())) - activityDayMs(last)) / 86400000;
+  if (!Number.isFinite(gap)) return streak;
+  const rest = Number(profile?.streak_freeze_count) || 0;
+  return gap <= 1 || (gap === 2 && rest > 0) ? streak : 0;
+}
+
+/** 지금 활동 하나를 더하면 연속이 몇 일이 되나 — 완독 화면용. 정본 replayActivityDays(오늘 이미 셌으면 그대로 · 끊겼으면 1). */
+export function streakAfterActivity(profile, now = Date.now()) {
+  try {
+    return replayActivityDays(profile || {}, [activityDay(new Date(now).toISOString())]).streak_count ?? 1;
+  } catch {
+    return (Number(profile?.streak_count) || 0) + 1;
+  }
+}
+
 /**
  * 앱의 실제 login 처리와 독립된 SELECT-only 프로필 갱신. 계정 변경·후착 응답을 버린다.
  *

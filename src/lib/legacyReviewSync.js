@@ -73,17 +73,20 @@ function checkAbort(signal) {
 /**
  * makeQuery는 매번 같은 filter/select(count:'exact')의 새 query를 만든다.
  * 기본 id 순서; 복합 순서는 orderBy:['created_at','id']. id는 select에 포함한다.
+ * id 칸이 없는 표(복합 기본 키 — 아는 단어 · 만난 말 · 챕터 진도 등)는 key:['lang','word_text']처럼 그 표의
+ * 고유 키(소유자 칸 제외)를 준다 — 순서는 그 키 그대로, 중복 판정도 그 키로 한다(STATS-MAP-001 내보내기).
  * 실제 range query는 exact count·고유 id가 필수다. cap보다 작은 응답도 이어 읽는다.
  * range 없는 기존 단일 완전 응답 어댑터는 data/error/(optional count) shape를 유지한다.
  * 실패·count 변화·중복·빈 중간 page·취소에는 배열을 반환하지 않고 reject한다.
  */
 export async function readCompleteLegacyRows(makeQuery, {
-  pageSize = 1000, orderBy = 'id', signal,
+  pageSize = 1000, orderBy = 'id', key = null, signal,
 } = {}) {
-  const columns = Array.isArray(orderBy) ? orderBy : [orderBy];
+  const keyColumns = key == null ? null : Array.isArray(key) ? key : [key];
+  const columns = keyColumns ?? (Array.isArray(orderBy) ? orderBy : [orderBy]);
   if (typeof makeQuery !== 'function' || !Number.isSafeInteger(pageSize) || pageSize < 1
     || !columns.length || columns.some(column => typeof column !== 'string' || !column)
-    || columns.at(-1) !== 'id') throw unavailable();
+    || (!keyColumns && columns.at(-1) !== 'id')) throw unavailable();
   const rows = [], ids = new Set();
   let total = null;
   for (;;) {
@@ -107,7 +110,12 @@ export async function readCompleteLegacyRows(makeQuery, {
     }
     for (const row of response.data) {
       if (!row || typeof row !== 'object' || Array.isArray(row)) throw unavailable();
-      if (row.id == null) { if (paginated || rows.length) throw unavailable(); }
+      if (keyColumns) {
+        if (keyColumns.some(column => row[column] == null)) throw unavailable();
+        const rowKey = JSON.stringify(keyColumns.map(column => String(row[column])));
+        if (ids.has(rowKey)) throw unavailable();
+        ids.add(rowKey);
+      } else if (row.id == null) { if (paginated || rows.length) throw unavailable(); }
       else {
         if (!['string', 'number', 'bigint'].includes(typeof row.id)
           || (typeof row.id === 'number' && !Number.isSafeInteger(row.id)) || String(row.id) === '') throw unavailable();

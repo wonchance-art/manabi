@@ -62,7 +62,7 @@ describe("behavior: 'smooth'를 쓰는 화면은 동작 줄이기를 따른다",
       .flatMap((f) => fs.readFileSync(f, 'utf8').split('\n').map((line, i) => [line, i + 1])
         .filter(([line]) => /matchMedia\??\.?\(\s*['"`]\(prefers-reduced-motion/.test(line)).map(([, n]) => `${f}:${n}`));
     expect(direct).toEqual([]);
-    for (const f of ['src/views/ViewerPage.jsx', 'src/views/LevelListPage.jsx', 'src/lib/celebration.js', 'src/lib/useTilt.js', 'src/lib/useCountUp.js']) {
+    for (const f of ['src/views/ViewerPage.jsx', 'src/views/LevelListPage.jsx', 'src/lib/useTilt.js']) {
       expect(fs.readFileSync(f, 'utf8'), f).toMatch(/import \{ reducedMotion \} from '[^']*reducedMotion';/);
     }
   });

@@ -1,10 +1,10 @@
 /**
  * 주간 리포트 집계 엔진 — "이번 주 나" (rfc-weekly-report R1).
  * 순수 모듈: 행 배열 + now 주입 → 이번 주·지난주 요약. 쿼리는 소비 화면 몫(growthStats 관례).
- * 주간 경계는 growthStats.kstWeekStartMs 정본만 쓴다 — 새 경계 계산 신설 금지.
+ * 주간 경계는 growthStats.learningWeekStartMs(월요일 KST 04시 — 학습일 경계, STATS-MAP-001) 정본만 쓴다 — 새 경계 계산 신설 금지.
  */
 
-import { kstWeekStartMs } from './growthStats';
+import { learningWeekStartMs } from './growthStats';
 
 const WEEK_MS = 7 * 86400000;
 
@@ -65,7 +65,7 @@ function reviewSlice(events, startMs, endMs) {
  *          metWords, prevMetWords, readsCompleted, prevReadsCompleted, hasAny }
  */
 export function buildWeeklyReport({ events, vocabRows, encounterRows, readRows, now = Date.now() } = {}) {
-  const weekStart = kstWeekStartMs(now);
+  const weekStart = learningWeekStartMs(now);
   const prevStart = weekStart - WEEK_MS;
 
   const reviews = reviewSlice(events, weekStart, weekStart + WEEK_MS);

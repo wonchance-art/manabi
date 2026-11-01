@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { buildWeeklyReport, isGradedReviewEvent, weekRangeLabel } from '../weeklyReport.js';
-import { kstWeekStartMs } from '../growthStats.js';
+import { learningWeekStartMs } from '../growthStats.js';
 
 // 🈁 주간 리포트 집계 계약(rfc-weekly-report R1) — 결정적·주간 경계는 growthStats 정본.
 
-// 기준: 2026-08-20(목) 12:00 KST = 03:00 UTC. 이번 주 = 8/17(월)~, 지난주 = 8/10(월)~.
+// 기준: 2026-08-20(목) 12:00 KST = 03:00 UTC. 이번 주 = 8/17(월) 04시~, 지난주 = 8/10(월) 04시~(학습일 경계 — STATS-MAP-001).
 const NOW = Date.UTC(2026, 7, 20, 3, 0, 0);
-const WEEK_START = kstWeekStartMs(NOW);
+const WEEK_START = learningWeekStartMs(NOW);
 const iso = (offsetMs) => new Date(WEEK_START + offsetMs).toISOString();
 const DAY = 86400000;
 
@@ -21,7 +21,17 @@ describe('isGradedReviewEvent — 채점 판정(EWMA 다이얼과 동일 결)', 
 });
 
 describe('buildWeeklyReport — 이번 주·지난주 슬라이스', () => {
-  it('KST 월요일 경계로 가르고, 채점 문항만 정답률에 넣는다', () => {
+  it('주는 월요일 KST 04시에 시작한다 — 월요일 새벽 복습은 지난주(실제 기억률 · 새 단어 몫과 같은 학습일)', () => {
+    expect(WEEK_START).toBe(Date.parse('2026-08-17T04:00:00+09:00'));
+    const report = buildWeeklyReport({ now: NOW, events: [
+      { source: 'vocab', correct: true, created_at: '2026-08-17T02:30:00+09:00' }, // 월요일 새벽 = 일요일 학습일
+      { source: 'vocab', correct: true, created_at: '2026-08-17T04:00:00+09:00' },
+    ] });
+    expect(report.reviews.total).toBe(1);
+    expect(report.prevReviews.total).toBe(1);
+  });
+
+  it('월요일 경계로 가르고, 채점 문항만 정답률에 넣는다', () => {
     const report = buildWeeklyReport({
       now: NOW,
       events: [

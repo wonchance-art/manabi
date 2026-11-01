@@ -6,6 +6,7 @@ import { useToast } from './ToastContext';
 import { createKnownWordBeacon, fetchKnownWords, markKnown, markKnownMany, unmarkKnown } from './knownWords';
 import { revertKnownWords, updateKnownWords } from './knownWordControl';
 import { friendlyToastMessage } from './errorMessage';
+import { HOME_DATA_KEY } from './homeQueryKey';
 
 const cacheKeys = body => [['known-words', body.accountId, body.lang], ['known-words-all', body.accountId]];
 const requestKey = body => `${body.accountId}:${body.lang}:${body.wordText}`;
@@ -15,7 +16,7 @@ let beacon = null;
 const knownWordBeacon = () => (beacon ||= createKnownWordBeacon());
 
 const KNOWN_CONSUMERS = ['known-words', 'known-words-all', 'vocabulary-exclusions', 'vocab', 'vocab-words',
-  'home-v2', 'profile-stats', 'output-words', 'book-review', 'due-vocab-index'];
+  HOME_DATA_KEY, 'profile-stats', 'output-words', 'book-review', 'due-vocab-index'];
 const refreshKnownConsumers = (client, accountId) => Promise.all(KNOWN_CONSUMERS.map(prefix =>
   client.invalidateQueries({ queryKey: [prefix, accountId] })));
 
