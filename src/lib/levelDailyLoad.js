@@ -2,8 +2,8 @@
 // (복습 한도 모듈을 첫 그림에 싣지 않는다 — levelListLazy 계약과 같은 이유). 자리 계산은 배움 칸 · 복습방과 같은 reviewScopeQuota 하나.
 import { canUseLegacyAdmissionCompatibility } from './learningAdmission';
 import { reviewScopeQuota } from './reviewScope';
-import { createLearningAdmissionClient } from './useLearningAdmission';
-import { loadIntroIds, loadNewPerDay } from './vocabStudy';
+import { createLearningAdmissionClient, createLearningAdmissionController } from './useLearningAdmission';
+import { isNewPerDayValue, loadIntroIds, loadNewPerDay } from './vocabStudy';
 
 const FRESH_MS = 60_000;
 let cached = null;
@@ -33,4 +33,24 @@ export function levelNewSlots(accountId) {
     if (canUseLegacyAdmissionCompatibility(quota) || !Number.isInteger(quota?.used) || !Number.isInteger(quota.limit)) return null;
     return { limit: quota.limit, used: quota.used, remaining: reviewScopeQuota({ quota, compatibility: false }).remaining };
   }).catch(() => null);
+}
+
+/**
+ * 단어 페이지 제목 시트 「하루」 줄이 하루 새 단어 수를 바꾼다(LEVEL-WAIT-001 · 오너 승인 2026-11-01 KST) — 새 설정을 만들지 않는다:
+ * 단어장 복습 설정(VocabPage)과 같은 길이다. 입장 모드면 서버 입장 한도를 controller.configure(useLearningAdmission이 감싼 같은 controller)로
+ * 바꾸고, 호환(사전 활성) 모드면 이 기기 설정(vocab_new_per_day — loadNewPerDay가 읽는 키)만 바꾼다. 어느 쪽이든 성공하면 기기 설정도 같은
+ * 값으로 둔다(단어장 설정이 serverLimit을 기기 설정에 맞추는 것과 같은 짝 — 배움 칸 · 손님 셈이 읽는다).
+ * 한도 모듈은 첫 그림 밖이라 화면은 이 함수를 import()로만 부른다. 반환 = { ok, limit } — ok false면 화면이 앞 값으로 되돌린다.
+ */
+export async function levelSetNewPerDay(accountId, limit) {
+  if (!accountId || !isNewPerDayValue(limit)) return { ok: false };
+  const controller = createLearningAdmissionController({ accountId, client: createLearningAdmissionClient({ accountId }) });
+  try {
+    if (!(await controller.refresh())) return { ok: false };
+    const { quota } = controller.getSnapshot();
+    if (!canUseLegacyAdmissionCompatibility(quota) && !(await controller.configure(limit))) return { ok: false };
+    try { localStorage.setItem('vocab_new_per_day', String(limit)); } catch { /* 저장소 차단 — 서버 한도는 이미 바뀌었다 */ }
+    cached = null; // 위 1분 묶음(levelNewQuota)이 옛 한도를 내지 않게
+    return { ok: true, limit };
+  } finally { controller.dispose(); }
 }

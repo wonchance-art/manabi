@@ -104,11 +104,22 @@ describe('네 칸 채점 미리보기', () => {
     expect(gradeEngine({ projection: null, row: null, at })).toBe('save');
   });
 
-  it('옛 일정 카드는 언제든 · 아는 단어 표시는 채점하지 않는다', () => {
-    const w = legacy({ interval: 3, ease_factor: 5, next_review_at: iso(at + 3 * DAY), last_reviewed_at: iso(at - DAY) });
+  // 옛 일정 카드도 FSRS 카드와 같은 규칙(오너 결정 2026-11-01 KST · LEVEL-WAIT-001 「바뀌는 규칙 한눈에」) — 차례가 됐거나 60초 창 안일 때만.
+  // 전에는 「옛 일정 카드는 언제든」이라 날 단위 복습을 차례 전에 눌러 간격이 깨졌고, 같은 화면에서 FSRS 카드만 잠겨 규칙이 둘로 보였다.
+  it('옛 일정 카드도 차례가 됐거나 60초 창 안일 때만 · 아는 단어 표시는 채점하지 않는다', () => {
+    const w = legacy({ interval: 3, ease_factor: 5, next_review_at: iso(at - 60_000), last_reviewed_at: iso(at - 3 * DAY) });
     expect(gradeEngine({ ...w, at })).toBe('legacy');
     const p = gradePreviews({ ...w, at });
     expect(p[4].ms).toBeGreaterThan(p[1].ms);
+    const soon = legacy({ interval: 3, ease_factor: 5, next_review_at: iso(at + 30_000), last_reviewed_at: iso(at - 3 * DAY) });
+    expect(gradeEngine({ ...soon, at })).toBe('legacy'); // 60초 창 안(FSRS_GRADE_WAIT_MS)
+    expect(gradePreviews({ ...soon, at })).not.toBeNull();
+    const ahead = legacy({ interval: 3, ease_factor: 5, next_review_at: iso(at + 3 * DAY), last_reviewed_at: iso(at - DAY) });
+    expect(gradeEngine({ ...ahead, at })).toBeNull(); // 날 단위 복습 — 차례 전 채점 불가(간격이 깨지지 않게)
+    expect(gradePreviews({ ...ahead, at })).toBeNull();
+    const learn = legacy({ interval: 0, next_review_at: iso(at + 10 * 60_000), last_reviewed_at: iso(at) });
+    expect(gradePreviews({ ...learn, at })).toBeNull(); // 학습 단계 10분 — 창 밖
+    expect(gradePreviews({ ...learn, at: at + 9.5 * 60_000 })).not.toBeNull(); // 30초 전 — 창 안
     const known = legacy({}, { known: true, eligible: false });
     expect(gradeEngine({ ...known, at })).toBeNull();
   });
@@ -143,7 +154,7 @@ describe('네 칸 채점 미리보기', () => {
     expect(intervalLabel(10 * 60_000)).toBe('10분');
     expect(intervalLabel(5 * 3600_000)).toBe('5시간');
     expect(intervalLabel(2 * DAY)).toBe('2일');
-    expect(gradeToastText(3, { label: '2일' })).toBe('알맞음 · 2일 뒤 다시');
+    expect(gradeToastText(3, { label: '2일' })).toBe('알맞음 · 2일 후 다시'); // 시간 글자는 「후」(LEVEL-WAIT-001)
     expect(gradeToastText(1, { label: '오늘' })).toBe('다시 · 오늘 다시');
     expect(gradeToastText(4, null)).toBe('쉬움');
   });

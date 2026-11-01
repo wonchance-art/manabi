@@ -15,7 +15,7 @@ const counts = { 1: 2, 2: 1, 3: 9, 4: 3 };
 
 describe('① 하루 새 단어 — 복습 설정과 같은 수 · 더 단추(시안 ⑧)', () => {
   it('줄은 복습 설정의 하루 새 단어 수에서 오늘 이미 시작한 수를 뺀 만큼', () => {
-    expect(screen).toContain("import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_UNLIMITED, loadNewPerDay } from '@/lib/vocabStudy'");
+    expect(screen).toContain("import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_UNLIMITED, isNewPerDayValue, loadNewPerDay } from '@/lib/vocabStudy'");
     expect(screen).toMatch(/perDay - newStartedToday\(index, language, Date\.now\(\)\)/);
     expect(screen).toMatch(/startLevelSession\([^;]*\{ newCap, learningOf: \(k\) => inLearningStep\(/);
     expect(screen).toContain('newPerDay || DEFAULT_NEW_PER_DAY');
@@ -51,8 +51,11 @@ describe('① 하루 새 단어 — 복습 설정과 같은 수 · 더 단추(�
     expect(screen).toContain('{done && allEntries.length > 0 && doneScreen()}');
     expect(screen).toContain("{session && done && doneScreen({ onList: () => switchMode('list') })}");
     expect(screen).not.toContain('오늘 이 레벨은 다 봤어요');
-    expect(screen).toMatch(/!listed\.active\.length && listed\.waiting\.length > 0 && !contBatch && moreBatch > 0 && <div className="lw-capped"/);
-    expect(screen).toMatch(/lw-capped[\s\S]{0,400}<MoreNewButton[\s\S]{0,200}전체 훑어보기/);
+    // 위 목록을 다 풀고 기다리는 카드만 남음 — 「오늘 할 카드 끝」, 하루 몫에서 멈췄으면 그 제목 + 더 단추(LEVEL-WAIT-001 — 「이번 분량 끝」은 없앴다).
+    expect(screen).toMatch(/!listed\.active\.length && listed\.waiting\.length > 0 && <div className="lw-capped"/);
+    expect(screen).toMatch(/lw-capped[\s\S]{0,200}moreBatch > 0 \? <NewDayTitle started=\{startedToday\} \/> : '오늘 할 카드 끝'/);
+    expect(screen).toMatch(/lw-capped[\s\S]{0,800}<MoreNewButton[\s\S]{0,200}전체 훑어보기/);
+    expect(screen).not.toMatch(/이번 분량 끝|ContinueButton|contBatch/);
     const inList = wrap(<OneWordDone graded={3} tomorrow={0} counts={counts} onNext={() => {}} nextLabel="HSK 4" />);
     expect(inList).not.toContain('리스트로');
   });
@@ -103,8 +106,10 @@ describe('시안 · 설계 문서 대조 후속(2026-10-21 KST)', () => {
     expect(screen).toContain('<header className="lw-top lw-top--search" data-stuck={scrolled || undefined}>');
     expect(css).toContain('.lw-top--search[data-stuck]{box-shadow');
   });
-  it('복습실 카드가 앞당겨 나와도 차례 전엔 채점할 수 없으니 남은 시간을 센다', () => {
-    expect(screen).toContain('<>복습실 카드 · <WaitChip at={at} /> 채점해요</>');
+  it('차례 전 카드(복습실 · 옛 일정 모두)는 채점할 수 없으니 남은 시간을 센다 — 안내는 「N분 후 채점해요」 하나(LEVEL-WAIT-001 · 「복습실 카드 ·」 뺌)', () => {
+    expect(screen).toContain('<><WaitChip at={at} /> 채점해요</>');
+    expect(screen).not.toContain('복습실 카드 ·');
+    expect(screen).toMatch(/const gradeNote = \(info\) => \{\n\s+if \(!\(info\?\.status && !info\.previews && info\.projection\)\) return null;/);
   });
 });
 

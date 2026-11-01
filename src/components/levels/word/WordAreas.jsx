@@ -6,7 +6,7 @@ import { CountUp, releasePointerFocus } from './WordParts';
 
 /**
  * 영역 줄 — 단어 · 문장 · 뜻 · 소리, 칸마다 기억 확률 %(오너 선택 2026-10-21 KST 「영역별 기억 확률」). 색은 맞힘 · 놓침 · 처음,
- * 흐려진 맞힘은 처음 색에 남은 %. 0%도 그대로 적는다. 단어 칸은 테두리로 「일정에 반영되는 칸」. next = 「2일 뒤 복습」.
+ * 흐려진 맞힘은 처음 색에 남은 %. 0%도 그대로 적는다. 단어 칸은 테두리로 「일정에 반영되는 칸」. next = 「2일 후 복습」.
  */
 export function AreaRow({ areas, next = null }) {
   if (!areas) return null;
