@@ -54,8 +54,8 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 하루', () => {
   it('순서는 세 칸 · 하루는 여섯 칸(10 · 15 · 20 · 30 · ∞ · ⋯) · 문구는 명사형 그대로 · 버튼 안 숫자(small) 없음', () => {
     const html = render('H1');
     const items = (label) => [...sliceBetween(html, `>${label}</span>`, '</div></div>').matchAll(/<button[^>]*>([^<]+)<\/button>/g)].map((m) => m[1]);
-    expect(items('순서')).toEqual(['혼합', '새 단어 먼저', '복습 먼저']); // 이름은 levelWordPrefs 표 한 곳(오너가 Anki 말을 고르면 그 표만)
-    expect(html).toContain('role="group" aria-label="새 단어 순서"'); // 화면 읽기 「새 단어 순서: 새 단어 먼저」
+    expect(items('순서')).toEqual(['혼합', '복습 전', '복습 후']); // 오너 2026-11-01 KST — 이름은 levelWordPrefs 표 한 곳
+    expect(html).toContain('role="group" aria-label="새 단어 순서"'); // 화면 읽기 「새 단어 순서: 복습 전」 — 무엇이 복습 전인지(새 단어)
     expect(items('하루')).toEqual(['10', '15', '20', '30', '∞', '\u22EF']);
     // 기호 칩은 화면 읽기에 이름으로(∞ = 제한 없음 · ⋯ = 직접 입력) — 글자 높이를 맞추는 data-sym.
     expect(html).toContain('aria-label="제한 없음" data-sym="true"');
@@ -70,7 +70,7 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 하루', () => {
     expect(pressed(html, '순서')).toEqual(['혼합']);
     expect(pressed(html, '하루')).toEqual(['15']);
     const on = render('H1', { order: 'review-first' }, 9999);
-    expect(pressed(on, '순서')).toEqual(['복습 먼저']);
+    expect(pressed(on, '순서')).toEqual(['복습 후']);
     expect(pressed(on, '하루')).toEqual(['∞']);
     const custom = render('H1', DEFAULT, 25);
     expect(pressed(custom, '하루')).toEqual(['25']);

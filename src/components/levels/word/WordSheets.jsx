@@ -190,7 +190,7 @@ export function TitleSheet({ levels, levelKey, kinds, prefs, onPrefs, perDay = n
       <Seg label="레벨" value={levelKey} items={levels.map((k) => ({ id: k, label: L.levelPill(k), aria: L.tag(L.levelOf(k)), href: L.levelHref(k) }))} />
       {kinds.length > 1 && <Seg label="목록" value="vocab" items={kinds} />}
       <div className="lw-sheet__sep" role="presentation" />
-      {/* 보이는 이름표는 두 글자 「순서」, 화면 읽기는 「새 단어 순서」(무엇의 순서인지 — 「새 단어 순서: 새 단어 먼저」). */}
+      {/* 보이는 이름표는 두 글자 「순서」, 화면 읽기는 「새 단어 순서」(무엇의 순서인지 — 「새 단어 순서: 복습 전」). */}
       <Seg label="순서" name="새 단어 순서" value={prefs.order} items={LEVEL_STUDY_ORDERS} onPick={(order) => onPrefs({ order })} />
       {perDay !== null && onPerDay && <NewPerDayRow value={perDay} onPick={onPerDay} />}
       {cardKinds && onCardKinds && <CardKindsRow value={cardKinds} onPick={onCardKinds} />}

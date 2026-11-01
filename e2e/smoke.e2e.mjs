@@ -653,7 +653,7 @@ test('vocab performance: N3 초기 DOM과 단어장 읽기를 예산 안에 유�
     const sheet = page.getByRole('dialog', { name: '레벨 · 목록 · 학습 옵션' });
     await assertVisible(sheet, 'title sheet');
     assert.deepEqual(await sheet.getByRole('group', { name: '목록' }).getByRole('link').allInnerTexts(), ['단어', '문형']);
-    assert.deepEqual(await sheet.getByRole('group', { name: '새 단어 순서' }).getByRole('button').allInnerTexts(), ['혼합', '새 단어 먼저', '복습 먼저']);
+    assert.deepEqual(await sheet.getByRole('group', { name: '새 단어 순서' }).getByRole('button').allInnerTexts(), ['혼합', '복습 전', '복습 후']);
     assert.deepEqual(await sheet.getByRole('group', { name: '하루' }).getByRole('button').allInnerTexts(), ['10', '15', '20', '30', '∞', '\u22EF']);
     assert.equal(await sheet.getByRole('group', { name: '분량' }).count(), 0, 'amount row is gone (하루 새 단어 수 instead)');
     assert.equal(await sheet.getByRole('switch').count(), 0, 'no switches in the title sheet (2단 평가 dropped, aid fixed on)');

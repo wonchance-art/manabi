@@ -16,8 +16,9 @@ import { NEW_PER_DAY_MAX, NEW_PER_DAY_UNLIMITED, isNewPerDayValue } from './voca
 
 export const LEVEL_STUDY_ORDERS = Object.freeze([
   Object.freeze({ id: 'mix', label: '혼합' }), // 복습 사이에 새 단어를 고르게(Anki 「복습과 섞기」)
-  Object.freeze({ id: 'new-first', label: '새 단어 먼저' }), // 새 단어를 복습 전에
-  Object.freeze({ id: 'review-first', label: '복습 먼저' }), // 새 단어를 복습 후에
+  // 「복습 전 · 복습 후」 = 새 단어를 복습 전에 · 후에(Anki 「Show before/after reviews」 — 오너 2026-11-01 KST 「혼합 / 복습 전 / 복습 후」).
+  Object.freeze({ id: 'new-first', label: '복습 전' }), // 새 단어를 복습 전에
+  Object.freeze({ id: 'review-first', label: '복습 후' }), // 새 단어를 복습 후에
 ]);
 // 「하루」 줄 칩 — 10 · 15 · 20 · 30 · ∞ · ⋯ 여섯 칸(위 「순서」 세 칸의 두 배라 칸 경계가 한 칸 걸러 같은 세로선). ∞ = 「제한 없음」(9999),
 // ⋯(U+22EF, 숫자 · ∞와 같은 높이) = 직접 입력(0–999). 기호는 화면 읽기에 이름으로 읽힌다(aria).
