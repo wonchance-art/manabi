@@ -881,7 +881,7 @@
 - **STATS-MAP-001 통계 정리 (2026-11-01 KST)** `claude/practical-carson-umi0t8`:
   조사 = [통계 지도](https://claude.ai/artifact/1jJDC3CeUTf6A72XsTDuXy) · [#1077 코멘트 6553548961](https://github.com/wonchance-art/manabi/issues/1077#issuecomment-6553548961) · [2차 목업](https://claude.ai/artifact/DuZixRtSKLoXEtS2GwNrdP).
   ① 1 · 2차 **완료 [#1623](https://github.com/wonchance-art/manabi/pull/1623) squash `98d8c1a`(오너 「바로 병합」)** — 죽은 코드 · 내보내기 학습 기록 · 홈 키 무효화 · 그룹 집계 · 지표 사전 · 이름 셋 · 연속 「–」 · 표시 경계 04시.
-  ② 3차(오너 「권장대로」 · 「승인」): 공부한 날(A안) · 이번 주 대화 · 담은 곳 · 계정 삭제 고침(마이그레이션 20261101090000 — 병합 시 운영 적용).
+  ② 3차(오너 「권장대로」 · 「승인」): 공부한 날(A안) · 이번 주 대화 · 담은 곳 · 계정 삭제 고침(마이그레이션 20261101100000 — 병합 시 운영 적용).
   **다음:** 연속 04시 DB 마이그레이션(fsrs_private 활동 함수 · 지문 재게시 · PGlite 재생 · 복원 SQL — 별도 PR).
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
