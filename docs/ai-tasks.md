@@ -878,6 +878,16 @@
 
 ## Claude (claude/*)
 ### doing
+- **STATS-MAP-001 통계 정리 1차 — 결정 없이 되는 것 (2026-11-01 KST, 오너 「결정 필요 없는 것부터 먼저 진행해」)** `claude/practical-carson-umi0t8`:
+  조사 정본 = [통계 지도 아티팩트](https://claude.ai/artifact/1jJDC3CeUTf6A72XsTDuXy) · [#1077 코멘트 6553548961](https://github.com/wonchance-art/manabi/issues/1077#issuecomment-6553548961)
+  (WEB 최적화 세션 회신 2026-11-01 14:03 KST: 11개 항목 모두 미착수 · 겹치는 파일은 `levelWordStatus.js` · `LevelWordScreen.jsx`뿐).
+  ① 쓰이지 않는 통계 코드 삭제(VocabStats · studyMetrics · celebration · useCountUp + canvas-confetti · 죽은 CSS) — 기억 건강 계약은 MemoryHealthCard로 이전
+  ② 내 데이터 내보내기에 학습 기록 15표(review_events · fsrs_* · 만난 말 · 아는 표시 · 진도 …) — 복합 키 표용 `readCompleteLegacyRows` `key` 옵션
+  ③ 홈 키 무효화 버그(`home-v3`인데 무효화 넷이 `home-v2` · 프로필 저장은 `['home']`) → `homeQueryKey.HOME_DATA_KEY` + 계약 `queryKeyConsumers.test.js`
+  ④ 그룹 「이번 주 우리」 과소 집계 → `useGroupSnapshotPush`로 현황에서도 push.
+  **보류(이번 PR 밖):** 학습 스냅샷 공유 키(홈 · 현황 요약 vs 복습실 전체 — 모양이 달라 무효화 재설계가 필요, 성능 세션 영역) · `CourseMapPage`(미들웨어 리다이렉트로 닿지 않는 경로 — 라우트 정리 별건) ·
+  `LevelListPage` 어휘 분기 → 홈 HSK 카드(카드를 내릴지 = 화면 결정) · `computeTrackProgress`(독해 트랙 합산 vs 합집합 = 숫자가 바뀜).
+  **오너 결정 대기 5:** 「아는 단어」 이름 · 표시 경계 04시 통일(연속 포함) · 히트맵 기준 · 계정 삭제 FK 운영 조회 · 세는 단위(단어 vs 카드 — CARD-TYPES-001 설계 §6 권장 = 큰 숫자는 단어 단위 + 기억률 표에 카드 종류별 줄, 오너 미결정).
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —
     발행 기록 `canonical_book_releases`(key · 발행한 관리자 · 발행 때, 외래 키 없음 · 누구나 읽기 · 관리자 본인 쓰기) + `canonical_book_shelf()`(기록의 소유자 · 공개 장만) +
