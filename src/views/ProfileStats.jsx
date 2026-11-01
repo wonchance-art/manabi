@@ -16,7 +16,7 @@
  * 「목표 수정」 · 진행바 · 오늘 목표 칸 · 주소 ?goal=edit는 목표 창(components/goal/GoalSheet — GOAL-SHEET-001)을 연다.
  */
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/AuthContext';
@@ -44,10 +44,10 @@ import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
 import GoalSheet from '../components/goal/GoalSheet';
 import { useGroupSnapshotPush } from '../lib/useGroupSnapshotPush';
-import { STUDY_DAYS_SPAN, fetchStudyAnswerRows, studyDayCounts, studyDayLabel } from '../lib/studyDays';
+import { STUDY_DAYS_SPAN, fetchStudyAnswerRows, studyDayCounts, studyDayLabel, studyDaysBasis } from '../lib/studyDays';
 import { METRICS } from '../lib/metrics/registry';
 
-/** 공부한 날(히트맵) — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
+/** 공부한 날(히트맵) — 최근 1년(52주 · 364일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = STUDY_DAYS_SPAN;
 const DAY_MS = 24 * 3600 * 1000;
 
@@ -78,7 +78,7 @@ export default function ProfileStats() {
   }, {}), [data?.vocab]);
   const { langs, lang, choose } = useLearnLanguage(profile, vocabCounts);
 
-  // 공부한 날 — 답 몫(review_events 24주). 첫 칸들이 뜬 뒤에 받고, 실패하면 담은 말만으로 칸을 그린다.
+  // 공부한 날 — 답 몫(review_events 1년). 첫 칸들이 뜬 뒤에 받고, 실패하면 담은 말만으로 칸을 그린다.
   const { data: answerRows } = useQuery({
     queryKey: ['study-days', user?.id, data?.heatmapStart],
     queryFn: () => fetchStudyAnswerRows(user.id, new Date(data.heatmapStart).toISOString()),
@@ -97,6 +97,8 @@ export default function ProfileStats() {
     }
     return merged;
   }, [data, answerRows]);
+  // 칸 기간(1년)보다 이른 기록 — 있으면 머리글은 「1년 중」, 없으면 첫 기록 날부터(담은 말은 전체 기록을 이미 받아 둔다).
+  const hasOlderRecord = useMemo(() => !!data && (data.vocab || []).some(v => Date.parse(v.created_at) < data.heatmapStart), [data]);
 
   // 이번 주 카드(rfc-weekly-report 목업 A) — 실패·빈 주는 카드 생략으로 조용히.
   const { data: weeklyRows } = useQuery({
@@ -177,7 +179,7 @@ export default function ProfileStats() {
         <GoalTrackTile className="learn-order-1" onOpen={() => setGoalOpen(true)} />
         <TodayGoalTile vocab={vocab} projections={projections} profile={profile} empty={!data} className="learn-order-2" onOpen={() => setGoalOpen(true)} />
         <StreakTile profile={profile} className="learn-order-3" />
-        <HeatmapCard dayCounts={studyDays} className="learn-order-6" />
+        <HeatmapCard dayCounts={studyDays} hasOlder={hasOlderRecord} className="learn-order-6" />
         {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
         {weekly ? <WeeklyTile weekly={weekly} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
         <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label={METRICS.knownMarked.label} className="learn-order-5" />
@@ -222,7 +224,7 @@ function WeeklyTile({ weekly, className = '' }) {
         <span className="learn-stat__label">{label}</span>
       </button>
       {open && (
-        <TileModal title={`이번 주 (${weekRangeLabel(weekly.week)})`} onClose={() => setOpen(false)}>
+        <TileModal title={`이번 주 (${weekRangeLabel(weekly.week)})`} className="tile-modal--wide" onClose={() => setOpen(false)}>
           <WeeklyReportCard weekly={weekly} header={false} showWeakness />
         </TileModal>
       )}
@@ -233,64 +235,84 @@ function WeeklyTile({ weekly, className = '' }) {
 /** 담은 곳 이름 — SAVED_SOURCES 순서 그대로. */
 const SAVED_SOURCE_LABEL = Object.freeze({ reading: '읽기', conversation: '대화', level: '단어 목록', study: '오늘 학습', manual: '직접' });
 
-/* ── 이번 주 카드(rfc-weekly-report 목업 A) — 거울이지 성적표가 아니다:
-     지난주는 회색 병기만(증감 화살표·색상 없음), 0인 축은 그리지 않는다. ── */
+/* ── 이번 주 카드(rfc-weekly-report 목업 A → 2차 목업 「ㅇㅋ」 2026-11-01 KST) — 거울이지 성적표가 아니다:
+     지난주는 회색 병기만(증감 화살표 · 빨강 · 초록 없음). 새 모양 없이 있는 화면 부품을 빌린다 —
+     복습 큰 숫자 = 복습 화면 「오늘 다시 볼 표현」, 세 칸 = 내 정보 「내 기록」(0은 「–」로 자리 지킴),
+     자세히 목록 = 내 정보 목록 묶음(줄이라 0인 항목은 줄째 빠진다 — 「0은 쓰지 않는다」 그대로). ── */
 function WeeklyReportCard({ weekly, header = true, showWeakness = false }) {
   const pct = (a) => (a == null ? null : Math.round(a * 100));
   const acc = pct(weekly.reviews.accuracy);
   const prevAcc = pct(weekly.prevReviews.accuracy);
-  const parts = [];
-  if (weekly.newWords > 0) parts.push(`새로 담은 말 ${weekly.newWords}`);
-  if (weekly.metWords > 0) parts.push(`만난 말 ${weekly.metWords}`);
-  if (weekly.readsCompleted > 0) parts.push(`완독 ${weekly.readsCompleted}편`);
-  // 대화 성과 · 담은 곳(STATS-MAP-001 S7 — 2차 목업 02 「권장대로」). 0인 항목은 쓰지 않는다.
+  const cells = [
+    [weekly.newWords, '', '새로 담은 말'],
+    [weekly.metWords, '', '만난 말'],
+    [weekly.readsCompleted, '편', '완독'],
+  ];
+  // 대화 성과 · 담은 곳(STATS-MAP-001 S7). 0인 항목은 쓰지 않는다.
   const conv = weekly.conversation || {};
   const convParts = [];
-  if (conv.turns > 0) convParts.push(`대화 ${conv.turns}마디`);
-  if (conv.fixed > 0) convParts.push(`스스로 고친 문장 ${conv.fixed}`);
+  if (conv.fixed > 0) convParts.push(`고친 문장 ${conv.fixed}`);
   if (conv.reaskOk > 0) convParts.push(`다시 쓴 문형 ${conv.reaskOk}`);
-  const sourceParts = SAVED_SOURCES.filter(key => weekly.savedBySource?.[key] > 0)
-    .map(key => `${SAVED_SOURCE_LABEL[key]} ${weekly.savedBySource[key]}`);
+  // 담은 곳 — 많은 순(같으면 SAVED_SOURCES 순서). 막대 색은 순위로(공부한 날 칸과 같은 장미색 단계).
+  const sources = weekly.newWords > 0
+    ? SAVED_SOURCES.filter(key => weekly.savedBySource?.[key] > 0)
+      .map(key => ({ key, label: SAVED_SOURCE_LABEL[key], n: weekly.savedBySource[key] }))
+      .sort((x, y) => y.n - x.n)
+    : [];
+  const sourceTotal = sources.reduce((sum, src) => sum + src.n, 0);
+  if (!weekly.hasAny) {
+    return (
+      <div className="learn-week">
+        {header && <div className="learn-week__head">이번 주 ({weekRangeLabel(weekly.week)})</div>}
+        <p className="learn-week__empty">이번 주 기록이 아직 없어요.</p>
+      </div>
+    );
+  }
   return (
-    <div style={{ fontVariantNumeric: 'tabular-nums' }}>
-      {header && (
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 6 }}>
-          이번 주 ({weekRangeLabel(weekly.week)})
+    <div className="learn-week">
+      {header && <div className="learn-week__head">이번 주 ({weekRangeLabel(weekly.week)})</div>}
+      <div className="learn-week__hero">
+        <div className="learn-week__hero-k">
+          <span>복습</span>
+          {weekly.prevReviews.total > 0 && <span>지난주 {weekly.prevReviews.total}문항{prevAcc != null ? ` · ${prevAcc}%` : ''}</span>}
         </div>
-      )}
-      {weekly.reviews.total > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '2px 12px' }}>
-          <span style={{ fontWeight: 600 }}>
-            복습 {weekly.reviews.total}문항{acc != null ? ` · 정답 ${acc}%` : ''}
-          </span>
-          {weekly.prevReviews.total > 0 && (
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-              지난주 {weekly.prevReviews.total}{prevAcc != null ? ` · ${prevAcc}%` : ''}
-            </span>
+        {weekly.reviews.total > 0 ? <>
+          <div className="learn-week__num"><strong>{weekly.reviews.total.toLocaleString('ko-KR')}</strong><span>문항</span></div>
+          {acc != null && (
+            <div className="learn-week__acc">
+              <span>정답 <b>{acc}%</b></span>
+              <span className="learn-week__bar" role="img" aria-label={`정답 ${acc}%`}><i style={{ width: `${acc}%` }} /></span>
+            </div>
           )}
-        </div>
-      )}
-      {convParts.length > 0 && (
-        <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          {convParts.join(' · ')}
-        </div>
-      )}
-      {parts.length > 0 && (
-        <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          {parts.join(' · ')}
-        </div>
-      )}
-      {weekly.newWords > 0 && sourceParts.length > 0 && (
-        <div style={{ marginTop: 4, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          담은 곳 — {sourceParts.join(' · ')}
-        </div>
-      )}
-      {showWeakness && <WeakSpotLine weekStartMs={weekly.week.startMs} />}
-      {!weekly.hasAny && (
-        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          이번 주 기록이 아직 없어요.
-        </p>
-      )}
+        </> : <p className="learn-week__empty">이번 주 복습 기록이 아직 없어요.</p>}
+      </div>
+      <div className="learn-week__cells">
+        {cells.map(([n, unit, label]) => (
+          <div key={label} className="learn-week__cell">
+            <b>{n > 0 ? `${n.toLocaleString('ko-KR')}${unit}` : '–'}</b><span>{label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="learn-week__list">
+        {conv.turns > 0 && (
+          <div className="learn-week__row">
+            <span>대화</span>
+            <div><b>{`${conv.turns}마디`}</b>{convParts.length > 0 && <><br />{convParts.join(' · ')}</>}</div>
+          </div>
+        )}
+        {sources.length > 0 && (
+          <div className="learn-week__row learn-week__row--full">
+            <div className="learn-week__row-top"><span>담은 곳</span><em>{sourceTotal}개</em></div>
+            <span className="learn-week__stack" role="img" aria-label={`담은 곳: ${sources.map(src => `${src.label} ${src.n}`).join(', ')}`}>
+              {sources.map((src, i) => <i key={src.key} className={`r${i}`} style={{ flexGrow: src.n }} />)}
+            </span>
+            <span className="learn-week__legend">
+              {sources.map((src, i) => <span key={src.key}><i className={`r${i}`} />{src.label} <b>{src.n}</b></span>)}
+            </span>
+          </div>
+        )}
+        {showWeakness && <WeakSpotLine weekStartMs={weekly.week.startMs} />}
+      </div>
     </div>
   );
 }
@@ -315,8 +337,9 @@ function WeakSpotLine({ weekStartMs }) {
   const line = weaknessLine(top);
   if (!line) return null;
   return (
-    <div style={{ marginTop: 6, fontSize: '0.86rem', color: 'var(--text-muted)' }}>
-      약한 곳 — {line}
+    <div className="learn-week__row">
+      <span>약한 곳</span>
+      <div style={{ color: 'var(--text-muted)' }}>{line}</div>
     </div>
   );
 }
@@ -338,25 +361,64 @@ function TileModal({ title, onClose, children, className = '' }) {
   );
 }
 
-/* ── 공부한 날 반쪽(2×1, 오너 결정 3 · 2026-11-01 KST) — 최근 24주, 칸 10px · 간격 2px, 범례 없음(칸마다 설명).
-     좌→우로 시간이 흐르고 맨 오른쪽 아래가 오늘. 한 칸 = 학습일(04시) 하나 = 답한 문항 + 담은 말. 색은 그 기간 최대 대비 4단계(A안). ── */
+/* ── 공부한 날 반쪽(2×1, 오너 결정 3 · 2026-11-01 KST) — 최근 1년(52주). 칸 크기 · 카드 크기는 그대로라 한 번에 24주가 보이고,
+     옆으로 밀면 1년 전까지 이어진다(오너 「ㅇㅋ」 시안 2 — 버튼 · 달 이름 · 범례 없이 밀기만). 처음엔 오늘이 맨 오른쪽 아래.
+     한 칸 = 학습일(04시) 하나 = 답한 문항 + 담은 말. 색은 그 기간 최대 대비 4단계(A안). 왼쪽 가장자리 흐림 = 더 있다는 표시.
+     퍼센트는 회색 그대로 — 색 · 목표선 없음(거울이지 성적표가 아니다). 기준은 첫 기록부터(1년 넘으면 1년) — studyDaysBasis.
+     머리글은 「N일 · Z%」만(오너 「더 심플하게」), 기준은 말풍선. ── */
 
-function HeatmapCard({ dayCounts, className = '' }) {
+function HeatmapCard({ dayCounts, hasOlder = false, className = '' }) {
   const todayStart = learningDayStartMs(Date.now());
   const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => learningDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
   const total = key => (dayCounts[key]?.answers || 0) + (dayCounts[key]?.saved || 0);
   const maxCount = Math.max(1, ...days.map(total));
-  const studied = days.filter(key => total(key) > 0).length;
+  const basis = studyDaysBasis(days, dayCounts, { hasOlder });
   const levelOf = n => (!n ? '' : `l${Math.min(4, Math.max(1, Math.ceil((n / maxCount) * 4)))}`);
+  const viewRef = useRef(null);
+  const [atStart, setAtStart] = useState(false);
+  // 처음엔 오늘(맨 오른쪽)이 보이게 — 칠하기 전에 맞추고, 사람이 넘기기 전까지는 폭이 바뀌어도(칸 크기는 보이는 폭에서 나온다)
+  // 오른쪽 끝에 붙어 있는다. 늦게 정해지는 격자 폭에 처음 위치가 어긋나던 것(실측: 끝 336px 중 102px에 멈춤).
+  const touched = useRef(false);
+  useLayoutEffect(() => {
+    const view = viewRef.current;
+    if (!view) return undefined;
+    const pin = () => { if (!touched.current) view.scrollLeft = view.scrollWidth; setAtStart(view.scrollLeft <= 1); };
+    pin();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(pin);
+    observer.observe(view);
+    if (view.firstElementChild) observer.observe(view.firstElementChild);
+    return () => observer.disconnect();
+  }, []);
+  const touch = () => { touched.current = true; };
+  // 마우스로 끌어 넘기기 — 손가락 · 트랙패드 · 키보드(← →)는 브라우저 기본 가로 스크롤.
+  const drag = useRef(null);
+  const onPointerDown = e => {
+    touch();
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    drag.current = { x: e.clientX, left: viewRef.current.scrollLeft };
+    viewRef.current.setPointerCapture?.(e.pointerId);
+  };
+  const onPointerMove = e => { if (drag.current) viewRef.current.scrollLeft = drag.current.left - (e.clientX - drag.current.x); };
+  const endDrag = () => { drag.current = null; };
 
   return (
     <div className={`learn-tile learn-heatmap ${className}`.trim()}>
       <div className="learn-sec-head">
         <h2 className="learn-sec-title">공부한 날</h2>
-        {studied > 0 && <span className="learn-sec-meta">{studied}일 · 지난 24주</span>}
+        {basis && (
+          <span className="learn-sec-meta" title={basis.sinceDay ? `${Number(basis.sinceDay.slice(5, 7))}월 ${Number(basis.sinceDay.slice(8))}일 첫 기록부터` : '지난 1년'}>
+            <b>{basis.studied}일</b> · {basis.percent}%
+          </span>
+        )}
       </div>
-      <div className="learn-heatmap__strip">
-        {days.map(key => <i key={key} className={levelOf(total(key)) || undefined} title={studyDayLabel(key, dayCounts[key])} />)}
+      <div ref={viewRef} className={`learn-heatmap__view${atStart ? ' is-start' : ''}`} tabIndex={0}
+        aria-label="공부한 날 1년 — 옆으로 밀면 지난 기록" onScroll={e => setAtStart(e.currentTarget.scrollLeft <= 1)}
+        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}
+        onWheel={touch} onKeyDown={touch} onTouchStart={touch}>
+        <div className="learn-heatmap__strip">
+          {days.map(key => <i key={key} className={levelOf(total(key)) || undefined} title={studyDayLabel(key, dayCounts[key])} />)}
+        </div>
       </div>
     </div>
   );
