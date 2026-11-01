@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { activityDay, createProfileReadOnlyRefresh, isSettledFsrsActivity, replayActivityDays } from '../learningActivity';
+import { ACTIVITY_DAY_SWITCH_AT, activityDay, createProfileReadOnlyRefresh, isSettledFsrsActivity, nearActivityRollover, replayActivityDays } from '../learningActivity';
+import { learningDateString } from '../growthStats';
+import fs from 'node:fs';
 
 const baseline = { streak_count: 5, streak_freeze_count: 1, last_streak_date: '2026-10-01' };
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return { promise, resolve }; };
@@ -9,6 +11,27 @@ describe('eligible activity day and existing freeze-earn policy', () => {
     expect(activityDay('2026-10-03T23:59:59.999Z')).toBe('2026-10-03');
     expect(activityDay('2026-10-04T00:00:00.000Z')).toBe('2026-10-04');
     expect(activityDay('2026-10-04T04:00:00+09:00')).toBe('2026-10-03');
+  });
+  // STREAK-LEARNING-DAY-001(오너 결정 2026-11-01 KST): 전환 뒤 연속의 하루 = 04시 학습일 — 표시 통계(growthStats)와 같은 날.
+  it('after the switch the activity day is the KST 04:00 learning day, same as the display statistics', () => {
+    expect(ACTIVITY_DAY_SWITCH_AT).toBe(Date.parse('2026-11-03T04:00:00+09:00'));
+    expect(activityDay('2026-11-03T03:59:59.999+09:00')).toBe('2026-11-02'); // 전환 직전: UTC 날짜(11/2 18:59Z)
+    expect(activityDay('2026-11-04T08:00:00+09:00')).toBe('2026-11-04'); // 04–09시: UTC로는 전날, 학습일로는 그날
+    expect(activityDay('2026-11-04T02:00:00+09:00')).toBe('2026-11-03'); // 04시 전 = 전날 학습일
+    for (const t of ['2026-11-05T03:00:00+09:00', '2026-11-05T05:00:00+09:00', '2026-11-05T23:30:00+09:00']) {
+      expect(activityDay(t)).toBe(learningDateString(Date.parse(t)));
+    }
+    // 같은 전환 시각 · 같은 식이 마이그레이션에 있다(DB 정본 fsrs_private.activity_day).
+    const sql = fs.readFileSync('supabase/migrations/20261101130000_streak_learning_day.sql', 'utf8');
+    expect(sql).toContain("SELECT '2026-11-03 04:00:00+09'::timestamptz");
+    expect(sql).toContain("((p_at AT TIME ZONE 'Asia/Seoul') - interval '4 hours')::date");
+  });
+  it('the device-clock guard follows the rollover — UTC midnight before the switch, KST 04:00 (19:00Z) after', () => {
+    expect(nearActivityRollover(new Date('2026-11-01T00:05:00Z'))).toBe(true);
+    expect(nearActivityRollover(new Date('2026-11-01T19:05:00Z'))).toBe(false);
+    expect(nearActivityRollover(new Date('2026-11-05T19:05:00Z'))).toBe(true);
+    expect(nearActivityRollover(new Date('2026-11-05T18:50:00Z'))).toBe(true);
+    expect(nearActivityRollover(new Date('2026-11-05T00:05:00Z'))).toBe(false);
   });
   it('day D arriving after D+1 converges with chronological receipts, restoring an unnecessarily spent freeze', () => {
     const gap = replayActivityDays(baseline, ['2026-10-03']);
