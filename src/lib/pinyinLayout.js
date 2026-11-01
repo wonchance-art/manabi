@@ -16,24 +16,31 @@ export function pinyinCellWidth(measure,hanziPx) {
  *   나뉘어, 넘긴 쪽의 첫 토큰을 저장해도 다시 열면 그 토큰이 쪽 가운데에 왔다(e2e viewer-paged-reader 390 실측 2026-10-24 KST — main · PR 빌드 모두 간헐 재현, 실패한 판은 전부 이 순서).
  * · fonts.ready는 아직 받기 시작하지 않은 조각을 기다리지 않는다 — 잴 글자(PINYIN_MEASURE_SYLLABLES)의 조각을 fonts.load로 직접 받은 뒤 다시 잰다.
  */
+function pinyinFontOf({ win, doc, root, pinyinRem }) {
+  const rootSize = parseFloat(win.getComputedStyle(doc.documentElement).fontSize) || 16;
+  const host = root?.() || doc.body;
+  const family = (host ? win.getComputedStyle(host).getPropertyValue('--font-noto-sans').trim() : '') || 'sans-serif';
+  return { rootSize, font: `${pinyinRem * rootSize}px ${family}` };
+}
+
+/** 지금 받아진 글꼴로 한 번 잰 병음 칸 폭(px) — 캔버스가 없으면 null. watchPinyinCell과 뷰어의 첫 그림 전 재기(VIEWER-RENDER-001)가 같이 쓴다. */
+export function measurePinyinCell({ win, doc, root, pinyinRem, fontRem }) {
+  const ctx = doc.createElement('canvas').getContext?.('2d');
+  if (!ctx) return null;
+  const { rootSize, font } = pinyinFontOf({ win, doc, root, pinyinRem });
+  ctx.font = font;
+  return pinyinCellWidth(text => ctx.measureText(text).width, fontRem * rootSize);
+}
+
 export function watchPinyinCell({ win, doc, root, pinyinRem, fontRem, onCell }) {
   let live = true;
-  const fontOf = () => {
-    const rootSize = parseFloat(win.getComputedStyle(doc.documentElement).fontSize) || 16;
-    const host = root?.() || doc.body;
-    const family = (host ? win.getComputedStyle(host).getPropertyValue('--font-noto-sans').trim() : '') || 'sans-serif';
-    return { rootSize, font: `${pinyinRem * rootSize}px ${family}` };
-  };
   const measure = () => {
     if (!live) return;
-    const ctx = doc.createElement('canvas').getContext?.('2d');
-    if (!ctx) return;
-    const { rootSize, font } = fontOf();
-    ctx.font = font;
-    onCell(pinyinCellWidth(text => ctx.measureText(text).width, fontRem * rootSize));
+    const cell = measurePinyinCell({ win, doc, root, pinyinRem, fontRem });
+    if (cell != null) onCell(cell);
   };
   measure();
-  doc.fonts?.load?.(fontOf().font, PINYIN_MEASURE_SYLLABLES.join(' ')).then(measure, () => {});
+  doc.fonts?.load?.(pinyinFontOf({ win, doc, root, pinyinRem }).font, PINYIN_MEASURE_SYLLABLES.join(' ')).then(measure, () => {});
   doc.fonts?.ready?.then(measure);
   win.addEventListener('resize', measure);
   return () => { live = false; win.removeEventListener('resize', measure); };

@@ -3,9 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
-import { analyzeText } from './analyzeText';
 import { autoSplitParagraphs } from './splitParagraphs';
-import { runPreservedReanalysis } from './reanalysisPreservation';
 import { passageListKey, passageOf } from './sourcePassage';
 import { composerOf } from './materialComposer';
 import { runPassageAnalysis } from './passageAnalysis';
@@ -62,6 +60,11 @@ export function getParagraphs(rawText, preserveSource = false) {
  *   { fullReset: true }           — 전체 재분석
  *   { selectedLineIndices: Set }  — 선택 문단만 재분석 (나머지 기존 유지)
  */
+// 분석 엔진(분석 호출 · 보존 재분석)은 누른 뒤에만 받는다(VIEWER-JS-001) — 뷰어 첫 로드 page 청크에서 뺀다.
+// 다시 분석은 버튼 · 원문 수정 · 구간 이어 분석에서만 돈다. 받는 동안은 이미 비동기인 분석의 앞에 붙는 내려받기 한 번이다.
+export const loadAnalysisEngine = () => Promise.all([import('./analyzeText'), import('./reanalysisPreservation')])
+  .then(([{ analyzeText }, { runPreservedReanalysis }]) => ({ analyzeText, runPreservedReanalysis }));
+
 export function useReanalyze({ materialId, material, refetch, toast, explanationLocale = 'ko', onPendingBoundaries = null }) {
   const abortRef = useRef(null);
   const committingRef = useRef(false);
@@ -86,6 +89,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
       if (passageOf(material)) {
         const controller = new AbortController();
         abortRef.current = controller;
+        const { analyzeText } = await loadAnalysisEngine();
         const result = await runPassageAnalysis(supabase, material, controller.signal, analyzeText,
           record => queryClient.setQueryData(['material', String(materialId)], record));
         // 원본으로 돌아가면 구간 목록이 새 상태(표현 준비됨)를 읽게 한다.
@@ -100,6 +104,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
       abortRef.current = controller;
       setRecovery(null);
       try {
+        const { analyzeText, runPreservedReanalysis } = await loadAnalysisEngine();
         const record = await runPreservedReanalysis(supabase, material, controller.signal, analyzeText, {
           fullReset, resume, selectedLineIndices, rawTextOverride, baseJsonOverride,
           ...(material?.processed_json?.metadata?.language === 'Korean' ? { explanationLocale } : {}),

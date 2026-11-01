@@ -7,6 +7,8 @@ import { VIEWER_MESSAGES, VIEWER_MESSAGE_LOCALES } from '../../lib/viewerMessage
 const read = (p) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
 const viewer = read('src/views/ViewerPage.jsx');
 const flow = read('src/lib/boundaryEditFlow.js');
+// 진입 판정은 첫 렌더부터 동기로 묻는 몫이라 boundaryEditGate.js에 있고, 흐름 모듈이 그대로 다시 내보낸다(VIEWER-JS-001).
+const gate = read('src/lib/boundaryEditGate.js');
 const parts = read('src/components/viewer/ViewerBoundaryEdit.jsx');
 const css = read('src/components/viewer/reader-controls.css');
 
@@ -47,8 +49,9 @@ describe('AD-R3 PR③ 배선 — 진입점 조건', () => {
     expect(viewer).toContain('!reanalyzeMutation.isPending');
     expect(viewer).toContain('passage: !!passageOf(material)');
     expect(viewer).toContain('classMode: classStudyActive');
-    expect(flow).toMatch(/ctx\.owner === true && BOUNDARY_LANGUAGES\.includes\(ctx\.language\)\s*&& !ctx\.classCopy && !ctx\.passage && !ctx\.classMode/);
-    expect(flow).toContain('classCopy: !!meta.source_ref || !!material?.__local');
+    expect(gate).toMatch(/ctx\.owner === true && BOUNDARY_LANGUAGES\.includes\(ctx\.language\)\s*&& !ctx\.classCopy && !ctx\.passage && !ctx\.classMode/);
+    expect(gate).toContain('classCopy: !!meta.source_ref || !!material?.__local');
+    expect(flow).toMatch(/export \{\s*BoundaryEditError, boundaryEditContext, boundaryEntryAllowed,[^}]*\} from '\.\/boundaryEditGate';/);
     // 드래그 버튼·카드 줄·⋯ 항목은 모두 boundaryAllowed에서 나온다
     expect(viewer).toContain('const dragRange = boundaryAllowed && tokenRange.range && !tokenRange.dragging ? tokenRange.range : null;');
     expect(viewer).toContain('const cardTokenId = boundaryAllowed && selectedToken?.id && isSheetOpen ? selectedToken.id : null;');
