@@ -171,7 +171,8 @@ export async function runAnalysisTick({
   let processed = 0;
   let books;
   try {
-    try { books = getBooks(claimed.kind); } catch { books = null; }
+    // 이 작업의 책만 — 문학책은 그 책들 원문만 읽는다(BUILD-OOM-001). 모르는 key는 빠지고 nextChapter가 「찾지 못함」으로 넘긴다.
+    try { books = getBooks(claimed.kind, claimed.book_keys); } catch { books = null; }
     if (!books) {
       await updateJob(supabase, claimed.id, { status: 'failed', last_error: '정본 책 목록을 만들지 못했어요. 리포의 원본 기록을 확인해 주세요.' });
       return { jobId: claimed.id, processed, more: true };

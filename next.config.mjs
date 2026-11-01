@@ -14,6 +14,9 @@ const releaseVersion = {
   bundledEditionId: JSON.parse(readFileSync(new URL('./src/content/textbookEditions/index.json', import.meta.url))).current,
 };
 
+// 정본 문학책 장 원문 — 작품 폴더의 chapters.json만(원문 source.txt · entry.json · 대조표는 싣지 않는다).
+const LITERATURE_CHAPTERS = './src/content/literature/*/*/chapters.json';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Strict mode
@@ -61,10 +64,16 @@ const nextConfig = {
     ],
     '/api/admin/backfill-base-form': ['./node_modules/kuromoji/dict/**/*'],
     // 서버 분석 작업(CANON-SERVER-ANALYSIS-001) — 분석 라우트를 같은 프로세스 안에서 부르므로 /api/analyze와 같은 사전 · wasm이 필요하다.
+    // 정본 문학책 장 원문도 읽는다(아래 LITERATURE_CHAPTERS).
     '/api/cron/analysis-jobs': [
       './node_modules/kuromoji/dict/**/*',
       './node_modules/jieba-wasm/pkg/nodejs/**/*',
+      LITERATURE_CHAPTERS,
     ],
+    // 정본 문학책 장 원문(BUILD-OOM-001) — 번들에 싣지 않고 서버가 파일로 읽는다(src/lib/server/literatureBooks.js).
+    // 문학책을 읽는 라우트에만 싣는다(/api/admin/art-books는 그림 책만 — 싣지 않는다). 계약: scripts/output-file-tracing.test.js.
+    '/api/admin/literature': [LITERATURE_CHAPTERS],
+    '/api/admin/analysis-jobs': [LITERATURE_CHAPTERS],
   },
 
   // Node.js 런타임 전용 — kuromoji(사전 fs 접근)·jieba-wasm(.wasm을 fs로 로드).

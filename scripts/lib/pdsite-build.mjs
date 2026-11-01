@@ -5,6 +5,7 @@ import { createDisplayManifest } from './literature-display-build.mjs';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { serializeBookKeyIndex } from './literature-index-build.mjs';
 
 export const PDSITE_ROOT = 'src/content/literature/pdsite';
 export const PDSITE_FILES = Object.freeze({ entry: 'entry.json', source: 'source', chapters: 'chapters.json' });
@@ -14,14 +15,7 @@ const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 const serialize = (value) => `${JSON.stringify(value, null, 2)}\n`;
 
 export function serializePdSiteIndex(keys) {
-  const lines = [
-    '// 자동 생성 — node scripts/build-literature.mjs. 손으로 고치지 않는다(--check가 낡음을 잡는다).',
-    '// 퍼블릭 도메인 전자책 사이트 정본 책 장 원문을 싣는다 — 서버(관리자 게시 API)에서만 import한다. 뷰어는 manifest.generated.json을 쓴다.',
-    ...keys.map((key, index) => `import book${index} from './${key}/${PDSITE_FILES.chapters}';`),
-    '',
-    `export const PDSITE_BOOKS = Object.freeze([${keys.map((_, index) => `book${index}`).join(', ')}]);`,
-  ];
-  return `${lines.join('\n')}\n`;
+  return serializeBookKeyIndex('PDSITE_BOOK_KEYS', '퍼블릭 도메인 전자책 사이트 정본 책', keys);
 }
 
 /** 뷰어 대조표 — 작품 key → 크레딧(책 단위 literature) + 표기 + 분량 + 장마다 제목·원문 SHA-256. */

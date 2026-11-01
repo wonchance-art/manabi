@@ -62,7 +62,7 @@ export async function POST(request) {
     return respond({ error: '서버에서 분석할 책을 선택해 주세요.' }, 400);
   }
   let books;
-  try { books = publishBooksOf(body.kind); } catch { return respond({ error: '정본 책 목록을 만들지 못했어요. 리포의 원본 기록을 확인해 주세요.' }, 422); }
+  try { books = publishBooksOf(body.kind, keys); } catch { return respond({ error: '정본 책 목록을 만들지 못했어요. 리포의 원본 기록을 확인해 주세요.' }, 422); }
   const byKey = new Map(books.map((book) => [book.book.key, book]));
   const unknown = keys.find((key) => !byKey.has(key) || !literatureBookPublishable(byKey.get(key)));
   if (unknown) return respond({ error: `게시할 수 없는 책이 섞여 있어요(${unknown}).` }, 422);

@@ -7,12 +7,15 @@ import {
   standardEbooksRightsPublishable, standardEbooksRightsVerdict, wordCount,
 } from '../standardEbooks.js';
 import { buildStandardEbooks, STANDARD_EBOOKS_OUTPUTS, STANDARD_EBOOKS_ROOT } from '../../../scripts/lib/standard-ebooks-build.mjs';
-import { STANDARD_EBOOKS_BOOKS } from '../../content/literature/standardebooks/index.generated.js';
+import { STANDARD_EBOOKS_BOOK_KEYS } from '../../content/literature/standardebooks/index.generated.js';
+import { literatureBook } from '../server/literatureBooks.js';
 import manifest from '../../content/literature/standardebooks/manifest.generated.json';
 import { standardEbooksChapter, verifiedStandardEbooksLiterature } from '../standardEbooksCanonical.js';
 import { isCanonicalLiteratureMaterial } from '../literatureCanonical.js';
 import { standardEbooksAttributionParts } from '../videoAttribution.js';
 import { literatureBookPublishable, literatureBookSummary, literatureRubyCoverage } from '../literaturePublish.js';
+// 장 원문은 번들이 아니라 작품 폴더 chapters.json에서 읽는다(BUILD-OOM-001) — 서버와 같은 읽기.
+const STANDARD_EBOOKS_BOOKS = STANDARD_EBOOKS_BOOK_KEYS.map(literatureBook);
 
 // Standard Ebooks 정본 책(LIT-SRC-EN-1, 오너 「ㄱㄱ」 2026-10-16 KST — 영어 시범 3편) — 판 XHTML 파서·장 나눔·권리 선·
 // 리포 산출물(--check)·뷰어 대조(원문 해시가 같을 때만 크레딧)·게시 판정.

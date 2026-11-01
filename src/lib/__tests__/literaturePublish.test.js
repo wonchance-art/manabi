@@ -18,11 +18,15 @@ import { literatureBatchTargets,
   planLiteratureRelease,
 } from '../literaturePublish.js';
 import { getBook, groupByBook } from '../bookMeta.js';
-import { LITERATURE_BOOKS } from '../../content/literature/aozora/index.generated.js';
+import { LITERATURE_BOOK_KEYS } from '../../content/literature/aozora/index.generated.js';
 import { artBooks } from '../artBook.js';
 import { sliceBetween } from './helpers/sliceBetween';
-import { WIKISOURCE_BOOKS } from '../../content/literature/wikisource/index.generated.js';
+import { WIKISOURCE_BOOK_KEYS } from '../../content/literature/wikisource/index.generated.js';
+import { literatureBook } from '../server/literatureBooks.js';
 import { senseReviewItems } from '../viewerSenseReview.js';
+// 장 원문은 번들이 아니라 작품 폴더 chapters.json에서 읽는다(BUILD-OOM-001) — 서버와 같은 읽기.
+const LITERATURE_BOOKS = LITERATURE_BOOK_KEYS.map(literatureBook);
+const WIKISOURCE_BOOKS = WIKISOURCE_BOOK_KEYS.map(literatureBook);
 
 // 관리자 게시 계획(AOZORA-P0-2) — 실물 「ごん狐」(6장)로 book key + 장 순서 멱등·충돌 시 무게시를 고정한다.
 

@@ -65,7 +65,8 @@ const DEFAULT_NOT_PUBLISHABLE = '권리 기록이 공개 기준을 통과하지 
 const BOOK_SOURCE_BROKEN = '정본 책 목록을 만들지 못했어요. 리포의 원본 기록을 확인해 주세요.';
 
 /**
- * 게시 API 처리 만들기 — getBooks: () => 정본 책 배열(literaturePublish.js가 받는 모양). 요청마다 부른다.
+ * 게시 API 처리 만들기 — getBooks: (keys?) => 정본 책 배열(literaturePublish.js가 받는 모양). 요청마다 부른다.
+ * 책 하나만 쓰는 요청(POST · GET ?ruby)은 keys=[그 key]로 부른다 — 문학책은 그 책 원문만 읽는다(BUILD-OOM-001). 무시해도 된다(그림 책).
  * getBooks가 throw하면(깨진 정본 — 예: 카탈로그 계약 위반으로 createArtBook 실패) 아무것도 읽거나 쓰지 않는다:
  * POST는 422 + notPublishableError, GET은 500 + 원본 확인 안내(DB 장애 503과 구분). throw하지 않으면 동작은 그대로다.
  * @param {{notPublishableError?: string}} [options] 게시 가능 판정(literatureBookPublishable)에 걸렸을 때 422 안내
@@ -73,8 +74,8 @@ const BOOK_SOURCE_BROKEN = '정본 책 목록을 만들지 못했어요. 리포�
  */
 export function createBookPublishHandlers(getBooks, { notPublishableError = DEFAULT_NOT_PUBLISHABLE } = {}) {
   /** 정본 책 목록 — 만들지 못하면 null(throw를 라우트 밖으로 내보내지 않는다). */
-  const loadBooks = () => {
-    try { return getBooks(); } catch { return null; }
+  const loadBooks = (keys) => {
+    try { return getBooks(keys); } catch { return null; }
   };
 
   async function GET(request) {
@@ -82,7 +83,7 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
     if (auth.error) return respond({ error: auth.error }, auth.status);
     const { supabase, user } = auth;
     const rubyKey = new URL(request.url).searchParams.get('ruby');
-    const books = loadBooks();
+    const books = loadBooks(rubyKey != null ? [rubyKey] : undefined);
     if (!books) return respond({ error: BOOK_SOURCE_BROKEN }, 500);
     try {
       if (rubyKey != null) {
@@ -106,7 +107,7 @@ export function createBookPublishHandlers(getBooks, { notPublishableError = DEFA
     if (!body || typeof body !== 'object' || !['prepare', 'review', 'reviewMany', 'release'].includes(body.action) || typeof body.key !== 'string') {
       return respond({ error: '작업할 책을 선택해 주세요.' }, 400);
     }
-    const books = loadBooks();
+    const books = loadBooks([body.key]);
     if (!books) return respond({ error: notPublishableError }, 422);
     const book = books.find((item) => item.book.key === body.key);
     if (!book) return respond({ error: '정본 책을 찾지 못했어요.' }, 404);

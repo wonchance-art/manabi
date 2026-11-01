@@ -5,9 +5,12 @@ import { applyMaterialReviewHints, countAttachedReviewHints, resolveReviewHints,
 import { preserveReanalysisTokens } from '../reanalysisPreservation';
 import { applyTokenCorrections } from '../tokenEditOptions.js';
 import { senseReviewItems, senseReviewOptions } from '../viewerSenseReview.js';
-import { LITERATURE_BOOKS } from '../../content/literature/aozora/index.generated.js';
+import { LITERATURE_BOOK_KEYS } from '../../content/literature/aozora/index.generated.js';
+import { literatureBook } from '../server/literatureBooks.js';
 import manifest from '../../content/literature/aozora/manifest.generated.json';
 import { sliceBetween } from './helpers/sliceBetween';
+// 장 원문은 번들이 아니라 작품 폴더 chapters.json에서 읽는다(BUILD-OOM-001) — 서버와 같은 읽기.
+const LITERATURE_BOOKS = LITERATURE_BOOK_KEYS.map(literatureBook);
 
 // 정본 책 검수 힌트(AOZORA-P0-4 「분석 → 검수·편집 → 공개」) — 사전 검토자가 단 문맥 뜻 제안이
 // 빌드에서 원문 위치로 풀리고, 분석 말미에 「뜻 확인 필요」 표식 + 제안으로만 붙으며(뜻은 그대로), 관리자 확정으로 걷힌다.
