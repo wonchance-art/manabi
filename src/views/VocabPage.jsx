@@ -11,6 +11,7 @@ import { recordReviewCompleted } from '../lib/learn/progressStore';
 import { useTTS } from '../lib/useTTS';
 import { useLearningCapabilities } from '../lib/useLearningCapabilities';
 import { useFsrsReview, fsrsIntervalLabel, FSRS_LOADING_CAP_MS } from '../lib/useFsrsReview';
+import { cardVocabularyId } from '../lib/fsrsCardKinds';
 import { fsrsQuestionBound } from '../lib/fsrsReviewSession';
 import { useLearningAdmission } from '../lib/useLearningAdmission';
 import { isAdmissionOfflineError } from '../lib/learningAdmission';
@@ -789,11 +790,13 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewQueue, reviewIdx, vocab, reviewSupported, reviewAvailable, fsrsReview.controller, fsrsReview.registryAvailable, fsrsReview.enrolledIds]);
   // 새 일정(FSRS) 단계 — 카드는 controller가 연다(질문 · 노출 · 채점은 FSRS 경로 그대로).
+  // 새 일정 단계의 id는 카드 id다 — 단어 → 뜻 카드는 단어 id와 같고, 종류 카드(뜻 → 단어 · 듣기 — CARD-TYPES-001 4단계)는 그 카드가 묻는 단어(vocabularyId)로 찾는다.
+  const fsrsWordIdOf = useCallback(id => cardVocabularyId(fsrsReview.cards.find(entry => entry.cardId === id) || { cardId: id }), [fsrsReview.cards]);
   const fsrsStepValid = useCallback(id => {
-    const projection = learningById.get(id);
-    return vocab.some(row => row.id === id && reviewSupported(row)) && !!projection && !projection.review.known && !projection.review.excluded;
-  }, [learningById, vocab, reviewSupported]);
-  const fsrsStepWord = currentStep?.engine === 'fsrs' && currentStep.phase !== 'skipped' && fsrsStepValid(currentStep.id) ? vocab.find(v => v.id === currentStep.id) : undefined;
+    const wordId = fsrsWordIdOf(id), projection = learningById.get(wordId);
+    return vocab.some(row => row.id === wordId && reviewSupported(row)) && !!projection && !projection.review.known && !projection.review.excluded;
+  }, [fsrsWordIdOf, learningById, vocab, reviewSupported]);
+  const fsrsStepWord = currentStep?.engine === 'fsrs' && currentStep.phase !== 'skipped' && fsrsStepValid(currentStep.id) ? vocab.find(v => v.id === fsrsWordIdOf(currentStep.id)) : undefined;
 
   const questionKey = `${reviewSessionId}:${reviewIdx}`;
   // 로그인 전에는 user?.id·current가 둘 다 비어 undefined === undefined가 되지 않게 사용자 id를 먼저 본다(게스트 /vocab 크래시).

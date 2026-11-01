@@ -14,3 +14,5 @@
 .cf-meaning{white-space:normal;text-wrap:balance}
 .cf-guide-icon{display:inline-flex;vertical-align:-4px;color:var(--ink)}
 .cf-guide-icon svg{width:22px;height:22px}
+/* 복습실 듣기 문제 면 — 표제어 자리 가운데에 소리 단추(답 면에서도 그 자리 · 다시 듣기). */
+.review-card__play{display:grid;place-items:center;min-height:72px}

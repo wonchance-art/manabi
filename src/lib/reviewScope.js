@@ -15,6 +15,7 @@ import { zhHskLevelLabel, zhHskLevelOf } from './zhHskLevel.js';
 import { isVocabularyReviewAvailable, isVocabularyReviewDue, isVocabularyUnreviewed, vocabularyRetrievability } from './vocabularyLearningRead.js';
 import { expressionKind, hasMeaning } from './reviewCard.js';
 import { backlogBaseline, isBacklogged, orderReviewQueue } from './reviewQueue.js';
+import { cardKindOf, cardVocabularyId, pickSiblings } from './fsrsCardKinds.js';
 
 export * from './reviewScopeUrl.js';
 
@@ -150,15 +151,19 @@ function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sou
   const remaining = Math.max(0, Number(quota?.remaining) || 0);
 
   // FSRS — useFsrsReview controller.queue()의 출제 조건 그대로(범위 id는 이 계획이 controller에 넘긴다).
+  // 카드 종류(CARD-TYPES-001 4단계): 범위는 카드가 묻는 단어(cardVocabularyId)로 본다 · 쉬는 카드(꺼진 종류)는 뺀다 · 같은 단어의 카드는 학습일에
+  // 한 장(pickSiblings — 단어 페이지와 같은 공유 규칙) · 하루 새 단어 몫은 단어 → 뜻의 첫 질문만이라 막 붙은 종류 카드(New)는 복습 줄에 선다.
+  // 종류 카드가 없으면(단어 → 뜻만 — 기본값) 지금 줄 그대로다(계약 reviewScopeCount · cardTypesRoom).
   const enabled = fsrsEnabled ?? snapshot?.enabled === true;
   const pending = new Set(pendingIds), fsrsIds = new Set(scoped.fsrsIds);
   const entries = enabled ? (fsrsEntries ?? fsrsEntriesFromSnapshot(snapshot)) : [];
-  const fsrsScoped = entries.filter(e => fsrsIds.has(e.cardId) && e.eligible !== false && !e.known && !e.excluded && !pending.has(e.cardId));
+  const fsrsScoped = entries.filter(e => fsrsIds.has(cardVocabularyId(e)) && e.resting !== true && e.eligible !== false && !e.known && !e.excluded && !pending.has(e.cardId));
   const dueAt = e => Math.max(time(e.card?.due), e.nextQuestionAt ? time(e.nextQuestionAt) : -Infinity);
-  const fsrsDue = fsrsScoped.filter(e => dueAt(e) <= at);
+  const fsrsDue = pickSiblings(fsrsScoped.filter(e => dueAt(e) <= at), { cards: entries, at });
   const fsrsOpen = quota?.active === true && remaining > 0;
-  const fsrsReviews = fsrsDue.filter(e => e.card?.state !== 'New');
-  const fsrsNew = fsrsDue.filter(e => e.card?.state === 'New');
+  const fresh = e => cardKindOf(e) === 'recognition' && e.card?.state === 'New';
+  const fsrsReviews = fsrsDue.filter(e => !fresh(e));
+  const fsrsNew = fsrsDue.filter(fresh);
 
   // 밀린 복습 규칙 — 그 언어 전체의 기한 지난 복습이 기준의 2배를 넘으면 새 표현 0(계정 한도는 차감하지 않는다).
   const paused = !!backlog?.active;
@@ -173,7 +178,7 @@ function planReviewScope({ snapshot, fsrsEntries, quota, scope, now, levels, sou
   const reviews = [
     ...legacyReviews.map(p => ({ id: p.vocabulary.id, engine: 'legacy', retrievability: retrievability(p),
       dueAt: time(p.review.nextQuestionAt) })),
-    ...fsrsReviews.map(e => ({ id: e.cardId, engine: 'fsrs', retrievability: retrievability(byId.get(e.cardId)),
+    ...fsrsReviews.map(e => ({ id: e.cardId, engine: 'fsrs', retrievability: cardKindOf(e) === 'recognition' ? retrievability(byId.get(e.cardId)) : null,
       dueAt: dueAt(e), learning: e.card.state === 'Learning' || e.card.state === 'Relearning' })),
   ];
   const freshOf = (id, engine, introduced) => {

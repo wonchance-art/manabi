@@ -5,7 +5,8 @@ import { createFsrsLearningClient } from './fsrsLearningClient';
 import { fsrsLearnsAhead, learningDaySpan, previewFsrsRatings, validateFsrsCard } from './fsrsScheduler';
 import { fsrsQuestionBound, fsrsQueueState } from './fsrsReviewSession';
 import { normalizeFsrsSaveRequest } from './fsrsOperationOutbox';
-import { fsrsTakesNewQuota, pickSiblings } from './fsrsCardKinds';
+import { admissionCardKinds, cardKindOf, cardVocabularyId, fsrsTakesNewQuota, nextVariantKind, pickSiblings } from './fsrsCardKinds';
+import { learningDay } from './fsrsScheduler';
 import { normalizeAdmissionStatus } from './learningAdmission';
 import { logLearningFailure } from './useLearningAdmission';
 
@@ -38,6 +39,9 @@ export function fsrsIntervalLabel(due, at) {
   return `${Math.round(seconds / 86400)}d`;
 }
 
+/** 복습실이 한 번 읽을 때 붙이는 종류 카드 수(CARD-TYPES-001 4단계 — 단어 페이지의 한 번 page장과 같다). */
+export const VARIANT_BATCH = 20;
+
 /** ready가 아닌 상태(loading · error)에서 시작한 FSRS 목록 읽기가 이보다 오래 끝나지 않으면 오류로 내린다(다시 시도). 목록 요청 상한(15초)보다 조금 길다. */
 export const FSRS_LOADING_CAP_MS = 20000;
 
@@ -58,8 +62,10 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     state = { ...state, ...patch };
     listeners.forEach(listener => listener());
   };
-  const visibleWord = cardId => words.find(word => word.id === cardId && !word.is_excluded && !word.is_known
-    && (!allowedIds || allowedIds.has(cardId)));
+  // 보이는 단어 — 카드가 묻는 단어(단어 → 뜻은 카드 id = 단어 id, 종류 카드는 vocabularyId — CARD-TYPES-001 4단계)가 이 화면 범위에 있나.
+  const visibleWord = wordId => words.find(word => word.id === wordId && !word.is_excluded && !word.is_known
+    && (!allowedIds || allowedIds.has(wordId)));
+  const wordOf = entry => visibleWord(cardVocabularyId(entry));
   const pendingPatch = entries => {
     const pending = entries || [], pendingSaves = pending.filter(entry => entry.payload?.action === 'save');
     return { pending, pendingSaves,
@@ -78,11 +84,11 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     timer = null;
     const pendingIds = new Set(state.pending.map(row => row.cardId));
     const time = now() + offset;
-    // 카드 종류(CARD-TYPES-001 단계 2): 하루 새 단어 몫은 단어 → 뜻의 첫 질문만(fsrsTakesNewQuota) · 같은 단어의 카드는 학습일에 한 장(pickSiblings —
-    // 형제는 카드 전부로 본다). 이 화면은 아직 단어 → 뜻만 그린다 — 보이는 카드 = 카드 id가 단어 id인 카드(visibleWord)라 종류 카드는 3단계 화면 전까지
-    // 줄에 서지 않는다. 단어마다 카드가 한 장이면 두 규칙 모두 지금 줄 그대로다(계약 테스트).
+    // 카드 종류(CARD-TYPES-001): 하루 새 단어 몫은 단어 → 뜻의 첫 질문만(fsrsTakesNewQuota) · 같은 단어의 카드는 학습일에 한 장(pickSiblings —
+    // 형제는 카드 전부로 본다). 종류 카드(뜻 → 단어 · 듣기)도 그 단어가 보이면 줄에 선다(4단계 화면) — 쉬는 카드(꺼진 종류 · resting)는 빼고.
+    // 단어마다 카드가 한 장이면 두 규칙 모두 지금 줄 그대로다(계약 테스트).
     const entries = state.enabled && state.registryAvailable ? pickSiblings(state.cards.filter(entry =>
-      visibleWord(entry.cardId) && entry.eligible !== false && !entry.known && !entry.excluded && !pendingIds.has(entry.cardId)
+      wordOf(entry) && entry.resting !== true && entry.eligible !== false && !entry.known && !entry.excluded && !pendingIds.has(entry.cardId)
       && (!fsrsTakesNewQuota(entry) || (state.admission?.active && state.admission.remaining > 0))
     ).map(entry => ({ ...entry, id: entry.cardId, userId: accountId })), { cards: state.cards, at: time }) : [];
     const cooldowns = entries.map(entry => Date.parse(entry.nextQuestionAt)).filter(value => value > time);
@@ -172,12 +178,13 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
           enabled: snapshot.enabled === true, registryAvailable: true, status: 'ready',
           error: pending?.some(row => ['blocked', 'conflict', 'stale'].includes(row.status)) ? new Error('fsrs_sync_blocked') : null });
         const current = state.current;
-        if (current && (!visibleWord(current.cardId) || !snapshot.enabled ||
+        if (current && (!visibleWord(current.vocabularyId ?? current.cardId) || !snapshot.enabled ||
           !cards.some(row => row.cardId === current.cardId && row.card.revision === current.card.revision &&
             (!current.attempt || row.attempt?.id === current.attempt.id) && row.eligible !== false && !row.known && !row.excluded))) {
           publish({ current: null });
         }
         queue();
+        introduceVariants();
         return true;
       } catch (error) {
         if (!pending && !disposed && token === generation && readToken === readGeneration) {
@@ -295,14 +302,15 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       const entry = cardId ? state.ready.find(row => row.cardId === cardId) || (ahead ? state.ahead.find(row => row.cardId === cardId) : undefined)
         : state.ready[0];
       if (!entry) return false;
-      const current = { cardId: entry.cardId, card: clone(entry.card), word: visibleWord(entry.cardId),
+      // kind · vocabularyId — 화면이 문제 면을 고른다(단어 → 뜻 = 표제어 · 뜻 → 단어 = 뜻 · 듣기 = 소리 단추 — CardFaces).
+      const current = { cardId: entry.cardId, kind: cardKindOf(entry), vocabularyId: cardVocabularyId(entry), card: clone(entry.card), word: wordOf(entry),
         attempt: null, phase: 'question', previews: null, previewAt: null };
       if (state.lastGrade?.payload.cardId === entry.cardId) publish({ lastGrade: null });
       if (entry.attempt && ['question', 'revealed'].includes(entry.attempt.phase)) {
         if (entry.attempt.card?.revision !== entry.card.revision || entry.attempt.userId !== accountId ||
           entry.attempt.cardId !== entry.cardId || entry.attempt.eligible !== true) throw new Error('invalid_attempt_receipt');
         await client.confirmQuestion?.(entry);
-        if (disposed || token !== generation || !visibleWord(entry.cardId)) return false;
+        if (disposed || token !== generation || !wordOf(entry)) return false;
         const at = entry.attempt.revealedAt;
         publish({ current: { ...current, attempt: clone(entry.attempt), phase: entry.attempt.phase,
           previews: at ? Object.fromEntries(Object.entries(previewFsrsRatings(entry.card, at))
@@ -313,7 +321,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       if (!state.admission?.installed) throw new Error('fsrs_admission_unavailable');
       const response = await client.question(basePayload('question', current, { attemptId: makeId(), answerVisible: false,
         dailyNewLimit: state.admission.limit, expectedPolicyRevision: state.admission.policyRevision }));
-      if (disposed || token !== generation || !visibleWord(entry.cardId)) return false;
+      if (disposed || token !== generation || !wordOf(entry)) return false;
       if (!response?.attempt || response.attempt.phase !== 'question') throw new Error('invalid_question_receipt');
       const admission = normalizeAdmissionStatus(response.admission, { actorId: accountId });
       adopt(response);
@@ -330,14 +338,14 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
   async function reveal() {
     return run(async token => {
       const current = state.current;
-      if (!state.enabled || !state.registryAvailable || !current?.attempt || current.phase !== 'question' || !visibleWord(current.cardId)) return false;
+      if (!state.enabled || !state.registryAvailable || !current?.attempt || current.phase !== 'question' || !visibleWord(current.vocabularyId)) return false;
       if (!(await refresh()) || disposed || token !== generation || !state.enabled) return false;
       const persisted = state.cards.find(entry => entry.cardId === current.cardId);
       if (persisted?.attempt?.id !== current.attempt.id) throw new Error('review_revision_conflict');
       const response = persisted.attempt.phase === 'revealed'
         ? { ...persisted, now: persisted.attempt.revealedAt }
         : await client.reveal(basePayload('reveal', current, { attemptId: current.attempt.id, hint: false }));
-      if (disposed || token !== generation || !visibleWord(current.cardId)) return false;
+      if (disposed || token !== generation || !visibleWord(current.vocabularyId)) return false;
       if (response?.attempt?.phase !== 'revealed' || response.attempt.eligible !== true) throw new Error('invalid_reveal_receipt');
       validateFsrsCard(response.card);
       const at = response.now || response.attempt.revealedAt;
@@ -353,7 +361,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     return run(async token => {
       const current = state.current;
       if (![1, 2, 3, 4].includes(rating) || !state.enabled || !state.registryAvailable ||
-        current?.phase !== 'revealed' || !visibleWord(current.cardId)) return false;
+        current?.phase !== 'revealed' || !visibleWord(current.vocabularyId)) return false;
       if (current.pendingPayload && current.pendingPayload.rating !== rating) return false;
       const payload = current.pendingPayload || basePayload('grade', current, { attemptId: current.attempt.id, rating });
       publish({ current: { ...current, pendingPayload: payload } });
@@ -370,7 +378,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       const pending = await client.pending();
       if (disposed || token !== generation) return false;
       publish({ current: null, completed: state.completed + 1,
-        lastGrade: { payload, response: result.response || null },
+        lastGrade: { payload, response: result.response || null, vocabularyId: current.vocabularyId },
         pending: settled(result.status) || state.cards.some(entry => entry.cardId === payload.cardId && entry.card.revision > payload.expectedRevision) ? pending : [...pending.filter(row => row.operationId !== payload.operationId),
           { operationId: payload.operationId, cardId: current.cardId, payload, status: result.status }] });
       queue();
@@ -381,7 +389,7 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
   async function undo() {
     return run(async token => {
       const last = state.lastGrade;
-      if (!last || !state.registryAvailable || !state.enabled || !visibleWord(last.payload.cardId)) return false;
+      if (!last || !state.registryAvailable || !state.enabled || !visibleWord(last.vocabularyId ?? last.payload.cardId)) return false;
       const payload = last.undoPayload || { action: 'undo', accountId, operationId: makeId(),
         cardId: last.payload.cardId, expectedRevision: last.payload.expectedRevision + 1,
         targetOperationId: last.payload.operationId };
@@ -402,6 +410,51 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
       if (settled(result.status)) notifyApplied({ ...result, action: 'undo', accountId });
       return true;
     });
+  }
+  // 차례로 붙이기(CARD-TYPES-001 §3 · 4단계) — 켜진 종류(입장 상태 cardKinds)가 단어 → 뜻 밖에도 있으면, 보이는 단어마다 지금 붙일 종류
+  // (nextVariantKind — 서버 등록 조건의 거울: 단어 → 뜻이 날 단위로 넘어간 다음 학습일에 뜻 → 단어, 그다음 학습일에 듣기)를 바로 보내기로 붙인다.
+  // 듣기는 예문이 있는 단어만 — 복습실의 예문은 저장한 원문 문장(source_sentence). 한 번에 VARIANT_BATCH장까지(켠 날 밀린 단어가 한꺼번에 붙지
+  // 않게), 같은 학습일에 같은 단어 · 종류는 한 번만 시도한다. 거절은 조용히 넘기고(다음 읽기가 다시 판정), 붙였으면 목록을 다시 읽는다.
+  // 단어 → 뜻만 켜져 있으면(기본값) 아무것도 하지 않는다.
+  const variantTried = new Set();
+  let introducing = false;
+  function introduceVariants() {
+    if (disposed || introducing || !client.enrollVariant || !state.enabled || !state.registryAvailable || state.status !== 'ready') return;
+    const kinds = admissionCardKinds(state.admission);
+    if (kinds.length < 2) return;
+    const at = Math.trunc(now() + offset), day = learningDay(at);
+    const byWord = new Map();
+    for (const entry of state.cards) {
+      const id = cardVocabularyId(entry);
+      if (!byWord.has(id)) byWord.set(id, []);
+      byWord.get(id).push(entry);
+    }
+    const todo = [];
+    for (const [wordId, cards] of byWord) {
+      if (todo.length >= VARIANT_BATCH) break;
+      const word = visibleWord(wordId);
+      if (!word) continue;
+      const kind = nextVariantKind({ cards, cardKinds: kinds, hasExample: !!word.source_sentence, at });
+      const key = `${day}:${wordId}:${kind}`;
+      if (!kind || variantTried.has(key)) continue;
+      variantTried.add(key);
+      todo.push({ wordId, kind });
+    }
+    if (!todo.length) return;
+    introducing = true;
+    const token = generation;
+    (async () => {
+      let added = 0;
+      for (const { wordId, kind } of todo) {
+        if (disposed || token !== generation) return;
+        try {
+          const response = await client.enrollVariant({ accountId, cardId: makeId(), expectedRevision: 0, operationId: makeId(),
+            cardKind: kind, vocabularyId: wordId, ...(kind === 'listening' ? { hasExample: true } : {}) });
+          if (response?.ok === true) added += 1;
+        } catch { /* 서버가 거절(조건 어긋남) · 끊김 — 다음 읽기가 다시 판정한다 */ }
+      }
+      if (added && !disposed && token === generation) await refresh().catch(() => {});
+    })().finally(() => { introducing = false; });
   }
   const onFocus = () => { if (!disposed) refresh().catch(() => {}); };
   const onVisible = () => { if (visibilityTarget?.visibilityState !== 'hidden') onFocus(); };
@@ -432,8 +485,9 @@ export function createFsrsReviewController({ accountId, client, now = Date.now, 
     },
     setWords(nextWords, scopeIds = null) {
       words = nextWords || []; allowedIds = scopeIds ? new Set(scopeIds) : null;
-      if (state.current && !visibleWord(state.current.cardId)) publish({ current: null });
+      if (state.current && !visibleWord(state.current.vocabularyId ?? state.current.cardId)) publish({ current: null });
       queue();
+      introduceVariants();
     },
     // 활성 한도는 서버 admission 정책만 따른다. 로컬 설정 변경으로 슬롯을 늘리지 않는다.
     setDailyNewLimit() { queue(); },
