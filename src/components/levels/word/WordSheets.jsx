@@ -8,7 +8,7 @@ import { hanjaPanelModel, normalizePinyin, selectSameHanjaTiles, splitPinyinSyll
 import { jaKanjiReadingRows, kanaPerChar, loadJaReadingTables } from '@/lib/jaKanjiReadingRows';
 import { CharTiles, WordRow } from './WordParts';
 import { useWordLang } from './wordLang';
-import { LEVEL_STUDY_AMOUNTS, LEVEL_STUDY_ORDERS } from '@/lib/levelWordPrefs';
+import { LEVEL_NEW_PER_DAY_CUSTOM, LEVEL_NEW_PER_DAY_PRESETS, LEVEL_STUDY_ORDERS, levelNewPerDayItems, parseNewPerDayInput } from '@/lib/levelWordPrefs';
 
 const CLOSE_DRAG_PX = 80;
 const JA_MIN_BELOW = 200; // 읽기 표 창을 아래에 둘 최소 높이(머리 + 읽기 약 3줄)
@@ -46,6 +46,7 @@ export function Sheet({ label, onClose, children, returnTo = null }) {
   useEffect(() => {
     const onKey = (event) => {
       if (document.querySelector('.lw-dp')) return; // 시트 안 조각 창이 열려 있으면 Esc · Tab은 그 창 몫(창이 먼저 닫힌다)
+      if (event.key === 'Escape' && event.target.closest?.('[data-own-esc]')) return; // 「하루」 직접 입력 칸 — Esc는 입력 취소(시트는 그대로)
       if (event.key === 'Escape') { event.stopPropagation(); close(); return; }
       // aria-modal — Tab이 뒤의 네 칸(화면 아래 고정)으로 새지 않게 시트 안에서 돈다(ClassCopyNotice와 같은 방식).
       if (event.key !== 'Tab' || !ref.current) return;
@@ -76,30 +77,102 @@ export function Sheet({ label, onClose, children, returnTo = null }) {
   </>;
 }
 
-function Seg({ label, items, value, onPick }) {
+/** 고르는 줄 — name = 화면 읽기에 들리는 줄 이름(보이는 두 글자 이름표로 모자랄 때 — 「새 단어 순서: 복습 전」). */
+function Seg({ label, name = null, items, value, onPick }) {
   return <div className="lw-sheet__row"><span id={`lw-seg-${label}`}>{label}</span>
-    <div className="lw-seg" role="group" aria-labelledby={`lw-seg-${label}`} style={{ '--n': items.length }}>
+    <div className="lw-seg" role="group" aria-labelledby={name ? undefined : `lw-seg-${label}`} aria-label={name || undefined} style={{ '--n': items.length }}>
       {items.map((it) => (it.href
         ? <Link key={it.id} href={it.href} aria-current={it.id === value ? 'page' : undefined} aria-label={it.aria || it.label}>{it.label}</Link>
         : <button key={it.id} type="button" aria-pressed={it.id === value} aria-label={it.aria} data-sym={it.sym || undefined} onClick={() => onPick(it.id)}>{it.label}</button>))}
     </div></div>;
 }
 
+const NEW_DAY_NOTE = '새로 시작하는 단어 수 · 복습실과 같은 값';
+const NEW_DAY_HELP = '0–999개 · 0이면 복습만 합니다';
+const NEW_DAY_BAD = '0–999 사이 숫자로 입력해 주세요 · 그 이상은 ∞';
+
 /**
- * 제목 ▾ 시트 — 레벨 · 목록 | 순서 · 분량 · 세부(오너 2026-10-21 KST 「두 곳」 안: 페이지 줄 = 지금 공부하는 방식, 제목 = 나머지 전부 ·
- * 학습 옵션 LEVEL-STUDY-OPTIONS-001, 오너 2026-10-31 KST 시안 4차 · 단순화). 모드 · 보기 탭은 페이지 줄에만 둔다(시트에 또 두면 겹친다).
- * 목록은 그 레벨에 있는 것만(한자 1 · 2급, 7–9급은 단어뿐이라 줄 없음). 찾아가기(레벨 · 목록)와 오늘 공부(순서 · 분량 · 세부)는 묶음 제목 없이 가는 선 하나로 나눈다.
- * 이름표는 모두 두 글자(40px 열 그대로) · 고르는 줄은 모두 세 칸이라 칸 경계가 목록 줄과 같은 세로선에 선다. 예전 「보기」 줄(도움 스위치 · 리스트 한 번에)은 없앴다(고정 기본값).
+ * 「하루」 직접 입력 칸(LEVEL-WAIT-001 시안 ① 둘째 · 셋째 그림) — 같은 줄이 [입력 칸 · 개][확인][취소]로 바뀐다(팝업 없음 · 숫자 키패드).
+ * 0–999만 받는다(정본 isNewPerDayValue · NEW_PER_DAY_MAX — 그 이상은 ∞ 칩). 잘못된 값이면 확인이 꺼지고 아래 안내가 붉게 바뀐다.
+ * 빈 칸도 확인을 끄지만, 연 직후(touched 전)는 붉은 안내를 띄우지 않는다 — 적었다 지운 뒤에야 붉다. Enter = 확인 · Esc = 취소.
+ * 상태는 NewPerDayRow가 갖는다(이 부품은 그 값을 그리기만 — 계약 테스트가 글자 · 꺼짐을 바로 그려 본다).
  */
-export function TitleSheet({ levels, levelKey, kinds, prefs, onPrefs, onClose }) {
+export function NewPerDayInput({ text, touched = false, fieldRef = null, onText = () => {}, onConfirm = () => {}, onCancel = () => {} }) {
+  const n = parseNewPerDayInput(text);
+  const bad = n === null && (touched || text !== '');
+  const onKey = (event) => {
+    if (event.key === 'Enter') { event.preventDefault(); if (n !== null) onConfirm(n); }
+    else if (event.key === 'Escape') { event.preventDefault(); onCancel(); }
+  };
+  return <>
+    <div className="lw-sheet__row"><span id="lw-seg-하루">하루</span>
+      <div className="lw-newday" data-own-esc="">
+        <label className="lw-newday__field"><span className="sr-only">하루 새 단어 수</span>
+          <input ref={fieldRef} type="text" inputMode="numeric" pattern="[0-9]*" enterKeyHint="done" autoComplete="off" value={text}
+            aria-invalid={bad || undefined} aria-describedby="lw-newday-help" onKeyDown={onKey} onChange={(e) => onText(e.target.value)} />
+          <span aria-hidden="true">개</span></label>
+        <button type="button" className="lw-btn lw-btn--primary" disabled={n === null} onClick={() => onConfirm(n)}>확인</button>
+        <button type="button" className="lw-btn" onClick={onCancel}>취소</button>
+      </div>
+    </div>
+    <p className="lw-sheet__sub" id="lw-newday-help" data-bad={bad || undefined}>{bad ? NEW_DAY_BAD : NEW_DAY_HELP}</p>
+  </>;
+}
+
+/**
+ * 「하루」 줄(LEVEL-WAIT-001 · 오너 승인 2026-11-01 KST 시안 ①) — 하루 새 단어 수. 10 · 15 · 20 · 30 · ∞ · ⋯ 여섯 칸, 값은 단어장 복습 설정과 같은 정본.
+ * ⋯을 누르면 같은 줄이 입력 칸(NewPerDayInput)이 된다. 확인한 값이 고르기 값이면 그 칩, 아니면 ⋯ 칩이 그 숫자로 바뀌어 선택된 채 남는다
+ * (다시 누르면 입력 칸 · 그 값이 들어 있다). 닫히면 초점은 ⋯ 칩으로 돌아간다.
+ */
+function NewPerDayRow({ value, onPick }) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState('');
+  const [touched, setTouched] = useState(false);
+  const field = useRef(null);
+  const row = useRef(null);
+  const wasEditing = useRef(false);
+  const custom = !LEVEL_NEW_PER_DAY_PRESETS.includes(value);
+  useEffect(() => {
+    if (editing) field.current?.focus({ preventScroll: true });
+    else if (wasEditing.current) row.current?.querySelector('button[data-custom]')?.focus({ preventScroll: true });
+    wasEditing.current = editing;
+  }, [editing]);
+  const open = () => { setText(custom ? String(value) : ''); setTouched(false); setEditing(true); };
+  if (editing) {
+    return <NewPerDayInput text={text} touched={touched} fieldRef={field} onText={(t) => { setText(t); setTouched(true); }}
+      onConfirm={(n) => { setEditing(false); if (n !== value) onPick(n); }} onCancel={() => setEditing(false)} />;
+  }
+  return <>
+    <div className="lw-sheet__row" ref={row}><span id="lw-seg-하루">하루</span>
+      <div className="lw-seg" role="group" aria-labelledby="lw-seg-하루" style={{ '--n': 6 }}>
+        {levelNewPerDayItems(value).map((it) => {
+          const isCustom = it.id === LEVEL_NEW_PER_DAY_CUSTOM;
+          return <button key={it.id} type="button" aria-pressed={isCustom ? custom : it.id === value} aria-label={it.aria} data-sym={it.sym || undefined}
+            data-custom={isCustom || undefined} onClick={() => (isCustom ? open() : it.id !== value && onPick(it.id))}>{it.label}</button>;
+        })}
+      </div>
+    </div>
+    <p className="lw-sheet__sub" id="lw-newday-help">{NEW_DAY_NOTE}</p>
+  </>;
+}
+
+/**
+ * 제목 ▾ 시트 — 레벨 · 목록 | 순서 · 하루(오너 2026-10-21 KST 「두 곳」 안: 페이지 줄 = 지금 공부하는 방식, 제목 = 나머지 전부 ·
+ * 학습 옵션 LEVEL-STUDY-OPTIONS-001, 오너 2026-10-31 KST 시안 4차 · 단순화 · 「분량」 자리에 「하루」 LEVEL-WAIT-001, 2026-11-01 KST).
+ * 모드 · 보기 탭은 페이지 줄에만 둔다(시트에 또 두면 겹친다). 목록은 그 레벨에 있는 것만(한자 1 · 2급, 7–9급은 단어뿐이라 줄 없음).
+ * 찾아가기(레벨 · 목록)와 오늘 공부(순서 · 하루)는 묶음 제목 없이 가는 선 하나로 나눈다. 이름표는 모두 두 글자(40px 열 그대로).
+ * 「하루」는 하루 새 단어 수를 아는 때만(로그인 — perDay가 null이면 줄 없음). 예전 「보기」 줄(도움 스위치 · 리스트 한 번에)은 없앴다(고정 기본값).
+ */
+export function TitleSheet({ levels, levelKey, kinds, prefs, onPrefs, perDay = null, onPerDay, onClose }) {
   const L = useWordLang();
   return <Sheet label="레벨 · 목록 · 학습 옵션" onClose={onClose}>
     <div className="lw-sheet__rows">
       <Seg label="레벨" value={levelKey} items={levels.map((k) => ({ id: k, label: L.levelPill(k), aria: L.tag(L.levelOf(k)), href: L.levelHref(k) }))} />
       {kinds.length > 1 && <Seg label="목록" value="vocab" items={kinds} />}
       <div className="lw-sheet__sep" role="presentation" />
-      <Seg label="순서" value={prefs.order} items={LEVEL_STUDY_ORDERS} onPick={(order) => onPrefs({ order })} />
-      <Seg label="분량" value={prefs.amount} items={LEVEL_STUDY_AMOUNTS} onPick={(amount) => onPrefs({ amount })} />
+      {/* 보이는 이름표는 두 글자 「순서」, 화면 읽기는 「새 단어 순서」(무엇의 순서인지 — 「새 단어 순서: 새 단어 먼저」). */}
+      <Seg label="순서" name="새 단어 순서" value={prefs.order} items={LEVEL_STUDY_ORDERS} onPick={(order) => onPrefs({ order })} />
+      {perDay !== null && onPerDay && <NewPerDayRow value={perDay} onPick={onPerDay} />}
     </div>
   </Sheet>;
 }

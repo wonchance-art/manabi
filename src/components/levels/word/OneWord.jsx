@@ -3,7 +3,7 @@
 // 그 아래 읽기(HSK 병음 성조 색 · JLPT 가나) · 듣기 (레벨 태그 · 상태는 찾기에만 — 오너 2026-10-20 KST), 뜻, 글자 칸, 예문. 네 칸은 화면 아래 고정(앞면에서도 누를 수 있다).
 // 보기 탭은 앞면에 무엇을 보일지만 정한다(단어 · 문장 · 뜻 · 소리 · 전체). 훈음(글자 칸)은 뒷면에만.
 // 오래된 단어의 반대 방향(뜻 보고 단어 떠올리기)은 뜻 연습 탭이 맡는다(네 영역 체크 — 오너 승인 2026-10-21 KST).
-import { CharTiles, CountUp, GradeButtons, Listen, Reading } from './WordParts';
+import { CharTiles, CountUp, GradeButtons, Listen, Reading, WaitText } from './WordParts';
 import { Example } from './WordCard';
 import { useWordLang } from './wordLang';
 import { NEW_PER_DAY_UNLIMITED } from '@/lib/vocabStudy';
@@ -60,23 +60,16 @@ export function NewDayTitle({ started }) {
 export function MoreNewButton({ more, onMore, primary = false }) {
   return <button type="button" className={`lw-btn${primary ? ' lw-btn--primary' : ''}`} onClick={onMore}>새 단어 {more}개 더</button>;
 }
-/** 분량(학습 옵션)에서 멈춘 뒤 남은 오늘 단어를 다음 분량만큼 — 「새 단어 N개 더」(하루 몫 뒤)와 다른 칸(rest)이다. */
-export function ContinueButton({ count, onContinue, primary = false }) {
-  return <button type="button" className={`lw-btn${primary ? ' lw-btn--primary' : ''}`} onClick={onContinue}>이어서 {count}개</button>;
-}
 /** 「더」의 대가 — 단추 안이 아니라 아래 회색 한 줄(시안 ⑪ · 단추는 모두 한 줄 48px). */
 export function MoreNewNote({ perDay }) {
   // 「제한 없음」(9999)은 숫자로 쓰지 않는다.
   return <p className="lw-done__note">{perDay > 0 && perDay < NEW_PER_DAY_UNLIMITED ? `하루 ${perDay}개를 넘기면 내일 복습이 그만큼 늘어요` : '새 단어를 더 하면 내일 복습이 그만큼 늘어요'}</p>;
 }
-export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel, soundCount = 0, onSound, more = 0, perDay = 0, started = 0, onMore, onBrowse,
-  cont = 0, onContinue }) {
+export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabel, soundCount = 0, onSound, more = 0, perDay = 0, started = 0, onMore, onBrowse }) {
   const cells = [[1, 'again', '다시'], [2, 'hard', '어려움'], [3, 'good', '알맞음'], [4, 'easy', '쉬움']];
-  // 분량에서 멈춤(cont — 남은 오늘 단어)이 하루 몫에서 멈춤(more)보다 먼저다: 남은 단어가 오늘 할 일이고, 몫 뒤 새 단어는 그다음이다.
-  const paused = cont > 0;
-  const capped = !paused && more > 0;
+  const capped = more > 0;
   return <section className="lw-done" aria-labelledby="lw-done-title">
-    <h2 id="lw-done-title" tabIndex={-1}>{paused ? '이번 분량 끝' : capped ? <NewDayTitle started={started} /> : '오늘 이 레벨 끝'}</h2>
+    <h2 id="lw-done-title" tabIndex={-1}>{capped ? <NewDayTitle started={started} /> : '오늘 이 레벨 끝'}</h2>
     {graded > 0 ? <>
       <div className="lw-done__big">
         <span className="lw-done__n"><b><CountUp n={graded} /></b><small>학습</small></span>
@@ -87,14 +80,9 @@ export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabe
       </div>
     </> : <p className="lw-done__sum">지금 복습할 단어가 없어요</p>}
     <div className="lw-done__actions">
-      {/* 분량에서 멈춤 = 오늘 할 단어가 남았다 — 「이어서」가 맨 위 주 단추, 소리 확인은 아래 줄 보조(오너 검토 2026-10-31 KST). */}
-      {paused ? <ContinueButton count={cont} onContinue={onContinue} primary />
-        : soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary" onClick={onSound}>소리로 확인할 단어 {soundCount}개</button>}
+      {soundCount > 0 && <button type="button" className="lw-btn lw-btn--primary" onClick={onSound}>소리로 확인할 단어 {soundCount}개</button>}
       <div className="lw-done__row">
-        {paused ? <>
-          {soundCount > 0 && <button type="button" className="lw-btn" onClick={onSound}>소리 확인 {soundCount}개</button>}
-          {onList && <button type="button" className="lw-btn" onClick={onList}>리스트로</button>}
-        </> : capped ? <>
+        {capped ? <>
           <MoreNewButton more={more} onMore={onMore} primary={soundCount === 0} />
           <button type="button" className="lw-btn" onClick={onBrowse}>전체 훑어보기</button>
         </> : <>
@@ -105,5 +93,19 @@ export function OneWordDone({ graded, tomorrow, counts, onNext, onList, nextLabe
       </div>
       {capped && <MoreNewNote perDay={perDay} />}
     </div>
+  </section>;
+}
+
+/**
+ * 한 단어 대기 화면(LEVEL-WAIT-001 · 오너 승인 2026-11-01 KST 시안 ③) — 기다리는 카드만 남았고 가장 빠른 카드도 아직 채점할 수 없을 때(60초 창 밖),
+ * 잠긴 카드를 앞당겨 띄우지 않는다(Anki 학습 카드 대기 화면). 남은 시간은 1초마다 줄고, 시간이 되면 화면이 카드를 띄운다(nextAt 타이머).
+ * 네 칸 · 기다리는 카드 수는 그리지 않는다(오너 2026-11-01 KST — 잠긴 카드는 보이지 않는다). at = 가장 빠른 카드의 차례 시각.
+ */
+export function OneWordWait({ at, onList }) {
+  return <section className="lw-wait" aria-labelledby="lw-wait-title">
+    <p className="lw-wait__t" id="lw-wait-title" role="timer">
+      <WaitText at={at}>{(amount) => (amount ? <>다음 카드는 <b>{amount}</b> 후에 와요</> : '다음 카드가 곧 와요')}</WaitText>
+    </p>
+    {onList && <button type="button" className="lw-btn" onClick={onList}>리스트로</button>}
   </section>;
 }

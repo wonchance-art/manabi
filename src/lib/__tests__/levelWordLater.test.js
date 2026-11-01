@@ -25,9 +25,9 @@ describe('splitLaterEntries', () => {
 });
 
 describe('laterDueText', () => {
-  it('펼친 카드 「N일 뒤 복습」과 같은 계산 — 1일 뒤 · 3일 뒤, 날짜 없으면 졸업', () => {
-    expect(laterDueText(at(1), now)).toBe('1일 뒤');
-    expect(laterDueText(at(3), now)).toBe('3일 뒤');
+  it('펼친 카드 「N일 후 복습」과 같은 계산 — 1일 후 · 3일 후, 날짜 없으면 졸업(시간 글자는 「후」 — LEVEL-WAIT-001)', () => {
+    expect(laterDueText(at(1), now)).toBe('1일 후');
+    expect(laterDueText(at(3), now)).toBe('3일 후');
     expect(laterDueText(null, now)).toBe('졸업');
   });
 
@@ -36,12 +36,13 @@ describe('laterDueText', () => {
   });
 });
 
-describe('배선 — 리스트 맨 아래는 두 줄(복습 예정 · 새 단어), 한 줄 「다음에 볼 단어」는 없다', () => {
+describe('배선 — 리스트 맨 아래는 두 줄(복습 예정 · 새 단어), 한 줄 「다음에 볼 단어」 · 「대기」 줄은 없다', () => {
   it('화면이 splitLaterEntries · laterDueText를 쓰고, 찾기로 간 단어는 그 줄만 펼친다', async () => {
     const fs = await import('node:fs');
     const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
     expect(screen).toContain('splitLaterEntries(allEntries, inLine,');
     expect(screen).toContain("[['review', '복습 예정'], ['fresh', '새 단어']]");
+    expect(screen).not.toMatch(/'대기'|lw-later--wait/); // 기다리는 카드는 그리지 않는다(오너 2026-11-01 KST — Anki처럼)
     expect(screen).toContain('laterDueText(');
     expect(screen).toContain("for (const part of ['review', 'fresh'])");
     expect(screen).not.toContain('다음에 볼 단어 {');

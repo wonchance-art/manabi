@@ -19,9 +19,16 @@ export function usableVocabReviewMode(mode, word, options) {
 }
 
 // 하루 새 단어 한도 — Anki식 신규 큐 제한 (0 = 복습만). 9999 = 「제한 없음」(Anki 상한과 같은 값 — 사실상 끔, LEVEL-NEW-UNLIMITED-001 ·
-// 오너 결정 2026-10-30 KST). 서버(learning_configure_admission · fsrs_apply_operation · 정책 CHECK)도 같은 목록이다.
+// 오너 결정 2026-10-30 KST).
 export const NEW_PER_DAY_UNLIMITED = 9999;
 export const NEW_PER_DAY_OPTIONS = [0, 5, 10, 15, 20, 30, 40, NEW_PER_DAY_UNLIMITED];
+// 직접 입력(LEVEL-NEW-CUSTOM-001 · 오너 2026-11-01 KST 「옵션에 직접 입력」) — 0–999 아무 정수 또는 「제한 없음」(9999).
+// 위 목록은 고르기 칩 · 단어장 설정 목록일 뿐, 받을 수 있는 값의 정본은 이 판정이다(서버 함수 · 정책 CHECK도 같은 범위).
+export const NEW_PER_DAY_MAX = 999;
+export const isNewPerDayValue = (n) => Number.isInteger(n) && ((n >= 0 && n <= NEW_PER_DAY_MAX) || n === NEW_PER_DAY_UNLIMITED);
+/** 단어장 설정 목록 — 고르기 값 + 지금 값이 직접 넣은 값이면 그 값도 제자리(크기 순)에. */
+export const newPerDayChoices = (current) => (isNewPerDayValue(current) && !NEW_PER_DAY_OPTIONS.includes(current)
+  ? [...NEW_PER_DAY_OPTIONS, current].sort((a, b) => a - b) : NEW_PER_DAY_OPTIONS);
 /** 설정 · 안내의 한도 글 — 0 = 「없음 (복습만)」, 9999 = 「제한 없음」. */
 export const newPerDayLabel = (n) => (n === 0 ? '없음 (복습만)' : n === NEW_PER_DAY_UNLIMITED ? '제한 없음' : `${n}개`);
 export const DEFAULT_NEW_PER_DAY = 15;
@@ -38,7 +45,7 @@ export const isNewWord = (v) => !v.last_reviewed_at;
 // 이 기기의 하루 새 단어 한도(복습 설정) — 배움 칸 · 단어 목록이 같은 값을 읽는다. 없거나 깨졌으면 기본값.
 export function loadNewPerDay() {
   if (typeof window === 'undefined') return DEFAULT_NEW_PER_DAY;
-  try { const stored = parseInt(localStorage.getItem('vocab_new_per_day'), 10); if (NEW_PER_DAY_OPTIONS.includes(stored)) return stored; } catch { /* 저장소 차단 */ }
+  try { const stored = parseInt(localStorage.getItem('vocab_new_per_day'), 10); if (isNewPerDayValue(stored)) return stored; } catch { /* 저장소 차단 */ }
   return DEFAULT_NEW_PER_DAY;
 }
 

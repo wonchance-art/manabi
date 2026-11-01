@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { FSRS_POLICIES, FSRS_RETRY_SECONDS, introduceFsrsCard, learningDay, previewFsrsRatings, schedulerTime, validateFsrsCard } from '../fsrsScheduler.js';
 import { beginFsrsAttempt, revealFsrsAttempt, finishFsrsAttempt, planFsrsUndo, fsrsAnswerStepIds, FSRS_ANSWER_ID_MAX } from '../fsrsReviewSession.js';
 import { UUID } from '../learningSources.js';
-import { DEFAULT_NEW_PER_DAY, NEW_PER_DAY_OPTIONS } from '../vocabStudy.js';
+import { DEFAULT_NEW_PER_DAY, isNewPerDayValue } from '../vocabStudy.js';
 import { readLearningAdmissionStatus } from './learningAdmission.js';
 import { normalizeAdmissionStatus } from '../learningAdmission.js';
 
@@ -42,7 +42,7 @@ export function fsrsError(error) {
 function refusalReply(reply) {
   if (!reply || typeof reply !== 'object') return {};
   const out = {};
-  if (reply.limit === null || NEW_PER_DAY_OPTIONS.includes(reply.limit)) out.limit = reply.limit;
+  if (reply.limit === null || isNewPerDayValue(reply.limit)) out.limit = reply.limit;
   if (typeof reply.nextQuestionAt === 'string' && Number.isFinite(Date.parse(reply.nextQuestionAt))) out.nextQuestionAt = reply.nextQuestionAt;
   return out;
 }
@@ -89,7 +89,7 @@ export function parseFsrsRequest(body, userId) {
   if (body.action === 'question' && body.attemptId !== undefined && !identity(body.attemptId)) reject('fsrs_invalid_request', 400);
   if (body.action === 'grade' && ![1, 2, 3, 4].includes(body.rating)) reject('fsrs_invalid_request', 400);
   if (body.action === 'undo' && (!identity(body.targetOperationId) || body.targetOperationId === body.operationId)) reject('fsrs_invalid_request', 400);
-  if (body.dailyNewLimit !== undefined && !NEW_PER_DAY_OPTIONS.includes(body.dailyNewLimit)) reject('fsrs_invalid_request', 400);
+  if (body.dailyNewLimit !== undefined && !isNewPerDayValue(body.dailyNewLimit)) reject('fsrs_invalid_request', 400);
   if (body.expectedPolicyRevision !== undefined && (!Number.isSafeInteger(body.expectedPolicyRevision)
       || body.expectedPolicyRevision < 0 || body.expectedPolicyRevision >= Number.MAX_SAFE_INTEGER)) reject('fsrs_invalid_request', 400);
   for (const flag of ['answerVisible', 'hint']) if (body[flag] !== undefined && typeof body[flag] !== 'boolean') reject('fsrs_invalid_request', 400);

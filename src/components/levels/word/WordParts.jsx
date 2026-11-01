@@ -22,21 +22,37 @@ export function Reading({ text, word, tone = true }) {
   return <L.Reading text={text} word={word} tone={tone} />;
 }
 
-/** 남은 시간 글자 — 1분 미만 초 · 1시간 미만 분(올림) · 그 밖 시간. 0 이하면 null. */
-export function waitLabel(ms) {
+/** 남은 시간의 양 — 1분 미만 초 · 1시간 미만 분(올림) · 하루 미만 시간 · 그 밖 일. 0 이하면 null. 「35분」처럼 뒤말 없이. */
+export function waitAmount(ms) {
   if (!Number.isFinite(ms) || ms <= 0) return null;
   const sec = Math.ceil(ms / 1000);
-  if (sec < 60) return `${sec}초 뒤`;
-  if (sec < 3600) return `${Math.ceil(sec / 60)}분 뒤`;
-  return `${Math.round(sec / 3600)}시간 뒤`;
+  if (sec < 60) return `${sec}초`;
+  if (sec < 3600) return `${Math.ceil(sec / 60)}분`;
+  if (sec < 86400) return `${Math.round(sec / 3600)}시간`;
+  return `${Math.round(sec / 86400)}일`;
+}
+/** 남은 시간 글자 — 「4분 후」(LEVEL-WAIT-001 · 오너 승인 2026-11-01 KST: 단어 페이지 시간 글자는 모두 「후」 — 「4분 후 → 1분 후 → 지금」). */
+export function waitLabel(ms) {
+  const amount = waitAmount(ms);
+  return amount ? `${amount} 후` : null;
 }
 
-/** 기다리는 카드의 남은 시간(오늘 할 줄 ③) — 스스로 1초마다 줄어든다(목록 전체를 다시 그리지 않게). 배경 없는 회색 글자. */
-export function WaitChip({ at }) {
+/** 1초마다 지금 시각 — 남은 시간 글자가 스스로 줄어든다(목록 전체를 다시 그리지 않게). */
+function useSecondTick() {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
-  const label = waitLabel(at - now);
+  return now;
+}
+
+/** 기다리는 카드의 남은 시간(오늘 할 줄 ③) — 배경 없는 회색 글자. */
+export function WaitChip({ at }) {
+  const label = waitLabel(at - useSecondTick());
   return <span className="lw-time" role="timer" aria-label={label ? `${label} 다시` : '곧 다시'}>{label || '곧'}</span>;
+}
+
+/** 문장 속 남은 시간(대기 화면 · 「오늘 할 카드 끝」) — WaitChip과 같은 셈. children(양) = 「35분」을 받아 문장을 그린다(시각이 지났으면 null). */
+export function WaitText({ at, children }) {
+  return children(waitAmount(at - useSecondTick()));
 }
 
 export function LevelTag({ level }) {
@@ -78,7 +94,7 @@ export function GradeButtons({ previews, onGrade, disabled = false, note = null,
     {SAVE_GRADES.map((g) => {
       const p = previews?.[g.grade];
       return <button key={g.grade} type="button" className={`lw-grade lw-grade--${g.cls}`} disabled={disabled || !previews}
-        aria-keyshortcuts={g.key} aria-label={p?.label ? `${g.label}, ${p.label === '오늘' ? '오늘 다시' : `${p.label} 뒤`}` : g.label}
+        aria-keyshortcuts={g.key} aria-label={p?.label ? `${g.label}, ${p.label === '오늘' ? '오늘 다시' : `${p.label} 후`}` : g.label}
         onClick={(e) => { e.stopPropagation(); releasePointerFocus(e); onGrade(g.grade); }}>
         <span className="lw-grade__name">{g.label}</span>
         <b className="lw-grade__gap">{p?.label || ' '}</b>

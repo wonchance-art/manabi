@@ -144,11 +144,14 @@ export function dueAmount(due, at = Date.now()) {
   const days = learningDaySpan(next, now);
   return days ? { n: days, unit: '일' } : intervalAmount(next - now);
 }
-/** 접힌 「복습 예정」 카드 오른쪽 — 「1일 뒤」(펼친 카드 「2일 뒤 복습」 · 채점 칸 「8일」과 같은 계산), 날짜 없는 알아요 단어는 「졸업」. */
+/**
+ * 접힌 「복습 예정」 카드 오른쪽 — 「1일 후」(펼친 카드 「2일 후 복습」 · 채점 칸 「8일」과 같은 계산), 날짜 없는 알아요 단어는 「졸업」.
+ * 단어 페이지의 시간 글자는 모두 「후」(LEVEL-WAIT-001 · 오너 승인 2026-11-01 KST — 「4분 후 → 1분 후 → 지금」이 한 시간 축으로 읽히게).
+ */
 export function laterDueText(next, at = Date.now()) {
   if (next == null) return '졸업';
   const a = dueAmount(next, at);
-  return a && schedulerTime(next) > schedulerTime(at) ? `${a.n}${a.unit} 뒤` : '오늘';
+  return a && schedulerTime(next) > schedulerTime(at) ? `${a.n}${a.unit} 후` : '오늘';
 }
 const previewOf = (due, now) => {
   const amount = dueAmount(due, now);
@@ -198,6 +201,9 @@ export function gradePreviews({ projection, row, at = Date.now() } = {}) {
       return out;
     } catch { return null; }
   }
+  // 옛 일정 카드도 FSRS 카드와 같은 규칙(LEVEL-WAIT-001 · 오너 결정 2026-11-01 KST) — 차례가 됐거나 60초 창 안일 때만.
+  // 전에는 언제든 채점돼 날 단위 복습을 차례 전에 눌러 간격이 깨졌고, 같은 화면에서 FSRS 카드만 잠겨 규칙이 둘로 보였다.
+  if (legacyGradeWait(projection, at) === null) return null;
   return legacyGradePreviews(row, now);
 }
 
@@ -229,21 +235,33 @@ export function fsrsGradeWait(projection, at = Date.now()) {
   return schedulerTime(projection.review.nextQuestionAt) - schedulerTime(at);
 }
 
+/**
+ * 옛 일정 카드의 채점 대기 — FSRS 카드(fsrsGradeWait)와 같은 창. 다음 차례 시각이 없으면(일정 없음) 지금 차례다.
+ * 반환 = 기다릴 ms(0 = 지금), 60초 창 밖이면 null. 옛 일정 채점은 기다리지 않고 바로 보낸다(서버 대기 규칙이 없다).
+ */
+export function legacyGradeWait(projection, at = Date.now()) {
+  const next = projection?.review?.nextQuestionAt;
+  if (!next) return 0;
+  const left = schedulerTime(next) - schedulerTime(at);
+  if (left <= 0) return 0;
+  return left <= FSRS_GRADE_WAIT_MS ? left : null;
+}
+
 /** 이 단어를 지금 네 칸으로 채점할 수 있는가 — 'save'(담으면서) · 'legacy' · 'fsrs' · null(지금은 못 함). */
 export function gradeEngine({ projection, row, at = Date.now() } = {}) {
   if (!projection || !row) return 'save';
   if (projection.source === 'fsrs-v1') return fsrsGradeWait(projection, at) !== null ? 'fsrs' : null;
   if (projection.review.known || projection.review.excluded || !projection.review.eligible) return null;
-  return 'legacy';
+  return legacyGradeWait(projection, at) !== null ? 'legacy' : null;
 }
 
-/** 되돌리기 안내 글 — 「알맞음 · 2일 뒤 다시」. */
+/** 되돌리기 안내 글 — 「알맞음 · 2일 후 다시」. */
 export function gradeToastText(grade, preview) {
   const g = SAVE_GRADES.find((x) => x.grade === grade);
   if (!g) return '';
   const label = preview?.label;
   if (!label) return g.label;
-  return label === '오늘' ? `${g.label} · 오늘 다시` : `${g.label} · ${label} 뒤 다시`;
+  return label === '오늘' ? `${g.label} · 오늘 다시` : `${g.label} · ${label} 후 다시`;
 }
 
 /** 끝 화면 「내일」 — 다음 복습이 내일 학습일(04시 경계)인 단어 수. */

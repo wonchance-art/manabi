@@ -64,7 +64,7 @@ import { withLegacyReviewLock } from '../lib/legacyReviewSync';
 import {
   deckOf, fisherYatesShuffle, isNewWord, usableVocabReviewMode,
   loadIntroIds, saveIntroIds, loadSessionLength, saveSessionLength,
-  NEW_PER_DAY_OPTIONS, DEFAULT_NEW_PER_DAY, newPerDayLabel,
+  newPerDayChoices, DEFAULT_NEW_PER_DAY, newPerDayLabel, isNewPerDayValue,
 } from '../lib/vocabStudy';
 
 import '../components/web/review-room.css';
@@ -236,7 +236,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       setSessionLength(loadSessionLength());
       setSoundOn(readReviewSound());
       const storedNewPerDay = parseInt(localStorage.getItem('vocab_new_per_day'), 10);
-      setNewPerDay(NEW_PER_DAY_OPTIONS.includes(storedNewPerDay) ? storedNewPerDay : DEFAULT_NEW_PER_DAY);
+      setNewPerDay(isNewPerDayValue(storedNewPerDay) ? storedNewPerDay : DEFAULT_NEW_PER_DAY);
     } catch { /* 저장소 차단 시 기본값 유지 */ }
     setSettingsRestored(true);
   }, [explicitScope]);
@@ -429,7 +429,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
   } });
   // 서버 한도(입장 상태)가 정본일 때 이 기기 설정도 같은 값으로 — 단어 레벨 페이지 · 배움 칸은 기기 설정(vocab_new_per_day)을 읽는다.
   // 설정에서 바꾸면 서버만 바뀌어 단어 페이지가 옛 한도(15)로 새 단어를 막던 어긋남을 막는다(LEVEL-NEW-UNLIMITED-001).
-  const serverLimit = !admission.compatibility && NEW_PER_DAY_OPTIONS.includes(admission.quota?.limit) ? admission.quota.limit : null;
+  const serverLimit = !admission.compatibility && isNewPerDayValue(admission.quota?.limit) ? admission.quota.limit : null;
   useEffect(() => { if (settingsRestored && serverLimit !== null) setNewPerDay(serverLimit); }, [serverLimit, settingsRestored]);
   const fsrsReview = useFsrsReview({ accountId: user?.id, words: allVocab, scopeIds: fsrsScopeIds, dailyNewLimit: newPerDay,
     onAdmission: () => admission.controller.refresh(),
@@ -1775,7 +1775,8 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
                         background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
                       }}
                     >
-                      {NEW_PER_DAY_OPTIONS.map(n => (
+                      {/* 단어 페이지에서 직접 넣은 값(LEVEL-NEW-CUSTOM-001 · 예 25)도 목록에 한 줄로 보인다 — 고르기 목록은 그대로. */}
+                      {newPerDayChoices(admission.compatibility ? newPerDay : admission.quota?.limit ?? newPerDay).map(n => (
                         <option key={n} value={n}>{newPerDayLabel(n)}</option>
                       ))}
                     </select>
