@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
-import { studyDayCounts, studyDayLabel, STUDY_DAYS_SPAN } from '../studyDays.js';
+import { studyDayCounts, studyDayLabel, studyDaysBasis, STUDY_DAYS_SPAN } from '../studyDays.js';
 import { buildWeeklyReport } from '../weeklyReport.js';
 
 /**
@@ -50,11 +50,24 @@ describe('공부한 날', () => {
     const src = read('src/views/ProfileStats.jsx');
     expect(STUDY_DAYS_SPAN).toBe(364); // 52주 — 오너 「ㅇㅋ」 시안 2(2026-11-01 KST)
     expect(src).toContain('<h2 className="learn-sec-title">공부한 날</h2>');
-    expect(src).toContain('1년 중 <b>{studied}일</b> · {percent}%');
-    expect(src).toContain('Math.round((studied / HEATMAP_DAYS) * 100)');
+    expect(src).toContain("일부터 ` : '1년 중 '}<b>{basis.studied}일</b> · {basis.percent}%");
+    expect(src).toContain('studyDaysBasis(days, dayCounts, { hasOlder })');
     expect(src).not.toContain('지난 24주'); // 날짜 단위 둘이 붙어 읽히지 않던 머리글
     expect(src).toContain('title={studyDayLabel(key, dayCounts[key])}');
     expect(src).not.toContain('<h2 className="learn-sec-title">히트맵</h2>');
+  });
+
+  it('머리글 기준은 첫 기록부터 — 1년보다 오래 썼으면 1년(오너 「첫 기록부터로 바꿔」)', () => {
+    const days = ['2026-10-29', '2026-10-30', '2026-10-31', '2026-11-01'];
+    const counts = { '2026-10-30': { answers: 3, saved: 0 }, '2026-11-01': { answers: 0, saved: 2 } };
+    // 10월 30일 시작 — 사흘 중 이틀(전체 넷으로 나누면 50%라 갓 시작한 사람이 낮아 보인다).
+    expect(studyDaysBasis(days, counts)).toEqual({ studied: 2, span: 3, percent: 67, sinceDay: '2026-10-30' });
+    // 칸 기간보다 이른 기록이 있으면 1년(칸 전체) 기준 — 「1년 중」.
+    expect(studyDaysBasis(days, counts, { hasOlder: true })).toEqual({ studied: 2, span: 4, percent: 50, sinceDay: null });
+    // 첫 칸부터 기록 — 「1년 중」.
+    expect(studyDaysBasis(days, { '2026-10-29': { answers: 1, saved: 0 } }).sinceDay).toBe(null);
+    // 기록이 없으면 머리글 없음.
+    expect(studyDaysBasis(days, {})).toBe(null);
   });
 
   it('1년은 옆으로 밀어 본다 — 카드 · 칸 크기 그대로(보이는 폭에 24주), 처음엔 오늘이 맨 오른쪽', () => {

@@ -44,7 +44,7 @@ import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
 import GoalSheet from '../components/goal/GoalSheet';
 import { useGroupSnapshotPush } from '../lib/useGroupSnapshotPush';
-import { STUDY_DAYS_SPAN, fetchStudyAnswerRows, studyDayCounts, studyDayLabel } from '../lib/studyDays';
+import { STUDY_DAYS_SPAN, fetchStudyAnswerRows, studyDayCounts, studyDayLabel, studyDaysBasis } from '../lib/studyDays';
 import { METRICS } from '../lib/metrics/registry';
 
 /** 공부한 날(히트맵) — 최근 1년(52주 · 364일), 가장 오른쪽 아래가 오늘. */
@@ -97,6 +97,8 @@ export default function ProfileStats() {
     }
     return merged;
   }, [data, answerRows]);
+  // 칸 기간(1년)보다 이른 기록 — 있으면 머리글은 「1년 중」, 없으면 첫 기록 날부터(담은 말은 전체 기록을 이미 받아 둔다).
+  const hasOlderRecord = useMemo(() => !!data && (data.vocab || []).some(v => Date.parse(v.created_at) < data.heatmapStart), [data]);
 
   // 이번 주 카드(rfc-weekly-report 목업 A) — 실패·빈 주는 카드 생략으로 조용히.
   const { data: weeklyRows } = useQuery({
@@ -177,7 +179,7 @@ export default function ProfileStats() {
         <GoalTrackTile className="learn-order-1" onOpen={() => setGoalOpen(true)} />
         <TodayGoalTile vocab={vocab} projections={projections} profile={profile} empty={!data} className="learn-order-2" onOpen={() => setGoalOpen(true)} />
         <StreakTile profile={profile} className="learn-order-3" />
-        <HeatmapCard dayCounts={studyDays} className="learn-order-6" />
+        <HeatmapCard dayCounts={studyDays} hasOlder={hasOlderRecord} className="learn-order-6" />
         {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
         {weekly ? <WeeklyTile weekly={weekly} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
         <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label={METRICS.knownMarked.label} className="learn-order-5" />
@@ -362,15 +364,14 @@ function TileModal({ title, onClose, children, className = '' }) {
 /* ── 공부한 날 반쪽(2×1, 오너 결정 3 · 2026-11-01 KST) — 최근 1년(52주). 칸 크기 · 카드 크기는 그대로라 한 번에 24주가 보이고,
      옆으로 밀면 1년 전까지 이어진다(오너 「ㅇㅋ」 시안 2 — 버튼 · 달 이름 · 범례 없이 밀기만). 처음엔 오늘이 맨 오른쪽 아래.
      한 칸 = 학습일(04시) 하나 = 답한 문항 + 담은 말. 색은 그 기간 최대 대비 4단계(A안). 왼쪽 가장자리 흐림 = 더 있다는 표시.
-     퍼센트는 회색 그대로 — 색 · 목표선 없음(거울이지 성적표가 아니다). ── */
+     퍼센트는 회색 그대로 — 색 · 목표선 없음(거울이지 성적표가 아니다). 기준은 첫 기록부터(1년 넘으면 1년) — studyDaysBasis. ── */
 
-function HeatmapCard({ dayCounts, className = '' }) {
+function HeatmapCard({ dayCounts, hasOlder = false, className = '' }) {
   const todayStart = learningDayStartMs(Date.now());
   const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => learningDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
   const total = key => (dayCounts[key]?.answers || 0) + (dayCounts[key]?.saved || 0);
   const maxCount = Math.max(1, ...days.map(total));
-  const studied = days.filter(key => total(key) > 0).length;
-  const percent = Math.round((studied / HEATMAP_DAYS) * 100);
+  const basis = studyDaysBasis(days, dayCounts, { hasOlder });
   const levelOf = n => (!n ? '' : `l${Math.min(4, Math.max(1, Math.ceil((n / maxCount) * 4)))}`);
   const viewRef = useRef(null);
   const [atStart, setAtStart] = useState(false);
@@ -404,7 +405,11 @@ function HeatmapCard({ dayCounts, className = '' }) {
     <div className={`learn-tile learn-heatmap ${className}`.trim()}>
       <div className="learn-sec-head">
         <h2 className="learn-sec-title">공부한 날</h2>
-        {studied > 0 && <span className="learn-sec-meta">1년 중 <b>{studied}일</b> · {percent}%</span>}
+        {basis && (
+          <span className="learn-sec-meta">
+            {basis.sinceDay ? `${Number(basis.sinceDay.slice(5, 7))}월 ${Number(basis.sinceDay.slice(8))}일부터 ` : '1년 중 '}<b>{basis.studied}일</b> · {basis.percent}%
+          </span>
+        )}
       </div>
       <div ref={viewRef} className={`learn-heatmap__view${atStart ? ' is-start' : ''}`} tabIndex={0}
         aria-label="공부한 날 1년 — 옆으로 밀면 지난 기록" onScroll={e => setAtStart(e.currentTarget.scrollLeft <= 1)}

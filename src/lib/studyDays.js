@@ -33,6 +33,21 @@ export function studyDayCounts({ answers = [], saved = [], sinceMs = -Infinity }
   return days;
 }
 
+/**
+ * 머리글 기준 — 첫 기록부터 오늘까지(오너 2026-11-01 KST 「첫 기록부터로 바꿔」). 1년보다 오래 썼으면 1년.
+ * days = 칸의 학습일 키(오래된 → 오늘). hasOlder = 칸 기간보다 이른 기록이 있다(담은 말 created_at).
+ * → { studied, span, percent, sinceDay } — sinceDay가 null이면 「1년 중 N일」, 아니면 「M월 D일부터 N일」. 기록이 없으면 null.
+ */
+export function studyDaysBasis(days, dayCounts, { hasOlder = false } = {}) {
+  const active = key => (dayCounts?.[key]?.answers || 0) + (dayCounts?.[key]?.saved || 0) > 0;
+  const first = hasOlder ? 0 : days.findIndex(active);
+  if (first < 0) return null;
+  const studied = days.slice(first).filter(active).length;
+  if (!studied) return null;
+  const span = days.length - first;
+  return { studied, span, percent: Math.round((studied / span) * 100), sinceDay: first === 0 ? null : days[first] };
+}
+
 /** 칸 설명 — 「11월 2일 · 답 34 · 담은 말 5」, 아무것도 안 한 날은 「11월 2일 · 쉼」. 0인 항목은 쓰지 않는다. */
 export function studyDayLabel(day, counts) {
   const head = `${Number(day.slice(5, 7))}월 ${Number(day.slice(8))}일`;
