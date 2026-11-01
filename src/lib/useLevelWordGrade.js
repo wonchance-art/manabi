@@ -67,18 +67,20 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
   /**
    * 채점 — { ok, undo, reason }. reason: 'not-due'(FSRS 카드 · 복습 차례 아님) · 'new-limit'(오늘 새 단어 몫을 다 씀 — limit) · 'failed'.
    * undo는 UNDO_MS 안에만 쓸 수 있다(뷰어 담기 되돌리기와 같은 창).
+   * ahead = 미리 학습(LEARN-AHEAD-001) — 오늘 줄에 채점할 카드가 남지 않았을 때 화면이 넘긴다. 20분 안의 학습 · 재학습 카드를 기다리지 않고
+   * 지금 보낸다(서버가 같은 20분 · 단계 조건을 다시 본다). 화면의 네 칸 미리보기(gradePreviews)와 같은 값이어야 한다.
    */
-  const grade = useCallback(async (entry, rating) => {
+  const grade = useCallback(async (entry, rating, { ahead = false } = {}) => {
     if (!userId) return { ok: false, reason: 'guest' };
     try {
       let { row, projection } = lookup(entryKeys(entry));
-      let engine = gradeEngine({ projection, row });
+      let engine = gradeEngine({ projection, row, ahead });
       if (engine === 'save') {
         const undo = await save(entry, rating);
         if (undo) return { ok: true, undo: { ...undo, expiresAt: Date.now() + UNDO_MS } };
         await queryClient.refetchQueries({ queryKey: vocabKey(userId), exact: true });
         ({ row, projection } = lookup(entryKeys(entry)));
-        engine = gradeEngine({ projection, row });
+        engine = gradeEngine({ projection, row, ahead });
         if (engine === 'save') throw new Error('단어장을 다시 읽지 못했어요.');
       }
       if (engine === 'legacy') {
@@ -87,7 +89,7 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
         return done ? { ok: true, undo: { ...done, expiresAt: Date.now() + UNDO_MS } } : { ok: false, reason: 'failed' };
       }
       if (engine === 'fsrs') {
-        const result = await gradeLevelFsrs({ accountId: userId, row, rating, waitMs: fsrsGradeWait(projection) || 0 });
+        const result = await gradeLevelFsrs({ accountId: userId, row, rating, waitMs: fsrsGradeWait(projection, Date.now(), { ahead }) || 0 });
         if (!result.ok && result.reason === 'new-limit') return { ok: false, reason: 'new-limit', limit: result.limit };
         if (!result.ok) throw result.error;
         void refreshVocabWordsCards(queryClient, userId, [row.id]);

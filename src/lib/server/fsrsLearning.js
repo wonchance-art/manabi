@@ -1,7 +1,7 @@
 /** 서버가 검증한 사용자·시각·저장 상태만 새 FSRS 전이에 사용할 수 있다. */
 import { createClient } from '@supabase/supabase-js';
 import { FSRS_POLICIES, FSRS_RETRY_SECONDS, introduceFsrsCard, learningDay, previewFsrsRatings, schedulerTime, validateFsrsCard } from '../fsrsScheduler.js';
-import { beginFsrsAttempt, revealFsrsAttempt, finishFsrsAttempt, planFsrsUndo, fsrsAnswerStepIds, FSRS_ANSWER_ID_MAX } from '../fsrsReviewSession.js';
+import { beginFsrsAttempt, revealFsrsAttempt, finishFsrsAttempt, planFsrsUndo, fsrsAnswerStepIds, fsrsQuestionBound, FSRS_ANSWER_ID_MAX } from '../fsrsReviewSession.js';
 import { UUID } from '../learningSources.js';
 import { DEFAULT_NEW_PER_DAY, isNewPerDayValue } from '../vocabStudy.js';
 import { readLearningAdmissionStatus } from './learningAdmission.js';
@@ -204,7 +204,8 @@ function transition(state, request, userId, at, policyVersion) {
   if (state.card.revision !== request.expectedRevision) reject('fsrs_revision_conflict', 409);
   if (state.eligible === false || state.known || state.excluded) reject('fsrs_card_excluded', 409);
   if (request.action === 'question') {
-    if (state.nextQuestionAt && schedulerTime(at) < schedulerTime(state.nextQuestionAt)) reject('fsrs_card_not_due', 409);
+    // 차례 전 질문은 거절 — 학습 · 재학습 카드만 기한 20분 전부터(미리 학습). 되돌리기 · 중단 뒤 30초는 그대로(fsrsQuestionBound).
+    if (schedulerTime(at) < fsrsQuestionBound(state)) reject('fsrs_card_not_due', 409);
     // 같은 질문은 재전송으로 재개한다. 아직 평가할 수 있는 질문을 덮어쓰지 않는다.
     if (state.attempt && ['question', 'revealed'].includes(state.attempt.phase)) {
       reject('fsrs_attempt_conflict', 409);
@@ -411,8 +412,9 @@ export async function applyFsrsAnswer({ authClient, serviceClient, userId, body,
           dailyNewLimit: admission.limit, expectedPolicyRevision: admission.policyRevision })).duplicate;
       } catch (error) {
         if (firstQuestion && ['fsrs_new_budget_exhausted', 'fsrs_admission_pending'].includes(error?.code)) refuse('fsrs_new_budget_exhausted', 409, limit);
-        // 곧 차례인 카드(되돌린 뒤 30초 · 학습 단계)는 다음 질문 시각을 함께 — 단어 페이지가 그만큼만 기다렸다 다시 보낸다.
-        if (error?.code === 'fsrs_card_not_due') refuse('fsrs_card_not_due', 409, { nextQuestionAt: state.nextQuestionAt ?? state.card.due });
+        // 곧 차례인 카드(되돌린 뒤 30초 · 학습 단계)는 물을 수 있는 가장 이른 시각을 함께 — 단어 페이지가 그만큼만 기다렸다 다시 보낸다.
+        // 복습 카드 = 기한, 학습 · 재학습 카드 = 기한 − 20분(미리 학습)과 두 대기 중 늦은 것(fsrsQuestionBound).
+        if (error?.code === 'fsrs_card_not_due') refuse('fsrs_card_not_due', 409, { nextQuestionAt: new Date(fsrsQuestionBound(state)).toISOString() });
         throw error;
       }
     }

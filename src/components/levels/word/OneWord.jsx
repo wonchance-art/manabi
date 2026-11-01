@@ -3,12 +3,13 @@
 // 그 아래 읽기(HSK 병음 성조 색 · JLPT 가나) · 듣기 (레벨 태그 · 상태는 찾기에만 — 오너 2026-10-20 KST), 뜻, 글자 칸, 예문. 네 칸은 화면 아래 고정(앞면에서도 누를 수 있다).
 // 보기 탭은 앞면에 무엇을 보일지만 정한다(단어 · 문장 · 뜻 · 소리 · 전체). 훈음(글자 칸)은 뒷면에만.
 // 오래된 단어의 반대 방향(뜻 보고 단어 떠올리기)은 뜻 연습 탭이 맡는다(네 영역 체크 — 오너 승인 2026-10-21 KST).
-import { CharTiles, CountUp, GradeButtons, Listen, Reading, WaitText } from './WordParts';
+import { CharTiles, CountUp, GradeButtons, Listen, Reading, WaitChip, WaitText } from './WordParts';
 import { Example } from './WordCard';
 import { useWordLang } from './wordLang';
 import { NEW_PER_DAY_UNLIMITED } from '@/lib/vocabStudy';
 
-export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed, onReveal, onWord, openKey, turnKey }) {
+/** wait = 미리 올린 카드(미리 학습 LEARN-AHEAD-001)의 실제 차례 시각(ms) — 앞면 오른쪽 위에 남은 시간만(「4분 후」 · 시안 ③). */
+export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed, onReveal, onWord, openKey, turnKey, wait = null }) {
   const L = useWordLang();
   const { hw, sub } = L.head(e);
   // 표제어 — 판이 따로 그리면(영어 · 프랑스어: 폭 기준 크기 · 관사 매달기) 그것으로.
@@ -20,7 +21,7 @@ export function OneWordCard({ entry: e, view, info, tiles, speak, tone, revealed
   // 뒷면에서는 표제어가 늘 같은 자리(앞면이 단어였으면 그대로, 다른 보기였으면 단어로 바뀐다).
   const top = revealed ? word : front;
   return <section className={`lw-one__card${turnKey ? ' is-turning' : ''}`} key={turnKey || e.key} aria-label={`${e.word} 카드`} tabIndex={-1}>
-    <div className="lw-one__front">{top}</div>
+    <div className="lw-one__front">{top}{wait ? <span className="lw-one__wait"><WaitChip at={wait} /></span> : null}</div>
     {!revealed && <button type="button" className="lw-one__reveal" aria-keyshortcuts="Space"
       onClick={(ev) => { const card = ev.currentTarget.closest('section'); onReveal(); card?.focus({ preventScroll: true }); }}>정답 확인 <span className="lw-one__key">· Space</span></button>}
     {revealed && <div className="lw-one__back">

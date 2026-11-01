@@ -1,5 +1,5 @@
 /** 새 FSRS의 문제 노출·회상·보상 경계를 검증하는 순수 상태 전이. DB 권한 검증을 대체하지 않는다. */
-import { scheduleFsrsReview, schedulerTime, validateFsrsCard } from './fsrsScheduler.js';
+import { FSRS_RETRY_SECONDS, fsrsAskableAt, scheduleFsrsReview, schedulerTime, validateFsrsCard } from './fsrsScheduler.js';
 
 const identity = value => typeof value === 'string' && value.length > 0 && value.length <= 200;
 const copy = value => JSON.parse(JSON.stringify(value));
@@ -13,7 +13,8 @@ function validateAttempt(attempt) {
   validateFsrsCard(attempt.card);
   if (typeof attempt.eligible !== 'boolean' || !['question', 'revealed'].includes(attempt.phase)) throw new Error('invalid_attempt_state');
   const question = schedulerTime(attempt.questionAt);
-  if (question < schedulerTime(attempt.card.due)) throw new Error('fsrs_card_not_due');
+  // 학습 · 재학습 카드는 기한 20분 전부터 묻는다(미리 학습 LEARN-AHEAD-001 — SQL과 같은 경계).
+  if (question < fsrsAskableAt(attempt.card)) throw new Error('fsrs_card_not_due');
   if (attempt.phase === 'question') {
     if (attempt.revealedAt !== null || attempt.hintedAt !== null) throw new Error('invalid_attempt_state');
   } else {
@@ -101,6 +102,26 @@ export function planFsrsUndo(operation, currentCard, { operationId, userId, card
     expectedRevision: currentCard.revision, previousCard: copy(currentCard), nextCard,
     log: { reviewedAt: new Date(schedulerTime(at)).toISOString(), optimizerEligible: false, rewardEligible: false,
       applied: { due: nextCard.due, state: nextCard.state, step: nextCard.step, revision: nextCard.revision } } };
+}
+
+/**
+ * 이 카드에 새 질문을 열 수 있는 가장 이른 시각(ms) — SQL fsrs_apply_operation 묻기 검사와 같은 식(LEARN-AHEAD-001 · 20261101060000).
+ * = 가장 늦은 것(기한 · 되돌린 뒤 30초 · 중단 뒤 30초). 학습 · 재학습 카드는 기한만 20분 당긴다(fsrsAskableAt) — 두 대기는 그대로 엄격하다.
+ * state = { card, nextQuestionAt?, attempt?, operations? }(상태 읽기 · 목록 항목). 다음 질문 시각(next_question_at)이 기한보다 늦으면 그것이
+ * 대기가 정한 시각이다. 대기가 기한보다 일찍 끝나 다음 질문 시각에 가려졌어도 미리 물을 때는 드러나므로, 되돌리기(최근 연산 이력 — 상태
+ * 읽기에만 있다)와 중단(열린 시도)도 따로 본다. 서버 전이(fsrsLearning transition)와 복습실 미리 학습 줄(useFsrsReview)이 같은 함수를 쓴다.
+ */
+export function fsrsQuestionBound(state) {
+  const due = schedulerTime(state.card.due), next = state.nextQuestionAt ? schedulerTime(state.nextQuestionAt) : due;
+  let bound = Math.max(fsrsAskableAt(state.card), next > due ? next : -Infinity);
+  for (const operation of Array.isArray(state.operations) ? state.operations : []) {
+    if (operation?.kind !== 'undo') continue;
+    try { bound = Math.max(bound, schedulerTime(operation.log.reviewedAt) + FSRS_RETRY_SECONDS * 1000); } catch { /* 읽을 수 없는 이력은 DB가 다시 본다 */ }
+  }
+  if (state.attempt?.phase === 'abandoned') {
+    bound = Math.max(bound, schedulerTime(state.attempt.revealedAt || state.attempt.questionAt) + FSRS_RETRY_SECONDS * 1000);
+  }
+  return bound;
 }
 
 /** 개인 복습 전용. 호출 시마다 소유자·known/제외·실제 due를 다시 확인한다. */

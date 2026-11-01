@@ -16,6 +16,18 @@ export const FSRS_POLICIES = Object.freeze({
 });
 /** 취소 · 중단 뒤 다시 묻기까지의 고정 대기(SQL next_question_at의 30초). 학습 단계와 무관하다. */
 export const FSRS_RETRY_SECONDS = 30;
+/**
+ * 미리 학습 한도(LEARN-AHEAD-001 · 오너 승인 2026-11-01 KST — Anki 「learn ahead limit」 기본 20분). 분 단위 학습 · 재학습 단계 카드만
+ * 기한 20분 전부터 묻고 채점할 수 있다. 날 단위 복습 카드(Review)와 New 카드는 기한 그대로 — 간격이 깨지지 않게. SQL fsrs_apply_operation과
+ * 같은 값(20261101060000_fsrs_learn_ahead). 「언제 미리 낼지」(오늘 줄에 채점할 카드가 남지 않았을 때만)는 화면이 정한다.
+ */
+export const FSRS_LEARN_AHEAD_SECONDS = 1200;
+export const fsrsLearnsAhead = card => card?.state === 'Learning' || card?.state === 'Relearning';
+/** 이 카드를 물을 수 있는 가장 이른 시각(ms) — 기한, 학습 · 재학습 단계면 기한 − 20분. 되돌리기 · 중단 대기(30초)는 여기 없다(따로 지킨다). */
+export function fsrsAskableAt(card) {
+  const due = schedulerTime(card.due);
+  return fsrsLearnsAhead(card) ? due - FSRS_LEARN_AHEAD_SECONDS * 1000 : due;
+}
 export function fsrsPolicySteps(version) {
   if (!Object.hasOwn(FSRS_POLICIES, version)) throw new Error('unsupported_fsrs_card');
   return FSRS_POLICIES[version];
@@ -196,7 +208,8 @@ function stepPlan(card, rating, policy) {
  */
 export function previewFsrsRatings(input, at, { policyVersion = input?.policyVersion, easyFloor = true, dayDue = true } = {}) {
   const card = validateFsrsCard(input), now = schedulerTime(at), policy = fsrsPolicySteps(policyVersion);
-  if (now < schedulerTime(card.due)) throw new Error('fsrs_card_not_due');
+  // 미리 학습(LEARN-AHEAD-001) — 학습 · 재학습 카드는 기한 20분 전부터. 간격은 실제 답한 시각(at)부터 잰다.
+  if (now < fsrsAskableAt(card)) throw new Error('fsrs_card_not_due');
   const today = learningDay(now, card.timeZone, card.rolloverHour);
   const elapsed = card.lastReview === null ? 0 : today - learningDay(card.lastReview, card.timeZone, card.rolloverHour);
   if (elapsed < 0) throw new Error('scheduler_clock_reversed');

@@ -9,7 +9,7 @@ import { calculateVocabFSRS, vocabStepPhase } from './fsrs.js';
 import { currentIndexedProjection, findIndexedVocabulary } from './vocabularyDueIndex.js';
 import { projectVocabularyLearning } from './vocabularyLearningRead.js';
 import { SAVE_GRADES, gradeToInitialStats } from './vocabIO.js';
-import { learningDay, learningDaySpan, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
+import { FSRS_LEARN_AHEAD_SECONDS, learningDay, learningDaySpan, previewFsrsRatings, schedulerTime } from './fsrsScheduler.js';
 
 export const GRAD_DAYS = 90;
 const DAY = 86400000;
@@ -176,9 +176,11 @@ export function legacyGradePreviews(row, at = Date.now()) {
  *   담지 않은 단어 = 담으면서 첫 채점(gradeToInitialStats — 뷰어 저장 등급과 같다 · 1분 · 6분 · 10분 · 8일)
  *   옛 일정 카드 = calculateVocabFSRS(뷰어 인라인 복습과 같다 · 학습 단계 anki-v2)
  *   FSRS 카드 = previewFsrsRatings(복습실과 같다 · 카드의 학습 단계 정책) — 복습 차례가 아니면 null(채점할 수 없다).
+ * ahead = 미리 학습(LEARN-AHEAD-001) — 오늘 줄에 채점할 카드가 남지 않았을 때(화면이 정한다) 20분 안의 학습 · 재학습 카드도 지금 채점한다.
+ *   간격은 지금(답한 시각)부터 잰다 — 서버도 그 시각에 채점한다.
  * 반환: { 1: { label, ms, amount }, … } 또는 null — amount = dueAmount(날 단위 기한은 학습일 수).
  */
-export function gradePreviews({ projection, row, at = Date.now() } = {}) {
+export function gradePreviews({ projection, row, at = Date.now(), ahead = false } = {}) {
   const now = schedulerTime(at);
   const out = {};
   if (!projection || !row) {
@@ -188,7 +190,7 @@ export function gradePreviews({ projection, row, at = Date.now() } = {}) {
     return out;
   }
   if (projection.source === 'fsrs-v1') {
-    const wait = fsrsGradeWait(projection, at);
+    const wait = fsrsGradeWait(projection, at, { ahead });
     if (wait === null) return null;
     try {
       // 곧 차례인 카드(되돌린 직후 등)는 보낼 시각 기준 미리보기 — 서버도 그 시각에 채점한다.
@@ -203,7 +205,7 @@ export function gradePreviews({ projection, row, at = Date.now() } = {}) {
   }
   // 옛 일정 카드도 FSRS 카드와 같은 규칙(LEVEL-WAIT-001 · 오너 결정 2026-11-01 KST) — 차례가 됐거나 60초 창 안일 때만.
   // 전에는 언제든 채점돼 날 단위 복습을 차례 전에 눌러 간격이 깨졌고, 같은 화면에서 FSRS 카드만 잠겨 규칙이 둘로 보였다.
-  if (legacyGradeWait(projection, at) === null) return null;
+  if (legacyGradeWait(projection, at, { ahead, row }) === null) return null;
   return legacyGradePreviews(row, now);
 }
 
@@ -229,30 +231,54 @@ export function fsrsGradable(projection, at = Date.now()) {
  * 반환 = 기다릴 ms(0 = 지금), 창 밖이면 null.
  */
 export const FSRS_GRADE_WAIT_MS = 60000;
-export function fsrsGradeWait(projection, at = Date.now()) {
+export function fsrsGradeWait(projection, at = Date.now(), { ahead = false } = {}) {
   if (fsrsGradable(projection, at)) return 0;
+  if (ahead && learnAheadable({ projection }, at)) return 0;
   if (!fsrsGradable(projection, at + FSRS_GRADE_WAIT_MS)) return null;
   return schedulerTime(projection.review.nextQuestionAt) - schedulerTime(at);
 }
 
 /**
+ * 미리 학습(LEARN-AHEAD-001 · 오너 승인 2026-11-01 KST — Anki 「learn ahead limit」 기본 20분). 오늘 줄에 채점할 카드가 남지 않았을 때
+ * 다음 차례가 20분 안인 학습 · 재학습 단계 카드(분 단위)는 기다리지 않고 지금 묻는다 — 서버가 같은 20분 · 같은 단계 조건을 지킨다
+ * (fsrsScheduler FSRS_LEARN_AHEAD_SECONDS · SQL fsrs_apply_operation). 날 단위 복습 카드는 차례 전에 묻지 않는다.
+ * 「언제」(채점할 카드가 남지 않았을 때만)는 화면이 정하고, 이 함수는 카드 하나가 그 규칙에 드는가만 본다(지금 이미 차례인 카드는 false).
+ * FSRS 카드는 다음 질문 시각이 기한과 같을 때만 — 기한보다 늦으면 되돌리기 · 중단 대기(30초)가 정한 시각이라 미리 묻지 않는다(60초 창이 맡는다).
+ * 옛 일정 카드는 단계를 마지막 채점 → 다음 복습 간격으로 읽는다(inLearningStep) — 채점은 기기 계산(calculateVocabFSRS)이 지금부터 잰다.
+ */
+export const LEARN_AHEAD_MS = FSRS_LEARN_AHEAD_SECONDS * 1000;
+export function learnAheadable({ projection, row } = {}, at = Date.now()) {
+  if (!projection?.review || (projection.source === 'fsrs-v1' && !projection.memory) || !inLearningStep({ projection, row })) return false;
+  const review = projection.review;
+  if (review.known || review.excluded) return false;
+  const next = review.nextQuestionAt;
+  if (!next) return false;
+  const left = schedulerTime(next) - schedulerTime(at);
+  if (left <= 0 || left > LEARN_AHEAD_MS) return false;
+  if (projection.source === 'fsrs-v1') return review.available && schedulerTime(next) <= schedulerTime(projection.memory.due);
+  return review.eligible !== false;
+}
+
+/**
  * 옛 일정 카드의 채점 대기 — FSRS 카드(fsrsGradeWait)와 같은 창. 다음 차례 시각이 없으면(일정 없음) 지금 차례다.
  * 반환 = 기다릴 ms(0 = 지금), 60초 창 밖이면 null. 옛 일정 채점은 기다리지 않고 바로 보낸다(서버 대기 규칙이 없다).
+ * ahead = 미리 학습(learnAheadable) — 학습 · 재학습 단계 행은 20분 안이면 지금(0).
  */
-export function legacyGradeWait(projection, at = Date.now()) {
+export function legacyGradeWait(projection, at = Date.now(), { ahead = false, row = null } = {}) {
   const next = projection?.review?.nextQuestionAt;
   if (!next) return 0;
   const left = schedulerTime(next) - schedulerTime(at);
   if (left <= 0) return 0;
+  if (ahead && learnAheadable({ projection, row }, at)) return 0; // 미리 학습 — 지금 채점(간격은 지금부터)
   return left <= FSRS_GRADE_WAIT_MS ? left : null;
 }
 
-/** 이 단어를 지금 네 칸으로 채점할 수 있는가 — 'save'(담으면서) · 'legacy' · 'fsrs' · null(지금은 못 함). */
-export function gradeEngine({ projection, row, at = Date.now() } = {}) {
+/** 이 단어를 지금 네 칸으로 채점할 수 있는가 — 'save'(담으면서) · 'legacy' · 'fsrs' · null(지금은 못 함). ahead = 미리 학습(gradePreviews와 같다). */
+export function gradeEngine({ projection, row, at = Date.now(), ahead = false } = {}) {
   if (!projection || !row) return 'save';
-  if (projection.source === 'fsrs-v1') return fsrsGradeWait(projection, at) !== null ? 'fsrs' : null;
+  if (projection.source === 'fsrs-v1') return fsrsGradeWait(projection, at, { ahead }) !== null ? 'fsrs' : null;
   if (projection.review.known || projection.review.excluded || !projection.review.eligible) return null;
-  return legacyGradeWait(projection, at) !== null ? 'legacy' : null;
+  return legacyGradeWait(projection, at, { ahead, row }) !== null ? 'legacy' : null;
 }
 
 /** 되돌리기 안내 글 — 「알맞음 · 2일 후 다시」. */

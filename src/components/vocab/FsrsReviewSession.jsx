@@ -20,7 +20,8 @@ const RATINGS = [
  * 정착하면 onGraded로 줄을 넘긴다. 진행 · 나가기 · 되돌리기는 복습방 상단바가 진다. 카드 규격(앞면 글자만 ·
  * 뒷면 뜻 + 읽기 + 소리 · 하단 고정 채점 막대 · 펼친 뒤 0.3초 잠금)은 예전 일정 카드와 같다(ReviewCardParts).
  */
-export default function FsrsReviewSession({ review, onExit, embedded = false, cardId = null, stepKey = null, onGraded, onUnavailable,
+// ahead = 미리 학습 단계(LEARN-AHEAD-001 — 복습방이 줄을 다 푼 뒤 끼운 20분 안의 학습 · 재학습 카드). 차례 전이어도 그 카드를 연다.
+export default function FsrsReviewSession({ review, onExit, embedded = false, cardId = null, stepKey = null, ahead = false, onGraded, onUnavailable,
   onReveal, speak, ttsSupported = false, onKnown, knownDisabled = false }) {
   const { current, busy, error, ready, nextWakeAt, lastGrade, controller } = review;
   const asked = useRef(null);
@@ -29,13 +30,13 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
       // 줄이 고른 카드만 연다. 출제할 수 없는 카드(다른 곳에서 채점 · 아는 단어 · 제외)는 한 번 확인한 뒤 건너뛴다.
       if (!cardId || busy || current?.cardId === cardId || asked.current === stepKey) return;
       asked.current = stepKey;
-      controller.question(cardId).then(opened => { if (!opened && !controller.getSnapshot().error) onUnavailable?.(cardId); });
+      controller.question(cardId, ahead ? { ahead: true } : undefined).then(opened => { if (!opened && !controller.getSnapshot().error) onUnavailable?.(cardId); });
       return;
     }
     if (canAutoStartFsrsReview({ current, busy, error, ready })) controller.question();
     // 판정은 ready.length만 본다 — 배열 정체성만 바뀐 갱신에서 질문을 다시 열지 않는다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, busy, error, ready.length, controller, embedded, cardId, stepKey]);
+  }, [current, busy, error, ready.length, controller, embedded, cardId, stepKey, ahead]);
   const revealed = current?.phase === 'revealed' && (!embedded || current.cardId === cardId);
   const armed = useScoreArmed(revealed, current?.attempt?.id || cardId);
   const bar = useGradeBarFocus(!revealed, armed); // 뒷면이 열리면 막대(버튼 아님)로 초점 — FOCUS-AFTER-ACTION-001 C2(예전 일정 카드와 같은 규격)

@@ -235,7 +235,9 @@ button.lw-tile__glyph[aria-expanded=true]{background:color-mix(in srgb,var(--lw-
 .lw-card.is-arrived .lw-time{animation:lwTimePop .22s var(--ease-settle)}
 @keyframes lwArrive{50%{border-color:var(--lw-rose);box-shadow:0 0 0 2px color-mix(in srgb,var(--lw-rose) 55%,transparent)}}
 @keyframes lwTimePop{0%{transform:scale(.6)}60%{transform:scale(1.12)}}
-.lw-one__front{min-height:96px;display:grid;place-items:center;text-align:center;container-type:inline-size;border-bottom:1px dashed var(--lw-line)}
+.lw-one__front{min-height:96px;display:grid;place-items:center;text-align:center;container-type:inline-size;border-bottom:1px dashed var(--lw-line);position:relative}
+/* 미리 올린 카드의 남은 시간(「4분 후」 — LEARN-AHEAD-001) — 앞면 오른쪽 위, 단어 자리를 밀지 않는다. */
+.lw-one__wait{position:absolute;top:0;right:0;line-height:1.5}
 /* 긴 표제어(おはようございます · 9글자)는 카드 폭에 맞춰 줄인다 — --n = 글자 수(fitty 대신 cqi 선례). */
 .lw-one__hw{font-size:min(52px,calc(94cqi / var(--n,1)));line-height:1.25;font-weight:500;white-space:nowrap}
 .lw-one__solo{font-size:20px;line-height:1.7;text-align:center}
