@@ -45,7 +45,11 @@ describe('① 문제 면 — 단어 페이지와 같은 부품', () => {
     }
   });
   it('답 면 — 뜻 → 단어는 표제어(루비) · 듣기는 단추가 그 자리(다시 듣기) + 표제어(루비)', () => {
-    expect(face('production', true)).toContain('<ruby>約束<rt>やくそく</rt></ruby>');
+    const prod = face('production', true);
+    expect(prod).toContain('<ruby>約束<rt>やくそく</rt></ruby>');
+    // 묻는 뜻은 답 면에서도 위에 그대로(오너 2026-11-01 KST) — 뜻 → 표제어 순서.
+    expect(prod.indexOf('>약속</h2>')).toBeGreaterThan(-1);
+    expect(prod.indexOf('>약속</h2>')).toBeLessThan(prod.indexOf('<ruby>約束'));
     const listen = face('listening', true);
     expect(listen).toContain('cf-play--one');
     expect(listen).toContain('<ruby>約束<rt>やくそく</rt></ruby>');

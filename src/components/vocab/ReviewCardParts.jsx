@@ -97,9 +97,10 @@ export function ReviewReadingRow({ word, speak, ttsSupported }) {
 }
 
 /** 뒷면 — 뜻 + 읽기 + 소리 + 원문(출처 없는 표현은 원문 보기 없음 — VocabularyContexts). 화면 읽기 프로그램에는 글로 알린다. */
-export function ReviewBack({ word, speak, ttsSupported, contexts = true }) {
+export function ReviewBack({ word, speak, ttsSupported, contexts = true, meaning = true }) {
+  // meaning = false — 뜻이 이미 문제 면(뜻 → 단어 카드)으로 위에 있을 때 다시 쓰지 않는다(CARD-TYPES-001).
   return <div className="review-card__answer" role="status" aria-live="polite">
-    <p className="review-card__meaning">{word.meaning}</p>
+    {meaning && <p className="review-card__meaning">{word.meaning}</p>}
     <ReviewReadingRow word={word} speak={speak} ttsSupported={ttsSupported} />
     {contexts && <VocabularyContexts key={word.id} vocabularyId={word.id} word={word} readOnly />}
   </div>;

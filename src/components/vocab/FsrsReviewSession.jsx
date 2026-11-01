@@ -36,7 +36,12 @@ export function FsrsQuestionFace({ kind = 'recognition', word, revealed, id, spe
       {revealed && <ReviewHeadword word={word} revealed />}
     </>;
   }
-  if (kind === 'production' && !revealed) return <MeaningFace meaning={word.meaning} className="review-card__word" as="h2" id={id} />;
+  // 뜻 → 단어는 답 면에서도 묻는 뜻을 위에 그대로 두고 답(표제어 · 루비)을 바로 아래에 — 단어 페이지와 같은 원칙(오너 2026-11-01 KST
+  // 「갑자기 뜻이 사라지는 거?」). 아래 답 칸(ReviewBack)은 뜻 줄을 다시 쓰지 않는다(meaning={false}).
+  if (kind === 'production') return <>
+    <MeaningFace meaning={word.meaning} className="review-card__word" as="h2" id={id} />
+    {revealed && <ReviewHeadword word={word} revealed />}
+  </>;
   return <ReviewHeadword word={word} revealed={revealed} id={id} />;
 }
 export default function FsrsReviewSession({ review, onExit, embedded = false, cardId = null, stepKey = null, ahead = false, onGraded, onUnavailable,
@@ -111,7 +116,7 @@ export default function FsrsReviewSession({ review, onExit, embedded = false, ca
           onClick={event => { if (!revealed && !disabled && current.attempt && isCardRevealClick(event)) reveal(revealTrigger(event)); }}>
           <ReviewCardMeta label="복습" word={word} />
           <FsrsQuestionFace kind={current.kind} word={word} revealed={revealed} id={headwordId} speak={speak} ttsSupported={ttsSupported} />
-          {revealed ? <ReviewBack word={word} speak={speak} ttsSupported={ttsSupported} />
+          {revealed ? <ReviewBack word={word} speak={speak} ttsSupported={ttsSupported} meaning={current.kind !== 'production'} />
             : <Button ref={revealRef} variant="secondary" size="lg" disabled={disabled || !current.attempt} className="review-reveal-btn"
               aria-describedby={headwordId} onClick={event => reveal(revealTrigger(event))}>정답 확인하기<span className="review-keys-hint review-keys-hint--space" aria-hidden="true"> · Space</span></Button>}
         </div>
