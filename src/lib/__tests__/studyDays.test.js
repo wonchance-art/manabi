@@ -46,11 +46,14 @@ describe('공부한 날', () => {
     expect(studyDayLabel('2026-11-03', undefined)).toBe('11월 3일 · 쉼');
   });
 
-  it('현황 칸이 이 모듈을 쓴다 — 제목 「공부한 날」 · 위 오른쪽 「1년 중 N일 · Z%」', () => {
+  it('현황 칸이 이 모듈을 쓴다 — 제목 「공부한 날」 · 위 오른쪽 「N일 · Z%」', () => {
     const src = read('src/views/ProfileStats.jsx');
     expect(STUDY_DAYS_SPAN).toBe(364); // 52주 — 오너 「ㅇㅋ」 시안 2(2026-11-01 KST)
     expect(src).toContain('<h2 className="learn-sec-title">공부한 날</h2>');
-    expect(src).toContain("일부터 ` : '1년 중 '}<b>{basis.studied}일</b> · {basis.percent}%");
+    // 머리글은 「N일 · Z%」 하나(오너 「더 심플하게」) — 기준(첫 기록 · 지난 1년)은 말풍선으로만.
+    expect(src).toContain('<b>{basis.studied}일</b> · {basis.percent}%');
+    expect(src).toContain("일 첫 기록부터` : '지난 1년'}");
+    expect(src).not.toContain("'1년 중 '");
     expect(src).toContain('studyDaysBasis(days, dayCounts, { hasOlder })');
     expect(src).not.toContain('지난 24주'); // 날짜 단위 둘이 붙어 읽히지 않던 머리글
     expect(src).toContain('title={studyDayLabel(key, dayCounts[key])}');

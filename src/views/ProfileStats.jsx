@@ -364,7 +364,8 @@ function TileModal({ title, onClose, children, className = '' }) {
 /* ── 공부한 날 반쪽(2×1, 오너 결정 3 · 2026-11-01 KST) — 최근 1년(52주). 칸 크기 · 카드 크기는 그대로라 한 번에 24주가 보이고,
      옆으로 밀면 1년 전까지 이어진다(오너 「ㅇㅋ」 시안 2 — 버튼 · 달 이름 · 범례 없이 밀기만). 처음엔 오늘이 맨 오른쪽 아래.
      한 칸 = 학습일(04시) 하나 = 답한 문항 + 담은 말. 색은 그 기간 최대 대비 4단계(A안). 왼쪽 가장자리 흐림 = 더 있다는 표시.
-     퍼센트는 회색 그대로 — 색 · 목표선 없음(거울이지 성적표가 아니다). 기준은 첫 기록부터(1년 넘으면 1년) — studyDaysBasis. ── */
+     퍼센트는 회색 그대로 — 색 · 목표선 없음(거울이지 성적표가 아니다). 기준은 첫 기록부터(1년 넘으면 1년) — studyDaysBasis.
+     머리글은 「N일 · Z%」만(오너 「더 심플하게」), 기준은 말풍선. ── */
 
 function HeatmapCard({ dayCounts, hasOlder = false, className = '' }) {
   const todayStart = learningDayStartMs(Date.now());
@@ -406,8 +407,8 @@ function HeatmapCard({ dayCounts, hasOlder = false, className = '' }) {
       <div className="learn-sec-head">
         <h2 className="learn-sec-title">공부한 날</h2>
         {basis && (
-          <span className="learn-sec-meta">
-            {basis.sinceDay ? `${Number(basis.sinceDay.slice(5, 7))}월 ${Number(basis.sinceDay.slice(8))}일부터 ` : '1년 중 '}<b>{basis.studied}일</b> · {basis.percent}%
+          <span className="learn-sec-meta" title={basis.sinceDay ? `${Number(basis.sinceDay.slice(5, 7))}월 ${Number(basis.sinceDay.slice(8))}일 첫 기록부터` : '지난 1년'}>
+            <b>{basis.studied}일</b> · {basis.percent}%
           </span>
         )}
       </div>
