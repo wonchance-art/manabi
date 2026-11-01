@@ -1,21 +1,28 @@
 import { learningDay } from './fsrsScheduler.js';
 
-// 기존 update_streak의 current_date가 UTC인 것으로 검증된 설치만 이 정책을 활성화한다.
-// 신규 문제 예산(KST 04시)·성장 통계(KST 자정)와 별개의 기존 활동 일자다.
+// 연속(활동일)의 하루 — DB fsrs_private.activity_day와 같은 식(STREAK-LEARNING-DAY-001, 마이그레이션 20261101130000).
+// 전환 시각 전은 예전 그대로 UTC 날짜(update_streak의 current_date가 UTC인 것으로 검증된 설치), 그 뒤는 KST 04시 학습일 —
+// 표시 통계(growthStats.learning*) · FSRS 일정(fsrsScheduler.learningDay)과 같은 날이다(오너 결정 2026-11-01 KST 「연속 포함」).
+export const ACTIVITY_DAY_SWITCH_AT = Date.parse('2026-11-03T04:00:00+09:00');
 export const LEARNING_ACTIVITY_POLICY = Object.freeze({ version: 'streak-freeze-earn-v1', timeZone: 'UTC', rolloverHour: 0 });
+export const LEARNING_ACTIVITY_POLICY_V2 = Object.freeze({ version: 'streak-learning-day-v2', timeZone: 'Asia/Seoul', rolloverHour: 4 });
+const msOf = value => (value instanceof Date ? value.getTime() : typeof value === 'number' ? value : Date.parse(value));
+export const activityPolicyAt = at => (msOf(at) >= ACTIVITY_DAY_SWITCH_AT ? LEARNING_ACTIVITY_POLICY_V2 : LEARNING_ACTIVITY_POLICY);
 
 export function activityDay(effectiveAt) {
-  const day = learningDay(effectiveAt, LEARNING_ACTIVITY_POLICY.timeZone, LEARNING_ACTIVITY_POLICY.rolloverHour);
+  const policy = activityPolicyAt(effectiveAt);
+  const day = learningDay(effectiveAt, policy.timeZone, policy.rolloverHour);
   return new Date(day * 86400000).toISOString().slice(0, 10);
 }
 
-// 기기 시계가 서버와 몇 분 어긋나도 활동일(UTC 자정)을 넘겼을 수 있는 구간 — 이 안에서는 「오늘」을 기기 시계로 판정하지 않는다.
+// 기기 시계가 서버와 몇 분 어긋나도 활동일을 넘겼을 수 있는 구간(전환 전 UTC 자정 · 뒤 KST 04시 = UTC 19시) —
+// 이 안에서는 「오늘」을 기기 시계로 판정하지 않는다.
 export const ACTIVITY_ROLLOVER_GUARD_MS = 15 * 60 * 1000;
 export function nearActivityRollover(now) {
-  const t = ((now.getTime() % 86400000) + 86400000) % 86400000;
+  const rolloverUtcMs = activityPolicyAt(now) === LEARNING_ACTIVITY_POLICY_V2 ? 19 * 3600 * 1000 : 0;
+  const t = (((now.getTime() - rolloverUtcMs) % 86400000) + 86400000) % 86400000;
   return t < ACTIVITY_ROLLOVER_GUARD_MS || 86400000 - t <= ACTIVITY_ROLLOVER_GUARD_MS;
 }
-
 /**
  * 학습 활동 뒤 프로필 재읽기를 건너뛰어도 되는가(ACTIVITY-PROFILE-READ-001 — 운영 실측 2026-10-25 KST: 채점마다 profiles select=*
  * 한 번, 하루 377번). 활동이 바꾸는 프로필 칸은 연속 기록 셋(streak_count · last_streak_date · streak_freeze_count)뿐이고, 정본
@@ -75,10 +82,15 @@ export function liveStreakCount(profile, now = Date.now()) {
   const streak = Number(profile?.streak_count) || 0;
   const last = profile?.last_streak_date;
   if (streak <= 0 || typeof last !== 'string') return Math.max(0, streak);
-  const gap = (activityDayMs(activityDay(new Date(now).toISOString())) - activityDayMs(last)) / 86400000;
+  const nowIso = new Date(now).toISOString();
+  const gap = (activityDayMs(activityDay(nowIso)) - activityDayMs(last)) / 86400000;
   if (!Number.isFinite(gap)) return streak;
   const rest = Number(profile?.streak_freeze_count) || 0;
-  return gap <= 1 || (gap === 2 && rest > 0) ? streak : 0;
+  const alive = g => g <= 1 || (g === 2 && rest > 0);
+  // 전환 다리(DB append_activity와 같은 결): 마지막 연속일이 전환 전(UTC 날짜)이면 UTC 날짜 간격으로 이어져도 살아 있다.
+  const lastBeforeSwitch = activityDayMs(last) <= Date.parse(new Date(ACTIVITY_DAY_SWITCH_AT).toISOString().slice(0, 10)); // 전환 순간의 UTC 날짜까지가 UTC 시대
+  const utcGap = (activityDayMs(nowIso.slice(0, 10)) - activityDayMs(last)) / 86400000;
+  return alive(gap) || (lastBeforeSwitch && alive(utcGap)) ? streak : 0;
 }
 
 /** 지금 활동 하나를 더하면 연속이 몇 일이 되나 — 완독 화면용. 정본 replayActivityDays(오늘 이미 셌으면 그대로 · 끊겼으면 1). */
