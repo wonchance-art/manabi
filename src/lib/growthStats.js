@@ -8,6 +8,7 @@
 
 import { isVocabularyLearningProjection } from './vocabularyLearningRead.js';
 import { learningDaySpan } from './fsrsScheduler.js';
+import { METRICS } from './metrics/registry.js';
 
 /** 아는 단어 기준 — 읽기용 안정도가 이 일수 이상이면 '아는 단어'로 본다. */
 export const KNOWN_WORD_MIN_INTERVAL = 7;
@@ -159,12 +160,12 @@ export function isThisWeekSession(usedAt, nowMs = Date.now()) {
  * 화면마다 라벨/설명이 어긋나지 않게 여기서만 관리한다.
  */
 export const GROWTH_LABELS = {
-  knownWords: '아는 단어',
+  knownWords: METRICS.remembered.label, // 「기억한 단어」 — 현황의 「이미 아는 단어」(표시 수)와 다른 값이다(지표 사전)
   passedChapters: '통과 챕터',
   weekSessions: '이번 주 세션',
 };
 
 export const GROWTH_COPY = {
-  // '아는 단어' 타일 보조 설명 — interval≥7의 사람말 정의
-  knownWordSub: '일주일 넘게 기억한 단어',
+  // 「기억한 단어」 타일 보조 설명 — interval≥7의 사람말 정의
+  knownWordSub: METRICS.remembered.sub,
 };

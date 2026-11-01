@@ -147,7 +147,7 @@ describe('isThisWeekSession — 이번 주 세션 판정', () => {
 
 describe('표시 문구 상수', () => {
   it('라벨·설명이 정의돼 있다', () => {
-    expect(GROWTH_LABELS.knownWords).toBe('아는 단어');
+    expect(GROWTH_LABELS.knownWords).toBe('기억한 단어');
     expect(GROWTH_LABELS.passedChapters).toBe('통과 챕터');
     expect(GROWTH_LABELS.weekSessions).toBe('이번 주 세션');
     expect(GROWTH_COPY.knownWordSub).toBe('일주일 넘게 기억한 단어');

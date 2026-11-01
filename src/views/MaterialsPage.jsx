@@ -597,7 +597,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
       <>
         {bf.analyzed < bf.chapters && `분석한 ${bf.analyzed}${unit} 기준 · `}
         {bf.total.toLocaleString()}단어 중{' '}
-        <strong className="group-card__fitnum">{Math.round(bf.coverage * 100)}% 앎</strong>
+        <strong className="group-card__fitnum">아는 말 {Math.round(bf.coverage * 100)}%</strong>
         {' '}· 새 단어 {bf.unknown.toLocaleString()}개
       </>
     );

@@ -44,6 +44,7 @@ import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
 import GoalSheet from '../components/goal/GoalSheet';
 import { useGroupSnapshotPush } from '../lib/useGroupSnapshotPush';
+import { METRICS } from '../lib/metrics/registry';
 
 /** 히트맵 — 최근 24주(168일), 가장 오른쪽 아래가 오늘. */
 export const HEATMAP_DAYS = 168;
@@ -163,7 +164,7 @@ export default function ProfileStats() {
         <HeatmapCard dayCounts={data?.heatmapDayCounts || {}} className="learn-order-6" />
         {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
         {weekly ? <WeeklyTile weekly={weekly} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
-        <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label="아는 단어" className="learn-order-5" />
+        <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label={METRICS.knownMarked.label} className="learn-order-5" />
         <LevelVocabCard lang={lang} vocab={vocab} projections={projections} knownRows={knownRows || []} className="learn-order-7" />
         <MemoryHealthCard lang={lang} projections={projections} now={data?.now || Date.now()} className="learn-order-8"
           trueRetention={user ? { table: retention, loading: !retention && !recentRetention.isError } : null}

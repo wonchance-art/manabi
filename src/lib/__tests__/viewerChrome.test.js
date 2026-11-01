@@ -50,7 +50,7 @@ const newCss = () => sliceBetween(read(CSS), '/* 뷰어 크롬 배지(v2-Q)', '/
 describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 원인 제거', () => {
   it('자료 범위 배지는 .viewer-badges 안에 있다(header 직계 자식 금지)', () => {
     const wrap = sliceBetween(header(), '<div className="viewer-badges">', '</div>\n        )}');
-    for (const badge of ['개 복습 가능', '아는 단어 ']) {
+    for (const badge of ['개 복습 가능', '이 글에서 아는 말 ']) {
       expect(wrap, `${badge} 배지가 래퍼 밖에 있다`).toContain(badge);
     }
   });
@@ -448,7 +448,7 @@ describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 �
     const src = read(VIEWER);
     expect(src).toContain('const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);');
     const stats = sliceBetween(header(), '<span className="viewer-badge viewer-stats"', '</Link>}');
-    expect(stats).toContain("vt('아는 단어 {percent}% · 새 단어 {count}개'");
+    expect(stats).toContain("vt('이 글에서 아는 말 {percent}% · 새 단어 {count}개'");
     // REV-SCOPE-R1A: 전체 복습(/vocab)이 아니라 이 자료 범위의 복습방으로 간다(범위 주소 정본 serializeReviewScope).
     // 수는 숫자 자리표로 번역문을 받은 뒤 숫자만 감싼다(앱 손맛 ① 수집 팝 — 수가 늘 때만 도는 팝 자리). 수 자체는 그대로 collectedInMaterial.
     expect(stats).toContain(`<Link href={materialReviewHref} prefetch={false} className="viewer-stats__vocab">{withCountSlot(vt('{count}개 수집 · 이 자료 표현 복습', {count: COUNT_SLOT}),`);
