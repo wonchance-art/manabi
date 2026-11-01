@@ -45,6 +45,7 @@ import InstallPrompt from '../components/InstallPrompt';
 import GoalSheet from '../components/goal/GoalSheet';
 import '../components/learn/learn.css';
 import '../components/profile/profile.css';
+import { HOME_DATA_KEY } from '../lib/homeQueryKey';
 
 const REMINDER_HOURS = ['7', '9', '12', '18', '21'];
 const BLOCKED_HELP = '브라우저에서 알림이 막혀 있어요. 주소창의 자물쇠에서 알림을 허용한 뒤 다시 열어 주세요.';
@@ -136,7 +137,7 @@ export default function MyPage() {
 
   const afterProfileSave = (message) => {
     fetchProfile(user.id, user.user_metadata);
-    queryClient.invalidateQueries({ queryKey: ['home', user.id] });
+    queryClient.invalidateQueries({ queryKey: [HOME_DATA_KEY, user.id] });
     toast(message, 'success');
     setSheet(null);
   };

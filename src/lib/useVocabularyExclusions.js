@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { updateVocabularyExclusions } from './vocabularyExclusion';
 import { friendlyToastMessage } from './errorMessage';
+import { HOME_DATA_KEY } from './homeQueryKey';
 
 async function request(body, signal) {
   const response = await fetch('/api/learning/exclusions', body ? {
@@ -29,7 +30,7 @@ export function useVocabularyExclusions() {
     mutationFn: body => request(body),
     onSuccess: (result, body) => {
       client.setQueryData(['vocabulary-exclusions', body.accountId], rows => updateVocabularyExclusions(rows || [], result));
-      for (const prefix of ['vocab', 'vocab-words', 'home-v2', 'profile-stats', 'output-words', 'book-review', 'due-vocab-index']) {
+      for (const prefix of ['vocab', 'vocab-words', HOME_DATA_KEY, 'profile-stats', 'output-words', 'book-review', 'due-vocab-index']) {
         client.invalidateQueries({ queryKey: [prefix, body.accountId] });
       }
     },

@@ -170,7 +170,7 @@ describe('complete vocabulary reads and read-only offline fallback', () => {
     const queryClient = { invalidateQueries: vi.fn() };
     await invalidateVocabularyLearning(queryClient, 'actor');
     const keys = queryClient.invalidateQueries.mock.calls.map(([arg]) => arg.queryKey);
-    for (const prefix of ['vocab', 'vocab-words', 'home-v2', 'profile-stats', 'output-words', 'book-review', 'due-vocab-index', 'weekly-report', 'goal-known']) {
+    for (const prefix of ['vocab', 'vocab-words', 'home-v3', 'profile-stats', 'output-words', 'book-review', 'due-vocab-index', 'weekly-report', 'goal-progress']) {
       expect(keys).toContainEqual([prefix, 'actor']);
     }
     const count = keys.length;
