@@ -14,8 +14,10 @@
 import { kstDateString } from '../growthStats.js';
 import { HANGUL_RE } from '../bilingualSplit.js';
 import { tokensCoverLine } from '../analyzeText.js';
+import { conversationOf } from './conversationShape.js';
 
-export const CONVERSATION_VERSION = 1;
+// 대화 표식 · 줄별 토큰 묶음은 conversationShape.js(뷰어가 첫 렌더부터 동기로 묻는 몫 — VIEWER-JS-001). 여기서 그대로 다시 내보낸다.
+export { CONVERSATION_VERSION, conversationOf, tokensByLineIndex } from './conversationShape.js';
 /** 하루 턴 한도(내 말 수, KST) — 오너 결정 2026-10-08. 닿아도 담기·복습은 그대로다. */
 export const CONVERSATION_DAILY_TURN_LIMIT = 150;
 /** 대화 하나의 내 말 상한 — 넘으면 「이어서 새 대화」 안내. */
@@ -45,12 +47,6 @@ export const CONVERSATION_ERRORS = Object.freeze({
 });
 
 export const hasHangul = (text) => HANGUL_RE.test(String(text || ''));
-
-/** 대화 자료 표식 — 없으면 null. */
-export function conversationOf(material) {
-  const value = material?.processed_json?.metadata?.conversation;
-  return value && value.version === CONVERSATION_VERSION && Array.isArray(value.turns) ? value : null;
-}
 
 /** 오늘(KST) 내가 보낸 턴 수 — turns[].at에서 센다(스키마 0). */
 export function countTodayMyTurns(turns, now = Date.now()) {
@@ -557,19 +553,6 @@ export function applyTurnResult(material, body) {
       },
     },
   };
-}
-
-/** 줄 번호 → 그 줄의 토큰 id(분석 줄·실패 줄). 개행 토큰은 뺀다. */
-export function tokensByLineIndex(sequence) {
-  const map = new Map();
-  for (const id of sequence || []) {
-    const m = /^(?:id|failed)_(\d+)_/.exec(id);
-    if (!m) continue;
-    const line = Number(m[1]);
-    if (!map.has(line)) map.set(line, []);
-    map.get(line).push(id);
-  }
-  return map;
 }
 
 /**

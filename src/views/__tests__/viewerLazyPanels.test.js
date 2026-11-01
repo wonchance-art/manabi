@@ -32,6 +32,14 @@ const LAZY_PANELS = [
   ['ClassroomReaderPanel', '../components/classroom/ClassroomReader', 'if (props.context && props.user?.id) return <ClassroomReaderPanel {...props} />;'],
   ['ClassSourceFocus', '../components/classroom/ClassSourceFocus', "{(originalParams.has('sourceEntry')||originalParams.has('sourceQuote'))&&<ClassSourceFocus "],
   ['ClassCopyNotice', '../components/classroom/ClassCopyNotice', "{user&&originalParams.get('returnTo')?.startsWith('/class/')&&<ClassCopyNotice "],
+  // VIEWER-JS-001 — 누른 뒤에만 그리는 창 · 패널(완료 · 퀴즈 창, 원문 수정 창, 뜻·발음 수정, 뜻 확인 목록, 문형 카드, 작품 카드, 대화 말풍선 틀).
+  ['ViewerQuizModal', './ViewerQuizModal', '{(quizState || completionModal) && <ViewerQuizModal'],
+  ['SourceEditModal', './SourceEditModal', 'open={sourceEditOpen}'],
+  ['TokenEditPanel', './TokenEditPanel', '{isEditingToken && !classMeaning && ('],
+  ['ViewerSenseReview', '../components/viewer/ViewerSenseReview', 'const senseReviewContent = senseReviewOpen && senseReviewAllowed ? ('],
+  ['PatternCard', '../components/PatternCard', '{patternOpen && ('],
+  ['ViewerArtCard', '../components/viewer/ViewerArtCard', '{artBookChapter?.card && <ViewerArtCard '],
+  ['PhoneFrame', '../components/conversation/PhoneFrame', 'if (conversation) {'],
 ];
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const declOf = (name, mod) => (name === 'ChineseSerif'
@@ -49,13 +57,15 @@ describe('⑴⑵ 조건부 패널 = dynamic import, 조건은 그대로', () => 
   it('창·패널은 받는 동안 null(빈 자리 0), 화면을 통째로 바꾸는 둘은 직전과 같은 「불러오는 중」, 수업은 일반 시트', () => {
     for (const [name, mod] of LAZY_PANELS) {
       const decl = sliceBetween(viewer, declOf(name, mod), '\n');
-      if (['ConversationThread', 'OriginalMaterialReader', 'ClassroomReaderPanel'].includes(name)) expect(decl, name).toContain('{fallback:');
+      if (['ConversationThread', 'OriginalMaterialReader', 'ClassroomReaderPanel', 'PhoneFrame'].includes(name)) expect(decl, name).toContain('{fallback:');
       else expect(decl, name).not.toMatch(/fallback|loading/);
     }
     // 원문 보기 = 자료를 받는 동안의 화면과 같은 마크업(전환 깜빡임 0).
     expect(viewer).toContain('if (isLoading) return <div className="page-container"><Spinner message="자료 불러오는 중…" /></div>;');
     expect(sliceBetween(viewer, 'const OriginalMaterialReader = lazyPanel(', '\n')).toContain('{fallback:<div className="page-container"><Spinner message="자료 불러오는 중…" /></div>}');
     expect(sliceBetween(viewer, 'const ClassroomReaderPanel = lazyPanel(', '\n')).toContain('{fallback:props=>props.fallback()}');
+    // 대화 말풍선 틀은 대화 부품과 같은 「불러오는 중」(둘 다 받는 동안 화면이 같다).
+    expect(sliceBetween(viewer, 'const PhoneFrame = lazyPanel(', '\n')).toContain('{fallback:<Spinner message="자료 불러오는 중…" />}');
   });
 
   it('한자 창 부품은 중국어 일반 모드에서 유휴 시간에 미리 받는다(첫 글자 탭에 내려받기 대기 0)', () => {

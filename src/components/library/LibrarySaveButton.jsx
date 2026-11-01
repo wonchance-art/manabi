@@ -1,12 +1,15 @@
 'use client';
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {useAuth} from '@/lib/AuthContext';
 import {supabase} from '@/lib/supabase';
 import {currentLibraryTarget,runLibraryOperation,invalidateLibrary,libraryOperationError} from '@/lib/libraryOperations';
-import LibraryCollections from './LibraryCollections';
+import {lazyPanel} from '@/lib/lazyPanel';
+import {onIdle} from '@/lib/viewerHanjaPanel';
 import './library.css';
 // Whole-source organization remains separate from expression saving and FSRS.
+// 폴더 창은 「폴더에 추가」를 눌러야 열린다 — 뷰어 · 책 첫 로드에서 빼고(VIEWER-JS-001), 버튼이 보이면 유휴 시간에 받아 둔다(끊긴 채 처음 눌러도 오류 화면 0).
+const LibraryCollections=lazyPanel(()=>import('./LibraryCollections'));
 export default function LibrarySaveButton({material=null,edition=null,bookTitle='일본어 N5'}){
  const {user}=useAuth(),cache=useQueryClient();
  const [open,setOpen]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
@@ -18,6 +21,8 @@ export default function LibrarySaveButton({material=null,edition=null,bookTitle=
   const query=edition?supabase.from('library_collection_items').select('collection_id').eq('owner_id',user.id).eq('target_kind','edition').eq('target_id',edition).limit(1):supabase.from('library_bookmarks').select('material_id').eq('owner_id',user.id).eq('material_id',material.id);
   const {data,error}=await query;if(error)throw error;return {...state,saved:!!data?.length};
  }});
+ const folderShown=bookmark.data?.state==='active';
+ useEffect(()=>folderShown?onIdle(()=>{LibraryCollections.preload().catch(()=>{});}):undefined,[folderShown]);
  if(!user||(!publicMaterial&&!edition))return null;
  async function toggle(){if(busy)return;setBusy(true);setError('');try{
   const row=bookmark.data,result=await runLibraryOperation(supabase,row.saved?'trash':row.state==='trashed'?'restore':'save',[row]);

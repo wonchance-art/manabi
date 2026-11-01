@@ -189,9 +189,11 @@ export function gradePreviews({ projection, row, at = Date.now() } = {}) {
     if (wait === null) return null;
     try {
       // 곧 차례인 카드(되돌린 직후 등)는 보낼 시각 기준 미리보기 — 서버도 그 시각에 채점한다.
-      const previews = previewFsrsRatings(fsrsCardOf(projection), new Date(now + wait).toISOString());
+      // 글자도 보낼 시각부터 잰다(LEVEL-GRADE-LABEL-001): 지금부터 재면 남은 기다림이 더해져 1분 · 10분이 2분 · 11분으로 보였다.
+      const sendAt = now + wait;
+      const previews = previewFsrsRatings(fsrsCardOf(projection), new Date(sendAt).toISOString());
       for (const g of SAVE_GRADES) {
-        out[g.grade] = previewOf(previews[g.grade].card.due, now);
+        out[g.grade] = previewOf(previews[g.grade].card.due, sendAt);
       }
       return out;
     } catch { return null; }

@@ -30,7 +30,9 @@ describe('뷰어 배선 — 카드는 대조를 통과한 장에서만', () => {
 
   it('카드 값은 useArtBookChapter(카탈로그 해시 대조)에서만 온다 — 자료 metadata를 카드에 넘기지 않는다', () => {
     expect(viewer).toContain("import { useArtBookChapter } from '../lib/useArtBookChapter';");
-    expect(viewer).toContain("import ViewerArtCard from '../components/viewer/ViewerArtCard';");
+    // 작품 카드는 그림 한 장 읽기 자료에서만 받는 지연 부품이다(VIEWER-JS-001) — 대조를 통과한 장(card)이 있을 때만 그린다.
+    expect(viewer).toContain("const ViewerArtCard = lazyPanel(() => import('../components/viewer/ViewerArtCard'));");
+    expect(viewer).toContain('{artBookChapter?.card && <ViewerArtCard chapter={artBookChapter} vt={vt} />}');
     expect(viewer).toContain('const artBookChapter = useArtBookChapter(material);');
     expect(viewer.match(/<ViewerArtCard\b[^>]*\/>/g)).toEqual(['<ViewerArtCard chapter={artBookChapter} vt={vt} />']);
     const card = read(CARD);

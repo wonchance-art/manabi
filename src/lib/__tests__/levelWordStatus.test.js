@@ -126,6 +126,18 @@ describe('네 칸 채점 미리보기', () => {
     expect(gradePreviews({ ...notDue, at })).toBeNull();
   });
 
+  it('곧 차례인 카드(60초 창)도 표준 간격 — 남은 기다림을 더하지 않는다 (LEVEL-GRADE-LABEL-001)', () => {
+    // 학습 2단계 카드가 30초 뒤 차례: 다시 1분 · 어려움 10분(지금부터 재면 2분 · 11분으로 보였다 — 운영 실측 2026-11-01 KST).
+    const fresh = introduceFsrsCard('2026-10-19T02:50:00.000Z');
+    const step1 = scheduleFsrsReview(fresh, 3, '2026-10-19T02:50:30.000Z').card;
+    expect(Date.parse(step1.due) - at).toBe(30000);
+    const soon = enrolled(step1);
+    expect(gradeEngine({ ...soon, at })).toBe('fsrs');
+    const p = gradePreviews({ ...soon, at });
+    expect([p[1].label, p[2].label]).toEqual(['1분', '10분']);
+    expect(p[3].label).toMatch(/일$/);
+  });
+
   it('간격 글자 · 되돌리기 안내', () => {
     expect(intervalLabel(0)).toBe('오늘');
     expect(intervalLabel(10 * 60_000)).toBe('10분');

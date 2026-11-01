@@ -7,6 +7,7 @@ import { VIEWER_MESSAGES, VIEWER_MESSAGE_LOCALES } from '../../lib/viewerMessage
 const read = (p) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
 const viewer = read('src/views/ViewerPage.jsx');
 const flow = read('src/lib/boundaryEditFlow.js');
+const gate = read('src/lib/boundaryEditGate.js'); // 진입 판정(VIEWER-JS-001 — 흐름 모듈이 다시 내보낸다)
 const korean = read('src/lib/koreanBoundarySplit.js');
 const css = read('src/components/viewer/reader-controls.css');
 
@@ -18,7 +19,7 @@ describe('AD-R3 §7.5 한국어 나누기 배선', () => {
   it('진입점은 중·일·영과 같은 권한 조건 + 한국어, 묶기(드래그·옆 단어와 묶기)는 여전히 legacyTokenEditingAllowed(한국어 0)', () => {
     expect(viewer).toContain("const koreanSplitAllowed = materialLang === 'Korean' && canEditToken && koreanSplitEntryAllowed(boundaryCtx) && isDone");
     expect(viewer).toContain('&& !material?.__offline && !reanalyzeMutation.isPending;');
-    expect(flow).toMatch(/ctx\.owner === true && ctx\.language === 'Korean' && !ctx\.classCopy && !ctx\.passage && !ctx\.classMode/);
+    expect(gate).toMatch(/ctx\.owner === true && ctx\.language === 'Korean' && !ctx\.classCopy && !ctx\.passage && !ctx\.classMode/);
     expect(viewer).toContain('const boundaryAllowed = canEditToken && legacyTokenEditingAllowed && boundaryEntryAllowed(boundaryCtx) && isDone');
     const menu = sliceBetween(viewer, '} : koreanMenuShown ? {', '} : null;');
     expect(menu).toContain("items: [{ id: 'split', label: vt('나누기')");

@@ -1,7 +1,6 @@
 'use client';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from './supabase';
-import { analyzeText } from './analyzeText';
 import { failureMessage } from './errorMessage';
 import { resolveRange } from './pdfRangeBridge';
 
@@ -81,6 +80,8 @@ export function usePdfRangeMutation({ material, sourcePdf, user, toast }) {
       // 백그라운드 분석 (fire-and-forget) — 리다이렉트 후에도 계속 실행
       (async () => {
         try {
+          // 분석 엔진은 이때 받는다(VIEWER-JS-001) — 뷰어 첫 로드 page 청크에서 뺀다.
+          const { analyzeText } = await import('./analyzeText');
           const finalJson = await analyzeText(text, new AbortController().signal, {
             metadata: initJson.metadata,
             concurrency: 8,

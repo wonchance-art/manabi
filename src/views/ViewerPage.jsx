@@ -44,7 +44,6 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
-import PatternCard from '../components/PatternCard';
 import { dueChapterSet, filterNote, filterScan, loadPatternIndex, scanTokens, supportsPatterns } from '../lib/patternIndex';
 import { fetchDuePatternRows } from '../lib/patternRows';
 import { weakChapterSet } from '../lib/weaknessProfile';
@@ -84,8 +83,7 @@ import { fitDivisor, isFitLang, fitLongHeadword, longHeadSplitAt } from '../lib/
 import { charDetail, charEtym, isInspectableChar, materialWordsWithChar, wordsWithChar } from '../lib/charInspect';
 import { fetchSynAnt, peekSynAnt, synAntEligible } from '../lib/synAnt';
 import ReportMaterialButton from '../components/ReportMaterialButton';
-import { conversationOf, tokensByLineIndex, applyTurnResult, applyFillResult } from '../lib/conversation/turnModel';
-import PhoneFrame from '../components/conversation/PhoneFrame';
+import { conversationOf, tokensByLineIndex } from '../lib/conversation/conversationShape';
 import { openConversationFor, startTopicConversation, trashConversation } from '../lib/conversation/conversationClient';
 import { invalidateLibrary } from '../lib/libraryOperations';
 import { useOutputWords } from '../lib/useOutputWords';
@@ -106,7 +104,7 @@ import { listenSentenceRanges, listenSentenceTokens } from '../lib/listenFollow'
 import { analysisTokenLine } from '../lib/analysisCoverage';
 import { captureReadingAnchor, anchorCardHead, headScrolled } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
-import { watchPinyinCell } from '../lib/pinyinLayout';
+import { measurePinyinCell, watchPinyinCell } from '../lib/pinyinLayout';
 import { hasKinsoku, zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
 import { ZhText, useZhGridRuns } from '../components/viewer/ZhText';
 import ReaderToken from '../components/viewer/ReaderToken';
@@ -141,6 +139,24 @@ function ClassroomReader(props) {
   if (props.context && props.user?.id) return <ClassroomReaderPanel {...props} />;
   return typeof props.fallback === 'function' ? props.fallback() : props.fallback;
 }
+// 누른 뒤에만 그리는 부품 · 쓰는 모듈(VIEWER-JS-001) — 첫 로드 page 청크에서 뺀다. 목록 · 조건 · 미리 받는 때는 viewerLazyPanels.test.js가 고정.
+// 열리는 조건은 그대로다. 미리 받기: 완료 창(읽기 완료 — 끊긴 채로도 열린다)은 모든 독자에게, 고치기 부품 · 경계 흐름은 이 자료 소유자에게만
+// 첫 렌더 뒤 유휴 시간에 받아 둔다(받아 두면 워커의 정적 조각 캐시에도 남는다 — 끊긴 채 처음 열어도 오류 화면으로 바뀌지 않는다).
+const ViewerQuizModal = lazyPanel(() => import('./ViewerQuizModal'));
+const SourceEditModal = lazyPanel(() => import('./SourceEditModal'));
+const TokenEditPanel = lazyPanel(() => import('./TokenEditPanel'));
+const ViewerSenseReview = lazyPanel(() => import('../components/viewer/ViewerSenseReview'));
+const PatternCard = lazyPanel(() => import('../components/PatternCard'));
+const ViewerArtCard = lazyPanel(() => import('../components/viewer/ViewerArtCard'));
+const PhoneFrame = lazyPanel(() => import('../components/conversation/PhoneFrame'), {fallback:<Spinner message="자료 불러오는 중…" />});
+const loadBoundaryEdit = () => import('../components/viewer/ViewerBoundaryEdit');
+const BoundaryMergeConfirm = lazyPanel(() => loadBoundaryEdit().then(m => m.BoundaryMergeConfirm));
+const BoundaryMergeRow = lazyPanel(() => loadBoundaryEdit().then(m => m.BoundaryMergeRow));
+const BoundaryPendingList = lazyPanel(() => loadBoundaryEdit().then(m => m.BoundaryPendingList));
+const BoundarySplitPanel = lazyPanel(() => loadBoundaryEdit().then(m => m.BoundarySplitPanel));
+// 경계 편집 흐름(묶기 · 나누기 · 되돌리기 계산과 쓰기 — 분석 엔진을 함께 끌고 온다)은 소유자에게만 받는다. 받기 전에는 진입점이 없다.
+const BOUNDARY_FLOW = deferredModule(() => import('../lib/boundaryEditFlow'));
+const loadTurnModel = () => import('../lib/conversation/turnModel');
 import { hunRubyCells } from '../lib/viewerHunRuby';
 import { sentenceAroundToken, sentenceAroundTerm, clipSentenceToBudget, SENTENCE_LINE_BUDGET_TIGHT } from '../lib/viewerSentenceLine';
 import { buildSenseList, senseListCount } from '../lib/viewerSenseList';
@@ -185,25 +201,18 @@ import { TTS_RATES, ttsOptsFor, pronHiddenFor, nextTtsRate } from '../lib/readin
 import { getBook } from '../lib/bookMeta';
 import ViewerGlyphColumn from '../components/viewer/ViewerGlyphColumn';
 import ViewerJapaneseMore from '../components/viewer/ViewerJapaneseMore';
-import TokenEditPanel from './TokenEditPanel';
 import { senseCorrectionFor, revertCorrections, applyTokenCorrections } from '../lib/tokenEditOptions';
 import { senseReviewItems, senseReviewDismissKey, senseReviewOptions, keepSenseCorrection, needsMeaningCheck, isBoundarySuggestion } from '../lib/viewerSenseReview';
 import { dismissedBoundaryForms } from '../lib/boundaryEdits';
-import ViewerSenseReview from '../components/viewer/ViewerSenseReview';
-import { BoundaryMergeConfirm, BoundaryMergeRow, BoundaryPendingList, BoundarySplitPanel } from '../components/viewer/ViewerBoundaryEdit';
 import {
-  BoundaryEditError, boundaryEditContext, boundaryEntryAllowed, boundaryReasonHidden, boundaryReasonMessage, boundaryTokenOrigin,
-  boundaryUndoValid, commitBoundaryEdit, pendingBoundaryRows, planBoundaryMerge, planBoundarySplit, planNeighborMerge, splitPreview,
-  undoBoundaryEdit, dismissBoundarySuggestion, koreanBoundaryPiece, koreanSplitEntryAllowed, koreanSplitPreview, planKoreanSplit,
-} from '../lib/boundaryEditFlow';
-import { fetchWithRateLimitRetry } from '../lib/analyzeText';
+  BoundaryEditError, boundaryEditContext, boundaryEntryAllowed, boundaryReasonHidden, boundaryReasonMessage, koreanBoundaryPiece, koreanSplitEntryAllowed,
+} from '../lib/boundaryEditGate';
+import { deferredModule, useDeferredModule } from '../lib/deferredModule';
 import { koreanFormula, koreanMorphemes } from '../lib/koreanBoundarySplit';
-import SourceEditModal from './SourceEditModal';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerGuestBanner from '../components/viewer/ViewerGuestBanner';
-import ViewerQuizModal from './ViewerQuizModal';
 import { langNameKo, splitSentenceAroundWord, detectLang } from '../lib/constants';
 import { attributionParts, literatureAttributionParts, materialSource, pdSiteAttributionParts, standardEbooksAttributionParts, wikisourceAttributionParts } from '../lib/videoAttribution';
 import { isCanonicalLiteratureMaterial } from '../lib/literatureCanonicalProvider';
@@ -212,7 +221,6 @@ import { useCanonicalLiterature, useLiteratureWork, useScriptVariant } from '../
 import { scriptVariantSurfaces, variantPieces } from '../lib/scriptVariant';
 import { isArtBookMaterial } from '../lib/artBookProvider';
 import { useArtBookChapter } from '../lib/useArtBookChapter';
-import ViewerArtCard from '../components/viewer/ViewerArtCard';
 import { revertInlineGrade } from '../lib/inlineGradeUndo';
 import { reducedMotion } from '../lib/reducedMotion';
 import { applyThemeColor, readerThemeColor } from '../lib/themeColor';
@@ -823,7 +831,9 @@ export default function ViewerPage({ seed } = {}) {
       toast(friendlyToastMessage(cause), 'error');
     }
   }, [id, queryClient, user?.id, toast, noteRouter, originalParams]);
-  const handleConversationTurn = useCallback((body) => {
+  // 받은 턴 · 채운 줄을 끼우는 계산(turnModel)은 대화 부품이 이미 받은 조각에 있다 — 여기서 그 조각을 쓴다(첫 로드 page 청크 밖).
+  const handleConversationTurn = useCallback(async (body) => {
+    const { applyTurnResult } = await loadTurnModel();
     let merged = false;
     queryClient.setQueryData(['material', id], (prev) => {
       const next = applyTurnResult(prev, body);
@@ -833,7 +843,8 @@ export default function ViewerPage({ seed } = {}) {
     if (!merged) refetch();
   }, [queryClient, id, refetch]);
   // 못 한 줄 자동 채우기(CONV-CHAT-001) — 받은 토큰을 실패 토큰 자리에 끼운다. 캐시가 어긋났으면 다시 불러온다.
-  const handleConversationFill = useCallback((body) => {
+  const handleConversationFill = useCallback(async (body) => {
+    const { applyFillResult } = await loadTurnModel();
     let merged = false;
     queryClient.setQueryData(['material', id], (prev) => {
       const next = applyFillResult(prev, body);
@@ -890,6 +901,18 @@ export default function ViewerPage({ seed } = {}) {
   const attachReader = useCallback(node => { readerRef.current = node; setReaderEl(node); }, [readerRef]);
   const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json, readerEl);
   const [pinyinCell,setPinyinCell] = useState(44);
+  // 본문을 처음 그리는 렌더에서 병음 칸을 미리 잰다(VIEWER-RENDER-001) — 그리고 난 뒤 효과에서 재면 칸 변수(--pinyin-cell, .viewer-layout에서
+  // 상속)가 바뀌어 본문 낱말 전부의 스타일 · 배치를 한 번 더 계산했다(1,280낱말 · CPU×4 실측 약 0.25초). 잰 값 · 다시 재는 때(글꼴 조각 · 창 크기)는
+  // 아래 watchPinyinCell 그대로다(같은 measurePinyinCell). 하이드레이션 렌더(서버가 본문을 실은 문서)는 서버 값(44)과 같아야 하므로 재지 않는다.
+  const hydrated = useRef(false);
+  useEffect(() => { hydrated.current = true; }, []);
+  const pinyinPrimed = useRef('');
+  const pinyinPrimeKey = materialLang === 'Chinese' && hydrated.current ? `${fontSize}|${pinyinSize}` : '';
+  if (pinyinPrimeKey && pinyinPrimed.current !== pinyinPrimeKey) {
+    pinyinPrimed.current = pinyinPrimeKey;
+    const cell = measurePinyinCell({win:window,doc:document,root:()=>readerRef.current,pinyinRem:pinyinSize,fontRem:fontSize});
+    if (cell != null && cell !== pinyinCell) setPinyinCell(cell);
+  }
   // 중국어 격자(ZH-GRID-001): 낱말 사이 간격 없이 칸마다 같은 자간, 반각 묶음은 칸 수로 올림.
   const zhGrid = materialLang === 'Chinese';
   useZhGridRuns(readerRef, zhGrid);
@@ -2248,7 +2271,8 @@ export default function ViewerPage({ seed } = {}) {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
     } catch { /* 비로그인은 소유자가 아니라 여기 오지 않는다 */ }
-    // 분당 20회(429)는 자료 분석과 같이 Retry-After만큼 기다려 다시 보낸다(analyzeText.fetchWithRateLimitRetry).
+    // 분당 20회(429)는 자료 분석과 같이 Retry-After만큼 기다려 다시 보낸다(analyzeText.fetchWithRateLimitRetry — 이때 받는다).
+    const { fetchWithRateLimitRetry } = await import('../lib/analyzeText');
     const res = await fetchWithRateLimitRetry('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader }, body: JSON.stringify(body) });
     const data = await res.json().catch(() => null);
     if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
@@ -2257,6 +2281,7 @@ export default function ViewerPage({ seed } = {}) {
   const boundaryMutation = useMutation({
     mutationFn: async ({ request, undo }) => {
       if (!legacyTokenEditingAllowedRef.current && !koreanSplitAllowedRef.current) throw new BoundaryEditError('korean');
+      const { commitBoundaryEdit, undoBoundaryEdit } = await BOUNDARY_FLOW.preload();
       const current = queryClient.getQueryData(['material', id]) || material;
       const deps = { client: supabase, analyze: analyzeBoundaryLine, userId: user?.id };
       if (undo) return { ...(await undoBoundaryEdit(current, undo, deps)), kind: 'undo' };
@@ -2299,6 +2324,7 @@ export default function ViewerPage({ seed } = {}) {
   const boundaryDismissMutation = useMutation({
     mutationFn: async (form) => {
       if (!legacyTokenEditingAllowedRef.current) throw new BoundaryEditError('korean');
+      const { dismissBoundarySuggestion } = await BOUNDARY_FLOW.preload();
       const current = queryClient.getQueryData(['material', id]) || material;
       return dismissBoundarySuggestion(current, form, { client: supabase });
     },
@@ -2512,6 +2538,14 @@ export default function ViewerPage({ seed } = {}) {
   // 읽기 설정 부품(≈6KB gzip)도 유휴 시간에 받아 둔다 — 끊긴 채 처음 「Aa」를 누르면 조각을 못 받아 뷰어 전체가 오류 화면
   // 「자료를 불러오지 못했어요」로 바뀌었다(OFFLINE-SWEEP-001 390 실측). 받아 두면 워커의 정적 조각 캐시에도 남는다. 첫 그림 무게는 그대로(유휴 뒤).
   useEffect(() => onIdle(() => { ViewerSettings.preload().catch(() => {}); }), []);
+  // 읽기 완료 창(VIEWER-JS-001 지연 부품)도 같은 때 받아 둔다 — 끊긴 채 다 읽어도 완료 창이 조각을 못 받아 오류 화면으로 바뀌지 않게.
+  useEffect(() => onIdle(() => { ViewerQuizModal.preload().catch(() => {}); }), []);
+  // 문법 표시를 켠 독자만 문형 카드를, 그림 한 장 읽기 자료만 작품 카드를 받아 둔다 — 첫 탭 · 카드 자리에 내려받기 대기 0.
+  useEffect(() => (patternOn ? onIdle(() => { PatternCard.preload().catch(() => {}); }) : undefined), [patternOn]);
+  useEffect(() => { if (artBookLocked) ViewerArtCard.preload().catch(() => {}); }, [artBookLocked]);
+  // 대화 자료는 말풍선 틀과 대화 부품을 함께 받는다(틀을 받은 뒤 부품을 받는 차례 받기 0).
+  const conversationMode = !!conversation;
+  useEffect(() => { if (conversationMode) { PhoneFrame.preload().catch(() => {}); ConversationThread.preload().catch(() => {}); } }, [conversationMode]);
   // 미리 받기 전에 창이 열리면 바로 받는다.
   useEffect(() => {
     if (!hanjaPopoverMode || !inspectChar || hanjaPanelTable) return undefined;
@@ -2644,6 +2678,12 @@ export default function ViewerPage({ seed } = {}) {
   // 중국어 카드에서는 현재 뜻에 맞는 일본어 대응을 함께 조회한다. 한자 훈음 토글과 독립적이다.
   const [isEditingToken, setIsEditingToken] = useState(false);
   const canEditToken = !!user?.id && user.id === material?.owner_id;
+  // 경계 편집 흐름(BOUNDARY_FLOW)과 고치기 부품은 이 자료 소유자에게만 유휴 시간에 받아 둔다(VIEWER-JS-001).
+  const boundaryFlow = useDeferredModule(BOUNDARY_FLOW, canEditToken);
+  useEffect(() => {
+    if (!canEditToken) return undefined;
+    return onIdle(() => { for (const part of [BoundaryMergeConfirm, ViewerSenseReview, TokenEditPanel]) part.preload().catch(() => {}); });
+  }, [canEditToken]);
   const toggleTokenEditing = () => {
     if (legacyTokenEditingAllowedRef.current) setIsEditingToken(value => !value);
   };
@@ -3331,7 +3371,10 @@ export default function ViewerPage({ seed } = {}) {
   // ── AD-R3 PR③ 「이 자료」 묶기·나누기 진입점(설계서 §6.1 · §4.4 · Q4 · §12.2) ──
   // 소유자(canEditToken) · 중·일·영 · 수업 사본(source_ref·기기 사본)·구간 학습(passage)·수업 모드 제외 · 분석 완료 · 재분석 중 아님.
   // 한국어는 어절 칼선 오너 결정 전이라 메뉴·드래그 항목 자체가 없다(legacyTokenEditingAllowed 포함).
-  const boundaryCtx = boundaryEditContext(material, { userId: user?.id, classMode: classStudyActive, passage: !!passageOf(material) });
+  // 흐름 모듈(boundaryFlow)을 받기 전에는 문맥이 없어(null) 아래 진입 판정이 모두 거짓이다.
+  const { boundaryTokenOrigin, boundaryUndoValid, pendingBoundaryRows, planBoundaryMerge, planBoundarySplit, planNeighborMerge, splitPreview,
+    koreanSplitPreview, planKoreanSplit } = boundaryFlow || {};
+  const boundaryCtx = boundaryFlow && boundaryEditContext(material, { userId: user?.id, classMode: classStudyActive, passage: !!passageOf(material) });
   const boundaryAllowed = canEditToken && legacyTokenEditingAllowed && boundaryEntryAllowed(boundaryCtx) && isDone
     && !material?.__offline && !reanalyzeMutation.isPending;
   const boundaryBusy = boundaryMutation.isPending;
@@ -3407,7 +3450,7 @@ export default function ViewerPage({ seed } = {}) {
       {panelNode}
     </>;
   };
-  const boundaryPendingRows = boundaryPendingOpen && canEditToken && (legacyTokenEditingAllowed || materialLang === 'Korean') ? pendingBoundaryRows(material) : [];
+  const boundaryPendingRows = boundaryPendingOpen && canEditToken && boundaryFlow && (legacyTokenEditingAllowed || materialLang === 'Korean') ? pendingBoundaryRows(material) : [];
   const boundaryPendingContent = boundaryPendingRows.length ? <BoundaryPendingList rows={boundaryPendingRows} contentLang={contentLangTag} vt={vt} /> : null;
   // 머리줄 ⋯ = 분석 고치기(정본 §2). 「뜻·발음 수정」 + AD-R3 「옆 단어와 묶기」·「나누기」(이 자료 소유자 · 중·일·영). 고칠 것이 없으면 ⋯도 없다.
   const sheetMenu = senseEditable && selectedToken && isSheetOpen ? {
@@ -4410,7 +4453,7 @@ export default function ViewerPage({ seed } = {}) {
 
       {/* 「그림 한 장 읽기」 작품 정보 카드(ART-P0-3 목업) — 그림 · 제목 · 작가 · 소장 · 그림 속 장소 · 찾아볼 것, 그 아래 해설 출처 한 줄.
           값은 카탈로그 해시 대조를 통과한 장(useArtBookChapter)에서만 온다 — 남의 공개 자료에 꾸며 넣은 provider 'art' metadata로는 생기지 않는다. */}
-      <ViewerArtCard chapter={artBookChapter} vt={vt} />
+      {artBookChapter?.card && <ViewerArtCard chapter={artBookChapter} vt={vt} />}
 
       {/* Reading Progress Bar */}
       {isDone && (
@@ -5018,12 +5061,12 @@ export default function ViewerPage({ seed } = {}) {
         />
       )}
 
-      <ViewerQuizModal
+      {(quizState || completionModal) && <ViewerQuizModal
         quizState={quizState} handleQuizAnswer={handleQuizAnswer}
         advanceQuiz={advanceQuiz} finishQuiz={finishQuiz} closeQuiz={closeQuiz}
         completionModal={completionModal} setCompletionModal={setCompletionModal}
         material={material} nextMaterial={nextMaterial}
-      />
+      />}
 
       {/* 받아쓰기(목업 ① — 지정 문장 듣고 입력·글자 diff 채점) */}
       {dictationPickerOpen && (
