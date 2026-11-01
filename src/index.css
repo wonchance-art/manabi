@@ -290,7 +290,7 @@ a, button, input, select, textarea, label, summary, [role="button"] { touch-acti
   }
 }
 .btn, .review-score-btn, .auth-google-btn, .auth-submit, .sentence-nav__btn, .viewer-sheet-bar__btn--nav,
-.lv-fab--save, .lv-fab--ex, .lv-fab--o, .lv-fab--x, .lw-grade, .lw-two__btn, .lw-one__reveal, .mobile-nav__link,
+.lv-fab--save, .lv-fab--ex, .lv-fab--o, .lv-fab--x, .lw-grade, .lw-one__reveal, .mobile-nav__link,
 .manabi-app a.learn-tile, .manabi-app .lv-view button, .manabi-app .lv-chips a, .manabi-app .manabi-toc-group li > a {
   -webkit-tap-highlight-color: transparent;
 }

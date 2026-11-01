@@ -1,0 +1,18 @@
+/* 카드 세 종류의 문제 면(CARD-TYPES-001 §2 · CardFaces.jsx) — 단어 페이지와 복습실이 같이 쓴다. 색은 화면 토큰(--ink · --lw-chip)을 쓰고,
+   단어 페이지 밖(복습실)에서 --lw-chip이 없으면 글자색을 옅게 섞은 바탕으로 대신한다. 움직임 없음(누름 배경만). */
+.cf-play{flex:none;border:0;display:grid;place-items:center;border-radius:999px;cursor:pointer;color:var(--ink);padding:0}
+/* 한 단어 앞면 · 복습실 — 실제 듣기 단추(44px · 아이콘 20px)를 키운다(누르는 자리 72px · 아이콘 34px). */
+.cf-play--one{width:72px;height:72px;background:var(--lw-chip,color-mix(in srgb,var(--ink) 8%,transparent))}
+.cf-play--one svg{width:34px;height:34px}
+.cf-play--one:hover{background:var(--lw-line,color-mix(in srgb,var(--ink) 14%,transparent))}
+/* 리스트 접힌 줄 — 줄 첫머리. 아이콘의 그린 왼쪽이 다른 줄 글자 왼쪽에 오게 단추 여백만큼 당긴다(시안 5 · 7). */
+.cf-play--row{width:44px;height:44px;margin-left:-12px;border-radius:10px;background:none}
+.cf-play--row svg{width:28px;height:28px}
+.cf-play--row:hover{background:var(--lw-chip,color-mix(in srgb,var(--ink) 8%,transparent))}
+.cf-play--off{cursor:default;opacity:.4}
+/* 뜻 문제 면 — 표제어 칸의 크기 규칙(--n) 그대로. 뜻은 표제어보다 길 수 있어 줄을 넘긴다(한 줄 고정 없음). */
+.cf-meaning{white-space:normal;text-wrap:balance}
+.cf-guide-icon{display:inline-flex;vertical-align:-4px;color:var(--ink)}
+.cf-guide-icon svg{width:22px;height:22px}
+/* 복습실 듣기 문제 면 — 표제어 자리 가운데에 소리 단추(답 면에서도 그 자리 · 다시 듣기). */
+.review-card__play{display:grid;place-items:center;min-height:72px}

@@ -37,9 +37,10 @@ describe('LEVEL-NEW-LIMIT-001 — 오늘 새 단어 몫을 다 쓴 새 카드는
     const hook = fs.readFileSync('src/lib/useLevelWordGrade.js', 'utf8');
     expect(hook).toContain("if (!result.ok && result.reason === 'new-limit') return { ok: false, reason: 'new-limit', limit: result.limit };");
     const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
-    expect(screen).toContain("if (res.reason === 'new-limit') { newLimitHit.current = { day: learningDay(schedulerTime(Date.now())), limit: res.limit, tries: 0 }; newLimitNotice(res.limit, entry); }");
+    expect(screen).toContain("if (res.reason === 'new-limit') { newLimitHit.current = { day: learningDay(schedulerTime(Date.now())), limit: res.limit, tries: 0 }; newLimitNotice(res.limit); }");
     expect(screen).toContain('`오늘 새 단어 ${limit}개를 다 했어요`');
     expect(screen).not.toContain('내일 이어서 나와요'); // 한 줄 문장(오너 2026-10-30 「애매하게 줄바꿈 … 그것만」)
-    expect(screen).toContain("&& info.projection?.source === 'fsrs-v1' && info.projection.memory?.state === 'New') {");
+    // 종류 카드(뜻 → 단어 · 듣기)는 몫을 쓰지 않아 넘기지 않는다(CARD-TYPES-001 §3).
+    expect(screen).toContain("&& !info.variant && info.projection?.source === 'fsrs-v1' && info.projection.memory?.state === 'New') {");
   });
 });

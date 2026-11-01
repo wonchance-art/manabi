@@ -184,7 +184,7 @@ describe('화면 — 미리 올린 카드 · 남은 시간 칩 「4분 후」 ·
     expect(screen).toContain('const aheadMode = !!session && !sessionOrder(session, clock).length;');
     expect(screen).toContain('const aheadKeys = useMemo(() => (aheadMode ? sessionAhead(session, clock, canAhead) : []), [aheadMode, session, clock, canAhead]);');
     expect(screen).toContain('gradePreviews({ projection: base.projection, row: base.row, at: clock, ahead: aheadMode })');
-    expect(screen).toContain('const res = await grader.grade(entry, rating, { ahead: aheadMode });');
+    expect(screen).toContain('const res = info.variant ? await grader.gradeCard(info.variant, rating, { ahead: aheadMode }) : await grader.grade(entry, rating, { ahead: aheadMode });');
     expect(screen).toContain('const line = order.length ? order : aheadKeys;');
     expect(screen).toContain('listCard(e, { due: listed.due.has(e.key), wait: listed.ahead.get(e.key) ?? null })');
     // 「오늘 할 카드 끝」은 미리 올릴 카드가 없을 때(위 목록이 빔)만 — 미리 올린 카드는 대기 목록에서 뺀다.

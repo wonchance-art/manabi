@@ -327,7 +327,6 @@ describe('NATIVE-FEEL-001 ④ 채점하는 답칸은 휴대폰 자동 고침을 
 
 describe('NATIVE-FEEL-001 ⑤ 글자 탭 · 로고의 누르는 자리(모양은 그대로, 투명 판만)', () => {
   const HIT = [
-    ['src/components/levels/word/level-word.css', '.lw-tabs button'],
     ['src/components/web/web-shell.css', '.shelf-language-tabs button'],
   ];
   it.each(HIT)('%s %s — 간격 절반씩 투명 판, 끝 탭은 오른쪽으로 넘치지 않는다', (file, sel) => {
@@ -340,13 +339,10 @@ describe('NATIVE-FEEL-001 ⑤ 글자 탭 · 로고의 누르는 자리(모양은
 
   it('투명 판의 가로 확장(11px)은 탭 간격의 절반을 넘지 않는다 — 옆 탭의 판과 겹치면 누른 자리가 엉뚱한 탭으로 간다', () => {
     const gap = (file, sel) => Math.min(...rulesOf(read(file)).filter((r) => r.selector === sel).map((r) => r.body.match(/(?:^|;)\s*gap\s*:\s*(\d+)px/)).filter(Boolean).map((m) => Number(m[1])));
-    expect(gap('src/components/levels/word/level-word.css', '.lw-tabs')).toBeGreaterThanOrEqual(22);
     expect(gap('src/components/web/web-shell.css', '.shelf-language-tabs')).toBeGreaterThanOrEqual(22);
   });
 
-  it('밑줄 막대는 단추 offsetWidth를 잰다 — 투명 판(::before)은 폭에 들지 않아 막대 폭이 그대로다', () => {
-    expect(read('src/components/levels/word/LevelWordScreen.jsx')).toContain('{ x: b.offsetLeft, w: b.offsetWidth }');
-  });
+  // 단어 페이지 보기 탭(.lw-tabs · 밑줄 막대)은 없앴다(CARD-TYPES-001 A안 · 오너 2026-11-01 KST) — 서재 언어 탭만 남는다.
 
   it('머리 글자 로고는 머리 줄 안에서 위아래로 넓힌다', () => {
     const rules = rulesOf(read('src/components/web/web-shell.css'));

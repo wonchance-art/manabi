@@ -54,8 +54,8 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 하루', () => {
   it('순서는 세 칸 · 하루는 여섯 칸(10 · 15 · 20 · 30 · ∞ · ⋯) · 문구는 명사형 그대로 · 버튼 안 숫자(small) 없음', () => {
     const html = render('H1');
     const items = (label) => [...sliceBetween(html, `>${label}</span>`, '</div></div>').matchAll(/<button[^>]*>([^<]+)<\/button>/g)].map((m) => m[1]);
-    expect(items('순서')).toEqual(['혼합', '새 단어 먼저', '복습 먼저']); // 이름은 levelWordPrefs 표 한 곳(오너가 Anki 말을 고르면 그 표만)
-    expect(html).toContain('role="group" aria-label="새 단어 순서"'); // 화면 읽기 「새 단어 순서: 새 단어 먼저」
+    expect(items('순서')).toEqual(['혼합', '복습 전', '복습 후']); // 오너 2026-11-01 KST — 이름은 levelWordPrefs 표 한 곳
+    expect(html).toContain('role="group" aria-label="새 단어 순서"'); // 화면 읽기 「새 단어 순서: 복습 전」 — 무엇이 복습 전인지(새 단어)
     expect(items('하루')).toEqual(['10', '15', '20', '30', '∞', '\u22EF']);
     // 기호 칩은 화면 읽기에 이름으로(∞ = 제한 없음 · ⋯ = 직접 입력) — 글자 높이를 맞추는 data-sym.
     expect(html).toContain('aria-label="제한 없음" data-sym="true"');
@@ -70,7 +70,7 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 하루', () => {
     expect(pressed(html, '순서')).toEqual(['혼합']);
     expect(pressed(html, '하루')).toEqual(['15']);
     const on = render('H1', { order: 'review-first' }, 9999);
-    expect(pressed(on, '순서')).toEqual(['복습 먼저']);
+    expect(pressed(on, '순서')).toEqual(['복습 후']);
     expect(pressed(on, '하루')).toEqual(['∞']);
     const custom = render('H1', DEFAULT, 25);
     expect(pressed(custom, '하루')).toEqual(['25']);
@@ -95,8 +95,8 @@ describe('제목 시트 — 레벨 · 목록 | 순서 · 하루', () => {
     const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
     expect(screen).not.toMatch(/SunIcon|lw-settings|settingsOpen/);
     expect(screen).toMatch(/if \(folded\) setUnfoldedAt\(foldKey\)/);
-    // 연습 탭은 바퀴가 없을 때도 열린다 — 접힘 열쇠가 빈 바퀴를 읽지 않는다(로컬 확인에서 잡은 오류).
-    expect(screen).toContain('`p${roundOn ? round.answers.size : 0}`');
+    // 접힘 열쇠는 채점 수 하나(연습 탭 · 바퀴는 CARD-TYPES-001 A안으로 없앴다).
+    expect(screen).toContain('const foldKey = `g${session?.graded ?? 0}`;');
     // 판(cfg)에 도움 스위치 이름이 남지 않는다 — 시트가 더는 읽지 않는다.
     for (const f of ['src/views/LevelWordPage.jsx', 'src/views/JlptWordPage.jsx', 'src/views/LatinWordPage.jsx']) expect(fs.readFileSync(f, 'utf8')).not.toContain('aidLabel');
   });
@@ -167,10 +167,10 @@ describe('움직임 ⑥ — 닫힘 · 미끄러짐 · 끝 화면', () => {
     expect(read('src/components/levels/word/WordCard.jsx')).toMatch(/setOpen\(reducedMotion\(\) \? false : 'closing'\)/);
     expect(css).toMatch(/\.lw-card__more\[data-closing\]\{[^}]*animation:lwMoreClose/);
   });
-  it('모드 칸 · 탭 밑줄은 고른 표시가 미끄러진다', () => {
+  it('모드 칸은 고른 표시가 미끄러진다 · 보기 탭(밑줄 막대)은 없앴다(CARD-TYPES-001 A안)', () => {
     expect(css).toMatch(/\.lw-seg\[data-thumb\]::before\{[^}]*transition:transform/);
-    expect(css).toMatch(/\.lw-tabs__bar\{[^}]*transition:transform/);
-    expect(read('src/components/levels/word/LevelWordScreen.jsx')).toMatch(/onClick=\{\(\) => switchView\(v\.id\)\}/);
+    expect(css).not.toMatch(/\.lw-tabs/);
+    expect(read('src/components/levels/word/LevelWordScreen.jsx')).not.toMatch(/lw-tabs|switchView/);
   });
   it('끝 화면 숫자 — 화면 읽기는 처음부터 최종 값', async () => {
     const { CountUp } = await import('@/components/levels/word/WordParts');

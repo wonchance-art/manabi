@@ -9,6 +9,7 @@ import { jaKanjiReadingRows, kanaPerChar, loadJaReadingTables } from '@/lib/jaKa
 import { CharTiles, WordRow } from './WordParts';
 import { useWordLang } from './wordLang';
 import { LEVEL_NEW_PER_DAY_CUSTOM, LEVEL_NEW_PER_DAY_PRESETS, LEVEL_STUDY_ORDERS, levelNewPerDayItems, parseNewPerDayInput } from '@/lib/levelWordPrefs';
+import { LEVEL_CARD_KIND_ITEMS, LEVEL_CARD_KIND_NOTE } from '@/lib/levelCardKinds';
 
 const CLOSE_DRAG_PX = 80;
 const JA_MIN_BELOW = 200; // 읽기 표 창을 아래에 둘 최소 높이(머리 + 읽기 약 3줄)
@@ -157,22 +158,42 @@ function NewPerDayRow({ value, onPick }) {
 }
 
 /**
+ * 「카드」 줄(CARD-TYPES-001 §3 · §5 · 실렌더 시안 ① 승인 2026-11-01 KST) — 세 칸 여러 개 고르기 [단어 → 뜻](늘 켜짐 · 잠김) [뜻 → 단어] [듣기].
+ * 값은 계정 설정(입장 정책 card_kinds — 복습실과 같은 값)이고 「하루」와 같은 configure 길로 저장한다(화면이 levelSetCardKinds). 아래 회색 한 줄.
+ * 잠긴 칸은 누를 수 없다(aria-disabled — 초점은 받아 읽힌다). value = 켜진 종류(정해진 순서), onPick(kind) = 그 칸을 켜고 끄기.
+ */
+export function CardKindsRow({ value, onPick }) {
+  return <>
+    <div className="lw-sheet__row"><span id="lw-seg-카드">카드</span>
+      <div className="lw-seg" role="group" aria-labelledby="lw-seg-카드" aria-describedby="lw-cardkinds-help" style={{ '--n': LEVEL_CARD_KIND_ITEMS.length }}>
+        {LEVEL_CARD_KIND_ITEMS.map((it) => <button key={it.id} type="button" aria-pressed={it.locked || value.includes(it.id)}
+          aria-disabled={it.locked || undefined}
+          onClick={() => { if (!it.locked) onPick(it.id); }}>{it.label}</button>)}
+      </div>
+    </div>
+    <p className="lw-sheet__sub" id="lw-cardkinds-help">{LEVEL_CARD_KIND_NOTE}</p>
+  </>;
+}
+
+/**
  * 제목 ▾ 시트 — 레벨 · 목록 | 순서 · 하루(오너 2026-10-21 KST 「두 곳」 안: 페이지 줄 = 지금 공부하는 방식, 제목 = 나머지 전부 ·
  * 학습 옵션 LEVEL-STUDY-OPTIONS-001, 오너 2026-10-31 KST 시안 4차 · 단순화 · 「분량」 자리에 「하루」 LEVEL-WAIT-001, 2026-11-01 KST).
- * 모드 · 보기 탭은 페이지 줄에만 둔다(시트에 또 두면 겹친다). 목록은 그 레벨에 있는 것만(한자 1 · 2급, 7–9급은 단어뿐이라 줄 없음).
+ * 모드 칸은 페이지 줄에만 둔다(시트에 또 두면 겹친다 · 보기 탭은 CARD-TYPES-001 A안으로 없앴다). 목록은 그 레벨에 있는 것만(한자 1 · 2급, 7–9급은 단어뿐이라 줄 없음).
  * 찾아가기(레벨 · 목록)와 오늘 공부(순서 · 하루)는 묶음 제목 없이 가는 선 하나로 나눈다. 이름표는 모두 두 글자(40px 열 그대로).
  * 「하루」는 하루 새 단어 수를 아는 때만(로그인 — perDay가 null이면 줄 없음). 예전 「보기」 줄(도움 스위치 · 리스트 한 번에)은 없앴다(고정 기본값).
+ * 「카드」(CARD-TYPES-001)는 「하루」 아래 — 켜진 종류를 서버 입장 정책에서 읽은 때만(cardKinds가 null이면 줄 없음 — 손님 · 호환 모드).
  */
-export function TitleSheet({ levels, levelKey, kinds, prefs, onPrefs, perDay = null, onPerDay, onClose }) {
+export function TitleSheet({ levels, levelKey, kinds, prefs, onPrefs, perDay = null, onPerDay, cardKinds = null, onCardKinds, onClose }) {
   const L = useWordLang();
   return <Sheet label="레벨 · 목록 · 학습 옵션" onClose={onClose}>
     <div className="lw-sheet__rows">
       <Seg label="레벨" value={levelKey} items={levels.map((k) => ({ id: k, label: L.levelPill(k), aria: L.tag(L.levelOf(k)), href: L.levelHref(k) }))} />
       {kinds.length > 1 && <Seg label="목록" value="vocab" items={kinds} />}
       <div className="lw-sheet__sep" role="presentation" />
-      {/* 보이는 이름표는 두 글자 「순서」, 화면 읽기는 「새 단어 순서」(무엇의 순서인지 — 「새 단어 순서: 새 단어 먼저」). */}
+      {/* 보이는 이름표는 두 글자 「순서」, 화면 읽기는 「새 단어 순서」(무엇의 순서인지 — 「새 단어 순서: 복습 전」). */}
       <Seg label="순서" name="새 단어 순서" value={prefs.order} items={LEVEL_STUDY_ORDERS} onPick={(order) => onPrefs({ order })} />
       {perDay !== null && onPerDay && <NewPerDayRow value={perDay} onPick={onPerDay} />}
+      {cardKinds && onCardKinds && <CardKindsRow value={cardKinds} onPick={onCardKinds} />}
     </div>
   </Sheet>;
 }

@@ -11,6 +11,10 @@
 import { learningDay } from './fsrsScheduler.js';
 
 export const CARD_KINDS = Object.freeze(['recognition', 'production', 'listening']);
+// 하루 새 단어 「제한 없음」(vocabStudy NEW_PER_DAY_UNLIMITED와 같은 값 — 순수 모듈이라 값만 둔다, 계약 테스트가 둘을 맞춘다).
+export const VARIANT_UNLIMITED_LIMIT = 9999;
+// 하루 새 단어 수를 모를 때(입장 상태 없음 · 호환 모드)의 안전 상한 — 켠 날 밀린 단어가 한꺼번에 붙지 않게.
+export const VARIANT_UNKNOWN_CAP = 20;
 export const RECOGNITION_ONLY = Object.freeze(['recognition']);
 const ORDER = Object.fromEntries(CARD_KINDS.map((kind, index) => [kind, index]));
 const fail = code => { throw Object.assign(new Error(code), { code }); };
@@ -31,6 +35,23 @@ export function normalizeCardKinds(value) {
 /** 입장 상태의 켜진 종류(없거나 잘못되면 단어 → 뜻 하나). */
 export function admissionCardKinds(status) {
   try { return status?.cardKinds ? normalizeCardKinds(status.cardKinds) : RECOGNITION_ONLY; } catch { return RECOGNITION_ONLY; }
+}
+
+/**
+ * 오늘(학습일) 더 붙일 수 있는 종류 카드 수(오너 2026-11-01 KST): 하루 새 단어 수와 같은 숫자를 학습일마다 — 새로 고침으로 넘치지 않게
+ * 오늘 이미 붙인 종류 카드(introducedAt이 오늘)를 뺀다. 하루 새 단어 「제한 없음」(9999)이면 Anki처럼 막지 않는다(Infinity — 오너 「무한일 때는
+ * anki처럼 막지 마」). 하루 새 단어 수를 모르면 VARIANT_UNKNOWN_CAP. cards = 그 계정의 카드 목록 전부(두 화면이 같은 몫을 나눠 쓴다).
+ */
+export function variantQuota({ cards = [], dailyNewLimit = null, at = Date.now() } = {}) {
+  if (dailyNewLimit === VARIANT_UNLIMITED_LIMIT) return Infinity;
+  const cap = Number.isInteger(dailyNewLimit) && dailyNewLimit >= 0 ? dailyNewLimit : VARIANT_UNKNOWN_CAP;
+  const today = dayAt(at);
+  let made = 0;
+  for (const entry of cards || []) {
+    if (cardKindOf(entry) === 'recognition') continue;
+    try { if (dayOf(entry.card.introducedAt, entry.card) === today) made += 1; } catch { /* 모양이 어긋난 항목은 세지 않는다 */ }
+  }
+  return Math.max(0, cap - made);
 }
 
 /** 첫 문제가 하루 새 단어 몫을 쓰는 카드인가 — 단어 → 뜻(새 단어 도입)의 첫 질문만(서버 fsrs_apply_operation · fsrs_apply_learning_operation과 같다). */

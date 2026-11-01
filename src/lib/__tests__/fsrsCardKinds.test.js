@@ -130,9 +130,13 @@ describe('복습실 줄(createFsrsReviewController) — 종류 규칙을 거친 
     expect((await ready(rows)).sort()).toEqual([...W].sort());
     expect((await ready(rows, { remaining: 0 })).sort()).toEqual([W[0], W[1]].sort());
   });
-  it('종류 카드가 있어도 이 화면(단어 → 뜻만 그린다)에는 서지 않는다 · 몫을 쓰지 않는 새 종류 카드도 · 오늘 채점한 형제가 있으면 단어 → 뜻이 다음 학습일로', async () => {
+  it('종류 카드도 그 단어가 보이면 선다(4단계) — 단어마다 한 장(형제 규칙) · 몫을 쓰지 않는 새 종류 카드 · 오늘 채점한 형제가 있으면 단어 → 뜻이 다음 학습일로', async () => {
     const prodNew = entry(P, newCard(), { kind: 'production', vocabularyId: W[1] });
-    expect((await ready([...rows, prodNew])).sort()).toEqual([...W].sort());
+    expect((await ready([...rows, prodNew])).sort()).toEqual([...W].sort()); // 단어 → 뜻 기한이 더 이르다 — 그 한 장
+    expect((await ready([...rows, prodNew], { remaining: 0 })).sort()).toEqual([W[0], W[1]].sort());
+    const prodOlder = entry(P, newCard(T - 2 * DAY), { kind: 'production', vocabularyId: W[1] });
+    expect((await ready([...rows, prodOlder])).sort()).toEqual([W[0], W[2], P].sort()); // 더 오래 밀린 뜻 → 단어가 그 단어의 한 장
+    expect((await ready([...rows, { ...prodOlder, resting: true }])).sort()).toEqual([...W].sort()); // 쉬는 카드(꺼진 종류)는 서지 않는다
     const prodDoneToday = entry(P, learningCard(T - 3 * MIN, T + 9 * MIN), { kind: 'production', vocabularyId: W[1] });
     expect((await ready([...rows, prodDoneToday])).sort()).toEqual([W[0], W[2]].sort());
   });

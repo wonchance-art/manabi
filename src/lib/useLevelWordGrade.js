@@ -102,6 +102,26 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
     }
   }, [userId, lookup, save, legacy, queryClient]);
 
+  /**
+   * 종류 카드(뜻 → 단어 · 듣기 — CARD-TYPES-001 3단계) 채점 — 단어 → 뜻의 FSRS 채점과 같은 한 번 채점(gradeLevelFsrs)에 카드 id만 다르다.
+   * card = { entry(카드 목록 항목), projection(levelCardKinds variantProjection) }. 담기 · 옛 일정 길은 없다(종류 카드는 늘 FSRS).
+   * 하루 새 단어 몫은 쓰지 않는다(서버 — 단어 → 뜻 첫 질문만). 결과 모양은 grade와 같다.
+   */
+  const gradeCard = useCallback(async (card, rating, { ahead = false } = {}) => {
+    if (!userId) return { ok: false, reason: 'guest' };
+    try {
+      const waitMs = fsrsGradeWait(card.projection, Date.now(), { ahead });
+      if (waitMs === null) return { ok: false, reason: 'not-due' };
+      const result = await gradeLevelFsrs({ accountId: userId, row: { id: card.entry.cardId }, rating, waitMs: waitMs || 0 });
+      if (!result.ok) throw result.error;
+      queryClient.invalidateQueries({ queryKey: ['level-card-kinds', userId] });
+      return { ok: true, undo: { kind: 'fsrs', variant: true, expiresAt: Date.now() + UNDO_MS } };
+    } catch (error) {
+      errorRef.current?.(failureMessage('채점을 저장하지 못했어요.', error));
+      return { ok: false, reason: 'failed' };
+    }
+  }, [userId, queryClient]);
+
   const undo = useCallback(async (u) => {
     if (!u || !userId || Date.now() > u.expiresAt) throw new Error('되돌릴 수 있는 시간이 지났어요.');
     if (u.kind === 'save') {
@@ -112,6 +132,7 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
       patchVocabWordsCache(queryClient, userId, u.last.wordId, u.last.prev || {});
     } else if (u.kind === 'fsrs') {
       await undoLevelFsrs({ accountId: userId });
+      if (u.variant) queryClient.invalidateQueries({ queryKey: ['level-card-kinds', userId] });
     }
     queryClient.invalidateQueries({ queryKey: vocabKey(userId) });
   }, [userId, queryClient]);
@@ -132,5 +153,5 @@ export function useLevelWordGrade({ user, fetchProfile, language = 'Chinese', on
   /** 되돌릴 수 있는 꾸러미인가 — 담기는 새 행 확인(스냅샷)이 있을 때만. */
   const undoable = (u) => !!u && Date.now() <= u.expiresAt && (u.kind !== 'save' || !!u.snapshot);
 
-  return { grade, star, undo, undoable, lookup, pending: inline.isPending };
+  return { grade, gradeCard, star, undo, undoable, lookup, pending: inline.isPending };
 }

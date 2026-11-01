@@ -85,7 +85,9 @@ describe('초점 잇기 배선 — 화면은 그대로, 초점만', () => {
     expect(fsrs).toContain('const revealRef = useRevealFocus(!!word0 && !revealed, current?.attempt?.id || null, busy || !current?.attempt);');
     expect(fsrs).toContain('<Button ref={revealRef} variant="secondary" size="lg" disabled={disabled || !current.attempt} className="review-reveal-btn"');
     expect(fsrs).toContain('aria-describedby={headwordId} onClick={event => reveal(revealTrigger(event))}>정답 확인하기');
-    expect(fsrs).toContain('<ReviewHeadword word={word} revealed={revealed} id={headwordId} />');
+    // 문제 면은 카드 종류가 고른다(CARD-TYPES-001 4단계) — 단어 → 뜻은 그대로 ReviewHeadword(id = 정답 확인하기가 함께 읽는 이름).
+    expect(fsrs).toContain('<FsrsQuestionFace kind={current.kind} word={word} revealed={revealed} id={headwordId} speak={speak} ttsSupported={ttsSupported} />');
+    expect(fsrs).toContain('return <ReviewHeadword word={word} revealed={revealed} id={id} />;');
     expect(sliceBetween(parts, 'export function ReviewHeadword(', '</h2>;')).toContain('<h2 id={id} className="review-card__word"');
   });
 });

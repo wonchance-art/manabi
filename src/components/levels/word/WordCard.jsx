@@ -1,17 +1,19 @@
 'use client';
 // 리스트 모드 카드(문서 「리스트 모드」) — 머리 줄(단어 · 읽기 · 듣기 · 레벨 태그 · 상태) → 뜻 → 글자 칸 → 예문.
 // 네 칸은 카드마다 붙이지 않고 화면 아래 한 줄(가운데 카드를 채점 — 오너 확정 2026-10-19 KST 「아래 고정」). 단어 카드 창(grades)만 카드 안에 둔다.
-// 보기 탭이 전체가 아니면 고른 것 하나만 남기고, 누르면 나머지가 아래로 펼쳐진다. 카드를 누르면 그 카드가 채점 대상(onPick).
+// 접힌 줄은 카드의 문제 면 하나(CARD-TYPES-001 §5 「리스트: 행마다 문제 면만」 · 오너 결정 2026-11-01 KST) — 단어 → 뜻 = 표제어, 뜻 → 단어 = 뜻,
+// 듣기 = 소리 단추. 높이 · 시작선이 같고 종류 글씨는 없다. 누르면 나머지(답 면)가 아래로 펼쳐진다. 카드를 누르면 그 카드가 채점 대상(onPick).
 // 레벨 태그 · 상태(☆ 담기 · 오늘 · 복습 · 졸업)는 찾기 · 예문 단어 창에서 연 카드(search)에만 — 레벨 페이지 카드는 이미 그 레벨이고 채점이 곧 담기다(오너 2026-10-20 KST).
 // 「지금」 · 「4분 후」(미리 학습) · 「1일 후」는 줄을 늘리지 않고 카드 맨 아래 줄 오른쪽 끝에 회색 글자로(같은 줄 글자와 기준선 맞춤).
-// 어려운 단어(자주 틀린 단어 · N번)는 오늘 복습 카드에만. 오래된 단어의 반대 방향은 뜻 연습 탭이 맡는다(네 영역 체크 — 오너 승인 2026-10-21 KST).
-// 네 영역 줄(단어 · 문장 · 뜻 · 소리)과 「2일 후 복습」은 펼친 부분 맨 아래 · 전체 탭 카드 · 찾기 카드에만.
+// 어려운 단어(자주 틀린 단어 · N번)는 오늘 복습 카드에만. 카드 기억률 줄(단어 → 뜻 · 뜻 → 단어 · 듣기)과 「2일 후 복습」은 펼친 부분 맨 아래 · 훑어보기 카드 · 찾기 카드에만.
 import { useState } from 'react';
 import { reducedMotion } from '@/lib/reducedMotion';
 import { decodeExampleSeg, decodeFuri } from '@/lib/levelExampleCode';
 import { CharTiles, GradeButtons, LevelTag, Listen, Reading, StatusPill, WaitChip } from './WordParts';
 import { AreaRow } from './WordAreas';
 import { useWordLang } from './wordLang';
+import { ListenFace, MeaningFace } from '@/components/cards/CardFaces';
+import { levelKindView } from '@/lib/levelCardKinds';
 
 const HAN = /\p{Script=Han}/u;
 
@@ -32,7 +34,7 @@ function Furigana({ text, from, furi }) {
   return out;
 }
 
-/** 예문 본문 — 단어마다 누르는 조각(Example · 문장 탭 펼친 카드가 같이 쓴다). */
+/** 예문 본문 — 단어마다 누르는 조각(Example). */
 function ExampleWords({ ex, word, onWord, openKey, tone = true }) {
   const L = useWordLang();
   const chars = [...ex.text];
@@ -61,8 +63,8 @@ function ExampleWords({ ex, word, onWord, openKey, tone = true }) {
 /**
  * 예문 — 빌드 때 나눈 단어 길이(seg)로 단어마다 점선 밑줄, 카드 단어는 장미색. 누르면 예문 단어 창(찾는 말 = 원형 lem, 없으면 조각 그대로).
  * lem(일본어) = 0 누르지 않음(조사 · 기호) · 1 조각 그대로 · '원형'(して → する). lem이 없으면(중국어) 한자 조각만 누른다.
- * 후리가나(furi)는 tone이 켜졌을 때만 — tone은 고정(늘 켬, 설정 스위치는 2026-10-31 KST에 없앴다). 후리가나를 맞추지 못한 예문 · 본문을 따로 그린 예문(문장 탭)은 읽기 줄을 보인다.
- * 후리가나 규칙(오너 2026-10-31 KST): 문제 면(한 단어 앞면 · 리스트 접힌 문장)에는 넣지 않고(맨 글자), 답 면(펼침 · 뒷면 — 이 Example)에는 늘 넣는다.
+ * 후리가나(furi)는 tone이 켜졌을 때만 — tone은 고정(늘 켬, 설정 스위치는 2026-10-31 KST에 없앴다). 후리가나를 맞추지 못한 예문은 읽기 줄을 보인다.
+ * 후리가나 규칙(오너 2026-10-31 KST · 카드 종류 2026-11-01 KST 재확인): 문제 면(표제어 · 뜻 · 소리 단추)에는 넣지 않고, 답 면(펼침 · 뒷면 — 이 Example)에는 늘 넣는다.
  */
 export function Example({ ex, word, speak, onWord, openKey, showText = true, tone = true, tail = null }) {
   const L = useWordLang();
@@ -83,13 +85,15 @@ export function Example({ ex, word, speak, onWord, openKey, showText = true, ton
 
 /**
  * info = { status, previews, hard(번) } — 화면이 상태 · 채점 미리보기를 계산해 넘긴다.
- * view = 'all' | 'word' | 'sentence' | 'meaning' | 'sound'. areas = 네 영역(levelWordAreas) · next = 「2일 후 복습」 · later = 접힌 복습 예정 카드의 「1일 후」 · 「졸업」.
+ * kind = 카드 종류(접힌 줄의 문제 면 — levelKindView: 'word' · 'meaning' · 'sound'). view = 'all'이면 훑어보기 · 찾기 · 단어 카드 창(전부 펼침).
+ * areas = 카드 기억률(AreaRow) · next = 「2일 후 복습」 · later = 접힌 복습 예정 카드의 「1일 후」 · 「졸업」.
  * wait = 미리 올린 카드(미리 학습 LEARN-AHEAD-001)의 실제 차례 시각(ms) — 「4분 후」(WaitChip, 1초마다 줄어든다).
- * onOpen = 펼침(같은 날 규칙 — 이 기기에서 이 단어를 펼쳐 봤다).
+ * cardKey = 리스트의 카드 열쇠(종류 카드는 단어 열쇠와 다르다 — data-key) · onOpen = 펼침.
  */
-export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note,
+export function WordCard({ entry: e, kind = 'recognition', cardKey = e.key, level, view: given = null, info, tiles, speak, tone, onGrade, onSave, saving, pop, onWord, openKey, note,
   grades: inline = false, search = false, focused = false, onPick, onOpen, due = false, wait = null, later = null, areas = null, next = null }) {
   const L = useWordLang();
+  const view = given || levelKindView(kind);
   const [open, setOpen] = useState(false); // false | true | 'closing'(접히는 0.2초 — 오너 2026-10-21 KST ⑥-2)
   const { hw, sub } = L.head(e);
   // 표제어 — 판이 따로 그리면(영어 · 프랑스어: 관사 · 폭 기준 크기) 그것으로, 뒤에 판의 표(프랑스어 성).
@@ -114,27 +118,22 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const ex = <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} />;
   const grades = inline ? <GradeButtons previews={info.previews} onGrade={onGrade} note={note} /> : null;
   const pick = (event) => { if (!event.target.closest('button, a')) onPick?.(); };
-  const attrs = { 'data-key': e.key, 'data-focus': focused || undefined };
+  const attrs = { 'data-key': cardKey, 'data-focus': focused || undefined };
   const areaRow = <AreaRow areas={areas} next={next} />;
   if (view === 'all') {
     const last = e.ex?.text ? <Example ex={e.ex} word={e.word} speak={speak} onWord={onWord} openKey={openKey} tone={tone} tail={time} /> : null;
     // 「자주 틀린 단어」 칩은 단어 위(캔버스 ⑧).
     return <li className="lw-card" {...attrs} onClick={pick}>{chips}{head}{last ? mean : meanLine(time)}<CharTiles tiles={tiles} word={e.word} />{last}{areaRow}{grades}</li>;
   }
-  // 접힌 카드는 한 줄뿐 — 남은 시간은 그 줄 끝.
-  const soloLine = (cls, body, lang) => (time ? <p className={`${cls} lw-tailrow`}><span lang={lang}>{body}</span>{time}</p> : <p className={cls} lang={lang}>{body}</p>);
-  const solo = view === 'word' ? <div className="lw-card__head"><span className="lw-card__word">{hwEl}{tag}</span>
-    {marks}{time}</div>
-    // 문장 탭은 펼친 뒤에만 예문 단어를 바로 누른다(시안 ⑦ 「펼친 뒤 · 예문 단어 바로 누름」) — 접힌 채로 누르면 카드가 펼쳐진다.
-    : view === 'sentence' ? (!e.ex?.text ? soloLine('lw-card__solo', '예문 없음')
-      : open === true ? soloLine('lw-card__solo', <ExampleWords ex={e.ex} word={e.word} onWord={onWord} openKey={openKey} tone={tone} />)
-        : soloLine('lw-card__solo', e.ex.text, L.hw))
-      : view === 'meaning' ? soloLine('lw-card__solo lw-card__mean', e.meaning)
-        : <div className="lw-card__head"><Listen speak={speak} text={e.word} /><span className="lw-card__word" />{time}</div>;
-  const rest = view === 'word' ? <>{<span className="lw-card__word">{reading}{listen}</span>}{mean}<CharTiles tiles={tiles} word={e.word} />{ex}</>
-    : view === 'sentence' ? <>{e.ex && <Example ex={e.ex} word={e.word} speak={speak} showText={false} tone={tone} />}{head}{mean}<CharTiles tiles={tiles} word={e.word} /></>
-      : view === 'meaning' ? <>{head}<CharTiles tiles={tiles} word={e.word} />{ex}</>
-        : <>{head}{mean}<CharTiles tiles={tiles} word={e.word} />{ex}</>;
+  // 접힌 줄 = 문제 면 하나(높이 44px 줄 · 같은 왼쪽 끝 — 시안 5 · 7). 남은 시간은 그 줄 끝.
+  const solo = view === 'meaning' ? <div className="lw-card__head"><span className="lw-card__word"><MeaningFace meaning={e.meaning} className="lw-card__hw" /></span>{time}</div>
+    : view === 'sound' ? <div className="lw-card__head"><ListenFace speak={speak} text={e.ex?.text || e.word} size="row" /><span className="lw-card__word" />{time}</div>
+      : <div className="lw-card__head"><span className="lw-card__word">{hwEl}{tag}</span>{marks}{time}</div>;
+  // 펼친 부분 = 답 면 — 단어 → 뜻: 읽기 · 뜻 · 글자 칸 · 예문 / 뜻 → 단어: 표제어 줄 · 글자 칸 · 예문 / 듣기: 예문(후리가나) · 해석 · 표제어 줄 · 뜻.
+  const rest = view === 'meaning' ? <>{head}<CharTiles tiles={tiles} word={e.word} />{ex}</>
+    : view === 'sound' ? <>{ex}{head}{mean}<CharTiles tiles={tiles} word={e.word} /></>
+      : <>{<span className="lw-card__word">{reading}{listen}</span>}{mean}<CharTiles tiles={tiles} word={e.word} />{ex}</>;
+  const label = view === 'word' ? e.word : '카드';
   const flip = () => {
     if (open === true) { setOpen(reducedMotion() ? false : 'closing'); return; }
     if (!open) onOpen?.();
@@ -144,7 +143,7 @@ export function WordCard({ entry: e, level, view = 'all', info, tiles, speak, to
   const toggle = (event) => { if (!event.target.closest('button, a')) { flip(); onPick?.(); } };
   return <li className="lw-card" {...attrs} data-view={view} onClick={toggle}>
     {chips}{solo}
-    <button type="button" className="sr-only" aria-expanded={open === true} onClick={flip}>{`${e.word} ${open === true ? '접기' : '펼쳐 보기'}`}</button>
+    <button type="button" className="sr-only" aria-expanded={open === true} onClick={flip}>{`${label} ${open === true ? '접기' : '펼쳐 보기'}`}</button>
     {grades}
     {open && <div className="lw-card__more" data-closing={open === 'closing' || undefined} onAnimationEnd={closed}><div className="lw-card__in">{rest}{areaRow}</div></div>}
   </li>;

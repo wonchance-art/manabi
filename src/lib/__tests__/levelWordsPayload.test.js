@@ -125,11 +125,11 @@ describe('레벨 단어 화면 — 항목은 조각 밖 정적 묶음', () => {
     expect(link).toContain("onPointerDown={(e) => { if (e.pointerType === 'mouse') warm(); }} onClick={warm}");
   });
 
-  it('⑥ 화면은 묶음을 받기 전에 세션 · 연습 · 훑기를 시작하지 않고, 실패면 다시 시도', () => {
+  it('⑥ 화면은 묶음을 받기 전에 세션 · 훑기를 시작하지 않고, 실패면 다시 시도', () => {
     const src = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
     expect(src).toContain('const words = useLevelWords(wordsUrl, givenGroups);');
-    expect(src).toContain('if (!ready || !loaded || !slotsSettled || startedFor.current === scope) return;'); // 서버 새 단어 몫(LEVEL-SAVED-TAG-001)도 받은 뒤
-    expect(src).toContain('const areasReady = loaded && (');
+    // 서버 새 단어 몫(LEVEL-SAVED-TAG-001) · 켜진 종류의 카드 목록(CARD-TYPES-001 — 종류가 꺼져 있으면 바로)도 받은 뒤
+    expect(src).toContain('if (!ready || !loaded || !slotsSettled || !variantsSettled || startedFor.current === scope) return;');
     expect(src).toContain(': browse && !loaded ? <div className="lw-one">{pending}</div>');
     expect(src).toMatch(/words\.failed[\s\S]{0,200}단어 목록을 불러오지 못했어요\.[\s\S]{0,120}다시 시도/);
     // 「고르는 중」 자리는 한 곳(pending)에서만 — 받기 전 · 붙기 전이 같은 화면.

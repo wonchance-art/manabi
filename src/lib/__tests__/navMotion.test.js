@@ -251,10 +251,11 @@ describe('배선 — 도착한 커밋에서 한 곳만', () => {
     const callers = walk(path.join(ROOT, 'src')).filter((f) => /\.startViewTransition\(/.test(fs.readFileSync(f, 'utf8')))
       .map((f) => path.relative(ROOT, f).replaceAll('\\', '/'));
     expect(callers).toEqual(['src/components/levels/word/LevelWordScreen.jsx']);
-    // 화면 안 전환이다 — 모드 · 보기 상태(setPrefs)만 감싼다(경로를 바꾸지 않는다).
+    // 화면 안 전환이다 — 모드(setPrefs) · 훑어보기 열고 닫기(setBrowse)만 감싼다(경로를 바꾸지 않는다). 보기 탭은 없앴다(CARD-TYPES-001 A안).
     const word = read('src/components/levels/word/LevelWordScreen.jsx');
     expect(word.match(/document\.startViewTransition\(go\)/g)).toHaveLength(2);
-    expect(word.match(/const go = \(\) => flushSync\(\(\) => setPrefs\(\{ (mode|view) \}\)\);/g)).toHaveLength(2);
+    expect(word.match(/const go = \(\) => flushSync\(\(\) => setPrefs\(\{ mode \}\)\);/g)).toHaveLength(1);
+    expect(word).toContain('const go = () => flushSync(() => { setBrowse(on); setRevealed(false); setFocusKey(null); });');
   });
   it('배제 기록 — 실험판 React를 끌어오는 experimental.viewTransition · 문서 간 @view-transition은 켜지 않는다', () => {
     expect(read('next.config.mjs')).not.toMatch(/viewTransition/);

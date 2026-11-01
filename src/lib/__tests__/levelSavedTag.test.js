@@ -37,9 +37,9 @@ describe('A. 담음 단어는 줄에서 새 단어와 같이 — 하루 몫 안�
 describe('B. 오늘 새 단어 몫 — 서버 입장 한도가 정본', () => {
   it('입장 모드는 서버의 한도 · 쓴 수 · 남은 수(reviewScopeQuota)', async () => {
     loaded = status();
-    expect(await levelNewSlots(actorId)).toEqual({ limit: 15, used: 15, remaining: 0 });
+    expect(await levelNewSlots(actorId)).toEqual({ limit: 15, used: 15, remaining: 0, cardKinds: ['recognition'] }); // 켜진 종류 칸이 없으면 단어 → 뜻 하나(CARD-TYPES-001)
     loaded = status({ used: 4, fsrsUsed: 3, legacyUsed: 1, remaining: 11 });
-    expect(await levelNewSlots(actorId)).toEqual({ limit: 15, used: 4, remaining: 11 });
+    expect(await levelNewSlots(actorId)).toEqual({ limit: 15, used: 4, remaining: 11, cardKinds: ['recognition'] });
   });
   it('호환(사전 활성) 모드 · 미설치 · 못 읽음 · 손님은 null — 화면이 기기 셈(newStartedToday)으로', async () => {
     loaded = status({ enabled: false, active: false, fsrsEnabled: false, startsAt: null });
@@ -64,11 +64,12 @@ describe('B. 오늘 새 단어 몫 — 서버 입장 한도가 정본', () => {
   });
 });
 
-describe('C. 몫 안내 — [한도 늘리기] [연습만 하기]', () => {
-  it('한도는 단어장 복습 설정을 펼친 채로 · 연습은 그 단어 하나짜리 문장 연습(일정 없음)', () => {
+describe('C. 몫 안내 — [한도 늘리기](연습 탭을 없애며 [연습만 하기]는 뺐다 — CARD-TYPES-001 A안)', () => {
+  it('한도는 단어장 복습 설정을 펼친 채로', () => {
     const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
-    expect(screen).toContain("href: '/vocab#review-settings', action: '한도 늘리기', also: entry ? { action: '연습만 하기', onAction: () => practiceOnlyRef.current?.(entry) } : null");
-    expect(screen).toContain("practiceOnlyRef.current = (entry) => { startPractice('sentence', [entry.key]); switchView('sentence'); };");
+    expect(screen).toContain("href: '/vocab#review-settings', action: '한도 늘리기', ms: 8000 });");
+    expect(screen).not.toContain("action: '연습만 하기'");
+    expect(screen).not.toContain('practiceOnlyRef');
     expect(screen).toContain('<button type="button" onClick={act(notice.also.onAction)}>{notice.also.action}</button>');
     // #review-settings로 오면 복습 설정(하루 새 표현 한도)을 펼친다 — 내 정보 시트와 같은 길.
     expect(fs.readFileSync('src/views/VocabPage.jsx', 'utf8')).toContain("window.location.hash !== '#review-settings'");

@@ -158,7 +158,8 @@ describe('옵션을 바꾸면 아직 채점하지 않은 몫만 다시 짠다 �
   });
   it('화면 배선 — 시작 · 다시 짜기 · 분량 길(rest · 이어서)은 없다', () => {
     const screen = fs.readFileSync('src/components/levels/word/LevelWordScreen.jsx', 'utf8');
-    expect(screen).toMatch(/startLevelSession\([^;]*\{ newCap, learningOf: \(k\) => inLearningStep\(table\.get\(k\) \|\| \{\}\), \.\.\.studyOpts \}/);
+    // 줄 카드 = 단어 → 뜻(단어 열쇠) + 켜진 종류 카드(CARD-TYPES-001) — 표시 값은 cardTable 하나(종류가 꺼져 있으면 table 그대로).
+    expect(screen).toMatch(/startLevelSession\(lineEntries, lineStatus, [^;]*\{ newCap, learningOf: \(k\) => inLearningStep\(cardTable\(k\) \|\| \{\}\), \.\.\.studyOpts \}/);
     expect(screen).toContain('const next = arrangeLevelSession(session, studyOpts, { pin: head });');
     expect(screen).toMatch(/useLayoutEffect\(\(\) => \{\n\s+if \(!session\) return;\n\s+const next = arrangeLevelSession/);
     expect(screen).not.toMatch(/continueLevelSession|contBatch|ContinueButton|session\.rest|이번 분량 끝|prefs\.amount/);
@@ -212,8 +213,10 @@ describe('설정 값 — 보기 줄은 고정 기본값(tone 켬 · page 20), �
     expect(LEVEL_WORD_PREFS).not.toHaveProperty('two');
     expect(LEVEL_WORD_PREFS).not.toHaveProperty('amount');
     expect(normalizeLevelWordPrefs({ order: 'weak', amount: 50 })).toMatchObject({ order: 'mix' });
+    // 보기(view)는 저장하지 않는다 — 보기 탭을 없앴다(CARD-TYPES-001 A안). 옛 저장값 view는 버린다.
     expect(normalizeLevelWordPrefs({ order: 'review-first', amount: 10, two: true, mode: 'list', view: 'sound', v: 2 }))
-      .toEqual({ mode: 'list', view: 'sound', tone: true, page: 20, order: 'review-first', v: 2 });
+      .toEqual({ mode: 'list', tone: true, page: 20, order: 'review-first', v: 2 });
+    expect(LEVEL_WORD_PREFS).not.toHaveProperty('view');
   });
   it('세션 옵션 — 순서만', () => {
     expect(levelStudyOptions({ order: 'new-first', amount: 'all' })).toEqual({ order: 'new-first' });
@@ -239,17 +242,20 @@ const ENTRY = { key: '経験', word: '経験', reading: 'けいけん', meaning:
 describe('후리가나 — 문제 면 없음 · 답 면 있음', () => {
   const wrap = (node) => renderToStaticMarkup(<WordLangContext.Provider value={L}>{node}</WordLangContext.Provider>);
   const info = { status: 'today', previews: null };
-  it('한 단어 — 앞면(문장 탭)은 맨 글자, 뒷면 예문은 루비', () => {
-    const front = wrap(<OneWordCard entry={ENTRY} view="sentence" info={info} tone revealed={false} onReveal={() => {}} />);
-    expect(front).toContain('経験がある。');
-    expect(front).not.toContain('<ruby>');
-    const back = wrap(<OneWordCard entry={ENTRY} view="sentence" info={info} tone revealed onReveal={() => {}} />);
-    expect(back).toContain('<ruby>経験<rt>けいけん</rt></ruby>');
+  // 카드 세 종류(CARD-TYPES-001 — 문장 탭은 없앴다)의 문제 면 · 답 면 전부는 cardTypesFaces.test.jsx가 본다. 여기는 후리가나 규칙만.
+  it('한 단어 — 문제 면(단어 · 뜻 · 소리)은 루비 없음, 답 면 예문은 루비', () => {
+    for (const kind of ['recognition', 'production', 'listening']) {
+      const front = wrap(<OneWordCard entry={ENTRY} kind={kind} info={info} tone revealed={false} onReveal={() => {}} speak={() => {}} />);
+      expect(front, kind).not.toContain('<ruby>');
+      const back = wrap(<OneWordCard entry={ENTRY} kind={kind} info={info} tone revealed onReveal={() => {}} speak={() => {}} />);
+      expect(back, kind).toContain('<ruby>経験<rt>けいけん</rt></ruby>');
+    }
   });
-  it('리스트 — 접힌 문장(문제 면)은 맨 글자, 펼친 카드 · 전체 카드(답 면)는 루비', () => {
-    const closed = wrap(<WordCard entry={ENTRY} level="N3" view="sentence" info={info} tone />);
-    expect(closed).toContain('経験がある。');
-    expect(closed).not.toContain('<ruby>');
+  it('리스트 — 접힌 줄(문제 면)은 루비 없음, 펼친 카드 · 전체 카드(답 면)는 루비', () => {
+    for (const kind of ['recognition', 'production', 'listening']) {
+      const closed = wrap(<WordCard entry={ENTRY} level="N3" kind={kind} info={info} tone speak={() => {}} />);
+      expect(closed, kind).not.toContain('<ruby>');
+    }
     const open = wrap(<WordCard entry={ENTRY} level="N3" view="all" info={info} tone />);
     expect(open).toContain('<ruby>経験<rt>けいけん</rt></ruby>');
   });

@@ -345,6 +345,16 @@ export function createFsrsLearningClient({ accountId, getAccountId = () => accou
         }
       }
     },
+    /**
+     * 종류 카드 붙이기(CARD-TYPES-001 3단계) — 보낼함에 넣지 않는 바로 보내기. 붙여도 되는지는 서버가 정하고(날 단위 졸업 다음 학습일 ·
+     * 단어당 하루 한 장 · 켜진 종류), 거절은 이 호출의 실패로 끝난다 — 보낼함에 막힌 연산으로 남아 복습실의 「저장하지 못했어요」가 되지 않게.
+     * 같은 등록을 다시 보내도(연결 끊김) 같은 연산 ID라 두 번 붙지 않는다.
+     */
+    enrollVariant(payload) {
+      assertOwner();
+      if (!payload?.cardKind) throw problem('fsrs_invalid_request');
+      return online('enroll', payload);
+    },
     reveal: payload => online('reveal', payload),
     abandon: payload => online('abandon', payload),
     async submit(payload) {

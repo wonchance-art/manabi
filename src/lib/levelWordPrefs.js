@@ -11,16 +11,14 @@
 
 import { NEW_PER_DAY_MAX, NEW_PER_DAY_UNLIMITED, isNewPerDayValue } from './vocabStudy.js';
 
-// 보기 탭(네 영역 체크 — 오너 승인 2026-10-21 KST): [단어]가 기본이고 실제 복습 일정(네 칸)은 이 탭만 바꾼다.
-// 문장 · 뜻 · 소리는 스스로 더 다지고 싶은 사람의 연습(두 칸 · 일정 없음), 전체는 훑어보기(채점 없음).
-export const LEVEL_WORD_VIEWS = Object.freeze([
-  { id: 'word', label: '단어' }, { id: 'sentence', label: '문장' }, { id: 'meaning', label: '뜻' }, { id: 'sound', label: '소리' }, { id: 'all', label: '전체' },
-]);
+// 보기 탭(단어 · 문장 · 뜻 · 소리 · 전체)은 없앴다(CARD-TYPES-001 A안 · 오너 2026-11-01 KST) — 카드 종류(단어 → 뜻 · 뜻 → 단어 · 듣기)가 연습 탭을
+// 흡수했고, 「전체」(훑어보기)는 끝 화면 단추로 옮겼다(기기 설정이 아니다). 옛 저장값 view는 읽지 않는다.
 
 export const LEVEL_STUDY_ORDERS = Object.freeze([
   Object.freeze({ id: 'mix', label: '혼합' }), // 복습 사이에 새 단어를 고르게(Anki 「복습과 섞기」)
-  Object.freeze({ id: 'new-first', label: '새 단어 먼저' }), // 새 단어를 복습 전에
-  Object.freeze({ id: 'review-first', label: '복습 먼저' }), // 새 단어를 복습 후에
+  // 「복습 전 · 복습 후」 = 새 단어를 복습 전에 · 후에(Anki 「Show before/after reviews」 — 오너 2026-11-01 KST 「혼합 / 복습 전 / 복습 후」).
+  Object.freeze({ id: 'new-first', label: '복습 전' }), // 새 단어를 복습 전에
+  Object.freeze({ id: 'review-first', label: '복습 후' }), // 새 단어를 복습 후에
 ]);
 // 「하루」 줄 칩 — 10 · 15 · 20 · 30 · ∞ · ⋯ 여섯 칸(위 「순서」 세 칸의 두 배라 칸 경계가 한 칸 걸러 같은 세로선). ∞ = 「제한 없음」(9999),
 // ⋯(U+22EF, 숫자 · ∞와 같은 높이) = 직접 입력(0–999). 기호는 화면 읽기에 이름으로 읽힌다(aria).
@@ -44,15 +42,12 @@ export function parseNewPerDayInput(text) {
 }
 
 // 한 단어 모드가 기본. 리스트는 아직 채점하지 않은 카드를 한 번에 page장(20)까지 펼친다 — 고르는 칸은 없앴다(고정).
-export const LEVEL_WORD_PREFS = Object.freeze({ mode: 'one', view: 'word', tone: true, page: 20, order: 'mix', v: 2 });
+export const LEVEL_WORD_PREFS = Object.freeze({ mode: 'one', tone: true, page: 20, order: 'mix', v: 2 });
 
 export function normalizeLevelWordPrefs(raw) {
   const p = raw && typeof raw === 'object' ? raw : {};
-  // v2 전에 저장된 「전체」는 그때의 기본값이라 새 기본(단어)으로 옮긴다 — 전체가 채점 없는 훑기로 바뀌었다.
-  const view = p.v !== 2 && p.view === 'all' ? 'word' : p.view;
   return {
     mode: p.mode === 'list' ? 'list' : 'one',
-    view: LEVEL_WORD_VIEWS.some((v) => v.id === view) ? view : 'word',
     tone: LEVEL_WORD_PREFS.tone, // 고정 — 저장값(false)은 읽지 않는다
     page: LEVEL_WORD_PREFS.page, // 고정 — 예전 10 · 50도 20으로
     order: LEVEL_STUDY_ORDERS.some((o) => o.id === p.order) ? p.order : LEVEL_WORD_PREFS.order,

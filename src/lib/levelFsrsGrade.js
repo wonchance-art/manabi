@@ -91,6 +91,31 @@ export async function undoLevelFsrs({ accountId }) {
   });
 }
 
+/**
+ * 카드 목록(CARD-TYPES-001 3단계) — 복습실과 같은 상태 읽기(GET /api/learning/fsrs · fsrs_list_states). 종류 카드는 단어장 읽기에 없어(단계 2 결정)
+ * 단어 페이지는 켜진 종류가 단어 → 뜻 밖에도 있을 때만 이것을 읽는다(levelCardKinds). 채점과 같은 전송자를 쓴다.
+ * 반환 = { cards, now } — cards는 서버 항목 그대로(종류 카드만 kind · vocabularyId · resting).
+ */
+export async function loadLevelFsrsCards({ accountId }) {
+  const client = await clientFor(accountId);
+  const body = await client.load();
+  return { cards: body.cards, now: body.now ?? null };
+}
+
+/**
+ * 종류 카드 붙이기 — 등록 연산 하나(바로 보내기 — fsrsLearningClient.enrollVariant). 새 카드 id는 여기서 만들고, 그 단어(vocabularyId) · 종류 · 듣기의 예문 주장(hasExample)을 싣는다.
+ * 붙여도 되는지(켜진 종류 · 날 단위로 넘어간 다음 학습일 · 단어당 하루 한 장)는 서버가 다시 본다 — 거절은 호출부가 조용히 넘긴다(다음 읽기에서 다시 판정).
+ */
+export function enrollLevelVariant({ accountId, vocabularyId, kind, hasExample }) {
+  return serial(async () => {
+    const client = await clientFor(accountId);
+    const cardId = makeId();
+    const response = await client.enrollVariant({ accountId, cardId, expectedRevision: 0, operationId: makeId(),
+      cardKind: kind, vocabularyId, ...(kind === 'listening' ? { hasExample: hasExample === true } : {}) });
+    return { ok: response?.ok === true, cardId };
+  });
+}
+
 /** 계정이 바뀌거나 화면을 떠나면 버린다. */
 export function disposeLevelFsrs() {
   holder?.dispose?.();
