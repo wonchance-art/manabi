@@ -22,6 +22,11 @@ export function isGradedReviewEvent(event) {
     && !ACTIVITY_ONLY_SOURCES.has(event.source);
 }
 
+/** 학습 활동으로 세는 답인가 — 이번 주 「복습 N문항」과 현황 「공부한 날」이 같은 정의를 쓴다(STATS-MAP-001). */
+export function countsAsStudyAnswer(event) {
+  return !!event && (ACTIVITY_ONLY_SOURCES.has(event.source) || isGradedReviewEvent(event));
+}
+
 function inRange(ts, startMs, endMs) {
   const t = new Date(ts).getTime();
   return Number.isFinite(t) && t >= startMs && t < endMs;
@@ -41,11 +46,11 @@ function reviewSlice(events, startMs, endMs) {
   let correct = 0;
   for (const e of events || []) {
     if (!e?.created_at || !inRange(e.created_at, startMs, endMs)) continue;
+    if (!countsAsStudyAnswer(e)) continue;
     if (ACTIVITY_ONLY_SOURCES.has(e.source)) {
       total += 1; // 활동량만 — 정답률 분모 · 분자에는 넣지 않는다
       continue;
     }
-    if (!isGradedReviewEvent(e)) continue;
     total += 1;
     graded += 1;
     if (e.correct) correct += 1;
