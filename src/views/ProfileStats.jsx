@@ -18,6 +18,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/AuthContext';
 import { SAVED_SOURCES, buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
@@ -29,6 +30,9 @@ import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
 // 약점 칸 — import가 빠져 queryFn이 ReferenceError로 늘 실패했다(no-undef 전수, 2026-10-17 KST).
 import { fetchWeaknessRows } from '../lib/weaknessRows';
 import { fetchRemetWeeks } from '../lib/remetRows';
+
+// 다시 만난 말 칩 → 단어 카드(복습실과 같은 VocabDetailCard) — 칩을 누를 때만 받는다.
+const VocabDetailCard = dynamic(() => import('./VocabDetailCard'), { loading: () => null });
 import { learningDayStartMs, learningDateString } from '../lib/growthStats';
 import useLearnLanguage from '../components/learn/useLearnLanguage';
 import LangChips from '../components/learn/LangChips';
@@ -182,7 +186,7 @@ export default function ProfileStats() {
         <StreakTile profile={profile} className="learn-order-3" />
         <HeatmapCard dayCounts={studyDays} hasOlder={hasOlderRecord} className="learn-order-6" />
         {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
-        {weekly ? <WeeklyTile weekly={weekly} vocab={data?.vocab} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
+        {weekly ? <WeeklyTile weekly={weekly} vocab={data?.vocab} projections={projections} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
         <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label={METRICS.knownMarked.label} className="learn-order-5" />
         <LevelVocabCard lang={lang} vocab={vocab} projections={projections} knownRows={knownRows || []} className="learn-order-7" />
         <MemoryHealthCard lang={lang} projections={projections} now={data?.now || Date.now()} className="learn-order-8"
@@ -208,7 +212,7 @@ export default function ProfileStats() {
      사라짐'으로 읽혔다). 값은 0 대신 스트릭 타일의 '–' 선례 — 0 무표기 원칙과의
      절충점. 탭하면 전체 거울을 모달로 편다(DdayTile의 타일→모달 정본 재사용 —
      지난주 병기는 모달에만 남는다). ── */
-function WeeklyTile({ weekly, vocab = null, className = '' }) {
+function WeeklyTile({ weekly, vocab = null, projections = null, className = '' }) {
   const [open, setOpen] = useState(false);
   // 창 안의 한 겹 더 — 「다시 만난 말」(STATS-MAP-001). 닫으면 다음에 다시 이번 주부터.
   const [view, setView] = useState('week');
@@ -228,14 +232,14 @@ function WeeklyTile({ weekly, vocab = null, className = '' }) {
         <span className="learn-stat__label">{label}</span>
       </button>
       {open && (
-        <WeeklyModal weekly={weekly} vocab={vocab} view={view} setView={setView} onClose={close} />
+        <WeeklyModal weekly={weekly} vocab={vocab} projections={projections} view={view} setView={setView} onClose={close} />
       )}
     </>
   );
 }
 
 /* ── 이번 주 창 — 이번 주 · 다시 만난 말 두 겹. 다시 만난 말 재료는 창을 연 사람에게만 받는다(홈 · 현황 첫 화면 비용 0). ── */
-function WeeklyModal({ weekly, vocab, view, setView, onClose }) {
+function WeeklyModal({ weekly, vocab, projections, view, setView, onClose }) {
   const { user } = useAuth();
   const weekStartMs = weekly.week.startMs;
   const { data: remet } = useQuery({
@@ -244,11 +248,19 @@ function WeeklyModal({ weekly, vocab, view, setView, onClose }) {
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5,
   });
+  // 칩 → 단어 카드. 카드가 떠 있으면 Esc · 바깥 누르기는 카드만 닫는다(창의 Esc 처리기가 먼저 걸려 있어 둘 다 닫히던 것).
+  const [detail, setDetail] = useState(null);
+  const rowsByWord = useMemo(() => new Map((vocab || []).map(v => [v.word_text, v])), [vocab]);
+  const projectionById = useMemo(() => new Map((projections || []).map(p => [p?.vocabulary?.id, p])), [projections]);
+  const openWord = word => { const row = rowsByWord.get(word); if (row) setDetail(row); };
   if (view === 'remet' && remet) {
     return (
-      <TileModal title="다시 만난 말" className="tile-modal--wide" onClose={onClose} onBack={() => setView('week')} backLabel="이번 주">
-        <RemetView remet={remet} />
-      </TileModal>
+      <>
+        <TileModal title="다시 만난 말" className="tile-modal--wide" onClose={detail ? () => setDetail(null) : onClose} onBack={() => setView('week')} backLabel="이번 주">
+          <RemetView remet={remet} onWord={rowsByWord.size ? openWord : null} />
+        </TileModal>
+        {detail && <VocabDetailCard word={detail} projection={projectionById.get(detail.id)} now={new Date()} onClose={() => setDetail(null)} ttsSupported={false} />}
+      </>
     );
   }
   return (
@@ -262,7 +274,7 @@ function WeeklyModal({ weekly, vocab, view, setView, onClose }) {
      큰 숫자 = 서로 다른 말 · 세 칸 = 글 · 대화 · 그 전까지 복습 횟수 · 목록 = 글 · 대화별 다시 만난 말(많은 순, 다섯 개 + N).
      지난주는 회색 한 줄(화살표 · 색 평가 없음 — 거울 규약). 정의 · 셈은 lib/remetWords. ── */
 const REMET_CHIPS = 5;
-function RemetView({ remet }) {
+function RemetView({ remet, onWord = null }) {
   const { week, prev } = remet;
   const cells = [[week.reading, '편', '글'], [week.conversation, '개', '대화'], [week.reviews, '번', '복습']];
   return (
@@ -293,7 +305,9 @@ function RemetView({ remet }) {
                 <em>{src.words.length}개 <span aria-hidden="true">›</span></em>
               </Link>
               <span className="learn-remet__chips">
-                {src.words.slice(0, REMET_CHIPS).map(w => <span key={w}>{w}</span>)}
+                {src.words.slice(0, REMET_CHIPS).map(w => (onWord
+                  ? <button key={w} type="button" onClick={() => onWord(w)} aria-label={`${w} 단어 카드`}>{w}</button>
+                  : <span key={w}>{w}</span>))}
                 {src.words.length > REMET_CHIPS && <span className="is-more">+{src.words.length - REMET_CHIPS}</span>}
               </span>
             </div>
