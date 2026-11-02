@@ -71,6 +71,8 @@ export function validateRegistry(reg) {
         const keys = Object.keys(step || {});
         if (keys.length !== 1 || !STEP_KINDS.includes(keys[0])) errors.push(`${sat}: 조작은 ${STEP_KINDS.join(' · ')} 중 하나 — ${JSON.stringify(step)}`);
       }
+      // 상태를 바꾸는 조작(완독 등)은 두 화면 크기가 같은 합성 계정을 동시에 쓰므로 화면 크기마다 다른 대상을 준다.
+      for (const [vp, path] of Object.entries(scene.pathByViewport || {})) if (!VIEWPORT_KEYS.includes(vp) || !String(path).startsWith('/')) errors.push(`${sat}: pathByViewport는 { mobile|desktop: '/…' }`);
       if (scene.cookies !== undefined && !Array.isArray(scene.cookies)) errors.push(`${sat}: cookies는 { name, value } 배열이다`);
       for (const c of Array.isArray(scene.cookies) ? scene.cookies : []) if (!c?.name || typeof c.value !== 'string') errors.push(`${sat}: cookies는 { name, value } 배열이다`);
       for (const p of scene.personas || []) if (!personas.has(p)) errors.push(`${sat}: 모르는 사람 ${p}`);
@@ -95,7 +97,7 @@ export function expandScenes(reg) {
       for (const persona of scene.personas) {
         out.push({ id: `${scene.id}.${persona}`, route: entry.route, path: scene.path, title: scene.title, lane: scene.lane,
           persona, design: scene.design || null, note: scene.note || null, wait: scene.wait || null, storage: scene.storage || null,
-          steps: scene.steps || null, cookies: scene.cookies || null, shot: scene.shot || null });
+          steps: scene.steps || null, cookies: scene.cookies || null, shot: scene.shot || null, pathByViewport: scene.pathByViewport || null });
       }
     }
   }

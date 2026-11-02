@@ -367,7 +367,7 @@ async function captureScene(context, scene, viewportKey, out, partSeen = new Map
   // 장면 쿠키(예: 简体 판 manabi_sc=1) — 이 장면 동안만. 같은 맥락의 다음 장면에 남지 않게 끝에서 지운다.
   if (scene.cookies) await context.addCookies(scene.cookies.map(c => ({ ...c, url: baseURL, sameSite: 'Lax' })));
   try {
-    const response = await page.goto(scene.path, { waitUntil: 'load', timeout: 60000 });
+    const response = await page.goto(scene.pathByViewport?.[viewportKey] || scene.path, { waitUntil: 'load', timeout: 60000 });
     await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
     await page.evaluate(() => document.fonts.ready).catch(() => {});
     await page.waitForTimeout(scene.wait || 700);

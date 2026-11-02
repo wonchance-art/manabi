@@ -54,7 +54,7 @@
    { "id": "viewer-light", "title": "자료 뷰어 · 밝게", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500, "storage": { "viewer_preferences_v2": { "version": 2, "common": { "theme": "light" } } } },
    { "id": "viewer-word", "title": "자료 뷰어 · 단어 카드", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500,
      "steps": [{ "click": "[data-source-token=\"id_0_0\"]" }, { "waitFor": "#inspector-word" }], "note": "첫 낱말을 눌러 연 단어 카드(휴대폰은 아래 시트)." },
-   { "id": "viewer-complete", "title": "자료 뷰어 · 완독", "path": "/viewer/50001", "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500,
+   { "id": "viewer-complete", "title": "자료 뷰어 · 완독", "path": "/viewer/50001", "pathByViewport": { "mobile": "/viewer/50001", "desktop": "/viewer/50002" }, "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500,
      "storage": { "viewer_preferences_v2": { "version": 2, "common": { "readerView": "scroll" } } },
      "steps": [{ "scroll": "bottom" }, { "wait": 800 }, { "click": "button.post-reading-actions__btn--primary" }, { "wait": 2500 }],
      "note": "아직 다 읽지 않은 글(50001)을 스크롤 보기로 끝까지 내려 「읽기 완료」를 누른 뒤 — 완독 창(다시 만난 말 줄 포함)." },

@@ -162,3 +162,14 @@ describe('조작 장면(3단계)', () => {
     expect(expandScenes(reg)[0]).toMatchObject({ steps: [{ click: 'b' }], cookies: [{ name: 'manabi_sc', value: '1' }], shot: 'full' });
   });
 });
+
+describe('화면 크기별 주소', () => {
+  it('상태를 바꾸는 장면은 화면 크기마다 다른 대상을 준다 — 모양을 검사하고 펼친 장면에 싣는다', () => {
+    const reg = { lanes: ['x'], personas: { filled: {} }, routes: [{ route: '/v/[id]', scenes: [{ id: 'v', title: 'V', path: '/v/1', lane: 'x', personas: ['filled'],
+      pathByViewport: { mobile: '/v/1', desktop: '/v/2' } }] }] };
+    expect(validateRegistry(reg)).toEqual([]);
+    expect(expandScenes(reg)[0].pathByViewport).toEqual({ mobile: '/v/1', desktop: '/v/2' });
+    reg.routes[0].scenes[0].pathByViewport = { tablet: '/v/3' };
+    expect(validateRegistry(reg).join('\n')).toMatch(/pathByViewport/);
+  });
+});
