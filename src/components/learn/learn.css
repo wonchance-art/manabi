@@ -170,9 +170,10 @@ button.learn-week__row--tap{width:100%;border:0;border-radius:0;background:none;
 .learn-remet__title>span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .learn-remet__kind{flex:none;box-sizing:border-box;width:3.2em;height:18px;line-height:16px;text-align:center;font-size:11px;font-weight:500;color:var(--muted);border:1px solid var(--rule);border-radius:4px}
 .learn-week>.word-chips-legend{margin-top:-8px}
-.learn-remet__next{justify-self:end;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 4px;font-size:13.5px;font-weight:700;color:var(--ja);text-decoration:none}
-.learn-remet__next:hover{text-decoration:underline}
-.learn-remet__next:focus-visible{outline:2px solid var(--ja);outline-offset:2px;border-radius:4px}
+/* .manabi-page a(0,1,1)가 색을 inherit로 덮어 두 단계 선택자로 올린다. */
+.learn-week .learn-remet__next{justify-self:end;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 4px;font-size:13.5px;font-weight:700;color:var(--ja);text-decoration:none}
+.learn-week .learn-remet__next:hover{text-decoration:underline}
+.learn-week .learn-remet__next:focus-visible{outline:2px solid var(--ja);outline-offset:2px;border-radius:4px}
 .tile-modal__back{display:block;margin:0 0 2px;padding:0;border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer}
 .tile-modal__back:hover{color:var(--ink)}
 .tile-modal__back:focus-visible{outline:2px solid var(--ja);outline-offset:2px;border-radius:3px}
