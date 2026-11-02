@@ -3556,6 +3556,11 @@ a.viewer-badge:hover {
 .viewer-guest-banner__cta:hover {
   text-decoration: underline;
 }
+/* 밝은 바탕: 교재 테마(모브 #80576A) 링크가 안내 띠 바탕(--primary-glow 합성 #e6d5d1) 위 4.24:1로 AA(4.5) 미달이었다(운영 axe 2026-11-02 KST).
+   글자색에 검정 15%를 섞어 네 교재 색 모두 4.5:1 이상(모브 5.3:1) — 어두운 테마는 밝은 글자라 그대로 둔다. 계약 colorV2Unify(안내 띠 링크). */
+[data-theme="light"] .viewer-guest-banner__cta {
+  color: color-mix(in srgb, var(--primary-light) 85%, #000);
+}
 
 /* ========= Materials Filters ========= */
 .materials-filters {
