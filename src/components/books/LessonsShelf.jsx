@@ -11,11 +11,13 @@ import { BOOKS } from '@/lib/textbook/contract';
 // 「아직 발행 안 함」(404)은 실패가 아니다. 빌드 때는 던지지 않는다 — 빌드가 DB에 묶이지 않게, 첫 판은 다음 재생성이 고친다.
 export default async function LessonsShelf({ lang }) {
   const client = createSupabasePublicClient();
-  // 등록 교재 · 레벨 타일(일본어 · 중국어)을 한꺼번에 시작한다 — 전에는 교재를 다 받은 뒤 타일을 언어마다 차례로 셌다(LEARN-PAGES 2026-10-17 KST).
+  // 등록 교재 · 레벨 타일(일본어 · 중국어 · 영어 · 프랑스어)을 한꺼번에 시작한다 — 전에는 교재를 다 받은 뒤 타일을 언어마다 차례로 셌다(LEARN-PAGES 2026-10-17 KST).
   const [results, tiles] = await Promise.all([
     Promise.allSettled(Object.keys(BOOKS).map(async bookId => readingCatalog((await publishedReadingWith(client, undefined, false, bookId)).book))),
     // 레벨별 단어 · 문형 타일(LEVEL-LIST-AJ-001) — 숫자는 목록과 같은 조립에서 센다. 실패하면 타일 없이 책장은 그대로 연다.
-    Promise.all([levelTileCounts('japanese'), levelTileCounts('chinese')]).then(([Japanese, Chinese]) => ({ Japanese, Chinese }), () => ({})),
+    // 영어 · 프랑스어 A1 단어 타일(SHELF-REDESIGN-001)은 단어 페이지와 같은 조립(latinWordsData)에서 센다.
+    Promise.all([levelTileCounts('japanese'), levelTileCounts('chinese'), levelTileCounts('english'), levelTileCounts('french')])
+      .then(([Japanese, Chinese, English, French]) => ({ Japanese, Chinese, English, French }), () => ({})),
   ]);
   const failed = results.some(result => result.status === 'rejected' && result.reason?.status !== 404);
   if (failed && process.env.NEXT_PHASE !== 'phase-production-build') throw new Error('lessons_shelf_unavailable');

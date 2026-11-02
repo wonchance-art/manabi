@@ -6,6 +6,7 @@
 // 서버 · 하이드레이션 첫 그림은 늘 같은 마크업(표지 + 그 한 줄 + 꺼진 본문 골격)이라 불일치가 없다.
 import { READING_PAGE, readingPagePattern, readingProgressKey } from '@/lib/bookNavigation';
 import { BOOK_ID, EDITION_ID } from '@/lib/textbook/contract';
+import { SESSION_COOKIE } from '@/lib/authCookie';
 
 export const HASH_GATE_ID = 'book-hash-gate';
 export const HASH_GATE_CSS = ':root .book-reader>.manabi-book-home,:root .manabi-book-home[aria-busy]{display:none}:root .book-entry-skeleton{display:block}';
@@ -131,4 +132,23 @@ export function resumeHintScript(edition, session = false, bookId = BOOK_ID) {
   const pagePattern = bookId === BOOK_ID ? READING_PAGE : readingPagePattern(bookId);
   const pick = session ? `n!==${JSON.stringify(key)}` : `n===${JSON.stringify(key)}`;
   return `(function(){try{var id='${RESUME_HINT_ID}-${edition}';if(document.getElementById(id))return;var k=[],i,n,r;for(i=0;i<localStorage.length;i++){n=localStorage.key(i);if(n&&n.indexOf(${JSON.stringify(prefix)})===0&&${pick})k.push(n)}if(k.length!==1)return;r=JSON.parse(localStorage.getItem(k[0]));if(!r||typeof r.page!=='string'||!/${pagePattern.source}/.test(r.page)||/^u\\d{2}-start$/.test(r.page))return;var g=document.createElement('style');g.id=id;g.textContent='${resumeHintCss(edition)}';document.head.appendChild(g)}catch(e){}})()`;
+}
+
+// 책장 「이어 하기」 줄 자리(SHELF-REDESIGN-001). 책장(/lessons)은 누구에게나 같은 정적 판(ISR)이라 줄은 붙은 뒤(useReadingProgress ready)
+// 이 브라우저의 기록으로만 그린다 — 그대로면 기록이 있는 사람은 붙는 순간 줄 높이만큼 표지 · 타일이 밀린다. 위 표지 이어 읽기 줄과 같은 방식:
+// 책장보다 먼저 도는 한 줄이 그 언어 책들의 기록을 읽어 진짜 읽은 자리(과 쪽)가 있으면 head에 style을 넣고, Bookshelf가 함께 보내 둔
+// 빈 줄(.shelf-continue--ghost — 평소 꺼짐)을 켠다. 붙은 뒤 진짜 줄이 그 자리에 서고 style을 뗀다(clearShelfResumeHint). DOM은 건드리지 않는다.
+// 정적 판은 서버가 세션을 모르므로 세션 쿠키 이름(SESSION_COOKIE — 값은 읽지 않는다)으로 손님 기록 / 계정 기록을 가른다.
+export const SHELF_RESUME_HINT_ID = 'shelf-resume-hint';
+export const SHELF_RESUME_HINT_CSS = '.shelf-continue-hold>.shelf-continue--ghost{display:flex}';
+export function clearShelfResumeHint() {
+  if (typeof document !== 'undefined') document.getElementById(SHELF_RESUME_HINT_ID)?.remove();
+}
+export function shelfResumeHintScript(books) {
+  const list = (books || []).filter(book => EDITION_ID.test(book?.edition || '')).map(book => {
+    const bookId = book.bookId || BOOK_ID, key = readingProgressKey(book.edition);
+    return [key.slice(0, key.lastIndexOf(':') + 1), (bookId === BOOK_ID ? READING_PAGE : readingPagePattern(bookId)).source];
+  });
+  if (!list.length) return '';
+  return `(function(){try{if(document.getElementById('${SHELF_RESUME_HINT_ID}'))return;var b=${JSON.stringify(list)},s=/${SESSION_COOKIE.source}/.test(document.cookie),i,j,n,r;for(i=0;i<localStorage.length;i++){n=localStorage.key(i)||'';for(j=0;j<b.length;j++){if(n.indexOf(b[j][0])!==0||(n===b[j][0]+'guest')===s)continue;try{r=JSON.parse(localStorage.getItem(n))}catch(e){r=null}if(r&&typeof r.page==='string'&&new RegExp(b[j][1]).test(r.page)){var g=document.createElement('style');g.id='${SHELF_RESUME_HINT_ID}';g.textContent='${SHELF_RESUME_HINT_CSS}';document.head.appendChild(g);return}}}}catch(e){}})()`;
 }
