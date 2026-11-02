@@ -3136,7 +3136,11 @@ a.viewer-badge:hover {
   .word-token--just-saved .surface::before { animation: none; transform: none; }
 }
 
-/* 복습 대상: 불투명도 복원 + 부드러운 펄스(밴드 모양 글로우) */
+/* 복습 대상: 불투명도 복원 + 부드러운 펄스(밴드 모양 글로우)
+   손이 멈추면(입력 4초 없음) 돌던 주기를 끝내고 멈춘다 — DUE-PULSE-IDLE-001(오너 결정 E, 2026-11-02 KST). 멈춤 · 재개는
+   src/lib/useDuePulseIdle.js가 Web Animations로 이 애니메이션의 남은 횟수만 줄였다 되돌린다(CSS로 iteration-count를 바꾸면
+   빛나던 그림자가 그 자리에서 끊긴다 — 실측). 이 규칙은 손이 움직이는 동안의 모양 그대로 둔다: 이름 · 2.5s · infinite를
+   바꾸면 duePulseIdle.test.js가 잡는다. */
 .word-token--due .surface {
   opacity: 1;
 }

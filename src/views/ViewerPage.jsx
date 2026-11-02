@@ -32,6 +32,7 @@ import { classSentenceEnd, classAnchorAt } from '../lib/classSource';
 import { textbookStream } from '../lib/textbookAnnotations';
 import OfflineNotice from '../components/OfflineNotice';
 import { useReadingTimer } from '../lib/useReadingTimer';
+import { useDuePulseIdle } from '../lib/useDuePulseIdle';
 import { countReadableChars } from '../lib/readingTimer';
 import { useReadingPacer } from '../lib/useReadingPacer';
 import { dwellMs, defaultTargetCpm, paceHint } from '../lib/readingPacer';
@@ -825,6 +826,8 @@ export default function ViewerPage({ seed } = {}) {
     enabled: !!user && !!material && !shouldReadComposerOriginal(material, originalParams),
     paused: isSheetOpen || !!selectedToken || !!activeModal,
   });
+  // 복습 펄스 손 멈춤 정지(DUE-PULSE-IDLE-001) — 입력 4초 없으면 돌던 주기를 끝내고 멈춘다. 리액트 상태 · 토큰 DOM 변경 0(창 리스너 · 타이머만).
+  useDuePulseIdle(true);
 
   const markCompleteMutation = useReadingCompletion({
     materialId: id, user, profile, fetchProfile: refreshProfileAfterActivity,
