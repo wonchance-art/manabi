@@ -10,7 +10,7 @@ function readBrowserPreferences() {
 
 export function useViewerLanguage() {
   // 서버/첫 hydration은 동일한 ko 기본값. effect에서 저장된 사용자 선택을 읽는다.
-  const [state, setState] = useState(() => ({ values: readViewerLanguagePreferences(null), storageError: false }));
+  const [state, setState] = useState(() => ({ values: readViewerLanguagePreferences(null), storageError: false, ready: false }));
   const current = useRef(state.values);
   const pending = useRef({});
 
@@ -18,12 +18,12 @@ export function useViewerLanguage() {
     const refresh = () => {
       const next = readBrowserPreferences();
       if (next.storageError) {
-        setState(previous => ({ ...previous, storageError: true }));
+        setState(previous => ({ ...previous, storageError: true, ready: true }));
         return;
       }
       current.current = next.values;
       pending.current = {};
-      setState(next);
+      setState({ ...next, ready: true });
     };
     refresh();
     const onStorage = event => {
@@ -42,16 +42,17 @@ export function useViewerLanguage() {
     const next = { ...previous, [key]: normalizeViewerLocale(resolved, previous[key]) };
     current.current = next;
     pending.current[key] = next[key];
-    setState({ values: next, storageError: false });
+    setState({ values: next, storageError: false, ready: true });
     try {
       // patch로 별도 설정의 다른 탭 변경과 아직 저장하지 못한 사용자 선택을 함께 보존한다.
       const persisted = writeViewerLanguagePreferences(window.localStorage, pending.current);
       current.current = persisted;
       pending.current = {};
-      setState({ values: persisted, storageError: false });
-    } catch { setState({ values: next, storageError: true }); }
+      setState({ values: persisted, storageError: false, ready: true });
+    } catch { setState({ values: next, storageError: true, ready: true }); }
   }, []);
   const setUiLocale = useCallback(value => update('uiLocale', value), [update]);
   const setExplanationLocale = useCallback(value => update('explanationLocale', value), [update]);
-  return { ...state.values, setUiLocale, setExplanationLocale, storageError: state.storageError };
+  // ready = 저장된 선택을 읽었다(서버가 그린 뷰어 본문의 감춤을 뗄 때 — VIEWER-SSR-001).
+  return { ...state.values, setUiLocale, setExplanationLocale, storageError: state.storageError, ready: state.ready };
 }

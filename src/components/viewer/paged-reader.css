@@ -9,7 +9,8 @@
 [data-reader-pages="paged"] {
   position: relative; /* 지정 그립·이합사 아치의 기준(본문 영역은 단마다 쪼개진다) */
   box-sizing: border-box;
-  height: var(--reader-page-height, calc(100dvh - 180px));
+  /* 서버가 그린 본문(VIEWER-SSR-001)은 첫 그림 전 스크립트가 잰 높이(<html>의 --viewer-ssr-page-height)로 그리고, 붙은 뒤엔 쪽 제어기가 맞춘다. */
+  height: var(--reader-page-height, var(--viewer-ssr-page-height, calc(100dvh - 180px)));
   padding-block: 8px 0;
   column-width: 100vw;
   column-gap: 64px; /* ≥ 좌우 안쪽 여백 2배 — 옆 쪽의 글자·막대가 여백으로 비치지 않는다 */
@@ -46,6 +47,9 @@
   border: 0; border-radius: 8px; background: transparent; color: inherit; cursor: pointer;
 }
 .reader-pagebar__btn:disabled { opacity: .35; cursor: default; }
+/* 서버가 그린 본문의 쪽 표시 · 다음 쪽 단추(VIEWER-SSR-001) — 쪽 제어기가 준비되기 전(하이드레이션 전)에만 첫 그림 전 스크립트가 잰 값을 보인다. */
+html[data-viewer-ssr-pagebar] .reader-pagebar:not([data-ready]) .reader-pagebar__pos:empty::after { content: var(--viewer-ssr-page-label, none); }
+html[data-viewer-ssr-pagebar="next"] .reader-pagebar:not([data-ready]) .reader-pagebar__btn:last-of-type:disabled { opacity: 1; }
 .reader-pagebar__btn:not(:disabled):hover { background: var(--reader-selected, var(--sheet)); color: var(--reader-accent, var(--ink)); }
 .reader-pagebar__btn:focus-visible { outline: 2px solid var(--reader-accent, var(--ink)); outline-offset: 1px; }
 .reader-pagebar__pos { font-size: .8125rem; line-height: 1.2; font-variant-numeric: tabular-nums; color: var(--reader-muted, var(--muted)); white-space: nowrap; }

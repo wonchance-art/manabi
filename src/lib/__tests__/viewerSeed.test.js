@@ -102,14 +102,14 @@ describe('서버 — 누구의 권한으로 무엇을 싣나', () => {
     const meta = sliceBetween(page, 'export async function generateMetadata', 'export default function Page');
     expect(meta).toContain('const seed = await readViewerSeed(id);');
     expect(meta).toContain('const data = seed ? seed.row : await (await createSupabaseServerClient())');
-    expect(page).toContain('return <Suspense fallback={<ViewerLoading />}><SeededViewerPage params={params} /></Suspense>;');
-    expect(page).toContain('return <ViewerPage seed={seed ?? undefined} />;');
+    expect(page).toContain('return <Suspense fallback={<ViewerLoading />}><SeededViewerPage params={params} searchParams={searchParams} /></Suspense>;');
+    expect(page).toContain('<ViewerPage seed={seed ?? undefined} />'); // 손님 공개 자료면 본문 앞에 첫 그림 전 판정이 붙는다(VIEWER-SSR-001 — viewerSsr.test)
     // 대기 그림은 뷰어 불러오기 갈래와 같은 마크업 — 서버가 읽는 동안에도 첫 HTML이 지금과 같다
     const viewer = read('src/views/ViewerPage.jsx');
     const loading = '<div className="page-container"><Spinner message="자료 불러오는 중…" /></div>';
     expect(viewer).toContain(`if (isLoading) return ${loading};`);
     expect(read('src/components/viewer/ViewerLoading.jsx')).toContain(`return ${loading};`);
-    expect(viewer).toContain("useState(() => { if (typeof window !== 'undefined') adoptViewerSeed(seed, id); });");
+    expect(viewer).toContain("useState(() => { if (typeof window !== 'undefined') seedAdoption.current = adoptViewerSeed(seed, id); });");
     // 등록은 조회(useQuery)보다 먼저 — 조회는 효과에서 등록부를 본다
     expect(viewer.indexOf('adoptViewerSeed(seed, id)')).toBeLessThan(viewer.indexOf("queryKey: ['material', id],"));
   });

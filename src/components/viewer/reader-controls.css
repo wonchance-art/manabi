@@ -1064,3 +1064,8 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
    (뷰어 점검 E5). 높이 28px · 폭 44px 이상(WCAG 2.5.8 24px 하한 위), 라벨과 칩은 줄바꿈 없이. */
 .viewer-layout .viewer-inspector .char-inspect__ja {display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
 .viewer-layout .viewer-inspector .char-inspect__form {display:inline-grid;place-items:center;min-height:28px;height:28px;min-width:44px;padding:0 10px;}
+/* 서버가 그린 본문의 첫 그림 전 감춤(VIEWER-SSR-001, lib/viewerSsr) — 이 기기 설정이 서버 그림(기본 설정)과 다르면 본문 자리를 그대로 둔 채
+   감추고 불러오기 그림을 위에 띄운다. 뷰어가 설정을 다 그린 뒤 html의 표지를 뗀다(자리가 같아 뗄 때 밀림이 없다). */
+.viewer-ssr-hold {display:none;}
+html[data-viewer-hold] .viewer-ssr-hold {display:block;position:absolute;inset-inline:0;z-index:1;}
+html[data-viewer-hold] .viewer-workspace-boundary {visibility:hidden;}

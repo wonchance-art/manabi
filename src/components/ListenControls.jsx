@@ -16,8 +16,10 @@ export function listenRateText(playbackRate, rateLabel) {
 
 // onSentence(i) — 지금 읽기 시작한 문장 번호(splitListenSentences 순서), 멈추면 null. 뷰어가 쪽 따라가기에 쓴다(listenFollow.js).
 // followActive — 뷰어가 쪽 넘김 따라가기 중(본문이 읽는 줄을 강조) — 좁은 폭에서는 「지금 문장」 줄을 숨긴다(CSS, reader-controls.css).
-export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onRateCycle, onSentence, followActive = false, compact = false, uiLocale = 'ko' }) {
-  const [supported, setSupported] = useState(false);
+// assumeSupported — 서버가 그린 뷰어 본문(VIEWER-SSR-001)은 버튼이 있는 판으로 그린다(첫 그림 전 판정이 브라우저 음성이 없는 기기에서는
+// 본문을 감춘다 — lib/viewerSsr). 없으면 효과가 지금처럼 끈다.
+export default function ListenControls({ text, language = 'Japanese', stopSignal, playbackRate, rateLabel, onRateCycle, onSentence, followActive = false, compact = false, uiLocale = 'ko', assumeSupported = false }) {
+  const [supported, setSupported] = useState(assumeSupported);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
   const [rate, setRate] = useState(1);
