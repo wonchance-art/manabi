@@ -21,7 +21,7 @@
 .agent-card__hint{margin:0;font-size:0.75rem;color:var(--text-muted)}
 @container (max-width:520px){.agent-card__actions{grid-template-columns:minmax(0,1fr)}}
 /* 에이전트 형식을 알아본 결과 머리 · 화자 칸 · 목표 단어 밑줄 */
-.agent-format{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:0.82rem}
+.agent-format{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:0.82rem;min-width:0;flex:1 1 auto}
 .agent-format__chip{font-size:0.72rem;font-weight:700;color:var(--ja,var(--accent));background:color-mix(in srgb,var(--ja,var(--accent)) 12%,var(--bg-card));border-radius:999px;padding:1px 10px}
 .agent-format__title{font-weight:700}
 .agent-format__meta{color:var(--text-muted)}

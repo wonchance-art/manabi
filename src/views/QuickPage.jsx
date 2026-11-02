@@ -287,7 +287,7 @@ export default function QuickPage() {
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>저장 안 됨</span>
                 )}
                 <span style={{ flex: 1 }} />
-                <button type="button" className="btn btn--ghost btn--sm" onClick={handleSaveAsMaterial}>
+                <button type="button" className="btn btn--ghost btn--sm" style={{ whiteSpace: 'nowrap', flex: 'none' }} onClick={handleSaveAsMaterial}>
                   자료로 저장
                 </button>
               </div>
