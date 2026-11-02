@@ -102,7 +102,9 @@ describe('부품 대조 · 토큰 밖 색', () => {
   it('rgb를 hex로 — 투명도는 끝 두 자리', () => {
     expect(rgbToHex('rgb(153, 74, 90)')).toBe('#994a5a');
     expect(rgbToHex('rgba(212, 150, 42, 0.12)')).toBe('#d4962a1f');
-    expect(rgbToHex('color(srgb 1 0 0)')).toBe('color(srgb 1 0 0)');
+    expect(rgbToHex('color(srgb 1 0 0)')).toBe('#ff0000');
+    expect(rgbToHex('color(srgb 1 1 1 / 0.9)')).toBe('#ffffffe6');
+    expect(rgbToHex('hsl(0 0% 0%)')).toBe('hsl(0 0% 0%)');
   });
   it('같은 모양은 화면 크기 · 종류별로 묶고 장면 수 많은 순', () => {
     const a = { sig: 'a1', type: 'button-filled', style: { bg: 'x' }, label: '시작', cls: 'btn' };

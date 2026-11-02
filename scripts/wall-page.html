@@ -388,7 +388,7 @@ function gaps() {
 
 // ── 부품 대조 ──
 const PTYPE = { h1: '제목 h1', h2: '제목 h2', h3: '제목 h3', 'button-filled': '채운 버튼', 'button-outline': '테두리 버튼', field: '입력칸', card: '카드' };
-const hex = c => { const m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(String(c)); if (!m) return String(c); const h = [m[1], m[2], m[3]].map(v => Number(v).toString(16).padStart(2, '0')).join(''); return m[4] !== undefined && Number(m[4]) < 1 ? `#${h} ${Math.round(Number(m[4]) * 100)}%` : `#${h}`; };
+const hex = c => { const sr = /^color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\)$/.exec(String(c)); if (sr) c = `rgba(${[1, 2, 3].map(i => Math.round(Number(sr[i]) * 255)).join(', ')}, ${sr[4] ?? 1})`; const m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(String(c)); if (!m) return String(c); const h = [m[1], m[2], m[3]].map(v => Number(v).toString(16).padStart(2, '0')).join(''); return m[4] !== undefined && Number(m[4]) < 1 ? `#${h} ${Math.round(Number(m[4]) * 100)}%` : `#${h}`; };
 const swatch = c => h('span', {}, h('i', { class: 'sw', style: `background:${c}` }), hex(c));
 function spec(type, st) {
   const bits = [];
@@ -457,7 +457,7 @@ function registryTable() {
 }
 
 function runsTable() {
-  const own = { id: D.run.short, kind: '2판 1단계 — 장면 등록부 · 합성 학습자 · 캡처 스크립트', at: D.run.capturedAt, scenes: D.scenes.length, shots: D.scenes.reduce((n, s) => n + Object.keys(s.shots).length, 0), captureSec: D.run.captureSec, note: D.run.build };
+  const own = { id: D.run.short, kind: '화면 벽 캡처(scripts/wall-capture.mjs) — 장면 · 부품 대조 · 읽기 테마', at: D.run.capturedAt, scenes: D.scenes.length, shots: D.scenes.reduce((n, s) => n + Object.keys(s.shots).length, 0), captureSec: D.run.captureSec, note: D.run.build };
   const rows = [own, ...state.runs.filter(r => r.id !== own.id)];
   $('runs').replaceChildren(...rows.map(r => h('tr', {}, h('td', {}, h('code', { text: r.sha || r.id })), h('td', { text: r.kind }), h('td', { text: `${r.scenes}장면 · ${r.shots}장` }), h('td', { text: `${r.at} · ${r.captureSec ?? '—'}초` }), h('td', { class: 'muted', text: r.note || '' }))));
 }

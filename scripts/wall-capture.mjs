@@ -182,7 +182,9 @@ export function partsProbe() {
   const box = (s, r) => ({ bg: clear(s.backgroundColor) ? 'none' : s.backgroundColor, radius: px(s.borderTopLeftRadius), border: px(s.borderTopWidth) && !clear(s.borderTopColor) ? `${px(s.borderTopWidth)}px ${s.borderTopColor}` : 'none',
     height: Math.round(r.height), padX: px(s.paddingLeft), shadow: s.boxShadow === 'none' ? 'none' : 'yes' });
   const parts = [], seen = new Set();
-  const add = (type, el, style) => { const key = `${type}|${JSON.stringify(style)}`; if (seen.has(key)) return; if (parts.filter(p => p.type === type).length >= 12) return; seen.add(key); parts.push({ type, style, label: label(el), cls: cls(el), rect: rectOf(el) }); };
+  // 화면 밖으로 밀어 둔 것(건너뛰기 링크 등)은 부품이 아니다.
+  const offscreen = el => { const r = el.getBoundingClientRect(); return r.right <= 0 || r.bottom + scrollY <= 0 || r.left >= document.documentElement.scrollWidth; };
+  const add = (type, el, style) => { if (offscreen(el)) return; const key = `${type}|${JSON.stringify(style)}`; if (seen.has(key)) return; if (parts.filter(p => p.type === type).length >= 12) return; seen.add(key); parts.push({ type, style, label: label(el), cls: cls(el), rect: rectOf(el) }); };
   for (const el of document.querySelectorAll('main h1, main h2, main h3')) if (shown(el)) add(el.tagName.toLowerCase(), el, text(getComputedStyle(el)));
   for (const el of document.querySelectorAll('button, a[href], [role="button"], input[type="submit"]')) {
     if (!shown(el) || !(el.innerText || '').trim()) continue;

@@ -176,6 +176,9 @@ export const PART_TYPES = Object.freeze({ h1: '제목 h1', h2: '제목 h2', h3: 
 
 /** rgb(a) → #rrggbb(투명도가 있으면 #rrggbbaa). 모르는 모양은 그대로. */
 export function rgbToHex(color) {
+  // color-mix 결과는 color(srgb r g b / a) 꼴(0~1)로 나온다.
+  const srgb = /^color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\)$/.exec(String(color).trim());
+  if (srgb) return rgbToHex(`rgba(${[1, 2, 3].map(i => Math.round(Number(srgb[i]) * 255)).join(', ')}, ${srgb[4] ?? 1})`);
   const m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(String(color).trim());
   if (!m) return String(color);
   const hex = [m[1], m[2], m[3]].map(v => Number(v).toString(16).padStart(2, '0')).join('');

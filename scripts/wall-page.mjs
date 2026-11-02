@@ -5,7 +5,7 @@
 //   node scripts/wall-page.mjs --dir wall-out/4989f455
 //
 // 결과물은 claude.ai 아티팩트 「manabi 화면 벽」(https://claude.ai/artifact/DJdKQhDsdd9qzu6uJaaHhb)에 올린다 — wall.html을 페이지로,
-// shots/ · thumbs/를 files로. 캡처는 저장소에 커밋하지 않는다(wall-rules.md §9). 판정 기록(reviews) · 갱신 기록(runs)은 아티팩트 db가 정본이다.
+// shots/를 files로(타일 그림 · 부품 견본은 페이지 안에 싣는다). 캡처는 저장소에 커밋하지 않는다(wall-rules.md §9). 판정 기록(reviews) · 갱신 기록(runs)은 아티팩트 db가 정본이다.
 import { readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,7 +38,8 @@ async function thumb(dir, scene) {
     layers.push({ input: ph, left: d ? W - 156 - 12 : Math.round((W - 156) / 2), top: d ? H - 331 - 10 : 30 });
   }
   await sharp(base).composite(layers).jpeg({ quality: 70 }).toFile(join(dir, out));
-  return out;
+  // 페이지에 그대로 싣는다(WebP 데이터 URI) — 아티팩트 한 판의 파일 수 한도(511)를 원본 캡처에 남긴다.
+  return `data:image/webp;base64,${(await sharp(join(dir, out)).webp({ quality: 62 }).toBuffer()).toString('base64')}`;
 }
 
 const esc = s => String(s).replace(/</g, '\\u003c');
@@ -52,6 +53,10 @@ async function main() {
   mkdirSync(join(dir, 'thumbs'), { recursive: true });
   for (const scene of manifest.scenes) scene.thumb = await thumb(dir, scene);
   const laneOf = Object.fromEntries(scenesReg.routes.flatMap(entry => (entry.scenes || []).map(s => [entry.route, s.lane])));
+  // 부품 견본도 페이지에 싣는다(WebP).
+  for (const types of Object.values(manifest.components || {})) for (const rows of Object.values(types)) for (const row of rows) {
+    if (row.crop) row.crop = `data:image/webp;base64,${(await sharp(join(dir, row.crop)).webp({ quality: 75 }).toBuffer()).toString('base64')}`;
+  }
   const data = {
     run: { sha: manifest.sha, short: manifest.short, capturedAt: manifest.capturedAt, capturedIso: manifest.capturedIso, captureSec: manifest.captureSec,
       build: manifest.build, counts: manifest.counts, viewports: manifest.viewports },
