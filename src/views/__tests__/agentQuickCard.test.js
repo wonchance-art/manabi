@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
+import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
 import { agentPromptLevel, recentSavedWords } from '../../components/quick/AgentPromptCard.jsx';
 
 /* 빠른 분석 에이전트 0단계(AGENT-LINK-001 · 오너 「빠른 분석에 복습한 말 최신 공동 디자인 적용」 2026-11-02 KST). */
@@ -32,6 +33,29 @@ describe('에이전트에게 부탁하기 카드', () => {
     const projections = [p('古', 'Japanese', '2026-10-01'), p('新', 'Japanese', '2026-11-01'), p('中', 'Chinese', '2026-11-02'), p('既', 'Japanese', '2026-11-02', false)];
     expect(recentSavedWords(projections, 'Japanese')).toEqual(['新', '古']);
     expect(recentSavedWords(null, 'Japanese')).toEqual([]);
+  });
+});
+
+describe('디자인 손질(오너 「권장대로 진행해」 2026-11-02 KST — 목업 「빠른 분석 디자인 손질」)', () => {
+  const css = read('src/components/quick/agent-prompt.css');
+  it('① 본업(입력 · 결과)이 먼저, 에이전트 카드는 그 아래', () => {
+    expect(quick.indexOf('<AgentPromptCard language={language} />')).toBeGreaterThan(quick.indexOf('placeholder="분석할 텍스트를 붙여넣으세요"'));
+    expect(quick.indexOf('<AgentPromptCard language={language} />')).toBeGreaterThan(quick.indexOf('{resultLines && ('));
+  });
+  it('② 단추 셋 → 한 목록 세 줄 · 오른쪽 단추 모양 「복사」(이름 있는 단추)', () => {
+    expect(card).toContain('<ul className="agent-card__actions">');
+    expect(card).toContain('aria-label={`${label} 프롬프트 복사`}');
+    expect(css).toMatch(/\.agent-card__copy\{min-height:36px;/);
+  });
+  it('③ 범례는 머리 줄 안 · ④ 설명은 제목 바로 아래', () => {
+    expect(sliceBetween(card, '<div className="agent-card__label">', '</div>')).toContain('<WordChipsLegend label="헷갈린 말"');
+    expect(card.indexOf('agent-card__sub')).toBeLessThan(card.indexOf('agent-card__words'));
+  });
+  it('⑤ 화자 칸은 테두리 없는 옅은 바탕 · ⑥ 결과 머리 두 줄', () => {
+    const who = sliceBetween(css, '.agent-line__who{', '}');
+    expect(who).not.toContain('border:');
+    expect(who).toContain('background:var(--bg-secondary)');
+    expect(quick).toContain('<span className="agent-format__top">');
   });
 });
 

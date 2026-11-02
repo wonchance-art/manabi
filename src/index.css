@@ -1740,6 +1740,8 @@ body.is-review-chrome .page-container { padding-top: 8px; }
 }
 .mat-card__fit { margin: 0; font-size: 0.78rem; color: var(--text-muted); }
 .mat-card__fit-good { color: var(--accent-text); font-weight: 600; }
+/* 「다시 만난 말 먼저」 정렬의 카드 줄 — 다시 만난 말은 어디서나 장미색(초록 「지금 읽기 좋아요」와 섞지 않는다). */
+.mat-card__remet { color: var(--ja, var(--accent)); font-weight: 700; }
 .mat-state { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
 .mat-state--done { color: var(--accent-text); }
 .mat-state--progress, .mat-state--busy { color: var(--primary-light); }

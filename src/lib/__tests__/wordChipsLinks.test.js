@@ -150,7 +150,7 @@ describe('연계 3 · 4 — 두 창 아래 다음 행동 하나', () => {
     const mats = read('src/views/MaterialsPage.jsx');
     expect(mats).toContain('{remetWords.length > 0 && <option value="words">다시 만난 말 먼저</option>}');
     expect(mats).toContain("if (sortBy === 'words') return sortByWordHits(materials, (m) => wordHitsById.get(m.id));");
-    expect(mats).toContain('<span className="mat-card__fit-good">다시 만난 말 {hits}개</span>');
+    expect(mats).toContain('<span className="mat-card__remet">다시 만난 말 {hits}개</span>'); // 장미색 — 초록(지금 읽기 좋아요)과 섞지 않음
   });
   it('넘긴 말 정렬 — 많이 나오는 글 먼저 · 같으면 원래 순서 · 0개 글은 뒤에 남음 · 주소는 다시 좁힘', async () => {
     const { materialWordHits, sortByWordHits } = await import('../remetWords.js');
