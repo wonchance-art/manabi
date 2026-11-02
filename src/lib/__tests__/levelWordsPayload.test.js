@@ -71,7 +71,8 @@ describe('레벨 단어 화면 — 항목은 조각 밖 정적 묶음', () => {
     expect(nodes.find((n) => n?.type === LevelWordsPreload).props).toEqual({ href: url });
     const res = await GET(new Request(`http://x${url}`), { params: Promise.resolve({ lang, level: 'a1' }) });
     expect(await res.json()).toEqual({ version: 1, groups: latinWordsData(lang, 'a1').groups });
-    expect(latinWordsData(lang, 'a1').groups.flatMap((g) => g.entries)).toHaveLength(8);
+    // A1 고르기 — 영어 53(#1588 이식, 계약 englishWordDeckA1) · 프랑스어 8.
+    expect(latinWordsData(lang, 'a1').groups.flatMap((g) => g.entries)).toHaveLength(lang === 'english' ? 53 : 8);
     expect((await GET(new Request('http://x'), { params: Promise.resolve({ lang, level: 'b2' }) })).status).toBe(404);
   }, 60000);
 

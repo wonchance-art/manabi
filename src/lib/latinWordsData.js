@@ -8,8 +8,16 @@ import enNotes from '../content/english/wordNotes';
 import frNotes from '../content/french/wordNotes';
 
 const SOURCES = {
-  // 인사 · 가족 · 기초 동사 · 기초 형용사에서 두 단어씩 — 합성어(welcome) · 불규칙 동사(be · go) · 비교급(good · bad)이 한 번씩 보이게 고른다.
-  english: { code: 'en', getVocab: getEnVocab, notes: enNotes, picks: { A1: [[0, ['hello', 'welcome']], [2, 2], [4, ['be', 'go']], [5, 2]] } },
+  // A1 = 인사 · 시간 · 가족 · 음식 · 기초 동사 · 기초 형용사의 생활 어휘 53개(레퍼런스 정본의 표제 · 뜻 · 예문 그대로). 예전 8개(hello · welcome ·
+  // be · go · good · bad 등)를 그대로 품는다 — 학습 기록 키가 바뀌지 않는다. #1588(Codex 1차 후보) 이식(2026-11-02 KST, 계약 englishWordDeckA1.test.js).
+  english: { code: 'en', getVocab: getEnVocab, notes: enNotes, picks: { A1: [
+    [0, ['hello', 'hi', 'good morning', 'please', 'sorry', 'name', 'meet', 'nice', 'welcome', 'yes', 'no']],
+    [1, ['time', 'today', 'tomorrow', 'yesterday', 'week', 'birthday']],
+    [2, ['family', 'mother', 'child', 'friend']],
+    [3, ['water', 'breakfast', 'lunch', 'dinner']],
+    [4, ['be', 'have', 'go', 'come', 'eat', 'drink', 'like', 'want', 'see', 'know', 'make', 'do', 'say', 'get', 'live']],
+    [5, ['good', 'bad', 'big', 'small', 'hot', 'cold', 'new', 'old', 'happy', 'sad', 'easy', 'busy', 'tired']],
+  ] } },
   // 가족 · 일상 필수 동사 · 음식 · 기초 형용사, 테마마다 앞 두 단어.
   french: { code: 'fr', getVocab: getFrVocab, notes: frNotes, picks: { A1: [[0, 2], [1, 2], [2, 2], [5, 2]] } },
 };
