@@ -32,6 +32,7 @@ import { rankSuggestions } from '@/lib/suggestionRank';
 import { detectLang, langNameKo } from '@/lib/constants';
 import { canReadSuggestion, suggestionHref, TODAY_SUGGESTIONS_KEY, fetchTodaySuggestions } from '@/lib/suggestionReading';
 import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
+import { fetchSharedVocabularySummary } from '@/lib/vocabularyLearningShare';
 import { learnReviewCount, reviewScopeQuota, serializeReviewScope } from '@/lib/reviewScope';
 // 홈 칸 숫자 함수는 완독 창도 쓴다(STATS-MAP-001 「복습 대기」 A안) — 정본은 lib/reviewScope, 여기선 다시 내보내기만.
 export { learnReviewCount };
@@ -51,10 +52,11 @@ import '@/components/learn/learn.css';
 import { authEntryHref } from '../lib/authRedirect';
 import { HOME_DATA_KEY } from '@/lib/homeQueryKey';
 
-export async function fetchHomeData(userId, nowMs = Date.now()) {
+export async function fetchHomeData(userId, nowMs = Date.now(), { queryClient } = {}) {
   // 전체 두 코호트를 같은 snapshot에서 합친 뒤 센다. 구형 due WHERE로 먼저 자르지 않는다.
+  // 화면에서는 현황 · 읽을거리와 같은 요약 snapshot을 나눠 쓴다(SNAPSHOT-SHARE-001 — 신선하면 다시 받지 않는다).
   const [learning, recentResult, { buildForecast }] = await Promise.all([
-    fetchVocabularyLearningRows(userId, { fields: 'summary' }),
+    queryClient ? fetchSharedVocabularySummary(queryClient, userId) : fetchVocabularyLearningRows(userId, { fields: 'summary' }),
     supabase.from('reading_progress')
       .select('material_id, is_completed, updated_at, reading_materials(id, title, language:processed_json->metadata->>language, level:processed_json->metadata->>level, book:processed_json->metadata->book, provider:processed_json->metadata->literature->>provider)')
       .eq('user_id', userId).eq('is_completed', false).order('updated_at', { ascending: false }).limit(20),
@@ -161,7 +163,7 @@ function StorageNote({ bookPromise, book: bookValue }) {
 export default function HomePage({ book = null, bookPromise, sessionHint }) {
   const { user, profile, loading: authLoading } = useAuth();
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: [HOME_DATA_KEY, user?.id], queryFn: () => fetchHomeData(user.id),
+    queryKey: [HOME_DATA_KEY, user?.id], queryFn: ({ client }) => fetchHomeData(user.id, Date.now(), { queryClient: client }),
     enabled: !!user && !authLoading, staleTime: 60000, refetchOnWindowFocus: true,
   });
   const { langs, lang, choose } = useLearnLanguage(profile, data?.vocabByLang);

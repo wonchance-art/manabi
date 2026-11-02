@@ -2,6 +2,7 @@
 import { buildVocabularyWordIndex, mergeVocabularyWordIndexCards } from './vocabularyDueIndex.js';
 import { fetchVocabularyLearningCards, VOCABULARY_LEARNING_CARDS_MAX } from './vocabularyLearningRows.js';
 import { QUERY_CLIENT_DEFAULTS } from './queryClientDefaults.js';
+import { settledLearningSnapshot, vocabularyLearningKey } from './vocabularyLearningShare.js';
 
 // 저장 · 만기 색인(['vocab-words', userId])의 신선도 — 앱 기본값(2분)과 같다(로그인 감사 F3③ 2026-10-25 KST). 같은 키를 쓰는 단어장 글자 칸
 // (LevelWordScreen)은 이미 기본값이었고 뷰어만 30초로 줄여 두어, 서재에서 자료를 하나씩 열 때마다 전체 목록(3,000단어 2.2MB)을 다시 받았다.
@@ -17,11 +18,9 @@ export const VOCAB_WORDS_STALE_MS = QUERY_CLIENT_DEFAULTS.queries.staleTime;
  * @returns {object | undefined} buildVocabularyWordIndex 결과
  */
 export function vocabWordsFromLearningCache(queryClient, userId, { staleTime = VOCAB_WORDS_STALE_MS, now = Date.now() } = {}) {
-  if (!userId) return undefined;
-  const state = queryClient.getQueryState(['vocab', userId, 'learning']);
-  const snapshot = state?.data;
-  if (!snapshot || state.status !== 'success' || state.isInvalidated || snapshot.offline || snapshot.complete !== true || snapshot.actorId !== userId) return undefined;
-  if (!(now - state.dataUpdatedAt < staleTime)) return undefined;
+  // 쓸 수 있는 snapshot의 규칙은 요약 소비자와 하나다(SNAPSHOT-SHARE-001 settledLearningSnapshot).
+  const snapshot = settledLearningSnapshot(queryClient, vocabularyLearningKey(userId), userId, { staleTime, now });
+  if (!snapshot) return undefined;
   try {
     return buildVocabularyWordIndex(snapshot);
   } catch {
