@@ -19,6 +19,9 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../lib/AuthContext';
 import QuestReview, { GBC, gbcPanel, gbcButton, gbcButtonPrimary } from '../../../components/world/QuestReview';
 import bus from '../../../components/world/bus';
+// 도트 글꼴(Galmuri9) — QuestReview · GBC 판이 쓰는 글꼴의 @font-face. 예전에는 /world(WorldPage)에서만 불러와 임베드에서는
+// 글꼴이 정의되지 않아 시스템 고정폭으로 대체됐다(화면 벽 WALL-004, 2026-11-02 KST). 이 라우트 번들에만 실린다.
+import '../../../views/galmuri9.css';
 
 // 게더 오브젝트는 좁다 — 패널을 작게 잡고 100dvh 다크 배경(GBC 화면 베젤 느낌) 위에 센터링.
 const SCREEN = {

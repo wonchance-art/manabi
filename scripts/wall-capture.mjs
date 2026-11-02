@@ -154,14 +154,29 @@ export function wallProbe({ rawError, dataGap, exceptions = [] }) {
   const broken = [...document.images].filter(img => img.complete && img.naturalWidth === 0 && shown(img)).map(img => (img.getAttribute('src') || '').slice(0, 80));
   const boxes = [...document.querySelectorAll('header, nav, main, footer, h1, h2, h3, button, a[href], img, input, textarea, [role="tab"]')]
     .filter(shown).slice(0, 80).map(el => { const r = el.getBoundingClientRect(); return `${el.tagName}:${Math.round(r.x / 8)},${Math.round((r.y + scrollY) / 8)},${Math.round(r.width / 8)},${Math.round(r.height / 8)}`; });
+  // 원본 글꼴 — 화면 글자가 첫 순위로 쓰는 글꼴이 실제로 로드됐는가(wall-rules §3 「대체 글꼴」). 선언된 웹 글꼴은 한 조각이라도
+  // 로드됐으면 통과, 선언조차 없는 이름(예: @font-face를 불러오지 않은 화면의 'Galmuri9')은 대체 글꼴로 그려진 것이다. 시스템 · 일반 글꼴은 뺀다.
   const fonts = [...document.fonts];
+  const unq = f => f.trim().replace(/^["']|["']$/g, '');
+  const declared = new Map();
+  for (const f of fonts) declared.set(unq(f.family), (declared.get(unq(f.family)) || false) || f.status === 'loaded');
+  const SYSTEM = /^(serif|sans-serif|monospace|cursive|fantasy|math|emoji|system-ui|ui-(monospace|sans-serif|serif|rounded)|-apple-system|BlinkMacSystemFont|Segoe UI( Emoji| Symbol)?|Apple Color Emoji|Noto Color Emoji|inherit|initial)$/i;
+  const used = new Map();
+  const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n = tw.nextNode(), seen = 0; n && seen < 600; n = tw.nextNode()) {
+    const el = n.parentElement; if (!el || !n.textContent.trim() || !shown(el)) continue;
+    seen++; const fam = unq(getComputedStyle(el).fontFamily.split(',')[0] || '');
+    if (fam && !SYSTEM.test(fam)) used.set(fam, (used.get(fam) || 0) + 1);
+  }
+  const fontMissing = [...used.keys()].filter(fam => !declared.get(fam));
   return {
     url: location.pathname + location.search,
     title: document.title,
     h1: document.querySelector('h1')?.innerText.trim() || null,
     innerWidth, scrollWidth: doc.scrollWidth, scrollHeight: doc.scrollHeight,
     overflowX: doc.scrollWidth > innerWidth + 1,
-    fontKR: fonts.some(f => /Noto.?Sans.?KR/i.test(f.family) && f.status === 'loaded'),
+    fontKR: fontMissing.length === 0,
+    fontMissing: fontMissing.map(f => f.replace(/^__|_[0-9a-f]{6,}$/gi, '').replace(/_/g, ' ')),
     rawError: new RegExp(rawError).exec(bodyText)?.[0] || null,
     dataGap: new RegExp(dataGap).exec(mainText.slice(0, 4000))?.[0] || null,
     smallTargets: small.slice(0, 12), smallTargetCount: small.length,
