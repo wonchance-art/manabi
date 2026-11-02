@@ -78,6 +78,13 @@ describe('배선 — 이번 주 창 한 줄 → 다시 만난 말 창', () => {
     expect(rows).toContain("supabase.from('reading_progress').select('material_id, completed_at')");
     expect(rows).toContain(".eq('source', 'vocab').in('item_key', keys)");
   });
+  it('칩 → 단어 카드(복습실과 같은 VocabDetailCard, 누를 때만 받음) · 카드가 떠 있으면 Esc는 카드만 닫는다', () => {
+    expect(page).toContain("const VocabDetailCard = dynamic(() => import('./VocabDetailCard'), { loading: () => null });");
+    const modal = sliceBetween(page, 'function WeeklyModal(', '\n}\n');
+    expect(modal).toContain('onClose={detail ? () => setDetail(null) : onClose}');
+    expect(modal).toContain('<VocabDetailCard word={detail} projection={projectionById.get(detail.id)}');
+    expect(page).toContain('aria-label={`${w} 단어 카드`}');
+  });
   it('목업 그대로 — 0이면 줄째 없음 · 세 칸 글/대화/복습 · 칩 다섯 개 + N · 같은 폭 표시', () => {
     expect(page).toContain('{remetTotal > 0 && onOpenRemet && (');
     expect(page).toContain("const cells = [[week.reading, '편', '글'], [week.conversation, '개', '대화'], [week.reviews, '번', '복습']];");

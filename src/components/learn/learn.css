@@ -170,7 +170,10 @@ button.learn-week__row--tap{width:100%;border:0;border-radius:0;background:none;
 .learn-remet__title>span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .learn-remet__kind{flex:none;box-sizing:border-box;width:3.2em;height:18px;line-height:16px;text-align:center;font-size:11px;font-weight:500;color:var(--muted);border:1px solid var(--rule);border-radius:4px}
 .learn-remet__chips{display:flex;flex-wrap:wrap;gap:5px}
-.learn-remet__chips>span{display:inline-flex;align-items:center;padding:3px 11px;border:1px solid var(--rule);border-radius:999px;background:var(--sheet);font-size:13.5px;color:var(--ink)}
+.learn-remet__chips>span,.learn-remet__chips>button{display:inline-flex;align-items:center;padding:3px 11px;border:1px solid var(--rule);border-radius:999px;background:var(--sheet);font:inherit;font-size:13.5px;color:var(--ink)}
+.learn-remet__chips>button{cursor:pointer}
+.learn-remet__chips>button:hover{background:var(--learn-soft)}
+.learn-remet__chips>button:focus-visible{outline:2px solid var(--ja);outline-offset:2px}
 .learn-remet__chips>span.is-more{background:none;color:var(--muted)}
 .tile-modal__back{display:block;margin:0 0 2px;padding:0;border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer}
 .tile-modal__back:hover{color:var(--ink)}
