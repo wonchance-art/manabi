@@ -18,4 +18,10 @@ describe('뷰어 제목 조회', () => {
     expect(meta).toContain('.abortSignal(AbortSignal.timeout(VIEWER_META_TIMEOUT_MS))');
     expect(meta).toContain("return { title: '자료 뷰어' };");
   });
+
+  it('서버 제목이 기본값으로 떨어지면 뷰어가 자료 제목으로 탭 제목을 되살린다', () => {
+    const viewer = fs.readFileSync('src/views/ViewerPage.jsx', 'utf8');
+    expect(viewer).toContain("const VIEWER_FALLBACK_TITLE = '자료 뷰어 · manabi';");
+    expect(viewer).toMatch(/if \(viewerTitle && document\.title === VIEWER_FALLBACK_TITLE\) document\.title = `\$\{viewerTitle\} · manabi`;/);
+  });
 });
