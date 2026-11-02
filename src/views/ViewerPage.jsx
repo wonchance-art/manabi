@@ -22,7 +22,7 @@ import ActionIcon from '../components/ActionIcon';
 import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+import { fetchVocabularyLearningRows, yieldToMain } from '../lib/vocabularyLearningRows';
 import { buildReaderSections, lineIndexOfTokens, readerLineGroups, sectionOfLine, sectionedPagePosition, sectionedPercent } from '../lib/readerSections';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { writeStudySource } from '../lib/studySourceHandoff';
@@ -256,8 +256,14 @@ const NO_GLYPH = Object.freeze({ zheng: null, ja: null });
 // 가나만(히라가나·가타카나·장음) — ja 읽기 2차 조회에서 가나 표면은 표면 자체가 읽기다
 const KANA_ONLY = /^[\u3040-\u30ffー]+$/;
 
+// 받은 snapshot의 투영은 나눠 돌고(sliced), 색인은 다음 작업에서 만든다(VIEWER-INDEX-001, 2026-11-02 KST). 3,000단어 계정은 응답 → 투영 →
+// 색인이 CPU×4 약 0.15초 한 덩어리였다(그중 3할은 색인이 같은 snapshot을 다시 투영한 몫 — 이제 시각만 옮겨 적는다, projectVocabularyLearningRows).
+// 결과 색인은 전과 같다(계약 vocabularyProjectReuse). 저장 표시는 전처럼 이 읽기가 끝난 다음 그려진다 — 전에도 본문 뒤 응답을 기다렸다.
 async function fetchUserVocabWords(userId, signal) {
-  return buildVocabularyWordIndex(await fetchVocabularyLearningRows(userId, { signal }));
+  const projected = await fetchVocabularyLearningRows(userId, { signal, sliced: true });
+  await yieldToMain();
+  if (signal?.aborted) throw signal.reason || new DOMException('Aborted', 'AbortError');
+  return buildVocabularyWordIndex(projected);
 }
 
 function findSavedVocab(savedWords, token, language) {

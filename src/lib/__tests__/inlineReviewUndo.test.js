@@ -32,7 +32,9 @@ describe('인라인 복습 R3㉮ — 척도 정렬·스냅샷 재료·undo (View
     expect(hook).toContain('return { vocab, rating, nextStats, prev, reviewedAt: r.reviewedAt, queued: !!r.queued };');
     expect(hook).toContain('const r = await recordReviewCompleted(user?.id, {');
     expect(hook).toContain("if (!r?.ok) throw r?.error || new Error('review-save-failed');");
-    expect(viewer).toContain('buildVocabularyWordIndex(await fetchVocabularyLearningRows(userId, { signal }))');
+    // 완전 snapshot(fields 없음)을 나눠 투영한 뒤 색인으로(VIEWER-INDEX-001 — 결과 같음, 계약 vocabularyProjectReuse)
+    expect(viewer).toContain('const projected = await fetchVocabularyLearningRows(userId, { signal, sliced: true });');
+    expect(viewer).toContain('return buildVocabularyWordIndex(projected);');
   });
 
   it('undo 뒤 user_vocabulary 5필드가 스냅샷과 동일(last_reviewed_at 원값) + vocab-words 무효화로 「복습 시점이에요」가 다시 보인다', () => {
