@@ -195,3 +195,27 @@ describe('AXE-CONTRAST-001 serious 대비 5곳', () => {
     }
   });
 });
+
+// 뷰어 손님 안내 띠 링크(운영 axe 2026-11-02 KST): 교재 테마 밝은 바탕에서 --primary-light = 교재 주색, 띠 바탕 = --primary-glow(주색 22% 합성).
+// 모브 #80576A가 4.24:1로 AA 미달이었다 — 밝은 테마만 글자에 검정 15%를 섞는다. 네 교재 색 모두 띠 바탕 위 4.5 이상.
+describe('뷰어 손님 안내 띠 링크 — 교재 네 색 밝은 바탕 AA', () => {
+  const hex = (h) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const toHex = (rgb) => '#' + rgb.map(c => Math.round(c).toString(16).padStart(2, '0')).join('');
+  const mix = (a, b, t) => toHex(hex(a).map((c, i) => c * t + hex(b)[i] * (1 - t)));
+  it('규칙이 밝은 테마에만 있고, 띠 바탕(주색 22% 합성) 위 4.5 이상', () => {
+    const css = read('src/index.css');
+    expect(css).toMatch(/\[data-theme="light"\] \.viewer-guest-banner__cta \{\s*color: color-mix\(in srgb, var\(--primary-light\) 85%, #000\);/);
+    const light = css.match(/\[data-theme="light"\]\s*\{[\s\S]*?\n\}/)[0];
+    const pages = [token(light, '--bg-primary'), token(light, '--bg-card'), '#ffffff', '#fffefb'];
+    for (const name of ['mauve', 'sage', 'inkblue', 'amber']) {
+      const main = token(css, `--book-${name}-main`);
+      const fg = mix(main, '#000000', 0.85);
+      for (const page of pages) {
+        const bg = mix(main, page, 0.22);
+        expect(contrast(fg, bg), `${name} on ${page}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+    // 운영 실측 바탕(#e6d5d1)에서도.
+    expect(contrast(mix(token(css, '--book-mauve-main'), '#000000', 0.85), '#e6d5d1')).toBeGreaterThanOrEqual(4.5);
+  });
+});
