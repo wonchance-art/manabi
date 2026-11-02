@@ -677,7 +677,8 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
   // 점수가 내려가 일요일 약점 세션에서 자연히 빠진다(공유 원장이 곧 dedup — 승인된 이음새).
   // 같은 조회가 집중 연습 기록(source 'practice')도 받는다 — 「몰랐어요」 · 오답은 헷갈린 표현 · 흐릿 범위에 들어간다
   // (REV-SCOPE-R1B-1 §6-1 ⑤ 읽는 곳 표).
-  const { data: recentVocabEvents = [] } = useQuery({
+  // 받기 전 기본값은 고정된 빈 배열 — 그릴 때마다 새 []면 아래 practiceFragile → countFor → 오늘 개수가 같은 값으로 다시 셌다(LOGGED-IN-SWEEP-002).
+  const { data: recentVocabEvents = EMPTY_IDS } = useQuery({
     queryKey: ['confused-events', user?.id],
     queryFn: async () => {
       const sinceIso = new Date(Date.now() - CONFUSED_SINCE_DAYS * 86400000).toISOString();
@@ -720,8 +721,10 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       fragileIds: practiceFragile,
     });
     // controller는 안정 객체라 canLegacy 판정 신호(registryAvailable · enrolledIds)를 명시한다.
+    // 시각은 분 단위로 본다 — 범위 FSRS id(fsrsScopeIds) · 집중 연습 후보와 같은 규칙. 밀리초 값을 그대로 두면 그릴 때마다 함수가 새로
+    // 생겨 오늘 개수(3,000행)를 다시 셌다(LOGGED-IN-SWEEP-002: 합성 무거운 계정 /vocab 첫 로드 CPU×4 약 140ms, 같은 숫자).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projections, learningAvailable, scopeKey, effectiveNow, scopeLevels, scopeSourceIds, scopeChapters, zhHskLevels, reviewSupported, remainingNew,
+  }, [projections, learningAvailable, scopeKey, Math.floor(effectiveNow / 60000), scopeLevels, scopeSourceIds, scopeChapters, zhHskLevels, reviewSupported, remainingNew,
     admission.quota, fsrsReview.cards, fsrsReview.enabled, fsrsReview.pending, enrolledIdSet, fsrsReview.registryAvailable, fsrsReview.controller, grammarRows, practiceFragile]);
   const scopeCount = useRoomMemo(inSession, () => (admission.quota && learningAvailable ? countFor(scope) : null), [countFor, scope, admission.quota, learningAvailable]);
   const roomSession = scopeCount && scopeCount.status === 'ready' ? scopeCount : { status: 'pending', total: 0, due: 0, newAllowed: 0, newLocked: 0, deferred: 0,
