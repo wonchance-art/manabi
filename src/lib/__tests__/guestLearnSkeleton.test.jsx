@@ -82,12 +82,12 @@ describe('배움 대기 화면 — 손님 / 로그인 골격(판마다 하나, �
     expect(html).toContain('learn-quad');
     expect(html).toContain('learn-toplink');
     expect(html).not.toContain('learn-guest');
-    // 칩 자리(오너 실기 2026-10-25 KST — 좁은 화면에서 칩이 「현황 전체」에 겹쳤다): 셸 500 이하는 칩이 둘째 줄이라(「교재 ·」가 붙어 480 → 500)
+    // 칩 자리(오너 실기 2026-10-25 KST — 좁은 화면에서 칩이 「현황 전체」에 겹쳤다): 셸 480 이하는 칩이 둘째 줄이라
     // 대기 화면도 같은 줄(빈 .learn-chips, 높이 44)을 먼저 둔다 — 칩이 붙을 때 아래 칸이 밀리지 않게.
     expect(html).toContain('<h1>배움</h1><span class="learn-chips"></span></div><span class="learn-toplinks"><span class="learn-toplink">교재</span>');
     const css = read('src/components/learn/learn.css');
     expect(css).toContain('.learn-chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0;min-height:44px}');
-    const narrow = sliceBetween(css, '@container manabi-shell (max-width:500px){', '\n}');
+    const narrow = sliceBetween(css, '@container manabi-shell (max-width:480px){', '\n}');
     expect(narrow).toContain('.learn-top__title{display:contents}');
     expect(narrow).toContain('.learn-top .learn-chips{grid-column:1/-1;grid-row:2}');
   });

@@ -285,11 +285,11 @@ a.learn-memory__bucket:hover{background:color-mix(in srgb,var(--ink) 8%,var(--sh
   .learn-stats .learn-order-1{order:1}.learn-stats .learn-order-2{order:2}.learn-stats .learn-order-3{order:3}.learn-stats .learn-order-4{order:4}
   .learn-stats .learn-order-5{order:5}.learn-stats .learn-order-6{order:6}.learn-stats .learn-order-7{order:7}.learn-stats .learn-order-8{order:8}
 }
-/* 머리 줄 — 셸 폭 500 이하: 칩이 「배움 · 교재 · 현황 전체 →」 한 줄에 다 들어가지 않는다(4개 언어 칩 267px · 320 화면 본문 288px.
-   「교재 ·」가 붙어 오른쪽 덩어리가 66 → 105px라 480에서 여유가 2px뿐이었다 — 500으로 올림, HOME-SHELF-LINK-001).
+/* 머리 줄 — 셸 폭 480 이하: 칩이 「배움 · 교재 · 현황 전체 →」 한 줄에 다 들어가지 않는다(4개 언어 칩 267px · 320 화면 본문 288px).
+   「교재 ·」가 붙어도(오른쪽 덩어리 66 → 105px) 481에서 칩과 30px 남짓 떨어진다 — Preview 실측 501 = 50px, 겹침 0(HOME-SHELF-LINK-001).
    제목 · 오른쪽 링크(또는 단추)가 첫 줄, 칩이 둘째 줄 전체 폭(오너 실기 2026-10-25 KST — 칩이 「현황 전체」 위에 겹쳤다).
    칩 줄 높이(44)는 대기 화면도 같은 자리를 비워 둔다(HomeSkeleton) — 붙은 뒤 줄이 생겨 아래가 밀리지 않게. */
-@container manabi-shell (max-width:500px){
+@container manabi-shell (max-width:480px){
   .learn-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px}
   .learn-top__title{display:contents}
   .learn-page .learn-top h1{grid-column:1;grid-row:1}
