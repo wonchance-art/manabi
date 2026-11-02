@@ -885,8 +885,11 @@
   **#1643 병합 `43e76ac`**(오너 「병합하고 2단계 진행해」 11-02).
 - **WALL-003 화면 벽 2판 2단계 + 수정 요청 13건 (2026-11-02 KST)** `claude/admiring-ritchie-tz2mxp` → [#1647](https://github.com/wonchance-art/manabi/pull/1647):
   부품 대조(제목 · 버튼 · 입력칸 · 카드 계산 스타일 묶음 — 1280 채운 버튼 45가지 · 입력칸 20 · h1 22) · 토큰 밖 색 30 · 뷰어 읽기 테마(밝게 · 어둡게) 장면.
-  13건 시안 = [전후 비교](https://claude.ai/artifact/L8BeH5DzZdp7WPT52EbAJb)(같은 빌드에 제안 CSS 주입 실렌더 · 대비 81곳 → 0). 결정 대기: 뷰어 문장 막대 24px 유지 + 규칙 예외 / 지도 핀 24px 터치 원.
-  다음: 오너 합의 뒤 13건 구현을 같은 PR에 · 3단계 상태 장면 · 简体 판.
+  13건 시안 = [전후 비교](https://claude.ai/artifact/L8BeH5DzZdp7WPT52EbAJb)(같은 빌드에 제안 CSS 주입 실렌더 · 대비 81곳 → 0).
+  **13건 구현**(오너 「권장대로 13건 모두 구현해」): 재대결 띠 어려움 토큰 · 함께 읽기 번호 · --lv-faint · 일본어 30일 v2 셸(nihongo/layout) · 지역학 opacity → 토큰 ·
+  --chat-meta · 문장 막대 24px 예외(ui-conventions §3) · 지도 핀 터치 원 r 20(390 실측 24.8px). 계약 `wallContrast003.test.js`.
+  확인: npm test 918/10,792 · 화면 벽 재캡처 e5cd038d 수정 요청 15 → **0**(규약 통과 98 · 판정 안 함 2 = 임베드 복습 글꼴).
+  다음: 임베드 복습 원본 글꼴 미로드 · 부품 대조 정리(채운 버튼 45가지 — 주 버튼 두 체계) · 3단계 상태 장면 · 简体 판.
 - **STATS-MAP-001 통계 정리 (2026-11-01 KST)** `claude/practical-carson-umi0t8`:
   조사 = [통계 지도](https://claude.ai/artifact/1jJDC3CeUTf6A72XsTDuXy) · [#1077 코멘트 6553548961](https://github.com/wonchance-art/manabi/issues/1077#issuecomment-6553548961) · [2차 목업](https://claude.ai/artifact/DuZixRtSKLoXEtS2GwNrdP).
   ① 1 · 2차 **완료 [#1623](https://github.com/wonchance-art/manabi/pull/1623) squash `98d8c1a`(오너 「바로 병합」)** — 죽은 코드 · 내보내기 학습 기록 · 홈 키 무효화 · 그룹 집계 · 지표 사전 · 이름 셋 · 연속 「–」 · 표시 경계 04시.
