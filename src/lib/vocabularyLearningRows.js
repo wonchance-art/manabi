@@ -21,22 +21,89 @@ const validRow = (vocabulary, actorId) => !!vocabulary && identity(vocabulary.id
   typeof vocabulary.word_text === 'string' && VOCABULARY_LEARNING_REQUIRED_FIELDS.every(key => Object.hasOwn(vocabulary, key)) &&
   (vocabulary.language === null || (typeof vocabulary.language === 'string' && !!vocabulary.language));
 
-export function projectVocabularyLearningRows(snapshot, { actorId, at = snapshot?.now } = {}) {
+/**
+ * 이 함수가 검사 · 투영해 내보낸 snapshot(VIEWER-INDEX-001, 2026-11-02 KST). 뷰어 색인(buildVocabularyWordIndex)은 받은 snapshot을
+ * 그 자리에서 한 번 더 투영했다 — 3,000단어 CPU×4 약 45 ms(같은 긴 작업 약 160 ms의 3할), 검사 · 투영 결과는 시각 하나(evaluatedAt) 말고 같다.
+ * 같은 객체를 같은 계정 · 같거나 늦은 시각으로 다시 받으면 검사를 되풀이하지 않고 시각만 옮겨 적는다(재투영과 깊은 비교로 같다 — 계약
+ * vocabularyProjectReuse.test.js). 늦은 시각에서 결과가 같은 까닭: 투영의 시각 검사(소개 · 마지막 복습 · 첫 질문 > 지금이면 거부)는 시각이
+ * 늘면 통과를 유지하고, 시각을 담는 칸은 review.evaluatedAt뿐이다(reprojectVocabularyLearningRow와 같은 전제 — 계약 vocabLearningPatch).
+ * 행 · 등록 · 투영 배열이나 머리 칸이 바뀌었거나, 투영과 행이 줄마다 같은 객체가 아니면 처음처럼 다 검사한다. 행 객체는 제자리에서 고치지 않는다
+ * (앱의 모든 패치는 새 객체를 만든다 — beginVocabularyReview · mergeVocabularyWordIndexCards 선례). 시각이 줄마다 다른 결과
+ * (reprojectVocabularyLearningRow)는 적어 두지 않는다 — 전체 재투영은 모든 줄을 같은 시각으로 맞추기 때문이다.
+ */
+const PROJECTED = new WeakMap();
+const HEAD_FIELDS = ['version', 'actorId', 'registryAvailable', 'complete', 'enabled', 'now', 'rows', 'registry', 'projections'];
+
+function reusableProjection(snapshot, actorId, at) {
+  const held = snapshot && typeof snapshot === 'object' ? PROJECTED.get(snapshot) : undefined;
+  if (!held || held.actorId !== actorId || !HEAD_FIELDS.every(key => snapshot[key] === held[key])) return null;
+  const { rows, projections } = held;
+  if (projections.length !== rows.length) return null;
+  for (let index = 0; index < rows.length; index++) if (projections[index]?.vocabulary !== rows[index]) return null;
+  let now;
+  try { now = schedulerTime(at); } catch { return null; }
+  return now >= held.at ? { held, now } : null; // 이른 시각은 처음 경로(clock_reversed)로
+}
+
+function rememberProjection(result, actorId, at) {
+  PROJECTED.set(result, { ...Object.fromEntries(HEAD_FIELDS.map(key => [key, result[key]])), actorId, at });
+  return result;
+}
+
+// 검사 · 투영 한 벌. 동기 · 나눠 돌기(projectVocabularyLearningRowsSliced)가 같은 본문을 쓴다 — 줄 STEP_ROWS개마다 한 번 멈출 자리(yield)를 낸다.
+const STEP_ROWS = 64;
+function* projectionSteps(snapshot, actorId, at) {
+  const reuse = reusableProjection(snapshot, actorId, at);
+  if (reuse) {
+    const evaluatedAt = new Date(reuse.now).toISOString();
+    const projections = reuse.held.projections.map(projection => projection.review.evaluatedAt === evaluatedAt ? projection
+      : Object.freeze({ ...projection, review: Object.freeze({ ...projection.review, evaluatedAt }) }));
+    return rememberProjection({ ...snapshot, rows: snapshot.rows, registry: snapshot.registry, projections, now: evaluatedAt }, actorId, reuse.now);
+  }
   const now = checkedSnapshot(snapshot, actorId, at);
   const entries = new Map();
   for (const entry of snapshot.registry) {
     if (!entry || !identity(entry.cardId) || entry.userId !== actorId || entries.has(entry.cardId)) throw failure('vocabulary_learning_invalid_registry');
     entries.set(entry.cardId, entry);
   }
+  yield;
   const seen = new Set();
-  const projections = snapshot.rows.map(vocabulary => {
+  const rows = snapshot.rows, projections = [];
+  for (let index = 0; index < rows.length; index++) {
+    const vocabulary = rows[index];
     if (!validRow(vocabulary, actorId) || seen.has(vocabulary.id)) throw failure('vocabulary_learning_invalid_rows');
     seen.add(vocabulary.id);
-    return projectVocabularyLearning({ actorId, vocabulary, registry: entries.get(vocabulary.id),
-      enabled: snapshot.enabled, registryAvailable: true, complete: true, at: now });
-  });
-  return { ...snapshot, rows: snapshot.rows, registry: snapshot.registry, projections,
-    now: new Date(now).toISOString() };
+    projections.push(projectVocabularyLearning({ actorId, vocabulary, registry: entries.get(vocabulary.id),
+      enabled: snapshot.enabled, registryAvailable: true, complete: true, at: now }));
+    if (index % STEP_ROWS === STEP_ROWS - 1) yield;
+  }
+  return rememberProjection({ ...snapshot, rows: snapshot.rows, registry: snapshot.registry, projections,
+    now: new Date(now).toISOString() }, actorId, now);
+}
+
+export function projectVocabularyLearningRows(snapshot, { actorId, at = snapshot?.now } = {}) {
+  const steps = projectionSteps(snapshot, actorId, at);
+  for (;;) { const step = steps.next(); if (step.done) return step.value; }
+}
+
+/** 다음 작업으로 넘긴다 — scheduler.yield(앞자리 유지)가 있으면 그것, 없으면 setTimeout 0. */
+export const yieldToMain = () => (typeof globalThis.scheduler?.yield === 'function'
+  ? globalThis.scheduler.yield() : new Promise(resolve => setTimeout(resolve, 0)));
+
+/**
+ * projectVocabularyLearningRows와 같은 검사 · 같은 결과(계약 vocabularyProjectReuse.test.js)를 sliceMs씩 나눠 돈다(VIEWER-INDEX-001).
+ * 뷰어 첫 화면 — 3,000단어 계정은 받은 snapshot의 투영이 CPU×4 약 0.1초 한 덩어리라, 그 사이 탭 · 스크롤이 기다렸다.
+ * 시각(at)은 시작할 때 한 번 정한다(동기 판과 같다). 나눠 도는 사이 계정이 바뀌면 호출부(fetchVocabularyLearningRows의 check)가 결과를 버린다.
+ */
+export async function projectVocabularyLearningRowsSliced(snapshot, { actorId, at = snapshot?.now } = {},
+  { sliceMs = 30, yieldTo = yieldToMain, clock = () => performance.now() } = {}) {
+  const steps = projectionSteps(snapshot, actorId, at);
+  let start = clock();
+  for (;;) {
+    const step = steps.next();
+    if (step.done) return step.value;
+    if (clock() - start >= sliceMs) { await yieldTo(); start = clock(); }
+  }
 }
 
 /**
@@ -64,9 +131,12 @@ export function reprojectVocabularyLearningRow(projected, wordId, row, { actorId
   return { ...projected, rows, registry: projected.registry, projections, now: new Date(now).toISOString() };
 }
 
-/** GET의 contexts/id 경로와 구분한다. 계정 전환·취소 뒤 도착한 옛 응답은 반환하지 않는다. */
+/**
+ * GET의 contexts/id 경로와 구분한다. 계정 전환·취소 뒤 도착한 옛 응답은 반환하지 않는다.
+ * sliced: true면 투영을 나눠 돈다(projectVocabularyLearningRowsSliced — 결과 같음). 나눠 도는 사이의 계정 전환 · 취소도 위와 같이 버린다.
+ */
 export async function fetchVocabularyLearningRows(actorId, { fetchImpl = (...args) => globalThis.fetch(...args),
-  signal, getActorId = () => actorId, at, fields } = {}) {
+  signal, getActorId = () => actorId, at, fields, sliced = false } = {}) {
   const check = () => {
     if (signal?.aborted) throw signal.reason || new DOMException('Aborted', 'AbortError');
     if (!identity(actorId) || getActorId() !== actorId) throw failure('vocabulary_learning_owner_mismatch');
@@ -84,8 +154,11 @@ export async function fetchVocabularyLearningRows(actorId, { fetchImpl = (...arg
   if (!response.ok || body?.ok === false) throw failure(body?.code || 'vocabulary_learning_unavailable', { status: response.status });
   // 요청 시작 시각은 응답의 DB 시각보다 이를 수 있다. at는 역사 조회가 아닌
   // 로컬 시계 하한이며, 전송 완료 후 더 최신인 snapshot 시각을 함께 사용한다.
-  return projectVocabularyLearningRows(body, { actorId,
-    ...(at === undefined ? {} : { at: Math.max(schedulerTime(at), schedulerTime(body?.now)) }) });
+  const options = { actorId, ...(at === undefined ? {} : { at: Math.max(schedulerTime(at), schedulerTime(body?.now)) }) };
+  if (!sliced) return projectVocabularyLearningRows(body, options);
+  const projected = await projectVocabularyLearningRowsSliced(body, options);
+  check();
+  return projected;
 }
 
 /** 카드 몇 장 읽기의 상한 — 서버(VOCABULARY_CARDS_MAX) · SQL(fsrs_vocabulary_snapshot_cards)과 같다. */
