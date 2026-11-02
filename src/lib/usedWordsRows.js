@@ -13,7 +13,8 @@ const DAY = 86400000;
 const settle = (promise, fallback) => Promise.resolve().then(() => promise).then(r => r?.data ?? r ?? fallback, () => fallback);
 const titleOf = row => (row.prompt && String(row.prompt).trim()) || String(row.sentence || '').trim().slice(0, 24);
 
-export async function fetchOutputWeeks(userId, { weekStartMs, now = Date.now(), vocabRows = [] } = {}) {
+/** 모든 작문 · 최근 대화 50개의 내 말 — buildOutput · wordsInWriting의 sources 모양. 작문 첨삭 결과(연계 2)도 같은 재료를 쓴다. */
+export async function fetchOutputSources(userId) {
   const [writings, convs] = await Promise.all([
     settle(readCompleteLegacyRows(() => supabase.from('writing_practice').select('id, created_at, sentence, prompt', { count: 'exact' })
       .eq('user_id', userId), { orderBy: ['created_at', 'id'] }), []),
@@ -22,11 +23,15 @@ export async function fetchOutputWeeks(userId, { weekStartMs, now = Date.now(), 
       .eq('owner_id', userId).not('processed_json->metadata->conversation', 'is', null)
       .order('id', { ascending: false }).limit(50), []),
   ]);
-  const sources = [
+  return [
     ...(writings || []).map(w => ({ kind: 'writing', id: w.id, title: titleOf(w), texts: [{ text: String(w.sentence || ''), at: Date.parse(w.created_at) }] })),
     ...(convs || []).map(c => ({ kind: 'conversation', id: c.id, title: c.title,
       texts: (Array.isArray(c.turns) ? c.turns : []).filter(t => t?.who === 'me' && t.text).map(t => ({ text: String(t.text), at: Number(t.at) })) })),
   ];
+}
+
+export async function fetchOutputWeeks(userId, { weekStartMs, now = Date.now(), vocabRows = [] } = {}) {
+  const sources = await fetchOutputSources(userId);
   const until = Math.max(now, weekStartMs) + 1;
   return {
     week: buildOutput({ sources, vocabRows, fromMs: weekStartMs, untilMs: until }),

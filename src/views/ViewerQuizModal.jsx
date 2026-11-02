@@ -1,10 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Spinner from '../components/Spinner';
 import { formatDuration } from '../lib/readingTimer';
 import { langNameKo } from '../lib/constants';
 import { serializeReviewScope } from '../lib/reviewScopeUrl';
 import { useTodayReviewCount } from '../lib/useTodayReviewCount';
 import Button from '../components/Button';
+import WordChips, { WordChipsLegend } from '../components/WordChips';
+import { remetInMaterial } from '../lib/remetWords';
+
+// 칩 → 단어 카드(현황 · 복습실과 같은 카드) — 누를 때만 받는다.
+const VocabDetailCard = dynamic(() => import('./VocabDetailCard'), { loading: () => null });
 
 /**
  * 퀴즈·읽기 완료 창의 키보드 계약(WALL-STATES-001 ③) — 열리면 창으로 포커스를 옮기고,
@@ -37,8 +43,11 @@ export default function ViewerQuizModal({
 }) {
   const quizRef = useRef(null);
   const completionRef = useRef(null);
+  // 완독 창 칩 → 단어 카드. 카드가 떠 있으면 Esc는 카드만 닫는다(카드가 제 Esc로 닫힌다 — 창까지 닫히지 않게).
+  const [wordDetail, setWordDetail] = useState(null);
+  useEffect(() => { if (!completionModal) setWordDetail(null); }, [completionModal]);
   useDialogKeys(!!quizState, quizRef, closeQuiz);
-  useDialogKeys(!quizState && !!completionModal, completionRef, () => setCompletionModal(null));
+  useDialogKeys(!quizState && !!completionModal, completionRef, () => { if (!wordDetail) setCompletionModal(null); });
   const quizTitle = quizState?.status === 'loading' ? '이해도 확인 중…' : quizState?.status === 'done' ? '퀴즈 완료' : '이해도 퀴즈';
 
   return (
@@ -129,20 +138,34 @@ export default function ViewerQuizModal({
 
       {/* 읽기 완료 요약 모달 */}
       {completionModal && (completionModal.learning && completionModal.accountId
-        ? <CompletionWithReview completionModal={completionModal} setCompletionModal={setCompletionModal} material={material} nextMaterial={nextMaterial} completionRef={completionRef} />
+        ? <CompletionWithReview completionModal={completionModal} setCompletionModal={setCompletionModal} material={material} nextMaterial={nextMaterial} completionRef={completionRef} onWordDetail={setWordDetail} />
         : <CompletionModal completionModal={completionModal} setCompletionModal={setCompletionModal} material={material} nextMaterial={nextMaterial} completionRef={completionRef} reviewCount={null} reviewLang={null} />)}
+      {wordDetail && (
+        <div className="completion-word-layer">
+          <VocabDetailCard word={wordDetail.row} projection={wordDetail.projection} now={new Date()} onClose={() => setWordDetail(null)} ttsSupported={false} />
+        </div>
+      )}
     </>
   );
 }
 
 /** 「오늘 복습」은 배움 홈 칸 · 복습실과 같은 숫자(useTodayReviewCount) — 한도 조회 훅은 완독 창이 떠 있는 동안만 산다. */
-function CompletionWithReview(props) {
-  const { completionModal } = props;
-  const count = useTodayReviewCount({ accountId: completionModal.accountId, learning: completionModal.learning, lang: completionModal.lang });
-  return <CompletionModal {...props} reviewCount={completionModal.lang ? count : null} reviewLang={completionModal.lang} />;
+function CompletionWithReview({ onWordDetail, ...props }) {
+  const { completionModal, material } = props;
+  const { learning } = completionModal;
+  const count = useTodayReviewCount({ accountId: completionModal.accountId, learning, lang: completionModal.lang });
+  // 연계 1(STATS-MAP-001) — 「복습한 말 N개를 이 글에서 다시 만났어요」. 이미 받은 snapshot · 이 글 본문만(추가 조회 0).
+  const remet = useMemo(() => {
+    try {
+      return remetInMaterial({ processedJson: material?.processed_json, projections: learning?.projections, now: Math.max(Date.now(), Date.parse(learning?.now) || 0) });
+    } catch { return null; }
+  }, [material?.processed_json, learning]);
+  const projectionByWord = useMemo(() => new Map((learning?.projections || []).filter(p => p?.vocabulary?.word_text).map(p => [p.vocabulary.word_text, p])), [learning]);
+  const onWord = word => { const projection = projectionByWord.get(word); if (projection) onWordDetail?.({ row: projection.vocabulary, projection }); };
+  return <CompletionModal {...props} reviewCount={completionModal.lang ? count : null} reviewLang={completionModal.lang} remet={remet} onWord={onWord} />;
 }
 
-function CompletionModal({ completionModal, setCompletionModal, material, nextMaterial, completionRef, reviewCount, reviewLang }) {
+function CompletionModal({ completionModal, setCompletionModal, material, nextMaterial, completionRef, reviewCount, reviewLang, remet = null, onWord = null }) {
   return (
     <div className="modal-overlay completion-overlay">
       <div ref={completionRef} className="modal completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-modal-title" tabIndex={-1}>
@@ -195,6 +218,15 @@ function CompletionModal({ completionModal, setCompletionModal, material, nextMa
             </div>
           )}
         </div>
+
+        {/* 연계 1 — 복습이 읽기로 돌아온 순간. 0이면 줄째 없음(0 무표기). 채운 칩 = 지금 흐려지던 말. */}
+        {remet?.words.length > 0 && (
+          <div className="completion-remet">
+            <p className="completion-remet__line">복습한 말 <b>{remet.words.length}개</b>를 이 글에서 다시 만났어요</p>
+            <WordChips words={remet.words} keys={remet.keys} keyLabel="흐려지던 말" onWord={onWord} />
+            <WordChipsLegend label="흐려지던 말" show={remet.keys.size > 0} />
+          </div>
+        )}
 
         <div className="completion-modal__actions">
           {reviewCount > 0 && (

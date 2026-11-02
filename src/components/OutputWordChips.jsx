@@ -3,16 +3,17 @@
 /**
  * 오늘 복습한 말 칩 줄 (#1077-16+17 목업 ③) — 작문·회화 화면 상단에 조용히 놓인다.
  * 칩 탭 = 뜻 토스트, usedSet(회화)에 든 단어는 ✓. 후보 없으면 아무것도 그리지 않는다.
+ * label — 작문 화면이 직접 쓴 말 창에서 넘겨받은 「아직 안 써 본 말」을 띄울 때 바꾼다(연계 4).
  */
 import { useToast } from '../lib/ToastContext';
 
-export default function OutputWordChips({ words, usedSet }) {
+export default function OutputWordChips({ words, usedSet, label = '✍️ 오늘 복습한 말 써먹기:' }) {
   const toast = useToast();
   if (!words?.length) return null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
       <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)' }}>
-        ✍️ 오늘 복습한 말 써먹기:
+        {label}
       </span>
       {words.map((w) => {
         const used = usedSet?.has?.(w.word_text);

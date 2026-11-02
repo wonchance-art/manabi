@@ -1,0 +1,14 @@
+/* 단어 칩 한 줄(WordChips — STATS-MAP-001 통합안). 다시 만난 말 · 직접 쓴 말 창 · 완독 창 · 첨삭 결과가 같은 칩.
+   토큰만 쓴다(.manabi-app의 --ja · --sheet · --rule · --ink · --muted). 채운 칩 = 핵심, 한 번 퍼짐 — 움직임 줄이기면 없음. */
+.word-chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-start}
+.word-chips>span,.word-chips>button{display:inline-flex;align-items:center;padding:3px 11px;border:1px solid var(--rule,var(--border));border-radius:999px;background:var(--sheet,var(--bg-card));font:inherit;font-size:13.5px;line-height:1.5;color:var(--ink,var(--text-primary))}
+.word-chips>button{cursor:pointer}
+.word-chips>button:hover{background:color-mix(in srgb,var(--ink,var(--text-primary)) 5%,var(--sheet,var(--bg-card)))}
+.word-chips>button:focus-visible{outline:2px solid var(--ja,var(--accent));outline-offset:2px}
+.word-chips>.is-key{background:var(--ja,var(--accent));border-color:var(--ja,var(--accent));color:var(--sheet,var(--bg-card));font-weight:700;animation:word-chip-pulse 1.6s ease-out 1}
+.word-chips>button.is-key:hover{background:color-mix(in srgb,var(--ja,var(--accent)) 88%,var(--ink,var(--text-primary)))}
+.word-chips>button.is-more{background:none;border-color:var(--ja,var(--accent));color:var(--ja,var(--accent));font-weight:700}
+@keyframes word-chip-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ja,var(--accent)) 45%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
+@media (prefers-reduced-motion:reduce){.word-chips>.is-key{animation:none}}
+.word-chips-legend{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted,var(--text-muted))}
+.word-chips-legend i{display:inline-block;width:9px;height:9px;border-radius:999px;background:var(--ja,var(--accent))}

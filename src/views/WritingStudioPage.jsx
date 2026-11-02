@@ -3,10 +3,17 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useOutputWords } from '../lib/useOutputWords';
 import OutputWordChips from '../components/OutputWordChips';
+import WordChips, { WordChipsLegend } from '../components/WordChips';
+import { fetchSharedVocabularySummary } from '../lib/vocabularyLearningShare';
+import { fetchOutputSources } from '../lib/usedWordsRows';
+import { wordsInWriting } from '../lib/usedWords';
+import { readWritingWords } from '../lib/writingWordsParam';
 import Button from '../components/Button';
 import { WRITING_LEVELS, topicsFor } from '../lib/writingPrompts';
 import { logReviewEvents } from '../lib/reviewEvents';
@@ -30,6 +37,9 @@ const LANGS = [
 const LANG_CODE = { Japanese: 'ja', English: 'en', French: 'fr', Chinese: 'zh-Hans' };
 const FIT_LABEL = { below: '레벨보다 쉬운 문장이에요 — 한 단계 도전해 봐요', fit: '레벨에 딱 맞는 작문이에요', above: '레벨 이상으로 도전했어요 — 훌륭해요' };
 
+// 칩 → 단어 카드(현황 · 완독 창과 같은 카드) — 누를 때만 받는다.
+const VocabDetailCard = dynamic(() => import('./VocabDetailCard'), { loading: () => null });
+
 const scoreColor = s => (s >= 4 ? 'var(--accent)' : s === 3 ? 'var(--warning)' : 'var(--danger)');
 
 /**
@@ -44,6 +54,15 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
 
   const [language, setLanguage] = useState('Japanese');
   const outputWords = useOutputWords(language);
+  const queryClient = useQueryClient();
+  // 연계 4(STATS-MAP-001) — 직접 쓴 말 창 「아직 안 써 본 말로 작문 ›」이 넘긴 말(/writing?words=…&lang=…). 주소는 마운트 뒤에 읽는다.
+  const [handoff, setHandoff] = useState(null);
+  useEffect(() => {
+    const h = readWritingWords(new URLSearchParams(window.location.search));
+    if (h.words.length) setHandoff(h);
+  }, []);
+  const [submittedAt, setSubmittedAt] = useState(null); // 연계 2 — 이 시각 전의 작문 · 대화로 「처음 씀」을 본다
+  const [wordDetail, setWordDetail] = useState(null);
   const [level, setLevel] = useState('N5');
   const [tab, setTab] = useState('free');          // 'chapter' | 'topic' | 'free'
   const [chapterSlug, setChapterSlug] = useState(null);
@@ -86,6 +105,32 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
+  // 넘겨받은 말의 언어가 저장된 언어보다 앞선다(위 효과 뒤에 돈다 — 프로필이 늦게 와도 덮이지 않게).
+  useEffect(() => {
+    if (handoff?.language && WRITING_LEVELS[handoff.language]) setLanguage(handoff.language);
+  }, [handoff, profile?.id]);
+
+  // 담은 말 snapshot — 넘겨받은 말의 뜻 · 첨삭 결과 「직접 쓴 말」 줄에만 쓴다(그때만 받는다 · 배움 · 현황과 같은 공유 snapshot).
+  const { data: learning } = useQuery({
+    queryKey: ['writing-vocab', user?.id],
+    queryFn: () => fetchSharedVocabularySummary(queryClient, user.id),
+    enabled: !!user?.id && (!!handoff || !!result),
+    staleTime: 1000 * 60 * 5,
+  });
+  const projectionByWord = useMemo(() => new Map((learning?.projections || []).filter(p => p?.vocabulary?.word_text).map(p => [p.vocabulary.word_text, p])), [learning]);
+  const handoffWords = useMemo(() => (handoff?.words || []).map(w => projectionByWord.get(w)?.vocabulary)
+    .filter(v => v && (!v.language || v.language === language)), [handoff, projectionByWord, language]);
+  // 연계 2 — 「담은 말 N개를 직접 썼어요」. 처음 씀 판정 재료(작문 · 대화의 내 말)는 결과가 나온 뒤 한 번 받는다.
+  const { data: outputSources } = useQuery({
+    queryKey: ['output-sources', user?.id, submittedAt],
+    queryFn: () => fetchOutputSources(user.id),
+    enabled: !!user?.id && !!result && submittedAt != null,
+    staleTime: Infinity,
+  });
+  const written = useMemo(() => (result && learning?.rows
+    ? wordsInWriting({ text, at: submittedAt ?? Date.now(), vocabRows: learning.rows, sources: outputSources ?? null, language })
+    : null), [result, learning, text, submittedAt, outputSources, language]);
+  const openWord = word => { const p = projectionByWord.get(word); if (p) setWordDetail(p); };
 
   // 레벨 — 언어별 저장값 복원
   useEffect(() => {
@@ -219,6 +264,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
     setLoading(true);
     setError(null);
     setResult(null);
+    setSubmittedAt(Date.now());
     try {
       let authHeader = {};
       try {
@@ -448,7 +494,10 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       {!result && (
         <div className="card" style={{ padding: '16px 18px', marginBottom: 14 }}>
           {/* 오늘 복습한 말 주입(목업 ③ — #1077-16): 표시 유도만, 채점 강제 없음 */}
-          <OutputWordChips words={outputWords} />
+          {/* 연계 4 — 직접 쓴 말 창이 넘긴 「아직 안 써 본 말」이 있으면 그 말이 이 자리를 쓴다(뜻은 내 담은 말에서). */}
+          {handoffWords.length > 0
+            ? <OutputWordChips words={handoffWords} label="✍️ 아직 안 써 본 말 써먹기:" />
+            : <OutputWordChips words={outputWords} />}
           {prevScore != null && (
             <div style={{
               padding: '8px 12px', marginBottom: 10, borderRadius: 'var(--radius-md)',
@@ -592,6 +641,14 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
               </div>
             </div>
             <p style={{ fontSize: '0.92rem', lineHeight: 1.7, margin: 0 }}>{result.summary}</p>
+            {/* 연계 2 — 산출이 숫자로 보이는 순간. 점수 옆이 아니라 결과 아래 한 줄(거울 — 0이면 줄째 없음). 채운 칩 = 처음 씀. */}
+            {written?.words.length > 0 && (
+              <div className="writing-used">
+                <p className="writing-used__line">담은 말 <b>{written.words.length}개</b>를 직접 썼어요</p>
+                <WordChips words={written.words} keys={written.keys} keyLabel="처음 씀" onWord={openWord} />
+                <WordChipsLegend label="처음 씀" show={written.keys.size > 0} />
+              </div>
+            )}
           </div>
 
           {result.sentences.map((s, i) => (
@@ -656,6 +713,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
           </div>
         </div>
       )}
+      {wordDetail && <VocabDetailCard word={wordDetail.vocabulary} projection={wordDetail} now={new Date()} onClose={() => setWordDetail(null)} ttsSupported={false} />}
     </div>
   );
 }

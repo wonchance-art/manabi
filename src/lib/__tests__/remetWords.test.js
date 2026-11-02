@@ -41,7 +41,7 @@ describe('다시 만난 말 — 셈 규칙(STATS-MAP-001 목업 「셈 규칙」
 
   it('막 담고 복습 전인 말 · 아무것도 없는 주는 0', () => {
     expect(buildRemet({ sources: [{ kind: 'reading', id: 1, words: [w('駅', T)] }], vocabRows, reviewRows }).total).toBe(0);
-    expect(buildRemet({})).toEqual({ total: 0, reading: 0, conversation: 0, reviews: 0, sources: [] });
+    expect(buildRemet({})).toEqual({ total: 0, reading: 0, conversation: 0, reviews: 0, sources: [], metAt: {} });
   });
 });
 
@@ -83,12 +83,11 @@ describe('배선 — 이번 주 창 한 줄 → 다시 만난 말 창', () => {
     const modal = sliceBetween(page, 'function WeeklyModal(', '\n}\n');
     expect(modal).toContain('onClose={detail ? () => setDetail(null) : onClose}');
     expect(modal).toContain('<VocabDetailCard word={detail} projection={projectionById.get(detail.id)}');
-    expect(page).toContain('aria-label={`${w} 단어 카드`}');
+    expect(page).toContain('<WordChips words={src.words} keys={keys} keyLabel={spec.keyLabel} onWord={onWord} />');
   });
-  it('목업 그대로 — 0이면 줄째 없음 · 세 칸 글/대화/복습 · 칩 다섯 개 + N · 같은 폭 표시', () => {
+  it('목업 그대로 — 0이면 줄째 없음 · 세 칸 글/대화/복습 · 같은 폭 표시', () => {
     expect(page).toContain('{remetTotal > 0 && onOpenRemet && (');
     expect(page).toContain("cells: d => [[d.reading, '편', '글'], [d.conversation, '개', '대화'], [d.reviews, '번', '복습']],");
-    expect(page).toContain('const REMET_CHIPS = 5;');
     expect(css).toMatch(/\.learn-remet__kind\{flex:none;box-sizing:border-box;width:3\.2em;/);
     // 기울임 금지(오너 「글/대화는 기울임 없이」) — 표시는 i/em이 아니다.
     expect(page).toContain('<span className="learn-remet__kind">');
