@@ -73,19 +73,21 @@ describe('배움 대기 화면 — 손님 / 로그인 골격(판마다 하나, �
     expect(html).toContain('오늘 문단 · 맛보기');
     expect(html).toContain('<a class="learn-tile learn-goal--empty learn-guest"><span><span class="learn-goal__title">로그인하면 여기에 쌓여요</span>');
     expect(html).not.toContain('href='); // [로그인]은 자리표 — 초점 · 이동 없음
-    for (const member of ['learn-quad', 'learn-review', 'learn-toplink', 'learn-stat']) expect(html).not.toContain(member);
+    for (const member of ['learn-quad', 'learn-review', 'learn-toplinks', 'learn-stat']) expect(html).not.toContain(member);
+    // 제목 줄 「교재 →」 자리(HOME-SHELF-LINK-001) — 화면과 같은 자리 · 글자, 링크는 아님(위 href 0).
+    expect(html).toContain('<h1>배움</h1></div><span class="learn-toplink">교재 →</span></div>');
   });
   it('로그인 판(세션 쿠키 있음): 예전 로그인 배치 골격 그대로', () => {
     const html = renderToStaticMarkup(createElement(MemberLoading));
     expect(html).toContain('learn-quad');
     expect(html).toContain('learn-toplink');
     expect(html).not.toContain('learn-guest');
-    // 칩 자리(오너 실기 2026-10-25 KST — 좁은 화면에서 칩이 「현황 전체」에 겹쳤다): 셸 480 이하는 칩이 둘째 줄이라
+    // 칩 자리(오너 실기 2026-10-25 KST — 좁은 화면에서 칩이 「현황 전체」에 겹쳤다): 셸 500 이하는 칩이 둘째 줄이라(「교재 ·」가 붙어 480 → 500)
     // 대기 화면도 같은 줄(빈 .learn-chips, 높이 44)을 먼저 둔다 — 칩이 붙을 때 아래 칸이 밀리지 않게.
-    expect(html).toContain('<h1>배움</h1><span class="learn-chips"></span></div><span class="learn-toplink">');
+    expect(html).toContain('<h1>배움</h1><span class="learn-chips"></span></div><span class="learn-toplinks"><span class="learn-toplink">교재</span>');
     const css = read('src/components/learn/learn.css');
     expect(css).toContain('.learn-chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0;min-height:44px}');
-    const narrow = sliceBetween(css, '@container manabi-shell (max-width:480px){', '\n}');
+    const narrow = sliceBetween(css, '@container manabi-shell (max-width:500px){', '\n}');
     expect(narrow).toContain('.learn-top__title{display:contents}');
     expect(narrow).toContain('.learn-top .learn-chips{grid-column:1/-1;grid-row:2}');
   });

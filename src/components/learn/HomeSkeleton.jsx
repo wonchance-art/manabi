@@ -22,7 +22,7 @@ export function GuestHomeSkeleton() {
   // 손님 배움 배치 — 이어 읽기 · 오늘 문단(맛보기) 한 줄, 아래 로그인 칸. 로그인 배치 골격이 0.7초 보였다가 손님 화면으로 바뀌던 것.
   return (
     <SkeletonRegion className="manabi-page learn-page" label="배움 화면" announce>
-      <div className="learn-top" aria-hidden="true"><div className="learn-top__title"><h1>배움</h1></div></div>
+      <div className="learn-top" aria-hidden="true"><div className="learn-top__title"><h1>배움</h1></div><span className="learn-toplink">교재 →</span></div>
       <div className="learn-grid" aria-hidden="true">
         {/* 손님 장식 글자는 화면 골격과 같다(HOME-GLYPH-LCP-001) — 대기 화면 → 화면으로 바뀌어도 글자가 깜빡이지 않는다. */}
         <ResumeTile pending glyph={GUEST_RESUME_GLYPH} />
@@ -39,7 +39,7 @@ export function MemberHomeSkeleton() {
       <div className="learn-top" aria-hidden="true">
         {/* 칩 자리 — 칩은 계정 학습 언어를 받은 뒤에 그려진다. 좁은 화면(셸 480 이하)은 칩이 둘째 줄이라 빈 자리(44)를 먼저 둔다. */}
         <div className="learn-top__title"><h1>배움</h1><span className="learn-chips" /></div>
-        <span className="learn-toplink">현황 전체 →</span>
+        <span className="learn-toplinks"><span className="learn-toplink">교재</span><span className="learn-toplinks__sep">·</span><span className="learn-toplink">현황 전체 →</span></span>
       </div>
       <div className="learn-grid" aria-hidden="true">
         <ResumeTile pending />
