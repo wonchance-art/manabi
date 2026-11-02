@@ -31,6 +31,7 @@ import { fetchSharedVocabularySummary } from '../lib/vocabularyLearningShare';
 // 약점 칸 — import가 빠져 queryFn이 ReferenceError로 늘 실패했다(no-undef 전수, 2026-10-17 KST).
 import { fetchWeaknessRows } from '../lib/weaknessRows';
 import { fetchRemetWeeks } from '../lib/remetRows';
+import { fetchOutputWeeks } from '../lib/usedWordsRows';
 
 // 다시 만난 말 칩 → 단어 카드(복습실과 같은 VocabDetailCard) — 칩을 누를 때만 받는다.
 const VocabDetailCard = dynamic(() => import('./VocabDetailCard'), { loading: () => null });
@@ -241,7 +242,7 @@ function WeeklyTile({ weekly, vocab = null, projections = null, className = '' }
   );
 }
 
-/* ── 이번 주 창 — 이번 주 · 다시 만난 말 두 겹. 다시 만난 말 재료는 창을 연 사람에게만 받는다(홈 · 현황 첫 화면 비용 0). ── */
+/* ── 이번 주 창 — 이번 주 · 다시 만난 말(들어옴) · 직접 쓴 말(나감) 겹. 두 지표 재료는 창을 연 사람에게만 받는다(홈 · 현황 첫 화면 비용 0). ── */
 function WeeklyModal({ weekly, vocab, projections, view, setView, onClose }) {
   const { user } = useAuth();
   const weekStartMs = weekly.week.startMs;
@@ -251,16 +252,23 @@ function WeeklyModal({ weekly, vocab, projections, view, setView, onClose }) {
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5,
   });
+  const { data: output } = useQuery({
+    queryKey: ['output-words', user?.id, weekStartMs],
+    queryFn: () => fetchOutputWeeks(user.id, { weekStartMs, vocabRows: Array.isArray(vocab) ? vocab : [] }),
+    enabled: !!user?.id && Array.isArray(vocab),
+    staleTime: 1000 * 60 * 5,
+  });
   // 칩 → 단어 카드. 카드가 떠 있으면 Esc · 바깥 누르기는 카드만 닫는다(창의 Esc 처리기가 먼저 걸려 있어 둘 다 닫히던 것).
   const [detail, setDetail] = useState(null);
   const rowsByWord = useMemo(() => new Map((vocab || []).map(v => [v.word_text, v])), [vocab]);
   const projectionById = useMemo(() => new Map((projections || []).map(p => [p?.vocabulary?.id, p])), [projections]);
   const openWord = word => { const row = rowsByWord.get(word); if (row) setDetail(row); };
-  if (view === 'remet' && remet) {
+  const trail = view === 'remet' ? remet : view === 'output' ? output : null;
+  if (trail && TRAILS[view]) {
     return (
       <>
-        <TileModal title="다시 만난 말" className="tile-modal--wide" onClose={detail ? () => setDetail(null) : onClose} onBack={() => setView('week')} backLabel="이번 주">
-          <RemetView remet={remet} onWord={rowsByWord.size ? openWord : null} />
+        <TileModal title={TRAILS[view].title} className="tile-modal--wide" onClose={detail ? () => setDetail(null) : onClose} onBack={() => setView('week')} backLabel="이번 주">
+          <TrailView spec={TRAILS[view]} data={trail} onWord={rowsByWord.size ? openWord : null} />
         </TileModal>
         {detail && <VocabDetailCard word={detail} projection={projectionById.get(detail.id)} now={new Date()} onClose={() => setDetail(null)} ttsSupported={false} />}
       </>
@@ -268,18 +276,38 @@ function WeeklyModal({ weekly, vocab, projections, view, setView, onClose }) {
   }
   return (
     <TileModal title={`이번 주 (${weekRangeLabel(weekly.week)})`} className="tile-modal--wide" onClose={onClose}>
-      <WeeklyReportCard weekly={weekly} header={false} showWeakness remetTotal={remet?.week.total || 0} onOpenRemet={() => setView('remet')} />
+      <WeeklyReportCard weekly={weekly} header={false} showWeakness remetTotal={remet?.week.total || 0} onOpenRemet={() => setView('remet')}
+        outputTotal={output?.week.total || 0} onOpenOutput={() => setView('output')} />
     </TileModal>
   );
 }
 
-/* ── 다시 만난 말 창(2차 목업 「ㅇㅋ 진행해」 2026-11-01 KST) — 이번 주 창과 같은 부품: 장미색 큰 숫자 · 세 칸 · 목록.
-     큰 숫자 = 서로 다른 말 · 세 칸 = 글 · 대화 · 그 전까지 복습 횟수 · 목록 = 글 · 대화별 다시 만난 말(많은 순, 다섯 개 + N).
-     지난주는 회색 한 줄(화살표 · 색 평가 없음 — 거울 규약). 정의 · 셈은 lib/remetWords. ── */
+/* ── 다시 만난 말 · 직접 쓴 말 창(목업 「ㅇㅋ 진행해」 2026-11-01 · 「2번 좋네 이대로 ㄱㄱ」 2026-11-02 KST) — 이번 주 창과 같은 부품:
+     장미색 큰 숫자 · 세 칸 · 목록. 큰 숫자 = 서로 다른 말 · 목록 = 글 · 작문 · 대화별 말(많은 순, 다섯 개 + N).
+     지난주는 회색 한 줄(화살표 · 색 평가 없음 — 거울 규약). 정의 · 셈은 lib/remetWords · lib/usedWords.
+     다시 만난 말 = 들어옴(복습한 말이 읽은 글 · 대화에 다시 나옴) ↔ 직접 쓴 말 = 나감(담은 말을 작문 · 대화에서 직접 씀). ── */
 const REMET_CHIPS = 5;
-function RemetView({ remet, onWord = null }) {
-  const { week, prev } = remet;
-  const cells = [[week.reading, '편', '글'], [week.conversation, '개', '대화'], [week.reviews, '번', '복습']];
+const TRAILS = Object.freeze({
+  remet: {
+    title: '다시 만난 말',
+    cells: d => [[d.reading, '편', '글'], [d.conversation, '개', '대화'], [d.reviews, '번', '복습']],
+    note: '복습한 말이 이번 주 읽은 글 · 대화에 다시 나왔어요',
+    empty: '이번 주에는 아직 없어요. 복습한 말이 나오는 글을 읽으면 여기에 쌓여요.',
+    kind: { reading: '글', conversation: '대화' },
+    href: src => `/viewer/${src.id}`,
+  },
+  output: {
+    title: '직접 쓴 말',
+    cells: d => [[d.writing, '편', '작문'], [d.conversation, '개', '대화'], [d.firstTime, '개', '처음 씀']],
+    note: '담은 말을 이번 주 작문 · 대화에서 직접 썼어요',
+    empty: '이번 주에는 아직 없어요. 작문이나 대화에서 담은 말을 써 보면 여기에 쌓여요.',
+    kind: { writing: '작문', conversation: '대화' },
+    href: src => (src.kind === 'writing' ? '/writing' : `/viewer/${src.id}`),
+  },
+});
+function TrailView({ spec, data, onWord = null }) {
+  const { week, prev } = data;
+  const cells = spec.cells(week);
   return (
     <div className="learn-week">
       <div className="learn-week__hero">
@@ -289,8 +317,8 @@ function RemetView({ remet, onWord = null }) {
         </div>
         {week.total > 0 ? <>
           <div className="learn-week__num"><strong>{week.total.toLocaleString('ko-KR')}</strong><span>개</span></div>
-          <p className="learn-week__note">복습한 말이 이번 주 읽은 글 · 대화에 다시 나왔어요</p>
-        </> : <p className="learn-week__empty">이번 주에는 아직 없어요. 복습한 말이 나오는 글을 읽으면 여기에 쌓여요.</p>}
+          <p className="learn-week__note">{spec.note}</p>
+        </> : <p className="learn-week__empty">{spec.empty}</p>}
       </div>
       {week.total > 0 && <>
         <div className="learn-week__cells">
@@ -303,8 +331,8 @@ function RemetView({ remet, onWord = null }) {
         <div className="learn-week__list">
           {week.sources.map(src => (
             <div key={`${src.kind}:${src.id}`} className="learn-remet__src">
-              <Link href={`/viewer/${src.id}`} prefetch={false} className="learn-remet__top">
-                <span className="learn-remet__title"><span className="learn-remet__kind">{src.kind === 'conversation' ? '대화' : '글'}</span><span>{src.title || '제목 없음'}</span></span>
+              <Link href={spec.href(src)} prefetch={false} className="learn-remet__top">
+                <span className="learn-remet__title"><span className="learn-remet__kind">{spec.kind[src.kind] || ''}</span><span>{src.title || '제목 없음'}</span></span>
                 <em>{src.words.length}개 <span aria-hidden="true">›</span></em>
               </Link>
               <span className="learn-remet__chips">
@@ -328,7 +356,7 @@ const SAVED_SOURCE_LABEL = Object.freeze({ reading: '읽기', conversation: '대
      지난주는 회색 병기만(증감 화살표 · 빨강 · 초록 없음). 새 모양 없이 있는 화면 부품을 빌린다 —
      복습 큰 숫자 = 복습 화면 「오늘 다시 볼 표현」, 세 칸 = 내 정보 「내 기록」(0은 「–」로 자리 지킴),
      자세히 목록 = 내 정보 목록 묶음(줄이라 0인 항목은 줄째 빠진다 — 「0은 쓰지 않는다」 그대로). ── */
-function WeeklyReportCard({ weekly, header = true, showWeakness = false, remetTotal = 0, onOpenRemet = null }) {
+function WeeklyReportCard({ weekly, header = true, showWeakness = false, remetTotal = 0, onOpenRemet = null, outputTotal = 0, onOpenOutput = null }) {
   const pct = (a) => (a == null ? null : Math.round(a * 100));
   const acc = pct(weekly.reviews.accuracy);
   const prevAcc = pct(weekly.prevReviews.accuracy);
@@ -404,6 +432,12 @@ function WeeklyReportCard({ weekly, header = true, showWeakness = false, remetTo
           <button type="button" className="learn-week__row learn-week__row--tap" onClick={onOpenRemet}>
             <span>다시 만난 말</span>
             <div><b>{remetTotal.toLocaleString('ko-KR')}개</b> <span aria-hidden="true">›</span></div>
+          </button>
+        )}
+        {outputTotal > 0 && onOpenOutput && (
+          <button type="button" className="learn-week__row learn-week__row--tap" onClick={onOpenOutput}>
+            <span>직접 쓴 말</span>
+            <div><b>{outputTotal.toLocaleString('ko-KR')}개</b> <span aria-hidden="true">›</span></div>
           </button>
         )}
         {showWeakness && <WeakSpotLine weekStartMs={weekly.week.startMs} />}
