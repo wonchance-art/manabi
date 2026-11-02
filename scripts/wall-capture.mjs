@@ -27,7 +27,7 @@ import { chromium } from 'playwright-core';
 import { VIEWPORTS, kstStamp } from './ux-audit.mjs';
 import { builtForE2E } from './ux-audit-auth-core.mjs';
 import {
-  AXE_RULE_IDS, DATA_GAP, PERSONAS, RAW_ERROR, VIEWPORT_KEYS, coverage, discoverRoutes, expandScenes, hash, judgeShot, loadRegistry,
+  AXE_RULE_IDS, DATA_GAP, PERSONAS, TOUCH_EXCEPTIONS, aggregateParts, offTokenColors, RAW_ERROR, VIEWPORT_KEYS, coverage, discoverRoutes, expandScenes, hash, judgeShot, loadRegistry,
   mergeVerdicts, missingValueLines, summaryLine, validateRegistry,
 } from './wall-core.mjs';
 import { createHeavyBackend, HEAVY_UID, HEAVY_SERVICE_KEY } from '../e2e/fixtures/heavy-account.mjs';
@@ -130,7 +130,7 @@ function sessionCookie(sub, baseURL) {
 }
 
 // ── 페이지 안 측정(순수 DOM — 판단 없음) ──
-function wallProbe({ rawError, dataGap }) {
+export function wallProbe({ rawError, dataGap, exceptions = [] }) {
   const hidden = el => { for (let n = el; n && n.nodeType === 1; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden' || Number(s.opacity) === 0) return true; } return false; };
   const shown = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !hidden(el); };
   const doc = document.documentElement;
@@ -141,6 +141,13 @@ function wallProbe({ rawError, dataGap }) {
     if (!shown(el) || (el.innerText || '').trim()) continue;
     const r = el.getBoundingClientRect();
     if (r.width >= 44 && r.height >= 44) continue;
+    // 예외(ui-conventions §3): 24px로 잰다 — hit가 있으면 중심을 덮는 터치 원의 크기로.
+    const ex = exceptions.find(e => el.matches(e.selector));
+    if (ex) {
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const area = ex.hit ? [...document.querySelectorAll(ex.hit)].map(h => h.getBoundingClientRect()).find(h => h.left <= cx && cx <= h.right && h.top <= cy && cy <= h.bottom) : r;
+      if (area && area.width >= ex.min && area.height >= ex.min) continue;
+    }
     const name = el.getAttribute('aria-label') || el.getAttribute('title') || (typeof el.className === 'string' ? el.className.split(' ')[0] : '') || el.tagName;
     small.push(`${el.tagName.toLowerCase()} 「${String(name).slice(0, 28)}」 ${Math.round(r.width)}×${Math.round(r.height)}`);
   }
@@ -164,7 +171,83 @@ function wallProbe({ rawError, dataGap }) {
   };
 }
 
-async function runAxe(page) {
+/**
+ * 부품 · 색 측정(2판 2단계 — 부품 대조). 순수 DOM — 판단 없음.
+ * parts: 화면에 보이는 제목(h1~h3) · 채운 버튼 · 테두리 버튼 · 입력칸 · 카드의 계산된 스타일(같은 모양은 한 번만, 종류마다 최대 12).
+ * colors: 보이는 글자의 색 · 칠한 배경색 사용 횟수. palette: 스타일시트의 CSS 변수(--*) 중 색인 값 전부 — 「토큰 밖 색」 판정의 기준.
+ */
+export function partsProbe() {
+  const hidden = el => { for (let n = el; n && n.nodeType === 1; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden' || Number(s.opacity) === 0) return true; } return false; };
+  const shown = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !hidden(el); };
+  const clear = c => !c || c === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(c);
+  const px = v => Math.round(parseFloat(v) || 0);
+  const family = f => (f || '').split(',')[0].replace(/["']/g, '').replace(/^__|_[0-9a-f]{6,}$|_Fallback_[0-9a-f]+$/gi, '').replace(/_/g, ' ').trim();
+  const label = el => (el.getAttribute('aria-label') || el.innerText || el.getAttribute('placeholder') || '').trim().replace(/\s+/g, ' ').slice(0, 28);
+  const cls = el => (typeof el.className === 'string' ? el.className.trim().split(/\s+/)[0] : '') || el.tagName.toLowerCase();
+  const rectOf = el => { const r = el.getBoundingClientRect(); return { x: Math.round(r.left + scrollX), y: Math.round(r.top + scrollY), w: Math.round(r.width), h: Math.round(r.height) }; };
+  const text = s => ({ font: family(s.fontFamily), size: px(s.fontSize), weight: Number(s.fontWeight), line: s.lineHeight === 'normal' ? 'normal' : px(s.lineHeight), track: s.letterSpacing === 'normal' ? 0 : Math.round(parseFloat(s.letterSpacing) * 100) / 100, color: s.color });
+  const box = (s, r) => ({ bg: clear(s.backgroundColor) ? 'none' : s.backgroundColor, radius: px(s.borderTopLeftRadius), border: px(s.borderTopWidth) && !clear(s.borderTopColor) ? `${px(s.borderTopWidth)}px ${s.borderTopColor}` : 'none',
+    height: Math.round(r.height), padX: px(s.paddingLeft), shadow: s.boxShadow === 'none' ? 'none' : 'yes' });
+  const parts = [], seen = new Set();
+  // 화면 밖으로 밀어 둔 것(건너뛰기 링크 등)은 부품이 아니다.
+  const offscreen = el => { const r = el.getBoundingClientRect(); return r.right <= 0 || r.bottom + scrollY <= 0 || r.left >= document.documentElement.scrollWidth; };
+  const add = (type, el, style) => { if (offscreen(el)) return; const key = `${type}|${JSON.stringify(style)}`; if (seen.has(key)) return; if (parts.filter(p => p.type === type).length >= 12) return; seen.add(key); parts.push({ type, style, label: label(el), cls: cls(el), rect: rectOf(el) }); };
+  for (const el of document.querySelectorAll('main h1, main h2, main h3')) if (shown(el)) add(el.tagName.toLowerCase(), el, text(getComputedStyle(el)));
+  for (const el of document.querySelectorAll('button, a[href], [role="button"], input[type="submit"]')) {
+    if (!shown(el) || !(el.innerText || '').trim()) continue;
+    const s = getComputedStyle(el), r = el.getBoundingClientRect();
+    if (r.height < 24 || r.height > 72 || r.width > 520) continue;
+    const b = box(s, r);
+    if (b.bg !== 'none') add('button-filled', el, { ...text(s), ...b });
+    else if (b.border !== 'none' && b.radius > 0) add('button-outline', el, { ...text(s), ...b });
+  }
+  for (const el of document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]), textarea, select')) {
+    if (!shown(el)) continue;
+    const s = getComputedStyle(el); add('field', el, { ...text(s), ...box(s, el.getBoundingClientRect()) });
+  }
+  const pageBg = getComputedStyle(document.querySelector('.manabi-app') || document.body).backgroundColor;
+  const cards = [];
+  for (const el of document.querySelectorAll('main article, main section, main li, main div, main a')) {
+    if (cards.length >= 40) break;
+    const s = getComputedStyle(el), r = el.getBoundingClientRect();
+    if (r.width < 160 || r.height < 56 || px(s.borderTopLeftRadius) < 4) continue;
+    const framed = (px(s.borderTopWidth) && !clear(s.borderTopColor)) || s.boxShadow !== 'none' || (!clear(s.backgroundColor) && s.backgroundColor !== pageBg);
+    if (!framed || !shown(el) || cards.some(c => c.contains(el))) continue;
+    cards.push(el);
+    const b = box(s, r); delete b.height; delete b.padX;
+    add('card', el, { ...b, pad: px(s.paddingTop) });
+  }
+  const colors = { text: {}, bg: {} };
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const counted = new Set();
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    const el = n.parentElement; if (!el || counted.has(el) || !n.textContent.trim() || !shown(el)) continue;
+    counted.add(el); const c = getComputedStyle(el).color; colors.text[c] = (colors.text[c] || 0) + 1;
+  }
+  for (const el of document.querySelectorAll('body *')) {
+    const c = getComputedStyle(el).backgroundColor;
+    if (clear(c)) continue;
+    const r = el.getBoundingClientRect(); if (r.width < 8 || r.height < 8 || hidden(el)) continue;
+    colors.bg[c] = (colors.bg[c] || 0) + 1;
+  }
+  // 토큰 = 스타일시트의 --* 선언 중 색으로 풀리는 값(var() 꼬리는 그 자리에서 계산된 값으로).
+  const probe = document.createElement('span'); (document.querySelector('.manabi-app') || document.body).append(probe);
+  const palette = new Set();
+  const visit = rules => { for (const rule of rules) {
+    if (rule.cssRules) visit(rule.cssRules);
+    if (!rule.style) continue;
+    for (const prop of rule.style) { if (!prop.startsWith('--')) continue;
+      const raw = rule.style.getPropertyValue(prop).trim();
+      if (!/^(#|rgb|hsl|color-mix|oklch|var\()/i.test(raw)) continue;
+      probe.style.color = ''; probe.style.color = raw.startsWith('var(') ? `var(${prop})` : raw;
+      if (probe.style.color) palette.add(getComputedStyle(probe).color);
+    } } };
+  for (const sheet of document.styleSheets) { try { visit(sheet.cssRules); } catch { /* 다른 출처 */ } }
+  probe.remove();
+  return { parts, colors, palette: [...palette] };
+}
+
+export async function runAxe(page) {
   await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
   const violations = await page.evaluate(async rules => {
     const res = await window.axe.run(document, { runOnly: { type: 'rule', values: rules }, resultTypes: ['violations'] });
@@ -187,7 +270,62 @@ async function waitFor(url, ms) {
   return false;
 }
 
-async function captureScene(context, scene, viewportKey, out) {
+/**
+ * 캡처 환경 — 합성 백엔드 + next start(+ server-fetch-mock) + Chromium. 화면 벽 캡처와 개선 목업(전후 비교)이 같이 쓴다.
+ * newContext({ persona, viewportKey, theme })는 그 사람으로 로그인한(손님은 쿠키 없음) 브라우저 맥락을 돌려준다.
+ * theme 'dark'는 OS 설정(prefers-color-scheme)만 바꾼다 — 앱은 저장값이 없으면 OS를 따른다(ui-conventions §4).
+ */
+export async function startWallEnv({ out, port = 3170 }) {
+  if (!await builtForE2E(join(root, '.next'), E2E_PUBLIC.NEXT_PUBLIC_SUPABASE_URL)) {
+    throw new Error('.next가 e2e 공개 값으로 빌드되지 않았어요 — 먼저 `npm run wall:build`.');
+  }
+  await mkdir(out, { recursive: true });
+  const back = await startBackend();
+  // server-fetch-mock은 불러올 때 환경을 읽는다 — 값을 먼저 정하고 불러온다(Next 서버에 주는 값과 같다).
+  Object.assign(process.env, E2E_PUBLIC, { E2E_HEAVY_BACKEND: `http://127.0.0.1:${back.port}`, E2E_PUBLISHED_BOOKS: PUBLISHED_BOOKS });
+  await import('../e2e/server-fetch-mock.mjs');
+  const baseURL = `http://localhost:${port}`;
+  const log = openSync(join(out, 'server.log'), 'w');
+  const nodeOptions = [process.env.NODE_OPTIONS, `--import=${join(root, 'e2e', 'server-fetch-mock.mjs')}`].filter(Boolean).join(' ');
+  const server = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
+    cwd: root, detached: true, stdio: ['ignore', log, log],
+    env: { ...process.env, ...E2E_PUBLIC, NEXT_PUBLIC_SITE_URL: baseURL, NODE_OPTIONS: nodeOptions,
+      E2E_HEAVY_BACKEND: `http://127.0.0.1:${back.port}`, SUPABASE_SERVICE_ROLE_KEY: HEAVY_SERVICE_KEY, E2E_PUBLISHED_BOOKS: PUBLISHED_BOOKS },
+  });
+  const stop = () => { try { process.kill(-server.pid); } catch { /* gone */ } };
+  process.on('exit', stop);
+  if (!await waitFor(`${baseURL}/manifest.webmanifest`, 90000)) { stop(); await back.close(); throw new Error(`서버가 뜨지 않았어요 (로그 ${join(out, 'server.log')})`); }
+  const executablePath = '/opt/pw-browsers/chromium';
+  const browser = await chromium.launch(existsSync(executablePath) ? { executablePath } : { channel: 'chrome' });
+
+  async function newContext({ persona, viewportKey, theme = 'light' }) {
+    const vp = VIEWPORTS[viewportKey];
+    const context = await browser.newContext({ baseURL, viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch,
+      deviceScaleFactor: 1, locale: 'ko-KR', timezoneId: 'Asia/Seoul', colorScheme: theme === 'dark' ? 'dark' : 'light', reducedMotion: 'reduce', serviceWorkers: 'block' });
+    context.setDefaultTimeout(30000);
+    if (persona !== 'guest') await context.addCookies([sessionCookie(persona === 'empty' ? EMPTY_UID : HEAVY_UID, baseURL)]);
+    await context.addInitScript(() => { try { localStorage.setItem('as_sound_on', '0'); } catch { /* 소리 끔 */ } });
+    // 브라우저의 Supabase 요청도 서버와 같은 길로 — 이 프로세스에 불러 둔 server-fetch-mock이 교재 판본 · 덮어쓰기는 저장소 판본으로,
+    // 나머지(계정 행)는 합성 백엔드로 보낸다. 브라우저만 합성 백엔드로 직행시키면 교재 행이 비어 「교재 정보를 불러오지 못했어요」가 찍힌다.
+    await context.route('https://e2e.supabase.co/**', async route => {
+      const req = route.request();
+      const cors = { ...CORS, 'access-control-allow-headers': req.headers()['access-control-request-headers'] || '*' };
+      if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors, body: '' });
+      const headers = { ...req.headers(), 'x-heavy-origin': 'browser' }; delete headers.host; delete headers['content-length'];
+      try {
+        const res = await fetch(req.url(), { method: req.method(), headers,
+          body: ['GET', 'HEAD'].includes(req.method()) ? undefined : req.postDataBuffer() ?? undefined });
+        return route.fulfill({ status: res.status, headers: { ...Object.fromEntries(res.headers), ...cors }, body: Buffer.from(await res.arrayBuffer()) });
+      } catch { return route.abort('failed'); }
+    });
+    await context.route('**/api/tts?**', route => route.fulfill({ status: 204, body: '' }));
+    return context;
+  }
+  return { baseURL, backend: back.backend, browser, newContext, seed: () => seed(back.backend),
+    close: async () => { await browser.close().catch(() => {}); stop(); await back.close(); } };
+}
+
+async function captureScene(context, scene, viewportKey, out, partSeen = new Map()) {
   const vp = VIEWPORTS[viewportKey];
   const page = await context.newPage();
   const consoleErrors = [];
@@ -197,15 +335,29 @@ async function captureScene(context, scene, viewportKey, out) {
   page.on('response', r => { if (r.status() >= 500) { const u = new URL(r.url()); failed.push(`${r.status()} ${r.request().method()} ${u.host === 'e2e.supabase.co' ? 'supabase:' : ''}${u.pathname}${u.search.slice(0, 60)}`); } });
   const t0 = Date.now();
   const file = `shots/${scene.id}.${viewportKey}.jpg`;
+  // 장면이 정한 브라우저 저장값(예: 뷰어 읽기 테마) — 페이지 스크립트보다 먼저 넣는다.
+  if (scene.storage) await page.addInitScript(entries => { try { for (const [k, v] of entries) localStorage.setItem(k, JSON.stringify(v)); } catch { /* 저장 불가 */ } }, Object.entries(scene.storage));
   try {
     const response = await page.goto(scene.path, { waitUntil: 'load', timeout: 60000 });
     await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
     await page.evaluate(() => document.fonts.ready).catch(() => {});
     await page.waitForTimeout(scene.wait || 700);
-    const m = await page.evaluate(wallProbe, { rawError: RAW_ERROR.source, dataGap: DATA_GAP.source });
+    const m = await page.evaluate(wallProbe, { rawError: RAW_ERROR.source, dataGap: DATA_GAP.source, exceptions: TOUCH_EXCEPTIONS });
     m.status = response?.status() ?? null;
     m.axe = await runAxe(page).catch(e => [{ id: 'axe-error', n: 0, samples: [{ summary: String(e.message).slice(0, 80) }] }]);
     m.missing = missingValueLines(m.text);
+    const pp = await page.evaluate(partsProbe).catch(() => ({ parts: [], colors: { text: {}, bg: {} }, palette: [] }));
+    // 처음 보는 모양만 잘라 둔다 — 부품 대조 보기의 견본(같은 모양은 첫 장면의 것 하나).
+    for (const part of pp.parts) {
+      const key = `${viewportKey}|${part.type}|${JSON.stringify(part.style)}`;
+      part.sig = hash(key, 10);
+      if (partSeen.has(part.sig)) continue;
+      const pad = 6, r = part.rect;
+      const clip = { x: Math.max(0, r.x - pad), y: Math.max(0, r.y - pad), width: Math.min(r.w + pad * 2, vp.width - Math.max(0, r.x - pad), 640), height: Math.min(r.h + pad * 2, 220) };
+      const crop = `parts/${part.sig}.png`;
+      if (clip.width > 4 && clip.height > 4 && await page.screenshot({ path: join(out, crop), fullPage: true, clip }).then(() => true, () => false)) partSeen.set(part.sig, crop);
+    }
+    m.parts = pp.parts.map(({ rect: _r, ...p }) => p); m.colors = pp.colors; m.palette = pp.palette;
     const height = Math.min(m.scrollHeight, vp.height * SHOT_SCREENS);
     await page.screenshot({ path: join(out, file), type: 'jpeg', quality: 72, fullPage: true, clip: { x: 0, y: 0, width: vp.width, height } });
     const { text, boxes, ...rest } = m;
@@ -229,59 +381,22 @@ async function main() {
   const sha = execSync('git rev-parse HEAD', { cwd: root }).toString().trim();
   const out = opt('--out') || join(root, 'wall-out', sha.slice(0, 8));
   await mkdir(join(out, 'shots'), { recursive: true });
+  await mkdir(join(out, 'parts'), { recursive: true });
+  const partSeen = new Map();
 
-  if (!await builtForE2E(join(root, '.next'), E2E_PUBLIC.NEXT_PUBLIC_SUPABASE_URL)) {
-    throw new Error('.next가 e2e 공개 값으로 빌드되지 않았어요 — 먼저 `npm run wall:build`.');
-  }
-  const back = await startBackend();
-  // server-fetch-mock은 불러올 때 환경을 읽는다 — 값을 먼저 정하고 불러온다(Next 서버에 주는 값과 같다).
-  Object.assign(process.env, E2E_PUBLIC, { E2E_HEAVY_BACKEND: `http://127.0.0.1:${back.port}`, E2E_PUBLISHED_BOOKS: PUBLISHED_BOOKS });
-  await import('../e2e/server-fetch-mock.mjs');
-  const port = Number(opt('--port') || process.env.WALL_PORT || 3170);
-  const baseURL = `http://localhost:${port}`;
-  const log = openSync(join(out, 'server.log'), 'w');
-  const nodeOptions = [process.env.NODE_OPTIONS, `--import=${join(root, 'e2e', 'server-fetch-mock.mjs')}`].filter(Boolean).join(' ');
-  const server = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
-    cwd: root, detached: true, stdio: ['ignore', log, log],
-    env: { ...process.env, ...E2E_PUBLIC, NEXT_PUBLIC_SITE_URL: baseURL, NODE_OPTIONS: nodeOptions,
-      E2E_HEAVY_BACKEND: `http://127.0.0.1:${back.port}`, SUPABASE_SERVICE_ROLE_KEY: HEAVY_SERVICE_KEY, E2E_PUBLISHED_BOOKS: PUBLISHED_BOOKS },
-  });
-  const stop = () => { try { process.kill(-server.pid); } catch { /* gone */ } };
-  process.on('exit', stop);
-  if (!await waitFor(`${baseURL}/manifest.webmanifest`, 90000)) { stop(); throw new Error(`서버가 뜨지 않았어요 (로그 ${join(out, 'server.log')})`); }
-
-  const executablePath = '/opt/pw-browsers/chromium';
-  const browser = await chromium.launch(existsSync(executablePath) ? { executablePath } : { channel: 'chrome' });
+  const env = await startWallEnv({ out, port: Number(opt('--port') || process.env.WALL_PORT || 3170) });
+  const theme = opt('--theme') === 'dark' ? 'dark' : 'light';
   const results = new Map(scenes.map(s => [s.id, { ...s, shots: {}, checks: {} }]));
   const started = Date.now();
   try {
     for (const persona of personas) {
       const todo = scenes.filter(s => s.persona === persona);
       if (!todo.length) continue;
-      seed(back.backend);
+      env.seed();
       await Promise.all(viewports.map(async viewportKey => {
-        const vp = VIEWPORTS[viewportKey];
-        const context = await browser.newContext({ baseURL, viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch,
-          deviceScaleFactor: 1, locale: 'ko-KR', timezoneId: 'Asia/Seoul', colorScheme: 'light', reducedMotion: 'reduce', serviceWorkers: 'block' });
-        context.setDefaultTimeout(30000);
-        if (persona !== 'guest') await context.addCookies([sessionCookie(persona === 'empty' ? EMPTY_UID : HEAVY_UID, baseURL)]);
-        await context.addInitScript(() => { try { localStorage.setItem('as_sound_on', '0'); } catch { /* 소리 끔 */ } });
-        // 브라우저의 Supabase 요청도 서버와 같은 길로 — 이 프로세스에 불러 둔 server-fetch-mock이 교재 판본 · 덮어쓰기는 저장소 판본으로,
-        // 나머지(계정 행)는 합성 백엔드로 보낸다. 브라우저만 합성 백엔드로 직행시키면 교재 행이 비어 「교재 정보를 불러오지 못했어요」가 찍힌다.
-        await context.route('https://e2e.supabase.co/**', async route => {
-          const req = route.request();
-          const cors = { ...CORS, 'access-control-allow-headers': req.headers()['access-control-request-headers'] || '*' };
-          if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors, body: '' });
-          const headers = { ...req.headers(), 'x-heavy-origin': 'browser' }; delete headers.host; delete headers['content-length'];
-          try {
-            const res = await fetch(req.url(), { method: req.method(), headers,
-              body: ['GET', 'HEAD'].includes(req.method()) ? undefined : req.postDataBuffer() ?? undefined });
-            return route.fulfill({ status: res.status, headers: { ...Object.fromEntries(res.headers), ...cors }, body: Buffer.from(await res.arrayBuffer()) });
-          } catch { return route.abort('failed'); }
-        });
-        await context.route('**/api/tts?**', route => route.fulfill({ status: 204, body: '' }));
+        const context = await env.newContext({ persona, viewportKey, theme });
         for (const scene of todo) {
-          const m = await captureScene(context, scene, viewportKey, out);
+          const m = await captureScene(context, scene, viewportKey, out, partSeen);
           const row = results.get(scene.id);
           row.checks[viewportKey] = m;
           if (m.shot) row.shots[viewportKey] = m.shot;
@@ -291,24 +406,26 @@ async function main() {
       }));
     }
   } finally {
-    await browser.close();
-    stop();
-    await back.close();
+    await env.close();
   }
 
   const sceneRows = [...results.values()].map(row => {
     const judged = mergeVerdicts(Object.fromEntries(Object.entries(row.checks).map(([vp, m]) => [vp, judgeShot(m)])));
     const text = row.checks.desktop?.text ?? row.checks.mobile?.text ?? '';
-    const checks = Object.fromEntries(Object.entries(row.checks).map(([vp, { text: _t, ...m }]) => [vp, m]));
+    const checks = Object.fromEntries(Object.entries(row.checks).map(([vp, { text: _t, colors: _c, palette: _p, ...m }]) => [vp, m]));
     return { ...row, checks, text: text.slice(0, 4000), verdict: judged.verdict, reasons: judged.reasons };
   });
+  const allChecks = [...results.values()];
+  const components = aggregateParts(allChecks);
+  const offToken = offTokenColors(allChecks);
+  for (const row of Object.values(components)) for (const list of Object.values(row)) for (const part of list) part.crop = partSeen.get(part.sig) || null;
   const routes = discoverRoutes(join(root, 'src', 'app'));
   const manifest = {
-    version: 1, sha, short: sha.slice(0, 8), capturedAt: `${kstStamp()} KST`, capturedIso: new Date().toISOString(), baseURL, build: 'wall:build (e2e 공개 값 · vendor/google-fonts 운영 글꼴)',
+    version: 1, sha, short: sha.slice(0, 8), theme, capturedAt: `${kstStamp()} KST`, capturedIso: new Date().toISOString(), baseURL: env.baseURL, build: 'wall:build (e2e 공개 값 · vendor/google-fonts 운영 글꼴)',
     viewports: Object.fromEntries(viewports.map(k => [k, { width: VIEWPORTS[k].width, height: VIEWPORTS[k].height }])),
     personas: reg.personas, lanes: reg.lanes, captureSec: Math.round((Date.now() - started) / 1000),
     counts: sceneRows.reduce((acc, s) => ({ ...acc, [s.verdict]: (acc[s.verdict] || 0) + 1 }), {}),
-    scenes: sceneRows, coverage: coverage(reg, routes), routesTotal: routes.length,
+    scenes: sceneRows, coverage: coverage(reg, routes), routesTotal: routes.length, components, offToken,
   };
   await writeFile(join(out, 'manifest.json'), JSON.stringify(manifest, null, 1));
   console.log(`화면 벽 캡처: 장면 ${sceneRows.length} · 캡처 ${sceneRows.reduce((n, s) => n + Object.keys(s.shots).length, 0)}장 · ${manifest.captureSec}초 · ${JSON.stringify(manifest.counts)} → ${out}`);

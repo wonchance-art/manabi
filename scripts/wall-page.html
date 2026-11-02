@@ -138,6 +138,19 @@ dl.kv dd{margin:0;font:400 12px var(--mono);overflow-wrap:anywhere}
 .grp ul{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:3px}
 .grp li code{font:400 11px var(--mono);color:var(--muted);margin-left:6px}
 .more{margin-top:10px}
+.ptype{margin:22px 0 8px}
+.ptype h3{font-size:14px;margin:0 0 8px;display:flex;gap:8px;align-items:baseline}
+.ptype h3 small{font:400 12px var(--mono);color:var(--muted)}
+.prow{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr) auto;gap:10px 14px;align-items:center;padding:10px 12px;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;margin-bottom:8px}
+.prow.is-single{border-style:dashed}
+@media (max-width:700px){.prow{grid-template-columns:1fr}}
+.pcrop{background:var(--paper);border:1px solid var(--rule-soft);border-radius:4px;min-height:36px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pcrop img{display:block;max-width:100%;max-height:120px;object-fit:contain}
+.pspec{font:400 12px var(--mono);color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px;min-width:0}
+.pspec b{color:var(--ink);font-weight:500}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--rule);vertical-align:-2px;margin-right:4px}
+.pwhere{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:320px}
+.pwhere button{appearance:none;border:1px solid var(--rule);background:var(--paper);border-radius:99px;font-size:11.5px;padding:3px 8px;min-height:28px;cursor:pointer}
 @media (max-width:600px){
   .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .cap{padding:7px 8px}.cap b{font-size:12.5px}
@@ -174,6 +187,17 @@ dl.kv dd{margin:0;font:400 12px var(--mono);overflow-wrap:anywhere}
     <section class="sec" aria-labelledby="next-h"><h2 id="next-h">아직 찍지 않는 것</h2><div class="st-list" id="gap-next"></div></section>
   </section>
 
+  <section id="v-parts" aria-label="부품 대조" hidden>
+    <p class="notice">화면마다 보이는 제목 · 버튼 · 입력칸 · 카드의 <b>계산된 스타일</b>을 뽑아 같은 모양끼리 묶었다. 한 종류에 모양이 여러 가지면 그만큼 어긋나 있다는 뜻이다 — 특히 <b>한 곳에만 있는 모양</b>이 정리 후보다. 그림은 그 모양이 처음 나온 장면에서 잘라 냈다.</p>
+    <div class="filters" role="toolbar" aria-label="화면 크기" id="p-vp"></div>
+    <div class="bars" id="p-bars"></div>
+    <div id="p-types"></div>
+    <section class="sec" aria-labelledby="off-h"><h2 id="off-h">토큰 밖 색</h2>
+      <p class="notice" id="off-notice"></p>
+      <div class="tbl"><table><thead><tr><th>색</th><th class="c">글자</th><th class="c">배경</th><th>쓰인 장면</th></tr></thead><tbody id="off-rows"></tbody></table></div>
+    </section>
+  </section>
+
   <section id="v-states" aria-label="상태 · 알림" hidden>
     <p class="notice" id="st-notice"></p>
     <section class="attn" aria-labelledby="st-attn-h"><h2 id="st-attn-h">먼저 볼 것</h2><ul id="st-attn"></ul></section>
@@ -202,7 +226,7 @@ const VERDICT = { fix: '수정 요청', data: '데이터 부족', skip: '판정 
 const VORDER = ['fix', 'skip', 'data', 'ok'];
 const PNAME = Object.fromEntries(Object.entries(D.personas).map(([k, v]) => [k, v.label]));
 const REASON = { rule: '규약 위반', data: '판정 안 함 · 데이터', skip: '판정 안 함 · 캡처', ok: '검사 결과', design: '설계', note: '메모' };
-const state = { verdict: 'all', persona: 'all', q: '', reviews: new Map(), runs: [], canEdit: false, db: null, user: null, stKind: 'all', stQ: '' };
+const state = { pvp: 'desktop', verdict: 'all', persona: 'all', q: '', reviews: new Map(), runs: [], canEdit: false, db: null, user: null, stKind: 'all', stQ: '' };
 const byId = new Map(D.scenes.map(s => [s.id, s]));
 const reviewKey = id => `r-${D.run.short}-${id}`;
 
@@ -220,7 +244,7 @@ function header() {
   if (age > 48) { $('stale').hidden = false; $('stale').textContent = `마지막 갱신이 ${Math.floor(age / 24)}일 전이다(${D.run.capturedAt}). 그 뒤 main에 들어간 화면 변화는 여기 없다 — npm run wall:capture로 다시 찍는다.`; }
 }
 
-const VIEWS = [['screens', '화면', () => D.scenes.length], ['gaps', '빈칸', () => D.routesTotal], ['states', '상태 · 알림', () => D.states.items.length], ['copy', '문구 묶음', () => D.states.copyGroups.length]];
+const VIEWS = [['screens', '화면', () => D.scenes.length], ['gaps', '빈칸', () => D.routesTotal], ['parts', '부품 대조', () => Object.values(D.components?.desktop || {}).reduce((n, l) => n + l.length, 0)], ['states', '상태 · 알림', () => D.states.items.length], ['copy', '문구 묶음', () => D.states.copyGroups.length]];
 function showView(name) {
   if (!VIEWS.some(v => v[0] === name)) name = 'screens';
   for (const [key] of VIEWS) { $(`v-${key}`).hidden = key !== name; const tab = $(`tab-${key}`); tab.setAttribute('aria-selected', String(key === name)); tab.tabIndex = key === name ? 0 : -1; }
@@ -362,6 +386,49 @@ function gaps() {
     h('div', { class: 'grp' }, h('h4', { text: '모든 장면에 아직 없는 조건' }), h('ul', {}, ['어두운 테마(앱 data-theme 어둡게 · 종이) — 2단계', '简体 판(manabi_sc 쿠키 · /home/sc · /discover/sc) — 2단계', '상태 장면 — 로딩 · 오류 · 오프라인 · 대화상자 · 단어 카드 펼침 같은 조작 순서 — 3단계', '부품 대조(제목 · 버튼 · 빈 상태 · 오류 상자를 잘라 나란히, 토큰 밖 값 표시) — 2단계'].map(t => h('li', { text: t })))));
 }
 
+// ── 부품 대조 ──
+const PTYPE = { h1: '제목 h1', h2: '제목 h2', h3: '제목 h3', 'button-filled': '채운 버튼', 'button-outline': '테두리 버튼', field: '입력칸', card: '카드' };
+const hex = c => { const sr = /^color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\)$/.exec(String(c)); if (sr) c = `rgba(${[1, 2, 3].map(i => Math.round(Number(sr[i]) * 255)).join(', ')}, ${sr[4] ?? 1})`; const m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(String(c)); if (!m) return String(c); const h = [m[1], m[2], m[3]].map(v => Number(v).toString(16).padStart(2, '0')).join(''); return m[4] !== undefined && Number(m[4]) < 1 ? `#${h} ${Math.round(Number(m[4]) * 100)}%` : `#${h}`; };
+const swatch = c => h('span', {}, h('i', { class: 'sw', style: `background:${c}` }), hex(c));
+function spec(type, st) {
+  const bits = [];
+  if (st.size) bits.push(['글자', `${st.size}px · ${st.weight}`]);
+  if (st.font) bits.push(['글꼴', st.font]);
+  if (st.line && st.line !== 'normal' && /^h/.test(type)) bits.push(['줄', `${st.line}px`]);
+  if (st.track) bits.push(['자간', `${st.track}px`]);
+  const out = bits.map(([k, v]) => h('span', {}, `${k} `, h('b', { text: v })));
+  if (st.color) out.push(h('span', {}, '글자색 ', swatch(st.color)));
+  if (st.bg && st.bg !== 'none') out.push(h('span', {}, '바탕 ', swatch(st.bg)));
+  if (st.border && st.border !== 'none') { const [w, ...c] = st.border.split(' '); out.push(h('span', {}, `테두리 ${w} `, swatch(c.join(' ')))); }
+  if (st.radius !== undefined && !/^h/.test(type)) out.push(h('span', {}, '둥글기 ', h('b', { text: `${st.radius}px` })));
+  if (st.height) out.push(h('span', {}, '높이 ', h('b', { text: `${st.height}px` })));
+  if (st.padX) out.push(h('span', {}, '좌우 여백 ', h('b', { text: `${st.padX}px` })));
+  if (st.pad !== undefined) out.push(h('span', {}, '안 여백 ', h('b', { text: `${st.pad}px` })));
+  if (st.shadow === 'yes') out.push(h('span', { text: '그림자 있음' }));
+  return out;
+}
+function partsView() {
+  if (!D.components) { $('v-parts').replaceChildren(h('p', { class: 'notice', text: '이 캡처에는 부품 측정이 없다(2단계 이전 캡처).' })); return; }
+  chips('p-vp', '화면', [['desktop', '1280', null], ['mobile', '390', null]], 'pvp', drawParts);
+  drawParts();
+  const off = D.offToken || { colors: [] };
+  $('off-notice').textContent = `화면에 쓰인 글자색 · 배경색 중 스타일시트의 CSS 변수(토큰 ${off.paletteSize}개 값)와 같지 않은 색이다. 흰색 · 검정은 뺐다. 화면 단위 색 규칙(교재 셸의 직접 값 등)이 섞여 있어 전부가 잘못은 아니다 — 많이 쓰인 색부터 토큰으로 옮길 후보를 고른다.`;
+  $('off-rows').replaceChildren(...off.colors.slice(0, 40).map(c => h('tr', {}, h('td', {}, swatch(c.color)), h('td', { class: 'c', text: c.text || '' }), h('td', { class: 'c', text: c.bg || '' }),
+    h('td', {}, h('div', { class: 'pwhere', style: 'justify-content:flex-start;max-width:none' }, c.scenes.slice(0, 6).map(id => h('button', { onclick: () => openScene(id), text: byId.get(id)?.title ? `${byId.get(id).title} · ${PNAME[byId.get(id).persona]}` : id })), c.scenes.length > 6 ? h('span', { class: 'muted', text: `외 ${c.scenes.length - 6}` }) : null)))));
+}
+function drawParts() {
+  const vp = state.pvp, types = D.components[vp] || {};
+  const keys = Object.keys(PTYPE).filter(k => types[k]?.length);
+  $('p-bars').replaceChildren(...keys.map(k => { const rows = types[k], single = rows.filter(r => r.scenes.length === 1).length;
+    return h('div', { class: 'bar' }, h('b', { text: `${rows.length}가지` }), h('small', { text: `${PTYPE[k]}${single ? ` · 한 곳에만 ${single}` : ''}` })); }));
+  $('p-types').replaceChildren(...keys.map(k => h('section', { class: 'ptype' }, h('h3', {}, PTYPE[k], h('small', { text: `${types[k].length}가지 모양 · 많이 쓰인 순` })),
+    ...types[k].map(r => h('div', { class: `prow${r.scenes.length === 1 ? ' is-single' : ''}` },
+      h('div', { class: 'pcrop' }, r.crop ? h('img', { src: r.crop, alt: `${PTYPE[k]} 견본 「${r.label || r.cls}」`, loading: 'lazy' }) : h('span', { class: 'muted', text: r.label || r.cls })),
+      h('div', { class: 'pspec' }, ...spec(k, r.style), h('span', {}, '예 ', h('b', { text: `「${r.label || '—'}」 .${r.cls}` }))),
+      h('div', { class: 'pwhere' }, h('span', { class: `pill ${r.scenes.length === 1 ? 'v-gap' : 'v-ok'}`, text: `${r.scenes.length}장면` }),
+        ...r.scenes.slice(0, 4).map(id => h('button', { onclick: () => openScene(id), text: byId.get(id)?.title || id })), r.scenes.length > 4 ? h('span', { class: 'muted', text: `외 ${r.scenes.length - 4}` }) : null))))));
+}
+
 // ── 상태 · 알림 · 문구 묶음 ──
 function statesView() {
   const S = D.states;
@@ -390,7 +457,7 @@ function registryTable() {
 }
 
 function runsTable() {
-  const own = { id: D.run.short, kind: '2판 1단계 — 장면 등록부 · 합성 학습자 · 캡처 스크립트', at: D.run.capturedAt, scenes: D.scenes.length, shots: D.scenes.reduce((n, s) => n + Object.keys(s.shots).length, 0), captureSec: D.run.captureSec, note: D.run.build };
+  const own = { id: D.run.short, kind: '화면 벽 캡처(scripts/wall-capture.mjs) — 장면 · 부품 대조 · 읽기 테마', at: D.run.capturedAt, scenes: D.scenes.length, shots: D.scenes.reduce((n, s) => n + Object.keys(s.shots).length, 0), captureSec: D.run.captureSec, note: D.run.build };
   const rows = [own, ...state.runs.filter(r => r.id !== own.id)];
   $('runs').replaceChildren(...rows.map(r => h('tr', {}, h('td', {}, h('code', { text: r.sha || r.id })), h('td', { text: r.kind }), h('td', { text: `${r.scenes}장면 · ${r.shots}장` }), h('td', { text: `${r.at} · ${r.captureSec ?? '—'}초` }), h('td', { class: 'muted', text: r.note || '' }))));
 }
@@ -409,6 +476,6 @@ async function connect() {
   } catch { /* 기록을 못 읽어도 캡처는 보인다 */ }
 }
 
-header(); views(); filtersScreens(); screens(); gaps(); statesView(); registryTable(); runsTable(); connect();
+header(); views(); filtersScreens(); screens(); gaps(); partsView(); statesView(); registryTable(); runsTable(); connect();
 addEventListener('keydown', e => { if (e.key === 'Escape' && $('dlg').open) $('dlg').close(); });
 </script>

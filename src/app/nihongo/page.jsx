@@ -9,7 +9,8 @@ export const metadata = {
   alternates: { canonical: null },
 };
 
-const THEME = { color: '#3b6ea5', bg: 'rgba(59,110,165,0.12)' };
+// 테마 파랑은 선 · 바탕에만 쓴다. 글자는 같은 파랑의 짙은 값(text = --grade-easy #2D5F8A — 화면 벽 WALL-003, 2026-11-02 KST).
+const THEME = { color: '#3b6ea5', text: 'var(--grade-easy)', bg: 'rgba(59,110,165,0.12)' };
 const numSlot = { display: 'inline-block', minWidth: '1.4em', textAlign: 'right' };
 
 // 핵심어 형광펜 — **굵게** 구간을 하이라이트
@@ -28,7 +29,7 @@ export default function Nihongo42Page() {
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 20px 90px' }}>
       <header style={{ marginBottom: 26 }}>
-        <div style={{ fontSize: '0.82rem', color: THEME.color, fontWeight: 700, letterSpacing: '0.04em' }}>
+        <div style={{ fontSize: '0.82rem', color: THEME.text, fontWeight: 700, letterSpacing: '0.04em' }}>
           커뮤니티 수업
         </div>
         <h1 style={{ fontSize: '1.9rem', margin: '6px 0 8px', lineHeight: 1.25 }}>{title}</h1>
@@ -55,7 +56,7 @@ export default function Nihongo42Page() {
                   fontVariantNumeric: 'tabular-nums',
                 }}
               >
-                <span style={{ fontWeight: 800, fontSize: '1.02rem', color: THEME.color, whiteSpace: 'nowrap' }}>
+                <span style={{ fontWeight: 800, fontSize: '1.02rem', color: THEME.text, whiteSpace: 'nowrap' }}>
                   Ch.<span style={numSlot}>{first}</span>~<span style={numSlot}>{last}</span>
                 </span>
                 <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: '0.95rem' }}>→</span>
@@ -75,7 +76,7 @@ export default function Nihongo42Page() {
                   <Fragment key={c.n}>
                     <span
                       style={{
-                        color: THEME.color, fontWeight: 700, fontSize: '0.8rem',
+                        color: THEME.text, fontWeight: 700, fontSize: '0.8rem',
                         fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap',
                       }}
                     >

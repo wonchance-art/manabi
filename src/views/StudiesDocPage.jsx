@@ -30,7 +30,7 @@ export default function StudiesDocPage({ countryId, slug }) {
 
   return (
     <div className="page-container">
-      <nav style={{ fontSize: '0.82rem', marginBottom: 12, opacity: 0.8 }}>
+      <nav style={{ fontSize: '0.82rem', marginBottom: 12, color: 'var(--text-muted)' }}>
         <Link href="/studies">지역학</Link>
         {' / '}
         <Link href={`/studies/${country.id}`}>{country.nameKo}</Link>
@@ -40,8 +40,8 @@ export default function StudiesDocPage({ countryId, slug }) {
 
       <header style={{ marginBottom: 18 }}>
         <h1 style={{ margin: '0 0 6px' }}>{doc.title}</h1>
-        <p style={{ margin: 0, opacity: 0.85 }}>{doc.summary}</p>
-        <p style={{ margin: '6px 0 0', fontSize: '0.78rem', opacity: 0.6 }}>최종 갱신 {doc.updated}</p>
+        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{doc.summary}</p>
+        <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>최종 갱신 {doc.updated}</p>
       </header>
 
       {doc.sections.map((section, index) => (
@@ -62,11 +62,11 @@ export default function StudiesDocPage({ countryId, slug }) {
           {doc.sources.map((source) => (
             <li key={source.label} style={{ marginBottom: 4 }}>
               <strong>{source.label}</strong>
-              <span style={{ opacity: 0.75 }}> — {source.scope}</span>
+              <span style={{ color: 'var(--text-muted)' }}> — {source.scope}</span>
             </li>
           ))}
         </ul>
-        <p className="fr-section__para" style={{ fontSize: '0.82rem', opacity: 0.8 }}>{doc.verification}</p>
+        <p className="fr-section__para" style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{doc.verification}</p>
       </section>
     </div>
   );

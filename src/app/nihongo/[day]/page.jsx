@@ -18,13 +18,15 @@ export function generateMetadata({ params }) {
 }
 
 // 특별 페이지 고정 테마색 (레퍼런스의 레벨색 자리)
-const THEME = { color: '#3b6ea5', bg: 'rgba(59,110,165,0.12)', line: 'rgba(59,110,165,0.32)' };
+// 테마 파랑은 선 · 바탕에만 쓴다. 글자는 같은 파랑의 짙은 값(text = --grade-easy #2D5F8A) — 옅은 바탕 위 #3b6ea5 글자가 4:1이었다
+// (화면 벽 WALL-003, 2026-11-02 KST).
+const THEME = { color: '#3b6ea5', text: 'var(--grade-easy)', bg: 'rgba(59,110,165,0.12)', line: 'rgba(59,110,165,0.32)' };
 
 function Chapter({ c, i }) {
   return (
     <section id={`sec-${i + 1}`} className="card fr-section">
       <h2 className="fr-section__heading">
-        <span className="fr-section__num" style={{ background: THEME.bg, color: THEME.color }}>{c.n}</span>
+        <span className="fr-section__num" style={{ background: THEME.bg, color: THEME.text }}>{c.n}</span>
         {c.title}
       </h2>
 
@@ -43,11 +45,11 @@ function Chapter({ c, i }) {
       {/* 🔄 바꿔 쓰기 — 레지스터를 뒤집은 비슷한 표현 */}
       {c.alts?.length ? (
         <div style={{ margin: '10px 0 2px', padding: '10px 12px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-secondary)', border: '1px dashed var(--border)' }}>
-          <div style={{ fontSize: '0.74rem', fontWeight: 800, color: THEME.color, marginBottom: 7 }}>🔄 바꿔 쓰기 · 비슷한 표현</div>
+          <div style={{ fontSize: '0.74rem', fontWeight: 800, color: THEME.text, marginBottom: 7 }}>🔄 바꿔 쓰기 · 비슷한 표현</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
             {c.alts.map((a, k) => (
               <div key={k} style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ flex: '0 0 auto', fontSize: '0.68rem', fontWeight: 700, color: THEME.color, background: THEME.bg, padding: '1px 8px', borderRadius: 999 }}>
+                <span style={{ flex: '0 0 auto', fontSize: '0.68rem', fontWeight: 700, color: THEME.text, background: THEME.bg, padding: '1px 8px', borderRadius: 999 }}>
                   {a.reg}
                 </span>
                 <span lang="ja" style={{ fontSize: '1rem', fontWeight: 700 }}>
@@ -124,7 +126,7 @@ export default function Nihongo42DayPage({ params }) {
       </Link>
 
       <header style={{ marginBottom: 18 }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.03em', color: THEME.color }}>
+        <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.03em', color: THEME.text }}>
           일본어 회화 표현 42
         </div>
         <h1 style={{ fontSize: '1.6rem', margin: '4px 0 0', fontVariantNumeric: 'tabular-nums' }}>
@@ -134,12 +136,12 @@ export default function Nihongo42DayPage({ params }) {
 
       {/* 핵심 표현 한눈에 */}
       <div className="fr-pattern-summary" style={{ borderColor: THEME.line, background: THEME.bg }}>
-        <div className="fr-pattern-summary__title" style={{ color: THEME.color }}>오늘의 표현 한눈에</div>
+        <div className="fr-pattern-summary__title" style={{ color: THEME.text }}>오늘의 표현 한눈에</div>
         <ol className="fr-pattern-summary__list">
           {d.chapters.map((c, i) => (
             <li key={c.n}>
               <a href={`#sec-${i + 1}`} className="fr-pattern-summary__item">
-                <span className="fr-pattern-summary__num" style={{ color: THEME.color }}>Ch.{c.n}</span>
+                <span className="fr-pattern-summary__num" style={{ color: THEME.text }}>Ch.{c.n}</span>
                 <span className="fr-pattern-summary__text">{c.title}</span>
               </a>
             </li>

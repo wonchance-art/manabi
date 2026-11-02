@@ -134,7 +134,7 @@
 
   /* 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 목업 8판 값 */
   --lv-card: #fffdf9; --lv-line: #e2ddd2; --lv-chip: #ece8df; --lv-chip-hover: #e2ddd2; --lv-field: #ede9e0;
-  --lv-have: #f3e4e7; --lv-busy: #b77885; --lv-formula: #efeae0; --lv-ex-rule: #d9c4c9; --lv-warn: #8a5a12; --lv-faint: #a3a399;
+  --lv-have: #f3e4e7; --lv-busy: #b77885; --lv-formula: #efeae0; --lv-ex-rule: #d9c4c9; --lv-warn: #8a5a12; --lv-faint: #6c6d64;
   --lv-miss: #fbf1f3; --lv-warnbg: #f6eedd; --lv-ok: #2f6b4f;
   --lv-tone-1: #c0392b; --lv-tone-2: #2e7d32; --lv-tone-3: #1565c0; --lv-tone-4: #6a3fb5; --lv-tone-0: #7a7a72;
 }
@@ -6584,6 +6584,8 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 .fr-callout--etym .fr-callout__label { color: #51A85C; }
 .fr-callout--tip { border-color: #9775FA; background: rgba(151,117,250,0.1); }
 .fr-callout--tip .fr-callout__label { color: #9775FA; }
+/* v2 셸(늘 밝은 화면) 안에서는 같은 보라를 글자 기준까지 짙게 — #9775FA는 옅은 보라 바탕 위 3:1(화면 벽 WALL-003). */
+.manabi-app .fr-callout--tip .fr-callout__label { color: #6B4FD1; }
 
 /* 영어 ↔ 프랑스어 나란히 비교 블록 — vsEn(파랑) 계열, 영어/프랑스어 정렬 대조 */
 .fr-parallel {
@@ -7777,8 +7779,8 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 /* 개별 세션(단어만·문법만)은 보조 — 작은 고스트 한 줄 */
 .vocab-hero__split { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
 
-/* ⚔ 재대결(#1077-15) — 헷갈린 단어 집중 큐 진입 스트립. 덱의 복습 톤(--warning)과 같은
-   계열이되, 히어로 주 버튼과 경쟁하지 않게 은은한 배경만. */
+/* ⚔ 재대결(#1077-15) — 헷갈린 단어 집중 큐 진입 스트립. 헷갈린 말 = 채점 「어려움」을 받은 말이라 그 글자 · 바탕 토큰을 쓴다.
+   예전 글자색 --warning(#D4962A)은 배경용 값이라 연한 바탕 위 2.12:1이었다(화면 벽 WALL-003, 2026-11-02 KST — 5.22:1). */
 .vocab-rematch {
   display: block;
   width: 100%;
@@ -7788,12 +7790,12 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  color: var(--warning);
-  background: rgba(212, 150, 42, 0.12);
-  border: 1px solid rgba(212, 150, 42, 0.35);
+  color: var(--grade-hard);
+  background: var(--grade-hard-bg);
+  border: 1px solid color-mix(in srgb, var(--grade-hard) 28%, transparent);
   border-radius: var(--radius-md);
 }
-.vocab-rematch:hover { background: rgba(212, 150, 42, 0.2); }
+.vocab-rematch:hover { background: color-mix(in srgb, var(--grade-hard) 12%, var(--grade-hard-bg)); }
 .vocab-rematch strong { font-weight: 800; }
 
 /* 상단 미니 현황 strip — 복습/신규/학습 중/숙련 한눈에 */
@@ -8153,6 +8155,8 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
   transform-origin: center;
 }
 .jpmap-pin:focus-visible { transform: scale(1.35); }
+/* 보이지 않는 터치 원(WALL-003) — 칠은 투명이지만 누름은 받는다(fill: transparent는 pointer-events 기본값 visiblePainted로 잡힌다). */
+.jpmap-pin-hit { fill: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 @media (hover: hover) { .jpmap-pin:hover { transform: scale(1.35); } } /* 터치에서 핀이 커진 채 남지 않게(PWA-SHELL-001 ④) */
 /* 마우스 클릭의 기본 사각 아웃라인 제거 — 키보드 포커스는 활성 링과 확대가 이미 표시한다 */
 .jpmap-pin:focus { outline: none; }
