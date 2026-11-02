@@ -886,7 +886,10 @@
   ④ 화면 다듬기(오너 「ㅇㅋ 둘 다 진행해」): 공부한 날 1년 · 옆으로 밀기 · 「1년 중 N일 · Z%」 · 이번 주 창 칸 디자인(복습 큰 숫자 · 세 칸 · 자세히 목록) — [시안](https://claude.ai/artifact/BLMGE91k2yvxWYZeNgDUMP) · [목업](https://claude.ai/artifact/DJtpZqhQ2Jw23qGG8dUCMu). **완료 [#1630](https://github.com/wonchance-art/manabi/pull/1630) `86471b0`.**
   ⑤ 다음 묶음([#1633](https://github.com/wonchance-art/manabi/pull/1633)): 완독 창 「오늘 복습」(홈과 같은 숫자 · 「복습 대기」 A안) · 새 지표 「다시 만난 말」(이번 주 창 한 줄 → 창, [목업](https://claude.ai/artifact/DgKA3StMbCxbU8BEp1RcVa)) · 죽은 코드. 학습 snapshot 한 키 묶기는 web 최적화 세션 영역(LOGGED-IN-PERF)이라 보류. 11/3 10:07 KST 연속 04시 운영 실측 예약.
   ⑥ [#1636](https://github.com/wonchance-art/manabi/pull/1636) `ec17351` 단어 칩 → 단어 카드 · 공부한 날 화면 읽기 요약 · 운영 확인(배포 READY · 오류 0 · 1년 조회 4쪽). snapshot 공유는 WEB 최적화 세션에 인계(측정부터).
-  ⑦ 이번 PR: 「직접 쓴 말」(산출 · [목업](https://claude.ai/artifact/4oXYYK2GgushKEXfZZXCTv)) · 개인정보 처리방침 처리 위탁 · 국외 이전 표(실제와 맞춤 · **문구 오너 확인 후 병합**) · AGENT-LINK-001 설계 초안 `docs/design/agent-link.md`(dots 읽기 전용 → 0 붙여넣기 · 1 읽기 MCP · 2 쓰기).
+  ⑦ 「직접 쓴 말」(산출 · [목업](https://claude.ai/artifact/4oXYYK2GgushKEXfZZXCTv)) · 개인정보 처리방침 처리 위탁 · 국외 이전 표 · AGENT-LINK-001 설계 초안 `docs/design/agent-link.md` · 0단계 형식 모듈. **완료 [#1639](https://github.com/wonchance-art/manabi/pull/1639) `9661112`.**
+  ⑧ 이번 PR(오너 「통합안으로 연계 넷이랑 같이 진행해」 2026-11-02 KST): 단어 칩 통합안([목업](https://claude.ai/artifact/TNXkpe3KM74sHxw3Hpqx8C) — 공용 `WordChips` · 채운 칩 = 핵심(들어옴 흐려지던 말 · 나감 처음 씀) · 「+N」 그 자리 펼침) +
+    연계 넷([연계 지도](https://claude.ai/artifact/1X9ejVtVuDofqjBJnKE24X)): 1 완독 창 「복습한 말 N개를 이 글에서 다시 만났어요」(추가 조회 0) · 2 첨삭 결과 「담은 말 N개를 직접 썼어요」(공유 snapshot + 작문 · 대화 재료 1회) ·
+    3 다시 만난 말 창 → 자료실 「내 수준 맞춤」 · 4 직접 쓴 말 창 → `/writing?words=…`(아직 안 써 본 말 칩). 계약 `wordChipsLinks.test.js`. 남은 오너 결정: 에이전트 0단계 UI(빠른 분석 카드 · 「에이전트」 담은 곳).
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —
