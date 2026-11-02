@@ -13,7 +13,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabase';
-import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+import { fetchSharedVocabularySummary } from '../lib/vocabularyLearningShare';
 import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial } from '../lib/vocabularyDueIndex';
 import { useAuth } from '../lib/AuthContext';
@@ -373,10 +373,10 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
   // 내 그룹들이 이번 주 같이 읽는 자료 (v2-F R3) — 홈이 쓰는 캐시를 그대로 타 추가 왕복 0.
   const groupReadIds = useGroupReadIds();
 
-  // 새 FSRS와 legacy를 완전 snapshot에서 함께 읽되 원본 단어는 유지한다.
+  // 새 FSRS와 legacy를 완전 snapshot에서 함께 읽되 원본 단어는 유지한다. 배움 · 현황과 같은 요약 snapshot을 나눠 쓴다(SNAPSHOT-SHARE-001).
   const { data: dueVocabIndex, error: dueVocabError, refetch: refetchDueVocab } = useQuery({
     queryKey: ['due-vocab-index', user?.id],
-    queryFn: async ({ signal }) => buildVocabularyWordIndex(await fetchVocabularyLearningRows(user.id, { signal, fields: 'summary' })),
+    queryFn: async () => buildVocabularyWordIndex(await fetchSharedVocabularySummary(queryClient, user.id)),
     enabled: !!user,
     staleTime: 1000 * 60,
   });

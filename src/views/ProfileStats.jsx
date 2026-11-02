@@ -27,6 +27,7 @@ import { topLabeledWeakness, weaknessLine, weaknessProfile } from '../lib/weakne
 import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
 import { detectLang } from '../lib/constants';
 import { fetchVocabularyLearningRows } from '../lib/vocabularyLearningRows';
+import { fetchSharedVocabularySummary } from '../lib/vocabularyLearningShare';
 // 약점 칸 — import가 빠져 queryFn이 ReferenceError로 늘 실패했다(no-undef 전수, 2026-10-17 KST).
 import { fetchWeaknessRows } from '../lib/weaknessRows';
 import { fetchRemetWeeks } from '../lib/remetRows';
@@ -57,8 +58,10 @@ import { METRICS } from '../lib/metrics/registry';
 export const HEATMAP_DAYS = STUDY_DAYS_SPAN;
 const DAY_MS = 24 * 3600 * 1000;
 
-export async function fetchProfileStats(userId, now = Date.now()) {
-  const learning = await fetchVocabularyLearningRows(userId, { fields: 'summary' });
+export async function fetchProfileStats(userId, now = Date.now(), { queryClient } = {}) {
+  // 화면에서는 배움 · 읽을거리와 같은 요약 snapshot을 나눠 쓴다(SNAPSHOT-SHARE-001 — 신선하면 다시 받지 않는다).
+  const learning = queryClient ? await fetchSharedVocabularySummary(queryClient, userId)
+    : await fetchVocabularyLearningRows(userId, { fields: 'summary' });
   const heatmapStart = learningDayStartMs(now) - (HEATMAP_DAYS - 1) * DAY_MS;
   // 공부한 날 칸의 「담은 말」 몫 — 답 몫은 화면이 따로 늦게 받는다(첫 칸들을 기다리게 하지 않게).
   const heatmapDayCounts = studyDayCounts({ saved: learning.rows, sinceMs: heatmapStart });
@@ -75,7 +78,7 @@ export default function ProfileStats() {
 
   const { data, error, refetch } = useQuery({
     queryKey: ['profile-stats', user?.id],
-    queryFn: () => fetchProfileStats(user.id),
+    queryFn: ({ client }) => fetchProfileStats(user.id, Date.now(), { queryClient: client }),
     enabled: !!user,
     staleTime: 1000 * 60,
   });
