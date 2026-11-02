@@ -50,7 +50,7 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     }
   });
 
-  it('상태 하이라이트(B안)·저장 밑줄·복습 펄스가 전부 ::before를 칠한다', () => {
+  it('상태 하이라이트(B안)·저장 밑줄이 전부 ::before를 칠한다(복습은 저장과 같은 모양 — VIEWER-DUE-PLAIN-001)', () => {
     // 「만난 말」은 새 단어와 같은 표시(VIEWER-R0 버그 11 — 오너 확정 2026-10-07): 옅은 파랑
     // --ws-met(바탕 대비 1.10:1)이 사실상 안 보였다. 클래스·만남 기록은 그대로, 표시만 합친다.
     // AD-R2(VIEWER-V2-ROUNDS-001 §5 — 오너 확정, 08-27 B안 수정): 새 단어·만난 말은 면 칠이 아니라
@@ -60,7 +60,7 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     expect(css).toMatch(/\.reader-area--hl \.word-token:is\(\.word-token--new, \.word-token--met\):not\(\[data-selected="true"\]\) \.surface::before \{[^}]*border-bottom: 1\.5px solid var\(--ws-new-ln\);/s);
     expect(css).not.toMatch(/--ws-met/);
     expect(css).toMatch(/\.word-token--saved \.surface::before \{\s*border-bottom: 1\.5px solid var\(--primary-light\);/); // C3(2026-10-23 KST): 흐림 없이 얇은 밑줄만
-    expect(css).toMatch(/\.word-token--due \.surface::before \{[^}]*animation: due-pulse/s);
+    expect(css).not.toMatch(/due-pulse/); // 복습 펄스 걷음(오너 2026-11-02 KST 「복습 모양 없애줘」)
   });
 
   it('새 단어 밑줄은 #1354 「밑줄 자리」를 탄다 — 띠 아래 --hl-mark-gap, 문형이 있으면 둘째 칸, 좌표 신설 0, 선택 중엔 숨김·지정 중엔 유지', () => {
@@ -74,7 +74,7 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     expect(css).toMatch(/\.reader-area--hl \.word-token--pattern:is\(\.word-token--new, \.word-token--met\):not\(\[data-selected="true"\]\) \.surface::before \{\s*padding-bottom: calc\(var\(--hl-mark-gap\) \* 2 \+ 1\.5px\);/);
     // 파일 순서: 상태·지정 규칙 뒤(같은 「밑줄 자리」 블록) — 위로 옮기면 상태 규칙이 이긴다
     expect(css.indexOf('.reader-area--hl .word-token:is(.word-token--new, .word-token--met):not([data-selected="true"]) .surface::before {'))
-      .toBeGreaterThan(css.indexOf('.reader-area--hl .word-token--picked.word-token--due .surface::before'));
+      .toBeGreaterThan(css.indexOf('.reader-area--hl .word-token--picked.word-token--saved .surface::before'));
     // 선택(data-selected — 단어창 열림)에서는 밑줄을 숨긴다: 파란 밑줄 + 파란 테두리 아랫선이 2px 간격으로
     // 붙어 이중 밑줄로 읽혔다(검수 2026-10-07). 상태는 단어창이, 자리는 테두리가 보여 준다. 지정(picked)은
     // 유지 — 밑줄 규칙의 제외는 data-selected 하나뿐이다. 선택 중엔 밑줄이 없으니 테두리를 문형+새 단어
@@ -96,10 +96,9 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     );
   });
 
-  it('T1 혼색 — 지정 중 학습 중·복습 밴드가 지정색×상태색 color-mix로 칠해진다(새 단어는 밑줄 유지)', () => {
+  it('T1 혼색 — 지정 중 학습 중 밴드가 지정색×상태색 color-mix로 칠해진다(새 단어는 밑줄 유지 · 복습은 저장과 같음)', () => {
     for (const [cls, src] of [
       ['saved', '--ws-learn-ln'],
-      ['due', '--warning'],
     ]) {
       const re = new RegExp(
         `\\.reader-area--hl \\.word-token--picked\\.word-token--${cls} \\.surface::before \\{[^}]*color-mix\\(in srgb, var\\(${src}\\) \\d+%, var\\(--picked-bg`, 's'

@@ -110,13 +110,16 @@ for (const theme of ['light','sepia','dark']) {
       assert.deepEqual(picked[i].pron,before[i].pron);
       assert.equal(picked[i].opacity,'1');
     }
-    // VIEWER-R0 bug 11 (owner 2026-10-07): "met" shares the new-word display, so selection keeps four
-    // distinct states (new = met, saved, due, known) instead of five. AD-R2: the new-word state is now the
+    // VIEWER-R0 bug 11 (owner 2026-10-07): "met" shares the new-word display; VIEWER-DUE-PLAIN-001: "due" shares
+    // the saved display — selection keeps three distinct states (new = met, saved = due, known). AD-R2: the new-word state is now the
     // underline (kept while selected over the neutral selection band), so a state is fill + underline.
     assert.deepEqual([picked[1].color,picked[1].line],[picked[0].color,picked[0].line],'met keeps the new-word display while selected');
     assert.equal(picked[0].line,before[0].line,'selected new words keep the same underline');
     assert.equal(picked[0].color,picked[4].color,'selected new words sit on the plain selection band (no blend)');
-    assert.equal(new Set(picked.map(t=>`${t.color}|${t.line}`)).size,4,'selection must preserve four distinct learning states');
+    // VIEWER-DUE-PLAIN-001 (owner 2026-11-02 KST): due words no longer have their own look — they render as saved.
+    assert.deepEqual([picked[3].color,picked[3].line],[picked[2].color,picked[2].line],'due shares the saved display while selected');
+    assert.deepEqual([before[3].color,before[3].line],[before[2].color,before[2].line],'due shares the saved display');
+    assert.equal(new Set(picked.map(t=>`${t.color}|${t.line}`)).size,3,'selection must preserve three distinct learning states (new = met, saved = due, known)');
     await page.locator('.word-token').evaluateAll(tokens=>tokens.forEach(t=>t.classList.remove('word-token--picked')));
     assert.deepEqual(await read(),before,'clearing selection restores every state without shifting text');
     await page.locator('.reader-area').evaluate(e=>e.classList.remove('reader-area--hl'));

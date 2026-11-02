@@ -8,6 +8,9 @@
 .learn-top__title{display:flex;align-items:center;gap:14px}
 .learn-page .learn-top h1{font:700 34px/1.2 var(--font-manrope),var(--font-noto-kr),sans-serif;letter-spacing:-1.2px;margin:0;white-space:nowrap}
 .learn-toplink{font-size:13px;font-weight:700;color:var(--ink);min-height:44px;display:inline-flex;align-items:center;white-space:nowrap}
+/* 「교재 · 현황 전체 →」(HOME-SHELF-LINK-001) — 두 링크가 한 덩어리(좁은 화면 격자에서 한 칸). 가운뎃점은 장식. */
+.learn-toplinks{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.learn-toplinks__sep{font-size:13px;font-weight:700;color:var(--muted)}
 .learn-crumb{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:700;color:var(--muted);margin:-12px 0 0}
 .learn-chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0;min-height:44px}
 .learn-chip{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:transparent;font:inherit;cursor:pointer}
@@ -282,7 +285,8 @@ a.learn-memory__bucket:hover{background:color-mix(in srgb,var(--ink) 8%,var(--sh
   .learn-stats .learn-order-1{order:1}.learn-stats .learn-order-2{order:2}.learn-stats .learn-order-3{order:3}.learn-stats .learn-order-4{order:4}
   .learn-stats .learn-order-5{order:5}.learn-stats .learn-order-6{order:6}.learn-stats .learn-order-7{order:7}.learn-stats .learn-order-8{order:8}
 }
-/* 머리 줄 — 셸 폭 480 이하: 칩이 「배움 · 현황 전체 →」 한 줄에 다 들어가지 않는다(4개 언어 칩 267px · 320 화면 본문 288px).
+/* 머리 줄 — 셸 폭 480 이하: 칩이 「배움 · 교재 · 현황 전체 →」 한 줄에 다 들어가지 않는다(4개 언어 칩 267px · 320 화면 본문 288px).
+   「교재 ·」가 붙어도(오른쪽 덩어리 66 → 105px) 481에서 칩과 30px 남짓 떨어진다 — Preview 실측 501 = 50px, 겹침 0(HOME-SHELF-LINK-001).
    제목 · 오른쪽 링크(또는 단추)가 첫 줄, 칩이 둘째 줄 전체 폭(오너 실기 2026-10-25 KST — 칩이 「현황 전체」 위에 겹쳤다).
    칩 줄 높이(44)는 대기 화면도 같은 자리를 비워 둔다(HomeSkeleton) — 붙은 뒤 줄이 생겨 아래가 밀리지 않게. */
 @container manabi-shell (max-width:480px){

@@ -216,9 +216,12 @@ export default function HomePage({ book = null, bookPromise, sessionHint }) {
   // 손님 배치 — 서버가 세션 쿠키가 없다고 알려 주면(sessionHint === false) 로그인 확인을 기다리지 않는다(B1 — 오너 승인
   // 2026-10-17 KST). 서버 HTML · 첫 그림 · 확인 뒤가 모두 같은 손님 배치라, 로그인 배치 골격이 0.7초 보였다가 바뀌던 것이 없다.
   // 쿠키가 있는데 세션이 끝났으면(만료 등) 예전처럼 확인을 기다린다.
+  // 제목 줄 오른쪽 「교재 →」(HOME-SHELF-LINK-001 — 오너 승인 목업 2026-11-02 KST): 이어 하기 카드는 그대로 두고 책장 입구만 글자 링크로.
+  // 카드 안에 넣은 시안(띠 · 본문 · 카드 아래)은 「심플함을 해친다」로 접었다. 지금 학습 언어 탭이 열린 책장(?lang → middleware가 언어 판으로).
+  // 로그인은 같은 자리의 「현황 전체 →」와 한 줄 — 「교재 · 현황 전체 →」.
   if (guestLayout) {
     return <div className="manabi-page learn-page">
-      <div className="learn-top"><div className="learn-top__title"><h1>배움</h1></div></div>
+      <div className="learn-top"><div className="learn-top__title"><h1>배움</h1></div><Link href="/lessons?lang=Japanese" prefetch={false} className="learn-toplink">교재 →</Link></div>
       <div className="learn-grid">
         {resumeSlot}
         <ParagraphTile state={{ kind: 'ready', sentence: GUEST_SAMPLE }} lang="Japanese" href="/study" kicker="오늘 문단 · 맛보기" />
@@ -231,7 +234,11 @@ export default function HomePage({ book = null, bookPromise, sessionHint }) {
   return <div className="manabi-page learn-page">
     <div className="learn-top">
       <div className="learn-top__title"><h1>배움</h1><LangChips langs={langs} lang={lang} onChange={choose} /></div>
-      <Link href="/progress" prefetch={false} className="learn-toplink">현황 전체 →</Link>
+      <div className="learn-toplinks">
+        <Link href={`/lessons?lang=${lang}`} prefetch={false} className="learn-toplink">교재</Link>
+        <span className="learn-toplinks__sep" aria-hidden="true">·</span>
+        <Link href="/progress" prefetch={false} className="learn-toplink">현황 전체 →</Link>
+      </div>
     </div>
     {error && <div className="manabi-inline-state" role="alert">학습 기록을 불러오지 못했어요. 읽기와 책장은 계속 이용할 수 있어요. <button type="button" onClick={() => refetch()}>다시 시도</button></div>}
     <div className="learn-grid">

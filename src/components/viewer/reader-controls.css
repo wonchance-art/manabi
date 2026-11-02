@@ -100,9 +100,9 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 /* The frame now sits inside .surface, so a saved word's faded glyphs (index.css .word-token--saved .surface
    opacity .6 — lifted for due words, the --hl palette and focus-mode picks) would fade it too. Where that
    fade applies the line is drawn at 0.55 / 0.6 of ink, which composites to the old 55% line. */
-.viewer-layout .reader-area:not(.reader-area--hl):not(.reader-area--focus) .word-token--saved:not(.word-token--due)[data-selected="true"] .word-frame {outline-color:color-mix(in srgb,var(--reader-ink) 91.667%,transparent);}
+.viewer-layout .reader-area:not(.reader-area--hl):not(.reader-area--focus) .word-token--saved[data-selected="true"] .word-frame {outline-color:color-mix(in srgb,var(--reader-ink) 91.667%,transparent);}
 .viewer-layout .word-token[data-selected="true"] .surface::before {animation:none;}
-/* 앱 손맛 ①: 방금 담은 토큰은 대개 카드가 열린(선택된) 그 토큰이다 — 위 animation:none(선택 중 복습 펄스 끄기)이 특이도로
+/* 앱 손맛 ①: 방금 담은 토큰은 대개 카드가 열린(선택된) 그 토큰이다 — 위 animation:none(선택 중 띠 애니메이션 끄기 — 예전 복습 펄스 자리)이 특이도로
    담기 긋기(index.css .word-token--just-saved)까지 끄므로 긋기만 되살린다. 기점 · 좌표는 index.css 규칙 그대로. */
 .viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:hlStroke .22s var(--ease-settle) both;}
 @media (prefers-reduced-motion:reduce) { .viewer-layout .word-token--just-saved[data-selected="true"] .surface::before {animation:none;transform:none;} }
@@ -110,7 +110,6 @@ body:has(.viewer-layout[data-reader-theme="dark"]),
 /* "Met" words share the new-word display (VIEWER-R0 bug 11). */
 .viewer-layout .reader-area--hl :is(.word-token--new,.word-token--met) {--word-selection-line:var(--ws-new-ln);}
 .viewer-layout .reader-area--hl .word-token--saved {--word-selection-line:var(--ws-learn-ln);}
-.viewer-layout .reader-area--hl .word-token--due {--word-selection-line:var(--warning);}
 .viewer-layout :is(button,input,textarea,summary):focus-visible {outline:2px solid var(--reader-accent);outline-offset:3px;}
 /* 어두운 배경의 본문 낱말 · 카드 글자(role=button) 고리는 전역 --primary(로즈, 대비 2.55:1)였다 — 버튼과 같은 밝은 교재색으로(뷰어 점검 F6). */
 .viewer-layout[data-reader-theme="dark"] [role="button"]:focus-visible {outline-color:var(--reader-accent);}

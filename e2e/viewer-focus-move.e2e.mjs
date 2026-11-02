@@ -236,11 +236,11 @@ for(const [width,height] of [[390,844],[1280,900],[320,640]])test(`${width}px: A
   assert.equal(top.pane,'auto');assert.ok(top.bodyOverflow<=1&&bottom.bodyOverflow<=1,'only the tab panel scrolls');
   assert.equal(bottom.tabs,top.tabs,'tabs stay at the top while the panel scrolls');
   assert.ok(bottom.footer<=bottom.dialog+.5,'footer stays inside the window');
-  // 범례: 본문과 같은 클래스로 그린 상태 견본 셋 + 성조 견본 넷. 옵션이 꺼져 있어도 보인다.
-  // 모양 = 띠 색 | 밑줄(두께·선·색 — 두께 0이거나 투명이면 none). 글자색(currentColor)은 모양에 넣지 않는다.
+  // 범례: 본문과 같은 클래스로 그린 상태 견본 둘(복습 견본은 VIEWER-DUE-PLAIN-001로 걷음 — 복습 = 저장과 같은 모양) + 성조 견본.
+  // 옵션이 꺼져 있어도 보인다. 모양 = 띠 색 | 밑줄(두께·선·색 — 두께 0이거나 투명이면 none). 글자색(currentColor)은 모양에 넣지 않는다.
   const legend=await pane.locator('.reader-settings__legend .word-token').evaluateAll(ts=>ts.map(t=>{const s=getComputedStyle(t.querySelector('.surface'),'::before'),line=s.borderBottomWidth==='0px'||s.borderBottomColor==='rgba(0, 0, 0, 0)'?'none':`${s.borderBottomWidth} ${s.borderBottomStyle} ${s.borderBottomColor}`;return {text:t.textContent,look:`${s.backgroundColor}|${line}`};}));
-  assert.deepEqual(legend.map(l=>l.text),['새 단어','학습 중','복습']);
-  assert.equal(new Set(legend.map(l=>l.look)).size,3,`three distinct state marks: ${JSON.stringify(legend)}`);
+  assert.deepEqual(legend.map(l=>l.text),['새 단어','학습 중']);
+  assert.equal(new Set(legend.map(l=>l.look)).size,2,`two distinct state marks: ${JSON.stringify(legend)}`);
   for(const l of legend)assert.notEqual(l.look,'rgba(0, 0, 0, 0)|none',`${l.text} is visibly marked`);
   const tones=await pane.locator('.reader-settings__tones .rt-an').evaluateAll(es=>es.map(e=>getComputedStyle(e).color));
   // 경성 견본까지 다섯(뷰어 점검 D, 오너 승인 2026-10-23 KST).
