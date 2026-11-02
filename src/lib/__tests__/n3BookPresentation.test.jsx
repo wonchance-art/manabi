@@ -21,7 +21,7 @@ describe('N3 course presentation uses its own title, level and immutable edition
   const html=render(Bookshelf,{books:[n4,n3],initialLang:'Japanese'});
   expect(html).toContain(`href="/books/japanese-n3?edition=${edition}#cover"`);
   expect(html).toContain('aria-label="일본어 N3 책 둘러보기"');
-  expect(html).toContain('N3 · 48과');expect(html).toContain('href="/admin/books/japanese-n3"');
+  expect(html).toContain('<strong>N3</strong><small class="is-progress">1/48과</small>');expect(html).toContain('href="/admin/books/japanese-n3"');
   const withoutN3=render(Bookshelf,{books:[n4],initialLang:'Japanese'});
   expect(withoutN3).not.toContain('aria-label="일본어 N3 책 둘러보기"');
  });

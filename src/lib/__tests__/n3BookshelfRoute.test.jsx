@@ -15,7 +15,8 @@ const Page = async ({ lang }) => { const element = await LangPage({ params: Prom
 
 const ids = ['japanese-n5', 'japanese-n4', 'japanese-n3'];
 const catalogs = Object.fromEntries(ids.map(bookId => [bookId, Object.freeze({ bookId, title: `${bookId} 공개 교재`, catalog: true })]));
-const tiles = { Japanese: [{ level: 'N3', words: 25 }], Chinese: [{ level: 'HSK3', words: 30 }] };
+const tiles = { Japanese: [{ level: 'N3', words: 25 }], Chinese: [{ level: 'HSK3', words: 30 }], English: [{ levelKey: 'A1', vocab: 53 }], French: [{ levelKey: 'A1', vocab: 8 }] };
+const LANGUAGE = { japanese: 'Japanese', chinese: 'Chinese', english: 'English', french: 'French' };
 function deferred() {
   let resolve;
   const promise = new Promise(done => { resolve = done; });
@@ -25,37 +26,37 @@ beforeEach(() => {
   vi.stubGlobal('React', React);
   services.publishedReading.mockReset().mockImplementation(async (_client, _edition, _preview, bookId) => ({ book: { bookId } }));
   services.readingCatalog.mockReset().mockImplementation(book => catalogs[book.bookId]);
-  services.levelTileCounts.mockReset().mockImplementation(async language => tiles[language === 'japanese' ? 'Japanese' : 'Chinese']);
+  services.levelTileCounts.mockReset().mockImplementation(async language => tiles[LANGUAGE[language]]);
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe('actual bookshelf route passes published courses across its client boundary', () => {
-  it('starts all registered courses and both tile reads together, then passes N3 alongside N5/N4 in course order', async () => {
+  it('starts all registered courses and all four tile reads together, then passes N3 alongside N5/N4 in course order', async () => {
     const books = Object.fromEntries(ids.map(bookId => [bookId, deferred()]));
-    const counts = { japanese: deferred(), chinese: deferred() };
+    const counts = { japanese: deferred(), chinese: deferred(), english: deferred(), french: deferred() };
     services.publishedReading.mockImplementation((_client, _edition, _preview, bookId) => books[bookId].promise);
     services.levelTileCounts.mockImplementation(language => counts[language].promise);
     const pending = Page({ lang: 'Japanese' });
     try {
       for (let i = 0; i < 4; i++) await Promise.resolve();
       expect(services.publishedReading.mock.calls).toEqual(ids.map(bookId => [services.client, undefined, false, bookId]));
-      expect(services.levelTileCounts.mock.calls).toEqual([['japanese'], ['chinese']]);
+      expect(services.levelTileCounts.mock.calls).toEqual([['japanese'], ['chinese'], ['english'], ['french']]);
       // Publication responses finish in a different order; the shelf order is stable.
       books['japanese-n3'].resolve({ book: { bookId: 'japanese-n3' } });
       books['japanese-n5'].resolve({ book: { bookId: 'japanese-n5' } });
       books['japanese-n4'].resolve({ book: { bookId: 'japanese-n4' } });
-      counts.chinese.resolve(tiles.Chinese); counts.japanese.resolve(tiles.Japanese);
+      counts.french.resolve(tiles.French); counts.chinese.resolve(tiles.Chinese); counts.english.resolve(tiles.English); counts.japanese.resolve(tiles.Japanese);
       const result = await pending;
       expect(result.type).toBe(Bookshelf);
       expect(result.props).toMatchObject({ books: ids.map(bookId => catalogs[bookId]), book: catalogs['japanese-n5'], initialLang: 'Japanese', levelTiles: tiles });
     } finally {
       for (const bookId of ids) books[bookId].resolve({ book: { bookId } });
-      counts.japanese.resolve(tiles.Japanese); counts.chinese.resolve(tiles.Chinese);
+      for (const [lang, count] of Object.entries(counts)) count.resolve(tiles[LANGUAGE[lang]]);
       await pending.catch(() => {});
     }
   });
 
-  it('keeps the N3 and N4 shelf entries and both tile groups when N5 is not published (404)', async () => {
+  it('keeps the N3 and N4 shelf entries and every tile group when N5 is not published (404)', async () => {
     services.publishedReading.mockImplementation(async (_client, _edition, _preview, bookId) => {
       if (bookId === 'japanese-n5') throw Object.assign(new Error('publication unavailable'), { status: 404 });
       return { book: { bookId } };

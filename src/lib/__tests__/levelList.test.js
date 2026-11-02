@@ -12,6 +12,8 @@ import { JAPANESE_VOCAB_REF } from '../japaneseVocabRegistry.js';
 import { countBunkei as countJaBunkei } from '../../content/japanese/index.js';
 import { countBunkei as countZhBunkei, getVocab as getZhVocab, ZH_LEVEL_META, ZH_HSK79_VOCAB } from '../../content/chinese/index.js';
 import { loadZhHskLevels, zhHskLevelOf } from '../zhHskLevel.js';
+import { latinWordsData } from '../latinWordsData.js';
+import { LATIN_WORD_LEVELS } from '../latinLevelWords.js';
 import { legacyTextbookTarget, learnerHref } from '../bookNavigation.js';
 
 // 계약: 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001 — 인계 #1337 6119208984 · 보완 6146777048, 오너 승인 2026-10-12·13 KST).
@@ -39,6 +41,20 @@ describe('⑴ 숫자 = 데이터 개수', () => {
         expect(t.vocab).toBeGreaterThan(0);
       }
     }
+  });
+
+  // SHELF-REDESIGN-001 — 영어 · 프랑스어 A1 타일 숫자는 단어 페이지(/english|french/words/a1)와 같은 조립(latinWordsData)에서 센다. 문형 줄 없음.
+  it('영어 · 프랑스어 타일 = 단어 페이지 개수(영어 A1 53 · 프랑스어 A1 8), 단어 줄만', async () => {
+    for (const [lang, a1] of [['english', 53], ['french', 8]]) {
+      const tiles = await levelTileCounts(lang);
+      expect(tiles.map((t) => t.levelKey)).toEqual([...LATIN_WORD_LEVELS[lang]]);
+      for (const t of tiles) {
+        expect(t.vocab, `${lang} ${t.levelKey}`).toBe(total(latinWordsData(lang, t.levelKey)));
+        expect(Object.keys(t).sort()).toEqual(['levelKey', 'vocab']);
+      }
+      expect(tiles.find((t) => t.levelKey === 'A1').vocab).toBe(a1);
+    }
+    expect(await levelTileCounts('korean')).toEqual([]);
   });
 
   it('일본어 단어 = 레지스트리 그대로(표기 중복만 하나로)', async () => {

@@ -357,7 +357,28 @@ describe('책장 타일', () => {
     expect(html).toContain('단어<b>1,384</b>');
     expect(html).toContain('문형<b>77</b>');
     expect(html).not.toContain('→');
-    expect(renderToStaticMarkup(<LevelTiles language="English" tiles={[{ levelKey: 'A1', vocab: 1, bunkei: 1 }]} />)).toBe('');
+    expect(renderToStaticMarkup(<LevelTiles language="Korean" tiles={[{ levelKey: 'A1', vocab: 1 }]} />)).toBe('');
+  });
+
+  // SHELF-REDESIGN-001 — 칸 이름은 타일이 가진 줄 그대로, 영어 · 프랑스어 A1은 단어 페이지로 가는 「단어」 한 줄.
+  it('칸 이름 = 줄 이름(단어 · 문형 · 한자 / 단어 · 문형 / 단어), 줄은 표지와 같은 격자(shelf-row)', () => {
+    const zh = renderToStaticMarkup(<LevelTiles language="Chinese" tiles={[{ levelKey: 'H1', vocab: 300, bunkei: 77, hanzi: 246 }, { levelKey: 'H7', vocab: 1332 }]} />);
+    expect(zh).toContain('<h2 id="lv-shelf-h" class="shelf-section-h">단어 · 문형 · 한자</h2>');
+    const ja = renderToStaticMarkup(<LevelTiles language="Japanese" tiles={['N5', 'N4', 'N3', 'N2', 'N1'].map(levelKey => ({ levelKey, vocab: 1, bunkei: 1 }))} />);
+    expect(ja).toContain('>단어 · 문형</h2>');
+    expect(ja).toContain('<ul class="lv-tiles shelf-row">');
+    const seven = renderToStaticMarkup(<LevelTiles language="Chinese" tiles={['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7'].map(levelKey => ({ levelKey, vocab: 1, bunkei: 1 }))} />);
+    expect(seven).toContain('<ul class="lv-tiles shelf-row shelf-row--7">');
+  });
+
+  it.each([['English', 'english', 53], ['French', 'french', 8]])('%s A1 — 「단어 N」 한 줄, 단어 페이지(/%s/words/a1)로', (language, slug, count) => {
+    const html = renderToStaticMarkup(<LevelTiles language={language} tiles={[{ levelKey: 'A1', vocab: count, bunkei: 3 }]} />);
+    expect(html).toContain('<span class="lv-tile__lv">A1</span>');
+    expect(html).toContain(`href="/${slug}/words/a1"`);
+    expect(html).toContain(`단어<b>${count}</b>`);
+    expect(html).toContain('>단어</h2>');
+    expect(html).not.toContain('문형');
+    expect(html).not.toContain(`/${slug}/vocab/`);
   });
 });
 

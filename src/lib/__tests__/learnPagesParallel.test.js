@@ -37,7 +37,9 @@ describe('책장 — 교재와 레벨 타일을 한꺼번에', () => {
   it('교재 · 타일을 Promise.all 하나로 시작하고, 타일 실패는 빈 타일(책장은 그대로)', () => {
     const page = sliceBetween(src, 'export default async function LessonsShelf', '\n}');
     expect(page).toContain('await Promise.all([');
-    expect(page).toContain("Promise.all([levelTileCounts('japanese'), levelTileCounts('chinese')]).then(([Japanese, Chinese]) => ({ Japanese, Chinese }), () => ({})),");
+    // 영어 · 프랑스어 A1 단어 타일도 같은 Promise.all 하나에서(SHELF-REDESIGN-001).
+    expect(page).toContain("Promise.all([levelTileCounts('japanese'), levelTileCounts('chinese'), levelTileCounts('english'), levelTileCounts('french')])");
+    expect(page).toContain('.then(([Japanese, Chinese, English, French]) => ({ Japanese, Chinese, English, French }), () => ({})),');
     expect(page).not.toMatch(/await levelTileCounts\(/);
   });
 });
