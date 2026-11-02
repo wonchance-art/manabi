@@ -198,7 +198,7 @@ dl.kv dd{margin:0;font:400 12px var(--mono);overflow-wrap:anywhere}
 const D = /*__WALL_DATA__*/null;
 const $ = id => document.getElementById(id);
 const h = (tag, attrs = {}, ...kids) => { const el = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (v == null || v === false) continue; if (k === 'class') el.className = v; else if (k === 'text') el.textContent = v; else if (k.startsWith('on')) el.addEventListener(k.slice(2), v); else el.setAttribute(k, v === true ? '' : v); } for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : String(kid)); return el; };
-const VERDICT = { fix: '수정 요청', data: '데이터 부족', skip: '캡처 실패', ok: '규약 통과' };
+const VERDICT = { fix: '수정 요청', data: '데이터 부족', skip: '판정 안 함', ok: '규약 통과' };
 const VORDER = ['fix', 'skip', 'data', 'ok'];
 const PNAME = Object.fromEntries(Object.entries(D.personas).map(([k, v]) => [k, v.label]));
 const REASON = { rule: '규약 위반', data: '판정 안 함 · 데이터', skip: '판정 안 함 · 캡처', ok: '검사 결과', design: '설계', note: '메모' };
