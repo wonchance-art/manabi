@@ -62,6 +62,7 @@ export function validateRegistry(reg) {
       if (typeof scene.title !== 'string' || !scene.title) errors.push(`${sat}: 제목이 없다`);
       if (typeof scene.path !== 'string' || !scene.path.startsWith('/')) errors.push(`${sat}: path는 /로 시작한다`);
       if (!Array.isArray(scene.personas) || !scene.personas.length) errors.push(`${sat}: personas가 비었다`);
+      if (scene.storage !== undefined && (typeof scene.storage !== 'object' || Array.isArray(scene.storage) || !scene.storage)) errors.push(`${sat}: storage는 { 키: 값 } 객체다`);
       for (const p of scene.personas || []) if (!personas.has(p)) errors.push(`${sat}: 모르는 사람 ${p}`);
       for (const p of scene.personas || []) {
         const id = `${scene.id}.${p}`;
@@ -83,7 +84,7 @@ export function expandScenes(reg) {
     for (const scene of entry.scenes || []) {
       for (const persona of scene.personas) {
         out.push({ id: `${scene.id}.${persona}`, route: entry.route, path: scene.path, title: scene.title, lane: scene.lane,
-          persona, design: scene.design || null, note: scene.note || null, wait: scene.wait || null });
+          persona, design: scene.design || null, note: scene.note || null, wait: scene.wait || null, storage: scene.storage || null });
       }
     }
   }
@@ -168,4 +169,60 @@ export function mergeVerdicts(byViewport) {
 /** 측정값의 한 줄 요약(캡처 로그용). */
 export function summaryLine(scene, viewport, judged) {
   return `${judged.verdict.padEnd(4)} ${scene.id} @${viewport === 'mobile' ? 390 : 1280} ${scene.path}`;
+}
+
+// ── 부품 대조 · 토큰 밖 색(2판 2단계) ──
+export const PART_TYPES = Object.freeze({ h1: '제목 h1', h2: '제목 h2', h3: '제목 h3', 'button-filled': '채운 버튼', 'button-outline': '테두리 버튼', field: '입력칸', card: '카드' });
+
+/** rgb(a) → #rrggbb(투명도가 있으면 #rrggbbaa). 모르는 모양은 그대로. */
+export function rgbToHex(color) {
+  const m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(String(color).trim());
+  if (!m) return String(color);
+  const hex = [m[1], m[2], m[3]].map(v => Number(v).toString(16).padStart(2, '0')).join('');
+  const a = m[4] === undefined ? 1 : Number(m[4]);
+  return a >= 1 ? `#${hex}` : `#${hex}${Math.round(a * 255).toString(16).padStart(2, '0')}`;
+}
+
+/**
+ * 장면들의 부품 → 화면 크기 · 종류별 「모양」 묶음. 같은 모양(sig)이 몇 장면에 나오는지 센다 — 변종 수가 일관성의 첫 신호다.
+ * 결과: { desktop: { h1: [{ sig, style, scenes: [id…], label, cls }] … }, mobile: … } — 장면 수 많은 순.
+ */
+export function aggregateParts(scenes) {
+  const out = {};
+  for (const scene of scenes) {
+    for (const [viewport, check] of Object.entries(scene.checks || {})) {
+      for (const part of check.parts || []) {
+        const byType = ((out[viewport] ??= {})[part.type] ??= new Map());
+        const row = byType.get(part.sig) || { sig: part.sig, style: part.style, scenes: [], label: part.label, cls: part.cls };
+        if (!row.scenes.includes(scene.id)) row.scenes.push(scene.id);
+        byType.set(part.sig, row);
+      }
+    }
+  }
+  return Object.fromEntries(Object.entries(out).map(([vp, types]) => [vp, Object.fromEntries(Object.entries(types)
+    .map(([type, rows]) => [type, [...rows.values()].sort((a, b) => b.scenes.length - a.scenes.length || a.sig.localeCompare(b.sig))]))]));
+}
+
+/**
+ * 토큰 밖 색 — 화면에 쓰인 글자색 · 배경색 중 어느 CSS 변수 값과도 같지 않은 것. 사용 횟수 많은 순.
+ * 흰색 · 검정 · 완전 투명은 뺀다(ui-conventions §1 예외 — 채색 배경 위 #fff 등).
+ */
+export function offTokenColors(scenes) {
+  const palette = new Set();
+  for (const scene of scenes) for (const check of Object.values(scene.checks || {})) for (const c of check.palette || []) palette.add(c);
+  const tally = new Map();
+  for (const scene of scenes) {
+    for (const check of Object.values(scene.checks || {})) {
+      for (const kind of ['text', 'bg']) {
+        for (const [color, n] of Object.entries(check.colors?.[kind] || {})) {
+          if (palette.has(color) || /^rgba?\((255, 255, 255|0, 0, 0)(, 1)?\)$/.test(color)) continue;
+          const row = tally.get(color) || { color, hex: rgbToHex(color), text: 0, bg: 0, scenes: [] };
+          row[kind] += n;
+          if (!row.scenes.includes(scene.id)) row.scenes.push(scene.id);
+          tally.set(color, row);
+        }
+      }
+    }
+  }
+  return { paletteSize: palette.size, colors: [...tally.values()].sort((a, b) => (b.text + b.bg) - (a.text + a.bg)) };
 }

@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import {
-  coverage, discoverRoutes, expandScenes, judgeShot, loadRegistry, mergeVerdicts, missingValueLines, routeFromPageFile, validateRegistry,
+  aggregateParts, coverage, discoverRoutes, expandScenes, judgeShot, loadRegistry, mergeVerdicts, missingValueLines, offTokenColors, rgbToHex, routeFromPageFile, validateRegistry,
 } from './wall-core.mjs';
 
 const root = join(import.meta.dirname, '..');
@@ -95,5 +95,43 @@ describe('§3 객관 검사 판정', () => {
     const both = mergeVerdicts({ mobile: judgeShot(clean), desktop: judgeShot(clean) });
     expect(both.verdict).toBe('ok');
     expect(both.reasons[0].at).toEqual(['390', '1280']);
+  });
+});
+
+describe('부품 대조 · 토큰 밖 색', () => {
+  it('rgb를 hex로 — 투명도는 끝 두 자리', () => {
+    expect(rgbToHex('rgb(153, 74, 90)')).toBe('#994a5a');
+    expect(rgbToHex('rgba(212, 150, 42, 0.12)')).toBe('#d4962a1f');
+    expect(rgbToHex('color(srgb 1 0 0)')).toBe('color(srgb 1 0 0)');
+  });
+  it('같은 모양은 화면 크기 · 종류별로 묶고 장면 수 많은 순', () => {
+    const a = { sig: 'a1', type: 'button-filled', style: { bg: 'x' }, label: '시작', cls: 'btn' };
+    const b = { sig: 'b2', type: 'button-filled', style: { bg: 'y' }, label: '저장', cls: 'save' };
+    const scenes = [
+      { id: 's1.guest', checks: { desktop: { parts: [a, b] }, mobile: { parts: [a] } } },
+      { id: 's2.guest', checks: { desktop: { parts: [a] } } },
+    ];
+    const out = aggregateParts(scenes);
+    expect(out.desktop['button-filled'].map(r => [r.sig, r.scenes])).toEqual([['a1', ['s1.guest', 's2.guest']], ['b2', ['s1.guest']]]);
+    expect(out.mobile['button-filled']).toHaveLength(1);
+  });
+  it('토큰 값과 흰색 · 검정은 빼고 나머지를 센다', () => {
+    const scenes = [
+      { id: 's1.guest', checks: { desktop: { palette: ['rgb(101, 103, 95)'], colors: { text: { 'rgb(101, 103, 95)': 5, 'rgb(121, 109, 112)': 3, 'rgb(255, 255, 255)': 2 }, bg: {} } } } },
+      { id: 's2.guest', checks: { mobile: { palette: [], colors: { text: { 'rgb(121, 109, 112)': 1 }, bg: { 'rgb(252, 247, 247)': 4 } } } } },
+    ];
+    const { paletteSize, colors } = offTokenColors(scenes);
+    expect(paletteSize).toBe(1);
+    expect(colors.map(c => [c.hex, c.text, c.bg, c.scenes])).toEqual([
+      ['#796d70', 4, 0, ['s1.guest', 's2.guest']],
+      ['#fcf7f7', 0, 4, ['s2.guest']],
+    ]);
+  });
+  it('장면 저장값(storage)은 객체만', () => {
+    const reg = { lanes: ['x'], personas: { filled: {} }, routes: [{ route: '/v', scenes: [{ id: 'v', title: 'V', path: '/v', lane: 'x', personas: ['filled'], storage: 'dark' }] }] };
+    expect(validateRegistry(reg).join('\n')).toMatch(/storage는/);
+    reg.routes[0].scenes[0].storage = { k: { theme: 'dark' } };
+    expect(validateRegistry(reg)).toEqual([]);
+    expect(expandScenes(reg)[0].storage).toEqual({ k: { theme: 'dark' } });
   });
 });

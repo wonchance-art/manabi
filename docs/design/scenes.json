@@ -29,7 +29,11 @@
   { "route": "/materials", "scenes": [{ "id": "materials", "title": "내 서재", "path": "/materials", "lane": "자료 읽기 순환", "personas": ["guest", "empty", "filled"] }] },
   { "route": "/materials/add", "scenes": [{ "id": "materials-add", "title": "자료 추가", "path": "/materials/add", "lane": "자료 읽기 순환", "personas": ["filled"] }] },
   { "route": "/materials/[id]/edit", "scenes": [{ "id": "materials-edit", "title": "자료 고치기", "path": "/materials/50000/edit", "lane": "자료 읽기 순환", "personas": ["filled"] }] },
-  { "route": "/viewer/[id]", "scenes": [{ "id": "viewer", "title": "자료 뷰어", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "design": "ad", "wait": 1500 }] },
+  { "route": "/viewer/[id]", "scenes": [
+   { "id": "viewer", "title": "자료 뷰어 · 종이", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "design": "ad", "wait": 1500, "note": "읽기 테마 기본값(종이 = sepia)." },
+   { "id": "viewer-light", "title": "자료 뷰어 · 밝게", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500, "storage": { "viewer_preferences_v2": { "version": 2, "common": { "theme": "light" } } } },
+   { "id": "viewer-dark", "title": "자료 뷰어 · 어둡게", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500, "storage": { "viewer_preferences_v2": { "version": 2, "common": { "theme": "dark" } } }, "note": "앱 셸은 늘 밝은 화면이고, 어두운 테마는 뷰어 읽기 테마에만 있다(셸이 뷰어에 맞춰 어두워진다)." }
+  ] },
   { "route": "/pdf/[id]", "exclude": "합성 PDF가 없다(uploaded_pdfs 빈 표) — PDF 뷰어 장면은 합성 파일과 함께 2단계." },
   { "route": "/notes/[id]", "exclude": "합성 학습 노트가 없다(study_notes 빈 표) — 2단계." },
   { "route": "/quick", "scenes": [{ "id": "quick", "title": "빠른 분석", "path": "/quick", "lane": "자료 읽기 순환", "personas": ["guest", "filled"] }] },

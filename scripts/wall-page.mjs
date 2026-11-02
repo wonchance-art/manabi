@@ -59,6 +59,8 @@ async function main() {
     scenes: manifest.scenes.map(({ checks, ...s }) => ({ ...s, checks: Object.fromEntries(Object.entries(checks).map(([k, c]) => [k, {
       url: c.url, status: c.status, h1: c.h1, fontKR: c.fontKR, scrollHeight: c.scrollHeight, failed: c.failedResponses || [], console: c.consoleErrors || [],
       textHash: c.textHash, lmHash: c.lmHash, error: c.error || null, ms: c.ms }])) })),
+    components: manifest.components || null,
+    offToken: manifest.offToken ? { paletteSize: manifest.offToken.paletteSize, colors: manifest.offToken.colors.slice(0, 40) } : null,
     coverage: { stale: manifest.coverage.stale, rows: manifest.coverage.rows.map(r => ({ ...r, lane: laneOf[r.route] || laneOf[r.via] || null })) },
     designs: registry,
     states: { snapshot: states.snapshot, counts: states.counts, issues: states.issues, copyGroups: states.copyGroups, items: states.items },
