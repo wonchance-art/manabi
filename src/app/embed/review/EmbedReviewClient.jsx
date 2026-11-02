@@ -23,6 +23,10 @@ import bus from '../../../components/world/bus';
 // 글꼴이 정의되지 않아 시스템 고정폭으로 대체됐다(화면 벽 WALL-004, 2026-11-02 KST). 이 라우트 번들에만 실린다.
 import '../../../views/galmuri9.css';
 
+// 글자를 얹는 주 버튼 — 월드 GBC 초록(#5F9A46)은 크림 글자와 3.26:1이라(화면 벽 WALL-004), 임베드 화면에서만 같은 초록을
+// 잉크 쪽으로 28% 짙게(≈#497A36, 4.9:1) 덮어쓴다. 월드 팔레트 · QuestReview는 그대로 둔다(오너 「월드는 건들지 마」 2026-11-02 KST).
+const embedPrimary = { ...gbcButtonPrimary, background: `color-mix(in srgb, ${GBC.green} 72%, ${GBC.greenInk})` };
+
 // 게더 오브젝트는 좁다 — 패널을 작게 잡고 100dvh 다크 배경(GBC 화면 베젤 느낌) 위에 센터링.
 const SCREEN = {
   width: '100%', height: '100dvh',
@@ -92,7 +96,7 @@ export default function EmbedReviewClient() {
             <p style={{ fontSize: '0.74rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
               브라우저가 이 창의 저장소를 막고 있어요. 새 탭에서 열면 정상적으로 복습할 수 있어요.
             </p>
-            <button type="button" onClick={openInNewTab} style={{ ...gbcButtonPrimary, alignSelf: 'center', marginTop: 4 }}>
+            <button type="button" onClick={openInNewTab} style={{ ...embedPrimary, alignSelf: 'center', marginTop: 4 }}>
               새 탭에서 열기
             </button>
           </div>
@@ -150,7 +154,7 @@ export default function EmbedReviewClient() {
           <p style={{ fontSize: '0.74rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
             due가 남았으면 이어서, 없으면 &quot;복습할 게 없어요&quot;가 떠요.
           </p>
-          <button type="button" onClick={startReview} style={{ ...gbcButtonPrimary, alignSelf: 'center', marginTop: 4 }}>
+          <button type="button" onClick={startReview} style={{ ...embedPrimary, alignSelf: 'center', marginTop: 4 }}>
             다시 복습
           </button>
           <button
@@ -219,7 +223,7 @@ function LoginPanel({ onNewTab }) {
       {err && (
         <p style={{ fontSize: '0.74rem', color: GBC.red, margin: 0, lineHeight: 1.4 }}>{err}</p>
       )}
-      <button type="submit" disabled={submitting} style={{ ...gbcButtonPrimary, width: '100%', opacity: submitting ? 0.6 : 1 }}>
+      <button type="submit" disabled={submitting} style={{ ...embedPrimary, width: '100%', opacity: submitting ? 0.6 : 1 }}>
         {submitting ? '로그인 중…' : '로그인'}
       </button>
       {/* 격리가 아니어도 항상 노출하는 탈출구 — 게더 안에서 너무 작게 보일 때 새 탭에서 크게. */}
