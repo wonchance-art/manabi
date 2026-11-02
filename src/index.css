@@ -2334,32 +2334,44 @@ a.viewer-badge:hover {
   align-items: baseline;
 }
 
-/* 지정 범위 양끝 그립 — OS 선택 핸들의 인앱 버전. 28px 터치 타깃 안에 13px 손잡이. */
+/* 지정 범위 양끝 그립 — OS 선택 핸들의 인앱 버전(RANGE-GRIP-BAR-001 — 오너 사진 · 승인 2026-11-02 KST).
+   가로 28px 터치 타깃(가운데가 토큰 끝) 안에 2px 세로 막대(띠 높이) + 12px 점. 시작은 점이 위, 끝은 점이 아래.
+   타깃 높이 = 띠 + 위아래 14px(TokenRangeGrips GRIP_PAD) — 막대는 top 14px부터 띠 높이만큼, 점은 막대 끝에 2px 겹친다.
+   막대 x(--grip-bar-x)는 화면 가장자리에서 타깃을 안으로 민 만큼 반대로 옮겨 토큰 끝에 그대로 선다. */
 .range-grip {
   position: absolute;
   width: 28px;
-  height: 28px;
   margin-left: -14px;
-  margin-top: -5px;
   padding: 0;
   border: none;
   background: transparent;
   touch-action: none; /* 그립 위 제스처는 전부 조정 — 브라우저 팬 개입 금지 */
   cursor: grab;
   z-index: 6;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
 }
+.range-grip::before,
 .range-grip::after {
   content: '';
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
+  position: absolute;
+  left: var(--grip-bar-x, 14px);
   background: var(--primary);
-  border: 2.5px solid var(--bg-card);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
 }
+.range-grip::before {
+  top: 14px;
+  width: 2px;
+  height: var(--grip-bar-h, 1em);
+  margin-left: -1px;
+  border-radius: 1px;
+}
+.range-grip::after {
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+}
+.range-grip--start::after { top: 4px; }
+.range-grip--end::after { bottom: 4px; }
 .range-grip:active { cursor: grabbing; }
 .range-grip:active::after { transform: scale(1.25); }
 
