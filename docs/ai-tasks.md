@@ -1503,6 +1503,13 @@
   계약 loggedInSweep. 계획(별건): 뷰어 로그인 경로 — 붙기 270 ~ 315 ms · 페이지 청크 411 KB · 단어 색인 163 ms 한 덩어리 → 로그인 서버 그림 · 청크 쪼개기 ·
   유휴 분할. due-pulse 그림자 애니메이션이 뷰어에서 매 프레임 다시 그림(5초 300회 — 모양 변경이라 시안 먼저). /progress Supabase 18건 590 KB(review_events
   쪽 읽기 9회 — 서버 집계는 API 변경).
+  → **#1649 squash `46ef0cb9`(18:36 KST 운영 16/16)**.
+- **VIEWER-INDEX-001 뷰어 단어 색인 긴 작업 (2026-11-02 KST, 오너 「권장대로」)**: 주인 뷰어 첫 로드(합성 3,000단어 · CPU×4)의 단어 목록 응답 뒤 한 작업
+  140 ~ 156 ms(LoAF — longtask에는 안 잡힘) = 첫 투영 90 · 색인 만들기의 같은 snapshot 다시 투영 45 · 색인 17. projectVocabularyLearningRows가 만든
+  snapshot을 기억(WeakMap)해 같은 객체 · 같은 계정 · 같거나 나중 시각이면 검증 없이 evaluatedAt만 옮김(그 밖은 전부 검증 — 행은 제자리 수정하지 않는다는
+  전제를 테스트로 고정) + 뷰어는 64행마다 쉬는 조각 투영(30 ms, scheduler.yield). LoAF 막힘 580 → 426 ms, 50 ms 넘는 단어 작업 0, 표시는 본문 뒤
+  +372 → +335 ms(늦어지지 않음). 3,000단어 색인 깊이 같음 · 무작위 40 snapshot · 돌연변이 검출 — 계약 vocabularyProjectReuse(58). 단어 페이지 · 읽을거리
+  색인도 다시 투영이 빠짐. 남음: 응답 JSON 풀기 2 MB ≈ 52 ms(워커 — 별건).
   같은 훑기의 다른 값: 뷰어 /viewer/45 LCP 2.7 s · TBT 590 ms · JS 649 KB(본문 = 붙은 뒤 — 큰 몫은 SSR 본문, 별건) · 단어 페이지 LCP 1.7 ~ 1.9 s(목록 =
   정적 묶음 뒤, VOCAB-LEVEL-DOC 배제 선례) · 나머지 1.4 s 이하, CLS 전부 0.
 - **OFFLINE-GRADE-001 단어 페이지 오프라인 채점 — 보류(오너 2026-10-31 KST 「일단 내용 저장만 해둬」)**: 카드당 요청 구조는 유지(실측 서버
