@@ -29,7 +29,8 @@ describe('⑵ 쪽 높이 변수는 상속하지 않는다', () => {
   it('@property로 등록 — 값이 없으면 var()의 대체값(지금 그대로)', () => {
     const css = read('src/components/viewer/paged-reader.css');
     expect(css).toContain("@property --reader-page-height { syntax: '*'; inherits: false; }");
-    expect(css).toContain('height: var(--reader-page-height, calc(100dvh - 180px));');
+    // 값이 없으면 서버가 그린 본문의 첫 그림 전 높이(VIEWER-SSR-001 — <html>), 그것도 없으면 지금 그대로의 대체값
+    expect(css).toContain('height: var(--reader-page-height, var(--viewer-ssr-page-height, calc(100dvh - 180px)));');
   });
   it('읽는 곳은 상자 자신 한 곳뿐이다 — 자손이 읽으면 상속하지 않는 변수라 값을 못 받는다', () => {
     const readers = cssFiles('src').flatMap((f) => (read(f).match(/var\(--reader-page-height/g) || []).map(() => f));

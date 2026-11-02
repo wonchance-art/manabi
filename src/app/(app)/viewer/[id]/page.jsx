@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { readViewerSeed, viewerSeedWithin } from '@/lib/server/viewerSeed';
+import { viewerSsrGuardScript, viewerSsrRow } from '@/lib/viewerSsr';
 import ViewerLoading from '@/components/viewer/ViewerLoading';
 import ViewerPage from '@/views/ViewerPage';
 
@@ -37,12 +38,21 @@ export async function generateMetadata({ params }) {
 
 // 본문 싣기(VIEWER-SEED-001)는 이 경계 안에서 기다린다 — 기다리는 동안 첫 HTML은 지금 뷰어의 첫 그림(불러오기)과 같은 마크업이다.
 // 쪽 전체를 async로 두면 (app)/loading.jsx(늦게 보이는 「화면 불러오는 중…」)가 첫 그림이 된다.
-export default function Page({ params }) {
-  return <Suspense fallback={<ViewerLoading />}><SeededViewerPage params={params} /></Suspense>;
+export default function Page({ params, searchParams }) {
+  return <Suspense fallback={<ViewerLoading />}><SeededViewerPage params={params} searchParams={searchParams} /></Suspense>;
 }
 
-async function SeededViewerPage({ params }) {
-  const { id } = await params;
+// 손님의 분석된 공개 자료면 본문까지 서버가 그린다(VIEWER-SSR-001, lib/viewerSsr). 본문 앞의 스크립트가 첫 그림 전에 이 기기 설정이
+// 서버 그림(기본 설정)과 맞는지 보고, 어긋나면 본문을 감추고 불러오기 그림을 보인다(뷰어가 설정을 다 읽은 뒤 뗀다).
+async function SeededViewerPage({ params, searchParams }) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const seed = await viewerSeedWithin(id);
-  return <ViewerPage seed={seed ?? undefined} />;
+  const ssr = viewerSsrRow(seed, id, query);
+  return (
+    <>
+      {ssr && <script dangerouslySetInnerHTML={{ __html: viewerSsrGuardScript({ language: ssr.processed_json?.metadata?.language || 'Japanese', servedAt: seed.servedAt }) }} />}
+      {ssr && <div className="viewer-ssr-hold"><ViewerLoading /></div>}
+      <ViewerPage seed={seed ?? undefined} />
+    </>
+  );
 }
