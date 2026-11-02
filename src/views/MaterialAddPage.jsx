@@ -68,9 +68,10 @@ function preserveTextareaSource(previous, value) {
 }
 
 // --- Component ---
-export default function MaterialAddPage() {
+export default function MaterialAddPage({ sessionHint = null } = {}) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="page-container" role="status">계정을 확인하고 있어요…</div>;
+  // 세션 쿠키가 없으면 손님 판을 바로 — 확인이 끝나 손님이면 같은 키('guest')라 다시 그리지 않는다(VOCAB-GUEST-FIRST-001과 같은 규칙).
+  if (loading && sessionHint !== false) return <div className="page-container" role="status">계정을 확인하고 있어요…</div>;
   return <MaterialAddForm key={user?.id || 'guest'} />;
 }
 
