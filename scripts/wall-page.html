@@ -322,7 +322,7 @@ function openScene(id) {
   const side = h('div', { class: 'side' },
     h('h3', { text: '판정 근거' }), h('ul', { class: 'rs' }, s.reasons.map(r => h('li', { 'data-k': r.k }, h('b', { text: `${REASON[r.k] || r.k}${r.at ? ` · ${r.at.join(' · ')}` : ''}` }), r.t))),
     s.note ? h('p', { class: 'muted', text: s.note }) : null,
-    h('h3', { text: '장면' }), h('dl', { class: 'kv' }, ...[['장면 id', s.id], ['경로', s.route], ['주소', s.path], ['사람', `${PNAME[s.persona]} — ${D.personas[s.persona].detail}`], ['설계', s.design || '—'], ['빌드', D.run.short]].flatMap(([k, v]) => [h('dt', { text: k }), h('dd', { text: v })])),
+    h('h3', { text: '장면' }), h('dl', { class: 'kv' }, ...[['장면 id', s.id], ['경로', s.route], ['주소', s.path], ['사람', `${PNAME[s.persona]} — ${D.personas[s.persona].detail}`], ...(s.steps?.length ? [['조작', s.steps.map(st => Object.entries(st)[0].map(v => Array.isArray(v) ? v.join(' = ') : v).join(' ')).join(' → ')]] : []), ...(s.cookies?.length ? [['쿠키', s.cookies.map(c => `${c.name}=${c.value}`).join(' · ')]] : []), ['설계', s.design || '—'], ['빌드', D.run.short]].flatMap(([k, v]) => [h('dt', { text: k }), h('dd', { text: v })])),
     reviewBox(s, review));
   dlg.replaceChildren(h('div', { class: 'dh' }, h('h2', { id: 'dlg-h', text: s.title }), h('span', { class: 'persona', text: PNAME[s.persona] }), vpill(s.verdict),
     review ? h('span', { class: `pill ${review.action === 'approve' ? 'v-appr' : 'v-fix'}`, text: review.action === 'approve' ? '승인됨' : review.action === 'fix' ? '수정 요청됨' : '보류' }) : null,

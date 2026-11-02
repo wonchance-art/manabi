@@ -118,6 +118,14 @@ function seed(backend) {
   t.profiles.push({ id: EMPTY_UID, role: 'learner', display_name: '새 학습자', onboarded: true, streak_count: 0, learning_language: ['Japanese'],
     last_login_at: created, daily_goal: 20, created_at: created });
   (t.daily_suggestions ??= []).push({ ...SUGGESTION_FIXTURE });
+  // 3단계 상태 장면 재료 — 무거운 계정에 없는 「이번 주」 흔적을 더한다(공유 e2e 픽스처는 그대로):
+  //  · 다시 만난 말: 이번 주에 다 읽은 글(completed_at) — 현황 이번 주 창 · 서재 「다시 만난 말 먼저」가 센다(remetRows).
+  //  · 직접 쓴 말: 이번 주 작문(writing_practice) — 담은 말을 문장에 쓴 기록(usedWordsRows).
+  const hour = 3600000, now = Date.now();
+  t.reading_progress.filter(p => p.is_completed).forEach((p, i) => { p.completed_at = new Date(now - (i + 1) * 5 * hour).toISOString(); });
+  const ja = t.user_vocabulary.filter(v => v.language === 'Japanese' && v.last_reviewed_at).slice(0, 12).map(v => v.word_text);
+  t.writing_practice = [0, 1, 2, 3].map(i => ({ id: 70000 + i, user_id: HEAVY_UID, prompt: `오늘의 작문 ${i + 1}`, language: 'Japanese',
+    sentence: `${ja[i * 3]}と${ja[i * 3 + 1]}の話をしました。${ja[i * 3 + 2]}も使いました。`, created_at: new Date(now - (i + 1) * 9 * hour).toISOString() }));
 }
 
 const b64 = v => Buffer.from(JSON.stringify(v)).toString('base64url');
@@ -132,10 +140,13 @@ function sessionCookie(sub, baseURL) {
 // ── 페이지 안 측정(순수 DOM — 판단 없음) ──
 export function wallProbe({ rawError, dataGap, exceptions = [] }) {
   const hidden = el => { for (let n = el; n && n.nodeType === 1; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden' || Number(s.opacity) === 0) return true; } return false; };
-  const shown = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !hidden(el); };
+  // checkVisibility는 닫힌 <details> 속처럼 그려지지 않는 요소(content-visibility)도 숨김으로 본다 — 크기는 남아 있어 예전 검사가 셌다.
+  const shown = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !hidden(el) && (el.checkVisibility?.({ contentVisibilityAuto: true }) ?? true); };
   const doc = document.documentElement;
   const bodyText = document.body?.innerText || '';
-  const mainText = document.querySelector('main')?.innerText || bodyText;
+  // 열린 창(aria-modal)이 있으면 그 글이 이 장면의 글이다(3단계 상태 장면 — 창은 main 밖 포털에 뜬다).
+  const dialog = [...document.querySelectorAll('[role="dialog"][aria-modal="true"], dialog[open]')].find(shown);
+  const mainText = dialog?.innerText || document.querySelector('main')?.innerText || bodyText;
   const small = [];
   for (const el of document.querySelectorAll('a[href], button, [role="button"]')) {
     if (!shown(el) || (el.innerText || '').trim()) continue;
@@ -193,7 +204,8 @@ export function wallProbe({ rawError, dataGap, exceptions = [] }) {
  */
 export function partsProbe() {
   const hidden = el => { for (let n = el; n && n.nodeType === 1; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden' || Number(s.opacity) === 0) return true; } return false; };
-  const shown = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !hidden(el); };
+  // checkVisibility는 닫힌 <details> 속처럼 그려지지 않는 요소(content-visibility)도 숨김으로 본다 — 크기는 남아 있어 예전 검사가 셌다.
+  const shown = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !hidden(el) && (el.checkVisibility?.({ contentVisibilityAuto: true }) ?? true); };
   const clear = c => !c || c === 'transparent' || /rgba\([^)]*,\s*0\)$/.test(c);
   const px = v => Math.round(parseFloat(v) || 0);
   const family = f => (f || '').split(',')[0].replace(/["']/g, '').replace(/^__|_[0-9a-f]{6,}$|_Fallback_[0-9a-f]+$/gi, '').replace(/_/g, ' ').trim();
@@ -340,7 +352,7 @@ export async function startWallEnv({ out, port = 3170 }) {
     close: async () => { await browser.close().catch(() => {}); stop(); await back.close(); } };
 }
 
-async function captureScene(context, scene, viewportKey, out, partSeen = new Map()) {
+async function captureScene(context, scene, viewportKey, out, partSeen = new Map(), baseURL = null) {
   const vp = VIEWPORTS[viewportKey];
   const page = await context.newPage();
   const consoleErrors = [];
@@ -352,11 +364,17 @@ async function captureScene(context, scene, viewportKey, out, partSeen = new Map
   const file = `shots/${scene.id}.${viewportKey}.jpg`;
   // 장면이 정한 브라우저 저장값(예: 뷰어 읽기 테마) — 페이지 스크립트보다 먼저 넣는다.
   if (scene.storage) await page.addInitScript(entries => { try { for (const [k, v] of entries) localStorage.setItem(k, JSON.stringify(v)); } catch { /* 저장 불가 */ } }, Object.entries(scene.storage));
+  // 장면 쿠키(예: 简体 판 manabi_sc=1) — 이 장면 동안만. 같은 맥락의 다음 장면에 남지 않게 끝에서 지운다.
+  if (scene.cookies) await context.addCookies(scene.cookies.map(c => ({ ...c, url: baseURL, sameSite: 'Lax' })));
   try {
-    const response = await page.goto(scene.path, { waitUntil: 'load', timeout: 60000 });
+    const response = await page.goto(scene.pathByViewport?.[viewportKey] || scene.path, { waitUntil: 'load', timeout: 60000 });
     await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
     await page.evaluate(() => document.fonts.ready).catch(() => {});
     await page.waitForTimeout(scene.wait || 700);
+    for (const [i, step] of (scene.steps || []).entries()) {
+      try { await runStep(page, step); } catch (error) { throw new Error(`조작 ${i + 1}(${JSON.stringify(step)}) 실패 — ${String(error.message).split('\n')[0]}`); }
+    }
+    if (scene.steps?.length) { await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {}); await page.waitForTimeout(600); }
     const m = await page.evaluate(wallProbe, { rawError: RAW_ERROR.source, dataGap: DATA_GAP.source, exceptions: TOUCH_EXCEPTIONS });
     m.status = response?.status() ?? null;
     m.axe = await runAxe(page).catch(e => [{ id: 'axe-error', n: 0, samples: [{ summary: String(e.message).slice(0, 80) }] }]);
@@ -373,15 +391,32 @@ async function captureScene(context, scene, viewportKey, out, partSeen = new Map
       if (clip.width > 4 && clip.height > 4 && await page.screenshot({ path: join(out, crop), fullPage: true, clip }).then(() => true, () => false)) partSeen.set(part.sig, crop);
     }
     m.parts = pp.parts.map(({ rect: _r, ...p }) => p); m.colors = pp.colors; m.palette = pp.palette;
-    const height = Math.min(m.scrollHeight, vp.height * SHOT_SCREENS);
-    await page.screenshot({ path: join(out, file), type: 'jpeg', quality: 72, fullPage: true, clip: { x: 0, y: 0, width: vp.width, height } });
+    // 조작 장면은 사람이 보는 그 화면 한 장(창 · 시트는 고정 위치라 전체 이어 찍기에서 중간에 걸린다). shot: 'full'이면 전체.
+    const viewportOnly = scene.steps?.length && scene.shot !== 'full';
+    const height = viewportOnly ? vp.height : Math.min(m.scrollHeight, vp.height * SHOT_SCREENS);
+    await page.screenshot({ path: join(out, file), type: 'jpeg', quality: 72, ...(viewportOnly ? {} : { fullPage: true, clip: { x: 0, y: 0, width: vp.width, height } }) });
     const { text, boxes, ...rest } = m;
     return { ...rest, ms: Date.now() - t0, consoleErrors: consoleErrors.slice(0, 5), failedResponses: [...new Set(failed)].slice(0, 6), textHash: hash(text), lmHash: hash(boxes), text, shot: file, shotHeight: height };
   } catch (error) {
     return { error: String(error.message).split('\n')[0].slice(0, 200), ms: Date.now() - t0, consoleErrors: consoleErrors.slice(0, 5) };
   } finally {
     await page.close().catch(() => {});
+    if (scene.cookies) for (const c of scene.cookies) await context.clearCookies({ name: c.name }).catch(() => {});
   }
+}
+
+/** 장면 조작 하나(wall-core STEP_KINDS). 기다림은 각 15초까지 — 넘으면 조작 경로가 바뀐 것이다. */
+async function runStep(page, step) {
+  const [kind, arg] = Object.entries(step)[0];
+  const t = { timeout: 15000 };
+  if (kind === 'click') return page.locator(arg).first().click(t);
+  if (kind === 'waitFor') return page.locator(arg).first().waitFor({ state: 'visible', ...t });
+  if (kind === 'select') return page.locator(arg[0]).first().selectOption(arg[1], t);
+  if (kind === 'fill') return page.locator(arg[0]).first().fill(arg[1], t);
+  if (kind === 'press') return page.keyboard.press(arg);
+  if (kind === 'scroll') return page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  if (kind === 'wait') return page.waitForTimeout(Number(arg) || 0);
+  throw new Error(`모르는 조작 ${kind}`);
 }
 
 async function main() {
@@ -411,7 +446,7 @@ async function main() {
       await Promise.all(viewports.map(async viewportKey => {
         const context = await env.newContext({ persona, viewportKey, theme });
         for (const scene of todo) {
-          const m = await captureScene(context, scene, viewportKey, out, partSeen);
+          const m = await captureScene(context, scene, viewportKey, out, partSeen, env.baseURL);
           const row = results.get(scene.id);
           row.checks[viewportKey] = m;
           if (m.shot) row.shots[viewportKey] = m.shot;
