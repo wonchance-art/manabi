@@ -22,7 +22,7 @@ describe('홈 통계 그리드 — 오늘 활동 폐지·이번 주 타일화', 
 
   it('이번 주는 1×1 스탯 타일 — 4×1 와이드 카드로 되돌아가지 않는다', () => {
     // 현황(LEARN-HOME-AK-001)에서도 이번 주는 1×1 작은 칸(learn-stat) — 와이드(span 4)로 되돌아가지 않는다.
-    expect(code).toMatch(/function WeeklyTile[\s\S]{0,900}?learn-stat/);
+    expect(code).toMatch(/function WeeklyTile[\s\S]{0,1400}?learn-stat/);
     // 지키려는 것은 "주간 거울이 와이드로 부활하지 않는다"이지 "4×1 카드가 몇 개냐"가
     // 아니다. 총량으로 세면 무관한 카드 하나(v2-D R2 궤도 줄)에도 깨져 의도를 못 말한다
     // — 통짜 문자열 배선 계약에서 겪은 그 일. 주간 컴포넌트 안쪽만 본다.
@@ -43,14 +43,14 @@ describe('홈 통계 그리드 — 오늘 활동 폐지·이번 주 타일화', 
   });
 
   it('빈 주 모달도 빈 껍데기가 아니다 — 기록 없음 한 줄', () => {
-    expect(code).toMatch(/!weekly\.hasAny[\s\S]{0,200}?이번 주 기록이 아직 없어요/);
+    expect(code).toMatch(/!weekly\.hasAny[\s\S]{0,200}?\{words\.now\} 기록이 아직 없어요/); // 기간 이름(이번 주 · 지난 30일)
   });
 
   it('탭하면 전체 거울 — TileModal 정본 재사용, 카드 머리는 모달 제목과 중복 금지', () => {
-    expect(code).toMatch(/WeeklyTile[\s\S]{0,1200}?<TileModal/);
+    expect(code).toMatch(/function WeeklyModal[\s\S]{0,6000}?<TileModal/);
     // 태그 전체를 통짜로 잡으면 무관한 prop이 붙을 때마다 깨진다 — 지키려는 건
     // "모달 안에서는 카드 머리를 끈다"이므로 그것만 본다(v2-A가 showWeakness를 얹었다).
-    expect(code).toMatch(/<WeeklyReportCard weekly=\{weekly\}[^>]*header=\{false\}/);
+    expect(code).toMatch(/<WeeklyReportCard weekly=\{report\}[^>]*header=\{false\}/);
   });
 
   it('대표 축 폴백 사슬 — 복습이 0이어도 빈 타일이 아니라 다음 축을 보여준다', () => {

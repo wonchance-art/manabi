@@ -177,6 +177,21 @@ button.learn-week__row--tap{width:100%;border:0;border-radius:0;background:none;
 .learn-week .learn-remet__next{justify-self:end;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 4px;font-size:13.5px;font-weight:700;color:var(--ja);text-decoration:none}
 .learn-week .learn-remet__next:hover{text-decoration:underline}
 .learn-week .learn-remet__next:focus-visible{outline:2px solid var(--ja);outline-offset:2px;border-radius:4px}
+/* 기간 칩 · 창 맨 아래(기간 요약 — 오너 「1번으로」 2026-11-02 KST). 칩 = 두 칸 고르기, 아래 = 「자세히 보기 ›」 · 「요약 복사」. */
+.learn-period{display:inline-grid;grid-auto-flow:column;gap:2px;padding:3px;margin:-4px 0 14px;border-radius:999px;background:var(--learn-soft)}
+.learn-period button,.learn-page .learn-period a{display:inline-flex;align-items:center;min-height:32px;padding:0 14px;border:0;border-radius:999px;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;text-decoration:none}
+.learn-period a.is-on,.learn-period button.is-on{background:var(--sheet);color:var(--ink);font-weight:700;box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 12%,transparent)}
+.learn-period a:focus-visible,.learn-period button:focus-visible{outline:2px solid var(--ja);outline-offset:2px}
+.learn-week__foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-top:14px}
+.learn-week .learn-week__more,.learn-week__foot .learn-week__more{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 2px;font-size:13.5px;font-weight:700;color:var(--ja);text-decoration:none}
+.learn-week__foot .learn-week__more:hover{text-decoration:underline}
+.learn-week__foot .learn-week__more:focus-visible{outline:2px solid var(--ja);outline-offset:2px;border-radius:4px}
+.learn-week__copy{min-height:36px;padding:0 14px;border:1px solid var(--ja);border-radius:999px;background:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--ja);cursor:pointer;white-space:nowrap}
+.learn-week__copy:hover:not(:disabled):not(.is-done){background:color-mix(in srgb,var(--ja) 8%,transparent)}
+.learn-week__copy.is-done{background:var(--ja);color:var(--sheet)}
+.learn-week__copy:disabled{opacity:.45;cursor:default}
+.learn-week__copy:focus-visible{outline:2px solid var(--ja);outline-offset:2px}
+.learn-week__copy-fail{flex-basis:100%;margin:0;font-size:12px;color:var(--muted)}
 .tile-modal__back{display:block;margin:0 0 2px;padding:0;border:0;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer}
 .tile-modal__back:hover{color:var(--ink)}
 .tile-modal__back:focus-visible{outline:2px solid var(--ja);outline-offset:2px;border-radius:3px}

@@ -13,8 +13,9 @@ import { learningWeekStartMs } from './growthStats';
 import { dropUndoneEvents } from './undoneReviews';
 import { fetchUndoMarkers } from './undoneReviewsRows';
 
-export async function fetchWeeklyReportRows(userId) {
-  const prevStartIso = new Date(learningWeekStartMs() - 7 * 86400000).toISOString();
+/** sinceMs — 받을 시작 시각(기본 = 지난주 시작). 기간 요약(지난 30일 · 진단지)은 비교 기간까지 넉넉히 넘긴다. */
+export async function fetchWeeklyReportRows(userId, { sinceMs = learningWeekStartMs() - 7 * 86400000 } = {}) {
+  const prevStartIso = new Date(sinceMs).toISOString();
   const untilIso = new Date().toISOString();
   // item_key는 되돌린 채점 대조 키(W 후속 ②) — detail은 얹지 않고 마커만 아래 전용 조회로 붙인다
   const readEvents = () => readCompleteLegacyRows(() => supabase.from('review_events')

@@ -252,7 +252,8 @@ describe('배선 — 리포트 한 줄은 모달을 열었을 때만', () => {
   const line = sliceBetween(stats, 'function WeakSpotLine(', '\n}');
 
   it('홈 첫 화면이 태그 유도용 조회를 치르지 않는다', () => {
-    expect(stats).toMatch(/<WeeklyReportCard weekly=\{weekly\} header=\{false\} showWeakness[ />]/);
+    // 약한 곳 줄은 창을 열었을 때만 · 이번 주일 때만(지난 30일 칩은 약한 곳 창이 주 단위라 뺀다 — 기간 요약 2026-11-02 KST).
+    expect(stats).toMatch(/<WeeklyReportCard weekly=\{report\} header=\{false\} showWeakness=\{range\.kind === 'week'\}[ />]/);
     expect(line).toContain("queryKey: ['weak-spot', user?.id, weekStartMs]");
     expect(line).toContain('enabled: !!user?.id,');
   });

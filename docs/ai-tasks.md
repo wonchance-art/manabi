@@ -911,6 +911,10 @@
     **완료 [#1648](https://github.com/wonchance-art/manabi/pull/1648) `c3e64e5`.** 「직접 쓴 말」 활용형 대조(4a)는 보류 — 대화의 내 말은 토큰으로 저장되지 않고(튜터 줄 · 정답 줄만), 운영에 일본어 동사 · 형용사 담은 말 0개 · base_form ≠ word_text 0행(실측)이라 지금 효과 0.
   ⑪ 이번 PR(오너 「권장대로 진행해」 2026-11-02 KST): 빠른 분석 에이전트 카드 프롬프트 수준 — 작문 수준 → 없으면 같은 언어의 목표 수준(goal_level). 화면 모음 [아티팩트](https://claude.ai/artifact/M4HcQYJeCbdhSjACrNpE9j)에 #1645 화면 추가.
     + 디자인 손질 일곱(오너 「디자인이 엉망인데 꼼꼼하게 봐」 → [목업](https://claude.ai/artifact/DWJTd43a19imyJEBWTCoN7) → 「권장대로 진행해」): 카드를 입력 아래로 · 복사 목록 · 범례/설명 자리 · 화자 칸 · 결과 머리 · 자료실 다시 만난 말 장미색.
+    **완료 [#1650](https://github.com/wonchance-art/manabi/pull/1650) `35958e6`.** 디자인 점검은 디자인 세션 인계(오너 「디자인 세션 오늘 만들었으므로 디자인은 제외」).
+  ⑫ 이번 PR — 학습 진단지 · 기간 요약(오너 「1번으로 목업」 → 인바디 결과지 컨셉 → 「ㅇㅇ · '자세히 보기' · 표준 · 권장대로 · ㅇㅇ」 2026-11-02 KST, [목업](https://claude.ai/artifact/FxNNLFrQs7EfRQUFyxd1Vx)):
+    이번 주 창 「이번 주 · 지난 30일」 칩 · 공부한 날 줄 · 「자세히 보기」 · 「요약 복사」 + `/progress/report` 일곱 칸.
+    셈 정본 buildRangeReport 하나. 표준 = 하루 기준 × 일수(복습 · 담기 = 목표 창). 메일 자동 발송 · 에이전트 읽기(get_summary)는 별도 승인 — 이 꾸러미가 요약 계약 v1.
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —

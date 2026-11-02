@@ -30,11 +30,12 @@ export async function fetchOutputSources(userId) {
   ];
 }
 
-export async function fetchOutputWeeks(userId, { weekStartMs, now = Date.now(), vocabRows = [] } = {}) {
+/** spanMs — 비교 기간 길이(기본 7일 = 지난주). 기간 요약(지난 30일)은 30일. */
+export async function fetchOutputWeeks(userId, { weekStartMs, spanMs = 7 * DAY, now = Date.now(), vocabRows = [] } = {}) {
   const sources = await fetchOutputSources(userId);
   const until = Math.max(now, weekStartMs) + 1;
   return {
     week: buildOutput({ sources, vocabRows, fromMs: weekStartMs, untilMs: until }),
-    prev: buildOutput({ sources, vocabRows, fromMs: weekStartMs - 7 * DAY, untilMs: weekStartMs }),
+    prev: buildOutput({ sources, vocabRows, fromMs: weekStartMs - spanMs, untilMs: weekStartMs }),
   };
 }

@@ -70,7 +70,7 @@ describe('배선 — 이번 주 창 한 줄 → 다시 만난 말 창', () => {
   const css = fs.readFileSync('src/components/learn/learn.css', 'utf8');
   it('창을 연 사람에게만 조회한다 — 현황 첫 화면 비용 0, 담은 말은 현황 snapshot을 다시 쓴다', () => {
     const modal = sliceBetween(page, 'function WeeklyModal(', '\n}\n');
-    expect(modal).toContain("queryKey: ['remet', user?.id, weekStartMs]");
+    expect(modal).toContain("queryKey: ['remet', user?.id, weekStartMs, range.kind]"); // 기간 칩(이번 주 · 지난 30일)마다 따로
     expect(modal).toContain('vocabRows: Array.isArray(vocab) ? vocab : null');
     expect(page).toContain('{open && (\n        <WeeklyModal');
   });

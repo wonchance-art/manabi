@@ -48,7 +48,7 @@ describe('배선 — 이번 주 창 두 줄(들어옴 ↔ 나감) · 같은 창 
   const rows = fs.readFileSync('src/lib/usedWordsRows.js', 'utf8');
   it('창을 연 사람에게만 조회 · 담은 말은 현황 snapshot 재사용', () => {
     const modal = sliceBetween(page, 'function WeeklyModal(', '\n}\n');
-    expect(modal).toContain("queryKey: ['output-words', user?.id, weekStartMs]");
+    expect(modal).toContain("queryKey: ['output-words', user?.id, weekStartMs, range.kind]");
     expect(modal).toContain('vocabRows: Array.isArray(vocab) ? vocab : []');
   });
   it('작문은 writing_practice(작문 화면 · 오늘 학습 쓰기 문항) · 대화는 내 말(who me)', () => {

@@ -24,7 +24,8 @@ export function levelIndex(levels) {
   return index;
 }
 
-export default function LevelVocabCard({ lang, vocab = [], projections = [], knownRows = [], className = '' }) {
+/** 레벨 줄 — [{ level, have, known, total }] · 지원 안 하는 언어는 supported=false. 현황 칸과 학습 진단지 ④가 같은 셈을 쓴다. */
+export function useLevelRows({ lang, vocab = [], projections = [], knownRows = [] }) {
   const supported = lang === 'Chinese';
   const levels = useZhHskLevels(supported);
   const rows = useMemo(() => {
@@ -37,6 +38,11 @@ export default function LevelVocabCard({ lang, vocab = [], projections = [], kno
     const knownBy = new Map((known?.byLevel || []).map(b => [b.level, b.have]));
     return have.byLevel.map(b => ({ ...b, known: knownBy.get(b.level) || 0 }));
   }, [supported, levels, vocab, projections, knownRows, lang]);
+  return { supported, rows };
+}
+
+export default function LevelVocabCard({ lang, vocab = [], projections = [], knownRows = [], className = '' }) {
+  const { supported, rows } = useLevelRows({ lang, vocab, projections, knownRows });
 
   return (
     <div className={`learn-tile learn-levels ${className}`.trim()}>
