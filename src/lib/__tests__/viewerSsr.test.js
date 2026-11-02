@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { sliceBetween } from './helpers/sliceBetween';
-import { viewerSsrRow, viewerSsrHold, viewerSsrFit, viewerSsrGuardScript, VIEWER_SSR_MAX_SKEW_MS } from '../viewerSsr';
+import { viewerSsrRow, viewerSsrHold, viewerSsrFit, viewerSsrGuardScript, viewerSsrStale, VIEWER_SSR_MAX_SKEW_MS } from '../viewerSsr';
 import { readViewerPreferences, viewerDefaults, VIEWER_PREF_KEY } from '../viewerPreferences';
 import { readViewerLanguagePreferences, VIEWER_LANGUAGE_PREF_KEY } from '../viewerLanguage';
 import { VIEWER_SEED_MAX_SKEW_MS } from '../viewerMaterial';
@@ -118,6 +118,15 @@ describe('② 감추지 않으면 이 기기 설정 = 서버 그림(기본값)',
 
 describe('③ 받아들임이 버릴 문서 · 서버 그림과 다를 툴바는 감춘다', () => {
   it('신선도 한도는 받아들임과 같다', () => { expect(VIEWER_SSR_MAX_SKEW_MS).toBe(VIEWER_SEED_MAX_SKEW_MS); });
+  it('뷰어의 새로 받기 판정(viewerSsrStale)은 받아들임이 동기로 버리는 조건과 같다', () => {
+    const s = { servedAt: 1_000_000 };
+    expect(viewerSsrStale(s, { origin: 1_000_000, online: true })).toBe(false);
+    expect(viewerSsrStale(s, { origin: 1_000_000 + VIEWER_SSR_MAX_SKEW_MS, online: undefined })).toBe(false);
+    expect(viewerSsrStale(s, { origin: 1_000_000 + VIEWER_SSR_MAX_SKEW_MS + 1, online: true })).toBe(true);
+    expect(viewerSsrStale(s, { origin: 1_000_000, online: false })).toBe(true);
+    expect(viewerSsrStale(s, { origin: undefined, online: true })).toBe(true);
+    expect(viewerSsrStale({}, { origin: 1_000_000, online: true })).toBe(true);
+  });
   it('끊김 · 옛 문서(문서 연 시각과 서버 시각이 한도 밖) · 시각 모름 · 브라우저 음성 없음', () => {
     expect(viewerSsrHold(fakeWindow({}, { navigator: { onLine: false } }), options('Japanese'))).toBe('offline');
     expect(viewerSsrHold(fakeWindow({}, { performance: { timeOrigin: 1_000_000 + VIEWER_SSR_MAX_SKEW_MS + 1 } }), options('Japanese'))).toBe('stale');
@@ -209,14 +218,16 @@ describe('⑤ 배선', () => {
     expect(body.indexOf('viewerSsrGuardScript(')).toBeLessThan(body.indexOf('<ViewerPage seed={seed ?? undefined} />'));
     expect(body).toContain('{ssr && <div className="viewer-ssr-hold"><ViewerLoading /></div>}');
   });
-  it('뷰어 — 하이드레이션 렌더에서만 그 행을 처음 자료로 · 기본 설정으로 그리고, 감춤은 설정 · 화면 언어 · 새로 받기가 끝난 뒤 뗀다', () => {
+  it('뷰어 — 서버 그림을 붙이기 전 렌더에서만 그 행을 처음 자료로 · 기본 설정으로 그리고, 감춤은 설정 · 화면 언어 · 새로 받기가 끝난 뒤 뗀다', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    expect(viewer).toContain('const ssrRow = useSyncExternalStore(noopSubscribe, clientSnapshot, hydrationSnapshot) ? viewerSsrRow(seed, id, originalParams) : null;');
+    expect(viewer).toContain("const ssrRow = typeof window === 'undefined' || !documentSsrCommitted ? viewerSsrRow(seed, id, originalParams) : null;");
+    // 붙인(커밋) 뒤에만 막는다 — 하이드레이션 전에 위쪽 상태가 바뀌어 React가 서버 HTML을 버리고 새로 그려도 같은 행으로 그린다
+    expect(viewer).toContain('useLayoutEffect(() => { if (ssrFirst.current) documentSsrCommitted = true; }, []);');
     expect(viewer).toContain('initialData: ssrRow ?? undefined,');
     expect(viewer).toContain('initialDataUpdatedAt: ssrRow ? seed.servedAt : undefined,');
     expect(viewer).toContain('const settings = useViewerSettings(materialLang, { serverDefaults: !!ssrRow });');
     expect(viewer).toContain('if (ssrFirst.current && viewerSsrHeld() && settings.hydrated && languageSettings.ready && !ssrRefetching) releaseViewerSsrHold();');
-    expect(viewer).toContain('if (!adoption) { setSsrRefetching(true); refetch().finally(() => setSsrRefetching(false)); return undefined; }');
+    expect(viewer).toContain('if (viewerSsrStale(seed)) { setSsrRefetching(true); refetch().finally(() => setSsrRefetching(false)); return undefined; }');
     expect(viewer).toContain('<ListenControls assumeSupported={!!ssrFirst.current}');
     const settings = read('src/lib/useViewerSettings.js');
     expect(settings).toContain('values:readViewerPreferences(serverDefaults ? null : browserStorage(),language), pending:serverDefaults');

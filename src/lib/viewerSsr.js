@@ -140,6 +140,15 @@ export function viewerSsrGuardScript({ language, servedAt }) {
   return `(function(){try{var h=(${viewerSsrHold})(window,${json});if(h){document.documentElement.setAttribute('data-viewer-hold',h);return;}(${viewerSsrFit})(window,document);}catch(e){document.documentElement.setAttribute('data-viewer-hold','error');}})();`;
 }
 
+/**
+ * 서버가 그린 행이 이 문서에서 낡았나 — 받아들임(adoptViewerSeed)이 동기로 버리는 조건(끊김 · 문서 연 시각과 서버 시각이 한도 밖)과 같다.
+ * 참이면 첫 그림 전 판정이 본문을 감췄고, 뷰어가 지금처럼 새로 받는다. 받아들임의 「문서 하나에 한 번」과 따로 본다 — 하이드레이션
+ * 전에 React가 서버 HTML을 버리고 새로 그리면 받아들임은 이미 쓰인 뒤다.
+ */
+export function viewerSsrStale(seed, { origin = globalThis.performance?.timeOrigin, online = globalThis.navigator?.onLine } = {}) {
+  return online === false || !Number.isFinite(origin) || !Number.isFinite(seed?.servedAt) || Math.abs(seed.servedAt - origin) > VIEWER_SSR_MAX_SKEW_MS;
+}
+
 /** 이 문서가 서버 그림을 감췄나(첫 그림 전 판정) — 뷰어가 설정 · 자료를 다 맞춘 뒤 뗀다. */
 export function viewerSsrHeld(doc = globalThis.document) {
   return doc?.documentElement?.getAttribute?.('data-viewer-hold') || '';

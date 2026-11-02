@@ -179,7 +179,7 @@ import { locateLineTokens } from '../lib/viewerSentenceLine';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot, viewerRouteId } from '../lib/classBoard';
 import { adoptViewerSeed, discardEarlyMaterial, loadMaterial, notFoundRetryKey, startEarlyMaterial, viewerSeedAdopted } from '../lib/viewerMaterial';
-import { releaseViewerSsrHold, viewerSsrHeld, viewerSsrPaintDone, viewerSsrRow } from '../lib/viewerSsr';
+import { releaseViewerSsrHold, viewerSsrHeld, viewerSsrPaintDone, viewerSsrRow, viewerSsrStale } from '../lib/viewerSsr';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
@@ -237,9 +237,13 @@ const STUDY_LANGS = new Set(['Japanese', 'English', 'French', 'Chinese']);
 // (옛 문서 · 끊김 · 다른 계정)는 등록부가 그 자리에서 새로 받는다. 실어 오지 않았으면 지금처럼 띄운다.
 if (typeof window !== 'undefined' && !viewerSeedAdopted(window.location.pathname)) startEarlyMaterial(window.location.pathname);
 
-// 하이드레이션 중인가(VIEWER-SSR-001) — 서버 · 하이드레이션 렌더는 참, 그 뒤 · 화면 이동으로 새로 붙는 렌더는 거짓.
+// 서버 · 하이드레이션 렌더는 참, 그 뒤 렌더는 거짓(VIEWER-SSR-001 — 「듣기」는 서버 그림처럼 있다고 보고 붙는다).
 const noopSubscribe = () => () => {};
-const hydrationSnapshot = () => true, clientSnapshot = () => false;
+const hydrationSnapshot = () => true;
+// 이 문서의 서버 그림(VIEWER-SSR-001)을 화면에 붙였다(커밋). 그 전의 렌더는 하이드레이션이든, 하이드레이션 전에 위쪽 상태(계정 확인 등)가
+// 바뀌어 React가 서버 HTML을 버리고 새로 그리는 렌더든 같은 행으로 그린다 — 새로 그리는 렌더가 불러오기 그림으로 돌아가면 본문이
+// 사라졌다 다시 붙었다(서버 응답 500ms 지연 · CPU×4 실측). 붙인 뒤의 마운트(뒤로 가기로 다시 그린 첫 문서의 조각 · 화면 이동)는 지금 그대로.
+let documentSsrCommitted = false;
 
 // 단어창 훈음 루비 셀의 기준 칸 — 카드 병음 칸 폭(reader-controls.css `.word-fit ruby[data-pinyin] {width:max(1em,3.1rem)}`
 // = 3.1rem ≈ 49.6px). 이 폭 안에 드는 훈음은 한 줄 그대로, 넘으면 그 칸만 벌리고(--hun-n) ×1.6을 넘으면 훈/음 두 줄.
@@ -361,9 +365,10 @@ export default function ViewerPage({ seed } = {}) {
   // 서버가 본문까지 그린 문서(VIEWER-SSR-001 — 손님의 분석된 공개 자료, lib/viewerSsr)는 첫 렌더(하이드레이션)가 그 행으로 그려야 서버 그림과
   // 맞는다. 받아들임의 계정 대조는 비동기라 기다리지 않는다 — 공개 행이라 누가 받아도 같은 행이고, 대조 결과가 다른 행이면 아래 효과가 바꿔 낀다.
   // 받아들이지 못한 문서(기기에 남은 옛 문서 · 끊김)는 첫 그림 전 판정이 이미 본문을 감췄고 아래 효과가 지금처럼 새로 받는다.
-  // 하이드레이션이 아닌 렌더(뒤로 가기로 다시 그린 첫 문서의 조각 · 화면 이동)는 지금 그대로다.
-  const ssrRow = useSyncExternalStore(noopSubscribe, clientSnapshot, hydrationSnapshot) ? viewerSsrRow(seed, id, originalParams) : null;
+  // 서버 그림을 붙인 뒤의 마운트(뒤로 가기로 다시 그린 첫 문서의 조각 · 화면 이동)는 지금 그대로다(documentSsrCommitted).
+  const ssrRow = typeof window === 'undefined' || !documentSsrCommitted ? viewerSsrRow(seed, id, originalParams) : null;
   const ssrFirst = useRef(ssrRow);
+  useLayoutEffect(() => { if (ssrFirst.current) documentSsrCommitted = true; }, []);
   useEffect(() => { if (queryClient.getQueryData(['material', id]) !== undefined) discardEarlyMaterial(id); }, [id, queryClient]);
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
@@ -381,7 +386,8 @@ export default function ViewerPage({ seed } = {}) {
   useEffect(() => {
     const row = ssrFirst.current, adoption = seedAdoption.current;
     if (!row) return undefined;
-    if (!adoption) { setSsrRefetching(true); refetch().finally(() => setSsrRefetching(false)); return undefined; }
+    if (viewerSsrStale(seed)) { setSsrRefetching(true); refetch().finally(() => setSsrRefetching(false)); return undefined; }
+    if (!adoption) return undefined; // 버려진 하이드레이션 시도가 이미 받아들였다(기기 사본 남기기도 그쪽이 했다)
     let alive = true;
     adoption.promise.then((next) => { if (alive && next && next !== row) queryClient.setQueryData(['material', id], next); }, () => {});
     return () => { alive = false; };
