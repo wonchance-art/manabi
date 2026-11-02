@@ -890,6 +890,11 @@
   --chat-meta · 문장 막대 24px 예외(ui-conventions §3) · 지도 핀 터치 원 r 20(390 실측 24.8px). 계약 `wallContrast003.test.js`.
   확인: npm test 918/10,792 · 화면 벽 재캡처 e5cd038d 수정 요청 15 → **0**(규약 통과 98 · 판정 안 함 2 = 임베드 복습 글꼴).
   다음: 임베드 복습 원본 글꼴 미로드 · 부품 대조 정리(채운 버튼 45가지 — 주 버튼 두 체계) · 3단계 상태 장면 · 简体 판.
+  **#1647 병합 `e756c4a`** · 임베드 글꼴 [#1651](https://github.com/wonchance-art/manabi/pull/1651) `5582cdb` · 임베드 버튼 [#1652](https://github.com/wonchance-art/manabi/pull/1652) `a9da1ae`(오너 「월드는 건들지 마」 — 임베드 파일에서만).
+- **WALL-005 화면 벽 3단계 (2026-11-02 KST)** `claude/admiring-ritchie-tz2mxp` → [#1656](https://github.com/wonchance-art/manabi/pull/1656) (오너 「3단계 진행해」):
+  장면 steps(조작 순서) · cookies(简体 판) · pathByViewport — 상태 장면 11(현황 이번 주 · 다시 만난 말 · 직접 쓴 말 창 · 뷰어 단어 카드 · 완독 창 · 복습 카드 ·
+  서재 「다시 만난 말 먼저」 · 작문 써먹기 칩 · 简体 홈 ×2 · 简体 산책 — 데이터 통계 세션 인계 화면 포함). 합성 재료: 이번 주 완독 · 작문 4편(seed).
+  발견: `color: var(--warning)`(배경용 토큰을 글자에) index.css 22곳 — 서재 「N 복습」 배지 2.23:1 등. 다음: 일괄 정리 제안 · 주 버튼 두 체계.
 - **STATS-MAP-001 통계 정리 (2026-11-01 KST)** `claude/practical-carson-umi0t8`:
   조사 = [통계 지도](https://claude.ai/artifact/1jJDC3CeUTf6A72XsTDuXy) · [#1077 코멘트 6553548961](https://github.com/wonchance-art/manabi/issues/1077#issuecomment-6553548961) · [2차 목업](https://claude.ai/artifact/DuZixRtSKLoXEtS2GwNrdP).
   ① 1 · 2차 **완료 [#1623](https://github.com/wonchance-art/manabi/pull/1623) squash `98d8c1a`(오너 「바로 병합」)** — 죽은 코드 · 내보내기 학습 기록 · 홈 키 무효화 · 그룹 집계 · 지표 사전 · 이름 셋 · 연속 「–」 · 표시 경계 04시.
