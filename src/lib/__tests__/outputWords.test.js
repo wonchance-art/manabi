@@ -22,7 +22,7 @@ describe('pickOutputWords', () => {
     ];
     const picked = pickOutputWords({ vocabRows: vocab, events, language: 'Japanese', now: NOW });
     expect(picked.map((w) => w.id)).toEqual([2, 3, 1]); // 오답(2) → 최근 접촉순(3, 1)
-    expect(picked[0]).toEqual({ id: 2, word_text: '峠', meaning: '고개' });
+    expect(picked[0]).toEqual({ id: 2, word_text: '峠', meaning: '고개', wrong: true });
     expect(picked[1].meaning).toBeNull(); // 뜻 없는 행도 word_text로 포함
   });
 

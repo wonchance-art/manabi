@@ -6,15 +6,16 @@
 import { QueryClient, dehydrate } from '@tanstack/react-query';
 import { requireUserClaims } from '@/lib/supabaseServer';
 import { libraryFilters, libraryNarrowed } from '@/lib/personalLibrary';
+import { isLibraryToolsView } from '@/lib/libraryDiscovery';
 import { libraryCollectionsQuery, libraryListQuery, libraryRecentQuery } from '@/lib/libraryShelfQueries';
 
 export const LIBRARY_PREFETCH_BUDGET_MS = 800;
 
 const timeout = (ms) => new Promise((resolve) => setTimeout(() => resolve('timeout'), Math.max(0, ms)));
 
-/** 서재가 아닌 화면(공개 읽을거리로 이동 · 자료 상세 · 맞춤도 정렬)이면 미리 받지 않는다 — LibraryPage와 같은 분기. */
+/** 서재가 아닌 화면(공개 읽을거리로 이동 · 자료 상세 · 맞춤도 · 넘긴 말 정렬)이면 미리 받지 않는다 — LibraryPage와 같은 분기. */
 export function shelfRendered(params) {
-  return params.get('tab') !== 'public' && params.get('tools') !== '1' && params.get('sort') !== 'fit';
+  return params.get('tab') !== 'public' && !isLibraryToolsView(params);
 }
 
 /** 화면이 그 조건에서 실제로 부를 쿼리들(LibraryShelf와 같은 조건 — 읽던 곳은 좁히지 않은 첫 화면에서만). 대화는 서재에 없다(CONV-CHAT-001 8차). */

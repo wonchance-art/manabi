@@ -7,6 +7,9 @@
  * 토큰 렌더는 뷰어 정본 부품(splitRuby·pinyinToneClass·word-token CSS), 탭 사전은
  * PDF 뷰어 팝업 계약(fetchWordDetailText·formatDetail·TokenPosLabel)을 재사용한다.
  * 저장 경로는 하나 — [자료로 저장]이 초안을 sessionStorage로 추가 화면에 넘긴다.
+ * 에이전트 0단계(AGENT-LINK-001): 위 「에이전트에게 부탁하기」 카드가 프롬프트를 복사하고, 돌려받은 결과를 붙이면
+ * 형식(parseAgentText)을 알아봐 본문만 해부한다 — 제목 · 수준 · 목표 단어(장미색 밑줄) · 화자 칸 · 뜻 메모(보여만 줌).
+ * 형식이 아니면 지금과 똑같이 해부한다(형식은 덤이지 조건이 아니다).
  */
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -24,6 +27,8 @@ import TokenPosLabel from './TokenPosLabel';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { focusIfFree } from '../lib/focusAfterAction';
 import { authEntryHref } from '../lib/authRedirect';
+import { parseAgentText } from '../lib/agentFormat';
+import AgentPromptCard from '../components/quick/AgentPromptCard';
 
 // 서버 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(계약 테스트로 핀).
 const QUICK_MAX_LINES = 100;
@@ -49,7 +54,8 @@ export default function QuickPage() {
   const [text, setText] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState('');
-  const [resultLines, setResultLines] = useState(null); // [{ text, tokens: [token]|null }]
+  const [resultLines, setResultLines] = useState(null); // [{ text, tokens: [token]|null, speaker }]
+  const [agentInfo, setAgentInfo] = useState(null); // 에이전트 형식을 알아봤을 때 { title, level, targets:Set, notes }
   const [wordDetail, setWordDetail] = useState(null); // { token, line, detail, loading }
   const [saving, setSaving] = useState({});
   const popupWordId = useId();
@@ -92,7 +98,10 @@ export default function QuickPage() {
   }, [popupOpen]);
 
   async function handleAnalyze() {
-    const rawLines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+    // 에이전트 형식이면 본문(화자 이름을 뗀 문장)만 해부한다 — 머리 · 구분선 · 뜻 메모는 분석에 넣지 않는다.
+    const agent = parseAgentText(text);
+    const source = agent.recognized ? agent.body : text;
+    const rawLines = source.split('\n').map((l) => l.trim()).filter(Boolean);
     if (rawLines.length === 0) return;
     const truncated = rawLines.length > QUICK_MAX_LINES
       || rawLines.some((l) => l.length > QUICK_MAX_LINE_LEN);
@@ -103,6 +112,10 @@ export default function QuickPage() {
     setError('');
     setResultLines(null);
     setWordDetail(null);
+    setAgentInfo(agent.recognized
+      ? { title: agent.title, level: agent.level, targets: new Set(agent.targets), notes: agent.notes, body: agent.body }
+      : null);
+    const speakers = agent.recognized ? agent.lines.map((l) => l.speaker) : [];
     try {
       let authHeader = {};
       try {
@@ -118,10 +131,12 @@ export default function QuickPage() {
       if (!res.ok) throw new Error(data?.error || `분석 서버 오류 (HTTP ${res.status})`);
       setResultLines(lines.map((lineText, i) => {
         const r = data?.results?.[i];
-        if (!r?.sequence?.length) return { text: lineText, tokens: null }; // 미분석 줄 — 원문 그대로
+        const speaker = speakers[i] || null;
+        if (!r?.sequence?.length) return { text: lineText, tokens: null, speaker }; // 미분석 줄 — 원문 그대로
         return {
           text: lineText,
           tokens: r.sequence.map((id) => r.dictionary[id]).filter((t) => t?.text?.trim()),
+          speaker,
         };
       }));
     } catch (e) {
@@ -134,7 +149,10 @@ export default function QuickPage() {
   // [자료로 저장] — 초안을 추가 화면으로 넘긴다. 저장 자체는 추가 화면의 기존 흐름 하나뿐.
   function handleSaveAsMaterial() {
     try {
-      sessionStorage.setItem('manabi_quick_draft', JSON.stringify({ text, language }));
+      // 에이전트 형식이면 해부한 본문과 제목만 넘긴다(뜻 메모는 저장하지 않는다 — 뜻은 사전이 정본).
+      sessionStorage.setItem('manabi_quick_draft', JSON.stringify(agentInfo
+        ? { text: agentInfo.body, language, title: agentInfo.title }
+        : { text, language }));
     } catch {}
     router.push('/materials/add?from=quick');
   }
@@ -178,7 +196,7 @@ export default function QuickPage() {
   const renderToken = (token, i, line) => {
     const rubySegments = token.furigana ? splitRuby(token.text, token.furigana, token.base_form, line?.[i + 1]?.text) : null;
     return (
-      <div key={i} className="word-token" role="button" tabIndex={0}
+      <div key={i} className={`word-token${agentInfo?.targets.has(token.text) || agentInfo?.targets.has(token.base_form) ? ' is-target' : ''}`} role="button" tabIndex={0}
         onClick={(e) => { openerRef.current = e.currentTarget; openWordDetail(token, line); }}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), openerRef.current = e.currentTarget, openWordDetail(token, line))}>
         {rubySegments ? (
@@ -216,6 +234,7 @@ export default function QuickPage() {
         </div>
       ) : (
         <>
+          <AgentPromptCard language={language} />
           <div className="card" style={{ padding: '16px 18px', marginBottom: 16 }}>
             <textarea
               className="form-input"
@@ -256,7 +275,17 @@ export default function QuickPage() {
                 display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
                 paddingBottom: 10, borderBottom: '1px solid var(--border)',
               }}>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>저장 안 됨</span>
+                {agentInfo ? (
+                  <span className="agent-format">
+                    <span className="agent-format__chip">에이전트 형식</span>
+                    <span className="agent-format__title">{agentInfo.title}</span>
+                    <span className="agent-format__meta">
+                      {[agentInfo.level, agentInfo.targets.size ? `목표 단어 ${agentInfo.targets.size}` : ''].filter(Boolean).join(' · ')}
+                    </span>
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>저장 안 됨</span>
+                )}
                 <span style={{ flex: 1 }} />
                 <button type="button" className="btn btn--ghost btn--sm" onClick={handleSaveAsMaterial}>
                   자료로 저장
@@ -264,15 +293,19 @@ export default function QuickPage() {
               </div>
               <div lang={htmlLang(language)} style={{ fontSize: '1.05rem', lineHeight: 2.1 }}>
                 {resultLines.map((lineRes, li) => (
-                  <div key={li} style={{ marginBottom: 10 }}>
-                    {lineRes.tokens
-                      ? lineRes.tokens.map((t, ti) => renderToken(t, ti, lineRes.text))
-                      : <span className="word-token--raw" title="이 줄은 분석하지 못했어요">{lineRes.text}</span>}
+                  <div key={li} style={{ marginBottom: 10 }} className={lineRes.speaker ? 'agent-line' : undefined}>
+                    {lineRes.speaker && <span className="agent-line__who" lang="und">{lineRes.speaker}</span>}
+                    <div>
+                      {lineRes.tokens
+                        ? lineRes.tokens.map((t, ti) => renderToken(t, ti, lineRes.text))
+                        : <span className="word-token--raw" title="이 줄은 분석하지 못했어요">{lineRes.text}</span>}
+                    </div>
                   </div>
                 ))}
               </div>
+              {agentInfo?.notes && <p className="agent-notes"><b>뜻 메모</b> {agentInfo.notes}</p>}
               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 6 }}>
-                단어를 탭하면 뜻과 설명이 열려요
+                단어를 탭하면 뜻과 설명이 열려요{agentInfo?.targets.size ? ' · 밑줄 = 목표 단어' : ''}
               </div>
             </div>
           )}

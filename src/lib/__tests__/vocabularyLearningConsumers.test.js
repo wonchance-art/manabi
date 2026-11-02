@@ -42,7 +42,7 @@ describe('effective output vocabulary reads', () => {
     const client = database({ events: [event('a')], words: [source] });
     const before = JSON.stringify(source);
     const loaded = await fetchTodayReviewRows(ACTOR, { client, now: NOW });
-    expect(pickOutputWords({ ...loaded, language: 'Chinese' })).toEqual([{ id: 'a', word_text: '词a', meaning: '뜻a' }]);
+    expect(pickOutputWords({ ...loaded, language: 'Chinese' })).toEqual([{ id: 'a', word_text: '词a', meaning: '뜻a', wrong: false }]);
     expect(JSON.stringify(source)).toBe(before);
     expect(client.calls[0].table).toBe('review_events');
     expect(client.calls.every(call => call.owner === ACTOR && call.count === 'exact')).toBe(true);

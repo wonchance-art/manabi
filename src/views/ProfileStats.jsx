@@ -35,6 +35,7 @@ import { fetchOutputWeeks } from '../lib/usedWordsRows';
 import { fadingWhenMet } from '../lib/remetWords';
 import { unusedReviewedWords } from '../lib/usedWords';
 import { writingWordsHref } from '../lib/writingWordsParam';
+import { LIBRARY_WORDS_MAX } from '../lib/libraryDiscovery';
 import WordChips, { WordChipsLegend } from '../components/WordChips';
 
 // 다시 만난 말 칩 → 단어 카드(복습실과 같은 VocabDetailCard) — 칩을 누를 때만 받는다.
@@ -301,8 +302,14 @@ const TRAILS = Object.freeze({
     // 핵심(채운 칩) = 만났을 때 흐려지던 말 — 복습이 마침 필요하던 때 글에서 다시 만난 말.
     keyLabel: '흐려지던 말',
     keys: (week, byWord) => new Set(Object.entries(week.metAt || {}).filter(([w, at]) => byWord.has(w) && fadingWhenMet(byWord.get(w), at)).map(([w]) => w)),
-    // 연계 3 — 다음 읽기. 자료실 「내 수준 맞춤」(담은 말 커버리지 정렬)이 담은 말이 많이 나오는 글을 위로 올린다.
-    footer: () => ({ href: '/materials?sort=fit', label: '내 수준 맞춤 글 읽기' }),
+    // 연계 3 — 다음 읽기. 이번 주 다시 만난 말을 자료실에 넘겨 그 말이 많이 나오는 글을 위로(「다시 만난 말 먼저」 정렬).
+    // 이번 주 다시 만난 말이 없으면 자료실 「내 수준 맞춤」(담은 말 커버리지 정렬).
+    footer: week => {
+      const words = [...new Set(week.sources.flatMap(src => src.words))].slice(0, LIBRARY_WORDS_MAX);
+      return words.length
+        ? { href: `/materials?${new URLSearchParams({ sort: 'words', words: words.join(',') })}`, label: '이 말이 나오는 글 읽기' }
+        : { href: '/materials?sort=fit', label: '내 수준 맞춤 글 읽기' };
+    },
   },
   output: {
     title: '직접 쓴 말',

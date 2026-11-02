@@ -163,3 +163,23 @@ export function remetInMaterial({ processedJson, projections = [], now = Date.no
   }
   return { words, keys };
 }
+
+/**
+ * 자료실 「다시 만난 말 먼저」(연계 3 · 오너 「6 진행」 2026-11-02 KST) — 넘긴 말이 그 글에 몇 개 나오나.
+ * 같은 대조(materialContentWords 내용어 · 표면형 또는 기본형). 분석 안 된 글은 0.
+ */
+export function materialWordHits(processedJson, words) {
+  if (!processedJson?.dictionary || !words?.size) return 0;
+  const hit = new Set();
+  for (const w of materialContentWords(processedJson)) {
+    if (words.has(w.text)) hit.add(w.text);
+    else if (w.base_form && words.has(w.base_form)) hit.add(w.base_form);
+  }
+  return hit.size;
+}
+
+/** 많이 나오는 글 먼저 · 같으면 원래 순서(안정 정렬). 0개인 글은 뒤에 그대로 남는다(숨기지 않음). */
+export function sortByWordHits(items, hitsOf) {
+  return (items || []).map((item, index) => ({ item, index, hits: hitsOf(item) || 0 }))
+    .sort((a, b) => (b.hits - a.hits) || (a.index - b.index)).map(e => e.item);
+}
