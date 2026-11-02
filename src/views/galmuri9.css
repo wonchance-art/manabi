@@ -1,7 +1,7 @@
 /**
  * Galmuri9 (OFL-1.1, © Lee Minseo) — 학습 월드 도트 폰트.
  * 필요한 한 종(Galmuri9, 9px 비트맵 · 한글·가나·라틴)만 npm 로컬 번들(galmuri/dist)에서
- * @font-face 로 선언한다. 이 CSS 는 WorldPage(=/world 라우트 전용 client 컴포넌트)에서만
+ * @font-face 로 선언한다. 이 CSS 는 WorldPage(/world)와 임베드 복습(/embed/review — 같은 GBC 판 QuestReview)에서만
  * import 되어 다른 라우트 번들·CSS 에는 실리지 않는다. woff2 만 참조(ttf 미참조 → payload 최소).
  */
 @font-face {

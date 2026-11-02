@@ -142,7 +142,7 @@ export function missingValueLines(text) {
 export function judgeShot(m) {
   const reasons = [];
   if (!m || m.error) return { verdict: 'skip', reasons: [{ k: 'skip', t: `캡처 실패 — ${m?.error || '측정값 없음'}` }] };
-  if (m.fontKR === false) return { verdict: 'skip', reasons: [{ k: 'skip', t: '원본 글꼴(Noto Sans KR)이 로드되지 않았다 — 대체 글꼴 화면은 판정하지 않는다.' }] };
+  if (m.fontKR === false) return { verdict: 'skip', reasons: [{ k: 'skip', t: `원본 글꼴${m.fontMissing?.length ? `(${m.fontMissing.join(' · ')})` : ''}이 로드되지 않았다 — 대체 글꼴 화면은 판정하지 않는다.` }] };
   if (m.overflowX) reasons.push({ k: 'rule', t: `가로 넘침 — 문서 너비 ${m.scrollWidth}px > 창 ${m.innerWidth}px` });
   if (m.rawError) reasons.push({ k: 'rule', t: `오류 원문 노출 — 「${m.rawError}」` });
   for (const line of m.missing || []) reasons.push({ k: 'rule', t: `값 누락 노출 — 「${line.slice(0, 80)}」` });

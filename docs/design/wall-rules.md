@@ -43,7 +43,7 @@
 | 가로 넘침 | 문서 `scrollWidth` > 창 너비 | 화면 크기마다 |
 | 대비 AA | 일반 글자 4.5:1 미만, 큰 글자(24px 이상 또는 18.66px 이상 굵게) 3:1 미만 | axe `color-contrast` |
 | 터치 타깃 | 화면에 **실제로 보이는** 글자 없는 버튼 · 링크가 44×44px 미만(ui-conventions §3 예외는 24px) | 보이는 요소만 센다(접힌 메뉴 속 버튼 제외) · 예외 표 `TOUCH_EXCEPTIONS` |
-| 대체 글꼴 | 원본 글꼴(Noto Sans KR 등 next/font 변수 전체)이 로드되지 않음 | `document.fonts` |
+| 대체 글꼴 | 화면 글자가 첫 순위로 쓰는 웹 글꼴(Noto Sans KR 등 next/font · 월드 · 임베드의 Galmuri9)이 로드되지 않음 — 선언조차 없는 이름 포함 | `document.fonts` · 보이는 글자의 `font-family` 첫 이름(시스템 · 일반 글꼴 제외) |
 | 오류 원문 노출 | 서버 · 런타임 오류의 영어 원문이 사용자에게 보임 | 정규식(Server Components render · Application error · TypeError 등) |
 | 값 누락 노출 | `undefined` · `null` · `NaN` · `[object Object]` · 치환되지 않은 `{{…}}` · `%s`가 화면 글자에 보임 | 화면 글자 정규식(낱말 경계). 저장소에 번역 키 체계가 없어 「키 노출」 대신 이것을 잰다 |
 | 이름 없는 조작 | 이름 없는 버튼 · 링크 | axe `button-name` · `link-name` |

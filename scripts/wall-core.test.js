@@ -137,3 +137,11 @@ describe('부품 대조 · 토큰 밖 색', () => {
     expect(expandScenes(reg)[0].storage).toEqual({ k: { theme: 'dark' } });
   });
 });
+
+describe('대체 글꼴 판정', () => {
+  it('로드 안 된 글꼴 이름을 사유에 적는다', () => {
+    const judged = judgeShot({ fontKR: false, fontMissing: ['Galmuri9'] });
+    expect(judged.verdict).toBe('skip');
+    expect(judged.reasons[0].t).toMatch(/원본 글꼴\(Galmuri9\)이 로드되지 않았다/);
+  });
+});
