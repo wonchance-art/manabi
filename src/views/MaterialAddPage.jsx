@@ -338,6 +338,8 @@ function MaterialAddForm() {
       sessionStorage.removeItem('manabi_quick_draft');
       const draft = JSON.parse(raw);
       if (draft?.text) setRawText(draft.text);
+      // 에이전트 형식 결과(빠른 분석 — AGENT-LINK-001 0단계)는 제목이 같이 온다.
+      if (typeof draft?.title === 'string' && draft.title.trim()) setTitle(draft.title.trim().slice(0, 120));
       const draftTarget = viewerLanguageInfo(draft?.language);
       if (draftTarget && !(isNote && draftTarget.code === 'ko')) {
         setLanguage(draftTarget.language);

@@ -29,6 +29,7 @@ import { LEVELS, SERIES_TITLE_ILIKE, langNameKo, levelRank, profileLevel, isWrit
 import { canReadSuggestion, suggestionHref, suggestionSource, TODAY_SUGGESTIONS_KEY, TODAY_NEWS_ID, fetchTodaySuggestions } from '../lib/suggestionReading';
 import { encounterLookupLang } from '../lib/refVocabLookup';
 import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
+import { materialWordHits, sortByWordHits } from '../lib/remetWords';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 import MaterialGroupCard from '../components/MaterialGroupCard';
@@ -243,7 +244,9 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
   const [searchQuery, setSearchQuery] = useState(initialFilters.query);
   const [langFilter, setLangFilter] = useState(initialFilters.language);
   const [levelFilter, setLevelFilter] = useState(initialFilters.level);
-  const [sortBy, setSortBy] = useState(initialFilters.sort); // newest | level | title | fit
+  const [sortBy, setSortBy] = useState(initialFilters.sort); // newest | level | title | fit | words
+  // 「이 말이 나오는 글」(연계 3) — 다시 만난 말 창이 넘긴 말. 정렬을 바꾸면 주소에서 빠진다(되돌아오면 다시 넘겨받는다).
+  const [remetWords] = useState(() => initialFilters.words);
   const [unreadOnly, setUnreadOnly] = useState(initialFilters.unread); // v2-F R3 — 고르기 좁히기
   // 받아둔 자료(v2-N R3). IndexedDB는 서버가 아니라 **이 기기**의 상태라 쿼리 캐시가
   // 아니라 지역 상태로 둔다 — 기기마다 다른 게 정상이고, 그래서 동기화 대상도 아니다.
@@ -316,13 +319,13 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
   useEffect(() => {
     if (!libraryView) return;
     const params = new URLSearchParams(window.location.search);
-    for (const [key, value] of Object.entries({ q: searchQuery, lang: langFilter === 'all' ? '' : langFilter, level: levelFilter === 'all' ? '' : levelFilter, sort: sortBy === 'newest' ? '' : sortBy, unread: unreadOnly ? '1' : '', pinned: pinnedOnly && '1' })) {
+    for (const [key, value] of Object.entries({ q: searchQuery, lang: langFilter === 'all' ? '' : langFilter, level: levelFilter === 'all' ? '' : levelFilter, sort: sortBy === 'newest' ? '' : sortBy, words: sortBy === 'words' ? remetWords.join(',') : '', unread: unreadOnly ? '1' : '', pinned: pinnedOnly && '1' })) {
       if (value) params.set(key, value); else params.delete(key);
     }
     if (visibleCount > PAGE_SIZE) params.set('shown', String(visibleCount)); else params.delete('shown');
     const next = params.toString();
     window.history.replaceState({ ...window.history.state }, '', `${window.location.pathname === '/discover' ? '/discover' : '/materials'}${next ? `?${next}` : ''}${window.location.hash}`);
-  }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, unreadOnly, pinnedOnly, visibleCount]);
+  }, [libraryView, searchQuery, langFilter, levelFilter, sortBy, remetWords, unreadOnly, pinnedOnly, visibleCount]);
 
   const { data: suggestions = [], isFetched: suggestionsFetched } = useQuery({
     queryKey: TODAY_SUGGESTIONS_KEY,
@@ -507,8 +510,21 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
     return map;
   }, [materials, savedFitIndex]);
 
+  const remetWordSet = useMemo(() => new Set(remetWords), [remetWords]);
+  const wordHitsById = useMemo(() => {
+    const map = new Map();
+    if (!remetWordSet.size) return map;
+    for (const m of materials) {
+      if (m.processed_json?.status !== 'completed') continue;
+      const hits = materialWordHits(m.processed_json, remetWordSet);
+      if (hits) map.set(m.id, hits);
+    }
+    return map;
+  }, [materials, remetWordSet]);
+
   const sorted = (() => {
     if (sortBy === 'newest') return materials;
+    if (sortBy === 'words') return sortByWordHits(materials, (m) => wordHitsById.get(m.id));
     if (sortBy === 'fit') return sortByFit(materials, (m) => fitById.get(m.id)?.band ?? null);
     const arr = [...materials];
     if (sortBy === 'level') {
@@ -720,6 +736,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
           aria-label="정렬"
         >
           <option value="newest">최신순</option>
+          {remetWords.length > 0 && <option value="words">다시 만난 말 먼저</option>}
           {signedInFilters && <option value="fit">내 수준 맞춤</option>}
           <option value="level">쉬운순</option>
           <option value="title">제목순</option>
@@ -1033,13 +1050,17 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
                   </div>
                 </div>
                 {/* 🎯 맞춤도 줄(rfc-material-fit 목업 A) — 게스트·미계산은 무표기(0 무표기 결) */}
+                {/* 「다시 만난 말 먼저」로 볼 때만 그 글에 나오는 넘긴 말 수를 앞에(연계 3 — 0이면 무표기). */}
                 {(() => {
                   const fit = fitById.get(m.id);
-                  if (!fit || fit.coverage == null) return null;
+                  const hits = sortBy === 'words' ? wordHitsById.get(m.id) : 0;
+                  if (!hits && (!fit || fit.coverage == null)) return null;
                   return (
                     <p className="mat-card__fit">
-                      아는 말 {Math.round(fit.coverage * 100)}% · 새 단어 {fit.unknown}
-                      {fit.band === 'fit' && <span className="mat-card__fit-good"> · 지금 읽기 좋아요</span>}
+                      {hits > 0 && <span className="mat-card__fit-good">다시 만난 말 {hits}개</span>}
+                      {hits > 0 && fit?.coverage != null && ' · '}
+                      {fit?.coverage != null && <>아는 말 {Math.round(fit.coverage * 100)}% · 새 단어 {fit.unknown}</>}
+                      {fit?.band === 'fit' && <span className="mat-card__fit-good"> · 지금 읽기 좋아요</span>}
                     </p>
                   );
                 })()}

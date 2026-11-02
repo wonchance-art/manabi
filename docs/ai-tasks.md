@@ -889,7 +889,12 @@
   ⑦ 「직접 쓴 말」(산출 · [목업](https://claude.ai/artifact/4oXYYK2GgushKEXfZZXCTv)) · 개인정보 처리방침 처리 위탁 · 국외 이전 표 · AGENT-LINK-001 설계 초안 `docs/design/agent-link.md` · 0단계 형식 모듈. **완료 [#1639](https://github.com/wonchance-art/manabi/pull/1639) `9661112`.**
   ⑧ 이번 PR(오너 「통합안으로 연계 넷이랑 같이 진행해」 2026-11-02 KST): 단어 칩 통합안([목업](https://claude.ai/artifact/TNXkpe3KM74sHxw3Hpqx8C) — 공용 `WordChips` · 채운 칩 = 핵심(들어옴 흐려지던 말 · 나감 처음 씀) · 「+N」 그 자리 펼침) +
     연계 넷([연계 지도](https://claude.ai/artifact/1X9ejVtVuDofqjBJnKE24X)): 1 완독 창 「복습한 말 N개를 이 글에서 다시 만났어요」(추가 조회 0) · 2 첨삭 결과 「담은 말 N개를 직접 썼어요」(공유 snapshot + 작문 · 대화 재료 1회) ·
-    3 다시 만난 말 창 → 자료실 「내 수준 맞춤」 · 4 직접 쓴 말 창 → `/writing?words=…`(아직 안 써 본 말 칩). 계약 `wordChipsLinks.test.js`. 남은 오너 결정: 에이전트 0단계 UI(빠른 분석 카드 · 「에이전트」 담은 곳).
+    3 다시 만난 말 창 → 자료실 「내 수준 맞춤」 · 4 직접 쓴 말 창 → `/writing?words=…`(아직 안 써 본 말 칩). 계약 `wordChipsLinks.test.js`. **완료 [#1642](https://github.com/wonchance-art/manabi/pull/1642) `4989f45`.**
+  ⑨ 이번 PR(오너 「4,6 진행. 5번은 빠른 분석에 복습한 말 최신 공동 디자인 적용」 2026-11-02 KST):
+    ④ 한자 한 글자 오탐(운영 실측: 중국어 담은 말 20%가 한 글자 · 대화 쓴 말 맞음 3건 모두 한 글자 부분 일치 → 양옆이 한자가 아닐 때만 셈) ·
+    ⑥ 「이 말이 나오는 글 읽기」 → `/materials?sort=words`(서재 → 자료 목록 도구 · 「다시 만난 말 먼저」 정렬 · 카드에 N개) ·
+    ⑤ 빠른 분석 「에이전트에게 부탁하기」(AGENT-LINK-001 0단계 — 오늘 복습한 말 공용 칩 · 프롬프트 셋 복사 · 에이전트 형식 알아보기). 계약 `agentQuickCard.test.js`.
+    남은 오너 결정: 들여온 자료를 담은 곳 「에이전트」로 따로 셀지(Q2).
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —

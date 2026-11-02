@@ -20,7 +20,7 @@ describe('QUICK-FOCUS-001 — 빠른 분석 탭 사전은 대화상자처럼 초
   });
 
   it('연 단어를 기억한다 — 클릭 · Enter/Space 둘 다', () => {
-    const token = sliceBetween(quick, '<div key={i} className="word-token" role="button" tabIndex={0}', '{rubySegments ? (');
+    const token = sliceBetween(quick, '<div key={i} className={`word-token${', '{rubySegments ? (');
     expect(token).toContain('onClick={(e) => { openerRef.current = e.currentTarget; openWordDetail(token, line); }}');
     expect(token).toContain('openerRef.current = e.currentTarget, openWordDetail(token, line)');
   });

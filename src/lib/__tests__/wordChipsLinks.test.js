@@ -144,9 +144,25 @@ describe('연계 2 — 첨삭 결과 「담은 말 N개를 직접 썼어요」',
 
 describe('연계 3 · 4 — 두 창 아래 다음 행동 하나', () => {
   const page = read('src/views/ProfileStats.jsx');
-  it('다시 만난 말 → 자료실 「내 수준 맞춤」(담은 말 커버리지 정렬 — 정렬 이름 그대로의 문구)', () => {
-    expect(page).toContain("footer: () => ({ href: '/materials?sort=fit', label: '내 수준 맞춤 글 읽기' }),");
-    expect(read('src/views/MaterialsPage.jsx')).toContain('<option value="fit">내 수준 맞춤</option>');
+  it('다시 만난 말 → 자료실 「다시 만난 말 먼저」(그 말이 나오는 글) · 없으면 「내 수준 맞춤」', () => {
+    expect(page).toContain("? { href: `/materials?${new URLSearchParams({ sort: 'words', words: words.join(',') })}`, label: '이 말이 나오는 글 읽기' }");
+    expect(page).toContain(": { href: '/materials?sort=fit', label: '내 수준 맞춤 글 읽기' };");
+    const mats = read('src/views/MaterialsPage.jsx');
+    expect(mats).toContain('{remetWords.length > 0 && <option value="words">다시 만난 말 먼저</option>}');
+    expect(mats).toContain("if (sortBy === 'words') return sortByWordHits(materials, (m) => wordHitsById.get(m.id));");
+    expect(mats).toContain('<span className="mat-card__fit-good">다시 만난 말 {hits}개</span>');
+  });
+  it('넘긴 말 정렬 — 많이 나오는 글 먼저 · 같으면 원래 순서 · 0개 글은 뒤에 남음 · 주소는 다시 좁힘', async () => {
+    const { materialWordHits, sortByWordHits } = await import('../remetWords.js');
+    const { materialLibraryFilters } = await import('../libraryDiscovery.js');
+    const body = { sequence: ['a', 'b', 'c'], dictionary: { a: { text: '駅', base_form: '駅', pos: '名詞' }, b: { text: '食べた', base_form: '食べる', pos: '動詞' }, c: { text: '約束', base_form: '約束', pos: '名詞' } } };
+    const words = new Set(['駅', '食べる', '予定']);
+    expect(materialWordHits(body, words)).toBe(2);
+    expect(materialWordHits({}, words)).toBe(0);
+    const hits = { 1: 0, 2: 2, 3: 1, 4: 2 };
+    expect(sortByWordHits([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }], m => hits[m.id]).map(m => m.id)).toEqual([2, 4, 3, 1]);
+    expect(materialLibraryFilters(new URLSearchParams('sort=words&words=駅,駅, 予定 ,'))).toMatchObject({ sort: 'words', words: ['駅', '予定'] });
+    expect(materialLibraryFilters(new URLSearchParams('sort=words'))).toMatchObject({ sort: 'newest', words: [] });
   });
   it('직접 쓴 말 → 「아직 안 써 본 말로 작문」 · 넘길 말이 없으면 행동도 없음', () => {
     expect(page).toContain("return words.length ? { href: writingWordsHref({ words, language }), label: '아직 안 써 본 말로 작문' } : null;");
@@ -179,5 +195,33 @@ describe('연계 3 · 4 — 두 창 아래 다음 행동 하나', () => {
     const writing = read('src/views/WritingStudioPage.jsx');
     expect(writing).toContain('<OutputWordChips words={handoffWords} label="✍️ 아직 안 써 본 말 써먹기:" />');
     expect(sliceBetween(writing, 'const handoffWords = useMemo(', ';\n')).toContain('projectionByWord.get(w)?.vocabulary');
+  });
+});
+
+describe('한자 한 글자 말 — 더 긴 말의 일부면 안 셈(운영 실측: 중국어 쓴 말 맞음이 모두 한 글자 부분 일치)', () => {
+  it('양옆이 한자가 아닐 때만 쓴 말', async () => {
+    const { usesWord } = await import('../usedWords.js');
+    expect(usesWord('駅に行きます', { word_text: '駅' })).toBe(true);
+    expect(usesWord('学校に行きます', { word_text: '学' })).toBe(false);
+    expect(usesWord('我去公园', { word_text: '去' })).toBe(false);
+    expect(usesWord('去!', { word_text: '去' })).toBe(true);
+    expect(usesWord('我们去公园', { word_text: '公园' })).toBe(true); // 두 글자 이상은 그대로
+  });
+  it('중국어 한자 한 글자 말은 「아직 안 써 본 말」로 권하지 않는다', () => {
+    const projections = [proj('去', { last: T - H, language: 'Chinese' }), proj('公园', { last: T - 2 * H, language: 'Chinese' })];
+    expect(unusedReviewedWords({ projections })).toEqual({ language: 'Chinese', words: ['公园'] });
+  });
+});
+
+
+describe('서재 주소 — 넘긴 말 정렬도 자료 목록 도구로(서가가 아니라)', () => {
+  it('LibraryPage와 서버 미리 받기가 같은 분기', async () => {
+    const { isLibraryToolsView } = await import('../libraryDiscovery.js');
+    expect(isLibraryToolsView(new URLSearchParams('sort=words&words=駅'))).toBe(true);
+    expect(isLibraryToolsView(new URLSearchParams('sort=fit'))).toBe(true);
+    expect(isLibraryToolsView(new URLSearchParams('tools=1'))).toBe(true);
+    expect(isLibraryToolsView(new URLSearchParams('sort=title'))).toBe(false);
+    expect(fs.readFileSync('src/components/web/LibraryPage.jsx', 'utf8')).toContain('if(isLibraryToolsView(params))return');
+    expect(fs.readFileSync('src/lib/server/libraryPrefetch.js', 'utf8')).toContain("return params.get('tab') !== 'public' && !isLibraryToolsView(params);");
   });
 });

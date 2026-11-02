@@ -7,7 +7,8 @@
  * - 담은 말 = 그 문장을 쓴 때 이미 담아 둔 말(쓴 뒤에 담은 말은 세지 않는다).
  * - 같은 말 = 담은 말 표기(또는 기본형)가 내 문장에 그대로 들어 있으면 씀. 형태소 분석이 저장돼 있지 않아 표기 대조다 —
  *   활용형(食べた ↔ 食べる)은 일부 빠질 수 있다(숫자가 작게 나오는 쪽, 부풀리지 않음).
- *   라틴 문자 말은 단어 경계로, 가나 한 글자 말은 오탐(の · は 등)이 커서 세지 않는다.
+ *   라틴 문자 말은 단어 경계로, 가나 한 글자 말은 오탐(の · は 등)이 커서 세지 않는다. 한자 한 글자 말은 양옆이 한자가 아닐 때만
+ *   (駅に行く의 駅은 셈, 学校의 学 · 过去의 去는 안 셈).
  * - 처음 씀 = 그 주 전에는 작문 · 대화에서 한 번도 쓴 적 없는 말.
  * 짝: outputWords.pickOutputWords(오늘 복습한 말을 작문 · 회화에 주입할 후보로 고름 — 들어가는 쪽)와 달리, 이 모듈은 실제로 쓴 결과를 센다.
  * 순수 모듈 — 조회는 usedWordsRows.js.
@@ -15,6 +16,7 @@
 
 const LATIN = /^[\p{Script=Latin}'’-]+$/u;
 const KANA_ONE = /^[\p{Script=Hiragana}\p{Script=Katakana}ー]$/u;
+const HAN_ONE = /^\p{Script=Han}$/u;
 const escape = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** 담은 말 하나가 문장에 쓰였나 — 표기 또는 기본형. */
@@ -23,6 +25,9 @@ export function usesWord(text, row) {
   const forms = [...new Set([row.word_text, row.base_form].filter(f => typeof f === 'string' && f.trim()))];
   return forms.some(form => {
     if (KANA_ONE.test(form)) return false;
+    // 한자 한 글자 말은 옆 글자도 한자면 더 긴 말의 일부로 본다(学 ⊂ 学校 · 中文 去 ⊂ 过去) — 운영 실측(2026-11-02 KST):
+    // 중국어 담은 말의 20%가 한 글자, 대화 「쓴 말」 맞음 3건이 모두 한 글자 부분 일치였다. 띄어 쓰지 않는 중국어에선 대개 안 세진다(작게 셈).
+    if (HAN_ONE.test(form)) return new RegExp(`(^|[^\\p{Script=Han}])${form}($|[^\\p{Script=Han}])`, 'u').test(text);
     if (LATIN.test(form)) return new RegExp(`(^|[^\\p{L}])${escape(form)}($|[^\\p{L}])`, 'iu').test(text);
     return text.includes(form);
   });
@@ -69,8 +74,10 @@ export function buildOutput({ sources = [], vocabRows = [], fromMs = -Infinity, 
   };
 }
 
-/** 쓴 말 셈에 들 수 있는 말인가 — usesWord가 세지 않는 가나 한 글자 말은 「안 써 본 말」로도 권하지 않는다. */
-const countable = row => [row?.word_text, row?.base_form].some(f => typeof f === 'string' && f.trim() && !KANA_ONE.test(f));
+/** 쓴 말 셈에 들 수 있는 말인가 — usesWord가 세지 않는 가나 한 글자 말, 띄어 쓰지 않는 중국어의 한자 한 글자 말(써도 거의 안 세짐)은
+ *  「안 써 본 말」로도 권하지 않는다(써도 계속 「안 써 본 말」로 남는 권유가 되지 않게). */
+const countable = row => [row?.word_text, row?.base_form].some(f => typeof f === 'string' && f.trim() && !KANA_ONE.test(f)
+  && !(row?.language === 'Chinese' && HAN_ONE.test(f)));
 const lastReviewMs = p => { const v = p?.memory?.lastReview; return v == null ? NaN : typeof v === 'number' ? v : Date.parse(v); };
 
 /**

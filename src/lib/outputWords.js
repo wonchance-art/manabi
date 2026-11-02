@@ -52,5 +52,6 @@ export function pickOutputWords({ vocabRows, events, language, now = Date.now(),
     .filter(({ v }) => v && (!language || v.language === language))
     .sort((a, b) => (b.wrong - a.wrong) || (b.lastTs - a.lastTs))
     .slice(0, cap)
-    .map(({ v }) => ({ id: v.id, word_text: v.word_text, meaning: v.meaning ?? null }));
+    // wrong — 오늘 한 번이라도 다시 본(오답) 말. 빠른 분석 에이전트 카드가 채운 칩(「헷갈린 말」)으로 앞에 둔다.
+    .map(({ v, wrong }) => ({ id: v.id, word_text: v.word_text, meaning: v.meaning ?? null, wrong }));
 }
