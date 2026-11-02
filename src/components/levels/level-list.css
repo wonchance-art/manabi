@@ -8,7 +8,7 @@
 
 /* 책장 타일 */
 .lv-shelf{margin-top:52px}
-/* 칸 이름(.shelf-section-h) · 줄 격자(.shelf-row)는 책 표지 줄과 함께 web-shell.css에 있다(SHELF-REDESIGN-001 — 같은 열 · 간격). */
+/* 칸 이름(.shelf-section-h) · 줄 격자(.shelf-grid)는 책 표지 줄과 함께 web-shell.css에 있다(SHELF-REDESIGN-001 — 같은 열 · 간격). */
 .lv-tiles{list-style:none;margin:0;padding:0}
 .lv-tile{background:var(--lv-card);border:1px solid var(--lv-line);border-radius:12px;padding:18px 18px 10px;display:flex;flex-direction:column;min-width:0}
 .lv-tile__lv{font:700 26px/1 var(--font-manrope),sans-serif;letter-spacing:-.02em;margin-bottom:12px;color:var(--ink)}

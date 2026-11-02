@@ -1,7 +1,7 @@
 'use client';
 // 책장(/lessons) — 오너 승인 목업(SHELF-REDESIGN-001, 2026-11-02 KST): 제목 바로 아래 언어 탭(일본어 · 중국어 · 영어 · 프랑스어 · 전체),
 // 읽은 기록이 있을 때만 한 줄 「이어 하기」, 그 아래 「책」 → 「단어 · 문형」(나온 책이 없는 언어는 단어 타일이 먼저, 책은 「준비 중」 한 줄).
-// 표지 줄과 타일 줄은 같은 격자(.shelf-row)라 PC에서는 N5 표지가 N5 타일 바로 위에, 휴대폰에서는 둘 다 150px 가로 줄이다.
+// 표지 줄과 타일 줄은 같은 격자(.shelf-grid)라 PC에서는 N5 표지가 N5 타일 바로 위에, 휴대폰에서는 둘 다 150px 가로 줄이다.
 // 정적 판(ISR — LessonsShelf)이라 서버 · 첫 그림에는 기록이 없다: 「이어 하기」 · 표지 진도는 붙은 뒤 이 브라우저의 기록(useReadingProgress)으로 그린다.
 // 줄 자리는 그리기 전 한 줄(bookEntryGate.shelfResumeHintScript)이 잡는다 — 기록이 없는 손님은 서버 · 붙은 뒤 모두 줄이 없다.
 import Link from 'next/link';
@@ -11,7 +11,7 @@ import { BOOK_SERIES } from '@/lib/bookNavigation';
 import { bookResume } from '@/lib/webNavigation';
 import { BOOK_ID, bookHref } from '@/lib/textbook/contract';
 import BookCover from './BookCover';
-import LevelTiles, { shelfRowClass } from '@/components/levels/LevelTiles';
+import LevelTiles, { shelfGridClass } from '@/components/levels/LevelTiles';
 import useReadingProgress from './useReadingProgress';
 import { clearShelfResumeHint, shelfResumeHintScript } from './bookEntryGate';
 
@@ -79,7 +79,7 @@ export default function Bookshelf({ book, books = book ? [book] : [], initialLan
       const recordOf = current => records.find(record => record.book === current);
       const bookSection = <section className="shelf-books" aria-labelledby="shelf-books-h"><h2 id="shelf-books-h" className="shelf-section-h">책</h2>
         {failed && shown.some(item => item.language === 'Japanese') && <p className="manabi-inline-state" role="status">발행 교재를 불러오지 못했어요. <button type="button" onClick={() => location.reload()}>다시 시도</button></p>}
-        {covers.length > 0 && <div className={`manabi-series-shelf ${shelfRowClass(tiles.length)}`}>{covers.map(({ item, current }) => {
+        {covers.length > 0 && <div className={`manabi-series-shelf ${shelfGridClass(tiles.length)}`}>{covers.map(({ item, current }) => {
           const level = current.level || 'N5', resume = recordOf(current)?.resume;
           return <Link className="manabi-series-book" key={current.bookId || current.edition} href={bookHref(current.edition, 'cover', current.bookId || BOOK_ID)} aria-label={`일본어 ${level} 책 둘러보기`}><BookCover language={item.language} compact level={current.level} title={current.title} />
             <span className="manabi-series-caption"><strong>{all ? `${item.name} ${level}` : level}</strong>{resume ? <small className="is-progress">{resume.completed}/{resume.total}과</small> : <small>{current.lessons.length}과</small>}</span></Link>;

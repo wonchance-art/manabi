@@ -3,7 +3,7 @@
 // 영어 · 프랑스어 A1(SHELF-REDESIGN-001)은 「단어 N」 한 줄 — 단어 페이지(/english|french/words/a1)로 간다.
 // 숫자는 서버가 목록과 같은 조립에서 센 값(levelTileCounts)이다. 설명 열 · 「→」 없음.
 // 「단어」는 누르는 순간 단어 묶음을 받기 시작하는 링크(LevelWordsLink — LEVEL-LIST-RSC-001), 화면 · 미리 받기는 Link와 같다.
-// 줄은 책 표지 줄과 같은 격자(.shelf-row — 열 수 shelfRowClass)라 PC에서 N5 표지가 N5 타일 바로 위에 선다.
+// 줄은 책 표지 줄과 같은 격자(.shelf-grid — 열 수 shelfGridClass)라 PC에서 N5 표지가 N5 타일 바로 위에 선다.
 import Link from 'next/link';
 import LevelWordsLink from './LevelWordsLink';
 import { LEVEL_LIST_LANGS, levelLabel, levelListHref } from '@/lib/levelList';
@@ -15,7 +15,7 @@ const slugOf = language => Object.keys(LEVEL_LIST_LANGS).find(k => LEVEL_LIST_LA
 const n = value => value.toLocaleString('en-US');
 
 /** 책장 줄 격자 — 표지 줄과 타일 줄이 같은 열 수를 쓴다(타일이 6 · 7개인 언어만 열을 늘린다, 기본 5열). */
-export const shelfRowClass = count => count > 5 ? `shelf-row shelf-row--${count}` : 'shelf-row';
+export const shelfGridClass = count => count > 5 ? `shelf-grid shelf-grid--${count}` : 'shelf-grid';
 /** 칸 이름 — 타일이 가진 줄 그대로: 「단어 · 문형 · 한자」 / 「단어 · 문형」 / 「단어」. */
 export function levelTilesHeading(tiles) {
   return ['단어', tiles.some(t => t.bunkei != null) && '문형', tiles.some(t => t.hanzi > 0) && '한자'].filter(Boolean).join(' · ');
@@ -29,7 +29,7 @@ export default function LevelTiles({ language, tiles: given }) {
   const vocabHref = levelKey => latin ? latinWordsHref(lang, levelKey) : levelListHref(lang, 'vocab', levelKey);
   return <section className="lv-shelf" aria-labelledby="lv-shelf-h">
     <h2 id="lv-shelf-h" className="shelf-section-h">{levelTilesHeading(tiles)}</h2>
-    <ul className={`lv-tiles ${shelfRowClass(tiles.length)}`}>
+    <ul className={`lv-tiles ${shelfGridClass(tiles.length)}`}>
       {tiles.map(t => <li key={t.levelKey} className="lv-tile">
         <span className="lv-tile__lv">{levelLabel(t.levelKey)}</span>
         <LevelWordsLink className="lv-tile__go" href={vocabHref(t.levelKey)} lang={lang} levelKey={t.levelKey} aria-label={`${levelLabel(t.levelKey)} 단어 ${n(t.vocab)}개`}>단어<b>{n(t.vocab)}</b></LevelWordsLink>

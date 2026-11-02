@@ -137,24 +137,24 @@ describe('⑤ 공개 읽을거리 · 관리자 줄', () => {
 });
 
 describe('⑥ 표지 줄과 타일 줄은 같은 격자', () => {
-  const rowClass = (html, cls) => html.match(new RegExp(`class="${cls} (shelf-row[^"]*)"`))?.[1];
+  const rowClass = (html, cls) => html.match(new RegExp(`class="${cls} (shelf-grid[^"]*)"`))?.[1];
   it('표지 줄 · 타일 줄의 격자 클래스가 같다(일본어 5열)', () => {
     const html = render('Japanese');
-    expect(rowClass(html, 'manabi-series-shelf')).toBe('shelf-row');
-    expect(rowClass(html, 'lv-tiles')).toBe('shelf-row');
+    expect(rowClass(html, 'manabi-series-shelf')).toBe('shelf-grid');
+    expect(rowClass(html, 'lv-tiles')).toBe('shelf-grid');
     // 타일이 7개인 언어에 책이 생겨도 표지 줄이 같은 7열을 따른다
     const seven = render('Japanese', { levelTiles: { Japanese: zhTiles.map(t => ({ ...t })) } });
-    expect(rowClass(seven, 'manabi-series-shelf')).toBe('shelf-row shelf-row--7');
-    expect(rowClass(seven, 'lv-tiles')).toBe('shelf-row shelf-row--7');
+    expect(rowClass(seven, 'manabi-series-shelf')).toBe('shelf-grid shelf-grid--7');
+    expect(rowClass(seven, 'lv-tiles')).toBe('shelf-grid shelf-grid--7');
   });
   const css = fs.readFileSync('src/components/web/web-shell.css', 'utf8');
   const levelCss = fs.readFileSync('src/components/levels/level-list.css', 'utf8');
   // 셸 640 접힘 블록 가운데 책장 규칙이 사는 블록(.shelf-intro와 같은 줄).
   const narrow = css.split('\n').find(line => line.startsWith('@container manabi-shell (max-width:640px){') && line.includes('.shelf-intro'));
-  it('PC — 한 규칙(.shelf-row)이 열 · 간격을 정한다: 5열 · 12px, 6 · 7열은 modifier', () => {
-    expect(css).toContain('.manabi-app .shelf-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:0}');
-    expect(css).toContain('.manabi-app .shelf-row--6{grid-template-columns:repeat(6,minmax(0,1fr))}');
-    expect(css).toContain('.manabi-app .shelf-row--7{grid-template-columns:repeat(7,minmax(0,1fr))}');
+  it('PC — 한 규칙(.shelf-grid)이 열 · 간격을 정한다: 5열 · 12px, 6 · 7열은 modifier', () => {
+    expect(css).toContain('.manabi-app .shelf-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:0}');
+    expect(css).toContain('.manabi-app .shelf-grid--6{grid-template-columns:repeat(6,minmax(0,1fr))}');
+    expect(css).toContain('.manabi-app .shelf-grid--7{grid-template-columns:repeat(7,minmax(0,1fr))}');
     // 표지 · 타일이 각자 열 · 간격을 다시 정하지 않는다(어긋남의 원인)
     for (const sheet of [css, levelCss].map(text => text.replace(/\/\*[\s\S]*?\*\//g, ''))) {
       expect(sheet).not.toMatch(/\.manabi-series-shelf\{[^}]*(grid-template-columns|gap)/);
@@ -162,8 +162,8 @@ describe('⑥ 표지 줄과 타일 줄은 같은 격자', () => {
     }
   });
   it('좁은 셸(≤640) — 둘 다 150px 칸 · 12px 간격의 가로 줄(칸마다 멈춤)', () => {
-    expect(narrow).toContain('.manabi-app .shelf-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}');
-    expect(narrow).toContain('.manabi-app .shelf-row>*{flex:0 0 150px;width:150px;scroll-snap-align:start}');
+    expect(narrow).toContain('.manabi-app .shelf-grid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}');
+    expect(narrow).toContain('.manabi-app .shelf-grid>*{flex:0 0 150px;width:150px;scroll-snap-align:start}');
   });
   it('칸 이름은 한 규칙(.shelf-section-h) — 「책」과 「단어 · 문형」이 같은 모양', () => {
     const html = render('Japanese');
@@ -227,5 +227,15 @@ describe('⑦ 정적 판 — 붙기 전에는 기록을 그리지 않고, 줄 �
     expect(() => vm.runInNewContext(shelfResumeHintScript(books), { get localStorage() { throw new Error('blocked'); }, document })).not.toThrow();
     expect(shelfResumeHintScript([{ ...n5, edition: '";</script><script>bad' }])).toBe('');
     expect(shelfResumeHintScript([])).toBe('');
+  });
+});
+
+// 서재 자료 줄(library.css .shelf-row)과 이름이 겹치면 서재 줄이 5열 격자가 된다(#1654 CI library-book-chapters 실패 — 「8과 더보기」를
+// 링크가 덮음). 책장 격자는 .shelf-grid만 쓴다.
+describe('책장 격자는 서재 줄(.shelf-row)과 이름을 나누어 쓴다', () => {
+  it('web-shell.css의 책장 격자 규칙은 .shelf-grid — .shelf-row에 격자 · 가로 넘기기를 걸지 않는다', () => {
+    const shell = fs.readFileSync('src/components/web/web-shell.css', 'utf8');
+    expect(shell).toContain('.manabi-app .shelf-grid{display:grid;');
+    expect(shell).not.toMatch(/\.shelf-row(?![-\w])\s*(>\s*\*)?\s*\{/);
   });
 });
