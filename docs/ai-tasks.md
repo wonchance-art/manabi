@@ -882,7 +882,11 @@
   1판(10-12 · 21장면, 수동 1회)이 3주 멈춰 있던 화면 벽을 무인 갱신 가능한 판으로. 장면 등록부 `docs/design/scenes.json`(src/app 경로 전부 — 장면 · 재작성 판 · 사유 있는 제외) ·
   캡처 `scripts/wall-capture.mjs`(손님 · 빈 계정 · 채운 계정 = heavy-account 합성 백엔드 재사용, 390 · 1280, wall-rules §3 검사 + axe) · 판정 부품 `scripts/wall-core.mjs`(계약 `wall-core.test.js`) ·
   페이지 `scripts/wall-page.mjs` → [화면 벽](https://claude.ai/artifact/DJdKQhDsdd9qzu6uJaaHhb) 갱신(「화면」 · 「빈칸」 보기 추가). `wall:build` = e2e 공개 값 + 운영 글꼴 사본 + 빌드 때 교재 대역(ISR 판이 교재 실패로 구워지지 않게).
-  다음: 2단계 부품 대조(계산된 스타일 · 토큰 밖 값) · 어두운 테마 · 简体 판, 3단계 상태 장면.
+  **#1643 병합 `43e76ac`**(오너 「병합하고 2단계 진행해」 11-02).
+- **WALL-003 화면 벽 2판 2단계 + 수정 요청 13건 (2026-11-02 KST)** `claude/admiring-ritchie-tz2mxp` → [#1647](https://github.com/wonchance-art/manabi/pull/1647):
+  부품 대조(제목 · 버튼 · 입력칸 · 카드 계산 스타일 묶음 — 1280 채운 버튼 45가지 · 입력칸 20 · h1 22) · 토큰 밖 색 30 · 뷰어 읽기 테마(밝게 · 어둡게) 장면.
+  13건 시안 = [전후 비교](https://claude.ai/artifact/L8BeH5DzZdp7WPT52EbAJb)(같은 빌드에 제안 CSS 주입 실렌더 · 대비 81곳 → 0). 결정 대기: 뷰어 문장 막대 24px 유지 + 규칙 예외 / 지도 핀 24px 터치 원.
+  다음: 오너 합의 뒤 13건 구현을 같은 PR에 · 3단계 상태 장면 · 简体 판.
 - **STATS-MAP-001 통계 정리 (2026-11-01 KST)** `claude/practical-carson-umi0t8`:
   조사 = [통계 지도](https://claude.ai/artifact/1jJDC3CeUTf6A72XsTDuXy) · [#1077 코멘트 6553548961](https://github.com/wonchance-art/manabi/issues/1077#issuecomment-6553548961) · [2차 목업](https://claude.ai/artifact/DuZixRtSKLoXEtS2GwNrdP).
   ① 1 · 2차 **완료 [#1623](https://github.com/wonchance-art/manabi/pull/1623) squash `98d8c1a`(오너 「바로 병합」)** — 죽은 코드 · 내보내기 학습 기록 · 홈 키 무효화 · 그룹 집계 · 지표 사전 · 이름 셋 · 연속 「–」 · 표시 경계 04시.
