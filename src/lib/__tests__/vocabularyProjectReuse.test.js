@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
+import { sliceBetween } from './helpers/sliceBetween';
 import { buildHeavyAccount, HEAVY_UID } from '../../../e2e/fixtures/heavy-account.mjs';
 import { buildVocabularyWordIndex } from '../vocabularyDueIndex';
 import { fetchVocabularyLearningRows, projectVocabularyLearningRows, projectVocabularyLearningRowsSliced } from '../vocabularyLearningRows';
@@ -167,7 +168,7 @@ describe('⑶ 나눠 돌기', () => {
 describe('⑷ 배선', () => {
   it('뷰어 색인 — 나눠 받고(sliced), 한 번 양보한 뒤 색인을 만든다', () => {
     const viewer = read('src/views/ViewerPage.jsx');
-    const fn = viewer.slice(viewer.indexOf('async function fetchUserVocabWords'), viewer.indexOf('function findSavedVocab'));
+    const fn = sliceBetween(viewer, 'async function fetchUserVocabWords', 'function findSavedVocab');
     expect(fn).toMatch(/fetchVocabularyLearningRows\(userId, \{ signal, sliced: true \}\)/);
     expect(fn.indexOf('await yieldToMain()')).toBeGreaterThan(fn.indexOf('sliced: true'));
     expect(fn.indexOf('buildVocabularyWordIndex(projected)')).toBeGreaterThan(fn.indexOf('await yieldToMain()'));
