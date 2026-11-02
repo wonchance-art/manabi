@@ -6,6 +6,9 @@ import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 
 export const PERSONAS = Object.freeze(['guest', 'empty', 'filled']);
+/** 장면 조작(3단계 — 창 · 칩 · 상태를 열고 찍는다). click/waitFor = Playwright 선택자, select = [선택자, 값], fill = [선택자, 글],
+ * press = 키, scroll = 'bottom', wait = ms. 하나라도 실패하면 그 장면은 「판정 안 함(캡처 실패)」이다 — 조작 경로가 바뀌었다는 신호. */
+export const STEP_KINDS = Object.freeze(['click', 'waitFor', 'select', 'fill', 'press', 'scroll', 'wait']);
 export const VIEWPORT_KEYS = Object.freeze(['mobile', 'desktop']);
 const PAGE_FILE = /^page\.(jsx?|tsx?)$/;
 
@@ -63,6 +66,13 @@ export function validateRegistry(reg) {
       if (typeof scene.path !== 'string' || !scene.path.startsWith('/')) errors.push(`${sat}: path는 /로 시작한다`);
       if (!Array.isArray(scene.personas) || !scene.personas.length) errors.push(`${sat}: personas가 비었다`);
       if (scene.storage !== undefined && (typeof scene.storage !== 'object' || Array.isArray(scene.storage) || !scene.storage)) errors.push(`${sat}: storage는 { 키: 값 } 객체다`);
+      if (scene.steps !== undefined && !Array.isArray(scene.steps)) errors.push(`${sat}: steps는 배열이다`);
+      for (const step of Array.isArray(scene.steps) ? scene.steps : []) {
+        const keys = Object.keys(step || {});
+        if (keys.length !== 1 || !STEP_KINDS.includes(keys[0])) errors.push(`${sat}: 조작은 ${STEP_KINDS.join(' · ')} 중 하나 — ${JSON.stringify(step)}`);
+      }
+      if (scene.cookies !== undefined && !Array.isArray(scene.cookies)) errors.push(`${sat}: cookies는 { name, value } 배열이다`);
+      for (const c of Array.isArray(scene.cookies) ? scene.cookies : []) if (!c?.name || typeof c.value !== 'string') errors.push(`${sat}: cookies는 { name, value } 배열이다`);
       for (const p of scene.personas || []) if (!personas.has(p)) errors.push(`${sat}: 모르는 사람 ${p}`);
       for (const p of scene.personas || []) {
         const id = `${scene.id}.${p}`;
@@ -84,7 +94,8 @@ export function expandScenes(reg) {
     for (const scene of entry.scenes || []) {
       for (const persona of scene.personas) {
         out.push({ id: `${scene.id}.${persona}`, route: entry.route, path: scene.path, title: scene.title, lane: scene.lane,
-          persona, design: scene.design || null, note: scene.note || null, wait: scene.wait || null, storage: scene.storage || null });
+          persona, design: scene.design || null, note: scene.note || null, wait: scene.wait || null, storage: scene.storage || null,
+          steps: scene.steps || null, cookies: scene.cookies || null, shot: scene.shot || null });
       }
     }
   }

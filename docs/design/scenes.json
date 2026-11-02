@@ -14,24 +14,50 @@
   { "route": "/profile", "scenes": [{ "id": "profile", "title": "내 정보", "path": "/profile", "lane": "입구 · 계정", "personas": ["empty", "filled"] }] },
   { "route": "/guide", "scenes": [{ "id": "guide", "title": "안내", "path": "/guide", "lane": "입구 · 계정", "personas": ["guest"] }] },
 
-  { "route": "/home", "scenes": [{ "id": "home", "title": "배움 홈", "path": "/home", "lane": "배움 · 현황", "personas": ["guest", "empty", "filled"], "design": "ak" }] },
+  { "route": "/home", "scenes": [
+   { "id": "home", "title": "배움 홈", "path": "/home", "lane": "배움 · 현황", "personas": ["guest", "empty", "filled"], "design": "ak" },
+   { "id": "home-sc", "title": "배움 홈 · 简体 판", "path": "/home", "lane": "배움 · 현황", "personas": ["guest", "filled"], "cookies": [{ "name": "manabi_sc", "value": "1" }],
+     "note": "manabi_sc 쿠키 → /home/sc · /home/member/sc 재작성 판(중국어권 글꼴 판)." }
+  ] },
   { "route": "/home/member", "via": "/home", "note": "로그인 판(middleware 재작성) — home.empty · home.filled가 그린다." },
-  { "route": "/home/sc", "via": "/home", "note": "简体 판(manabi_sc 쿠키) — 화면 글자는 같고 글꼴만 다르다. 简体 장면은 2단계." },
-  { "route": "/home/member/sc", "via": "/home", "note": "로그인 · 简体 판. 简体 장면은 2단계." },
-  { "route": "/progress", "scenes": [{ "id": "progress", "title": "현황", "path": "/progress", "lane": "배움 · 현황", "personas": ["empty", "filled"] }] },
+  { "route": "/home/sc", "via": "/home", "note": "简体 판(manabi_sc 쿠키) — home-sc.guest가 그린다." },
+  { "route": "/home/member/sc", "via": "/home", "note": "로그인 · 简体 판 — home-sc.filled가 그린다." },
+  { "route": "/progress", "scenes": [
+   { "id": "progress", "title": "현황", "path": "/progress", "lane": "배움 · 현황", "personas": ["empty", "filled"] },
+   { "id": "progress-week", "title": "현황 · 이번 주 창", "path": "/progress", "lane": "배움 · 현황", "personas": ["filled"],
+     "steps": [{ "click": "button.learn-stat--btn:has-text(\"이번 주\")" }, { "waitFor": ".tile-modal" }], "note": "3단계 상태 장면 — 이번 주 타일을 눌러 연 창." },
+   { "id": "progress-remet", "title": "현황 · 다시 만난 말 창", "path": "/progress", "lane": "배움 · 현황", "personas": ["filled"],
+     "steps": [{ "click": "button.learn-stat--btn:has-text(\"이번 주\")" }, { "click": ".learn-week__row--tap:has-text(\"다시 만난 말\")" }, { "waitFor": ".tile-modal__back" }], "note": "이번 주 창 → 다시 만난 말(들어옴) 겹 · 단어 칩(WordChips)." },
+   { "id": "progress-output", "title": "현황 · 직접 쓴 말 창", "path": "/progress", "lane": "배움 · 현황", "personas": ["filled"],
+     "steps": [{ "click": "button.learn-stat--btn:has-text(\"이번 주\")" }, { "click": ".learn-week__row--tap:has-text(\"직접 쓴 말\")" }, { "waitFor": ".tile-modal__back" }], "note": "이번 주 창 → 직접 쓴 말(나감) 겹." }
+  ] },
   { "route": "/learn", "scenes": [{ "id": "learn", "title": "학습", "path": "/learn", "lane": "배움 · 현황", "personas": ["guest"], "note": "/learn은 /lessons로 간다." }] },
   { "route": "/learn/course", "scenes": [{ "id": "learn-course", "title": "학습 과정", "path": "/learn/course", "lane": "배움 · 현황", "personas": ["guest", "filled"] }] },
 
   { "route": "/study", "scenes": [{ "id": "study", "title": "오늘의 학습", "path": "/study", "lane": "일일 세션 순환", "personas": ["empty", "filled"], "wait": 1500 }] },
   { "route": "/study/library", "scenes": [{ "id": "study-library", "title": "지난 이야기", "path": "/study/library", "lane": "일일 세션 순환", "personas": ["empty", "filled"] }] },
-  { "route": "/writing", "scenes": [{ "id": "writing", "title": "작문", "path": "/writing", "lane": "일일 세션 순환", "personas": ["empty", "filled"] }] },
+  { "route": "/writing", "scenes": [
+   { "id": "writing", "title": "작문", "path": "/writing", "lane": "일일 세션 순환", "personas": ["empty", "filled"] },
+   { "id": "writing-handoff", "title": "작문 · 아직 안 써 본 말 써먹기", "path": "/writing?words=駅,学校,電車&lang=Japanese", "lane": "일일 세션 순환", "personas": ["filled"],
+     "note": "직접 쓴 말 창의 「아직 안 써 본 말로 작문 ›」이 넘긴 말 칩(OutputWordChips)." }
+  ] },
 
-  { "route": "/materials", "scenes": [{ "id": "materials", "title": "내 서재", "path": "/materials", "lane": "자료 읽기 순환", "personas": ["guest", "empty", "filled"] }] },
+  { "route": "/materials", "scenes": [
+   { "id": "materials", "title": "내 서재", "path": "/materials", "lane": "자료 읽기 순환", "personas": ["guest", "empty", "filled"] },
+   { "id": "materials-remet", "title": "내 서재 · 다시 만난 말 먼저", "path": "/materials?sort=words&words=おまけ,発足,衣食住,任命,開拓", "lane": "자료 읽기 순환", "personas": ["filled"],
+     "note": "다시 만난 말 창이 넘긴 말로 연 정렬(주소 sort=words · words=…) — 카드 머리의 「다시 만난 말 N개」." }
+  ] },
   { "route": "/materials/add", "scenes": [{ "id": "materials-add", "title": "자료 추가", "path": "/materials/add", "lane": "자료 읽기 순환", "personas": ["filled"] }] },
   { "route": "/materials/[id]/edit", "scenes": [{ "id": "materials-edit", "title": "자료 고치기", "path": "/materials/50000/edit", "lane": "자료 읽기 순환", "personas": ["filled"] }] },
   { "route": "/viewer/[id]", "scenes": [
    { "id": "viewer", "title": "자료 뷰어 · 종이", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "design": "ad", "wait": 1500, "note": "읽기 테마 기본값(종이 = sepia)." },
    { "id": "viewer-light", "title": "자료 뷰어 · 밝게", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500, "storage": { "viewer_preferences_v2": { "version": 2, "common": { "theme": "light" } } } },
+   { "id": "viewer-word", "title": "자료 뷰어 · 단어 카드", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500,
+     "steps": [{ "click": "[data-source-token=\"id_0_0\"]" }, { "waitFor": "#inspector-word" }], "note": "첫 낱말을 눌러 연 단어 카드(휴대폰은 아래 시트)." },
+   { "id": "viewer-complete", "title": "자료 뷰어 · 완독", "path": "/viewer/50001", "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500,
+     "storage": { "viewer_preferences_v2": { "version": 2, "common": { "readerView": "scroll" } } },
+     "steps": [{ "scroll": "bottom" }, { "wait": 800 }, { "click": "button.post-reading-actions__btn--primary" }, { "wait": 2500 }],
+     "note": "아직 다 읽지 않은 글(50001)을 스크롤 보기로 끝까지 내려 「읽기 완료」를 누른 뒤 — 완독 창(다시 만난 말 줄 포함)." },
    { "id": "viewer-dark", "title": "자료 뷰어 · 어둡게", "path": "/viewer/50000", "lane": "자료 읽기 순환", "personas": ["filled"], "wait": 1500, "storage": { "viewer_preferences_v2": { "version": 2, "common": { "theme": "dark" } } }, "note": "앱 셸은 늘 밝은 화면이고, 어두운 테마는 뷰어 읽기 테마에만 있다(셸이 뷰어에 맞춰 어두워진다)." }
   ] },
   { "route": "/pdf/[id]", "exclude": "합성 PDF가 없다(uploaded_pdfs 빈 표) — PDF 뷰어 장면은 합성 파일과 함께 2단계." },
@@ -42,7 +68,11 @@
   { "route": "/suggestions/[id]/from/home", "via": "/suggestions/[id]", "note": "「← 돌아가기」 링크만 다른 판." },
   { "route": "/suggestions/[id]/from/reading", "via": "/suggestions/[id]", "note": "「← 돌아가기」 링크만 다른 판." },
 
-  { "route": "/vocab", "scenes": [{ "id": "vocab", "title": "복습", "path": "/vocab", "lane": "복습", "personas": ["guest", "empty", "filled"], "design": "rev", "wait": 1500 }] },
+  { "route": "/vocab", "scenes": [
+   { "id": "vocab", "title": "복습", "path": "/vocab", "lane": "복습", "personas": ["guest", "empty", "filled"], "design": "rev", "wait": 1500 },
+   { "id": "vocab-card", "title": "복습 · 카드", "path": "/vocab", "lane": "복습", "personas": ["filled"], "wait": 1500,
+     "steps": [{ "click": "button.review-room-start:not([disabled])" }, { "waitFor": ".review-card, .review-intro__next" }], "note": "「표현 N개 복습」을 눌러 시작한 첫 카드." }
+  ] },
   { "route": "/review/grammar", "scenes": [{ "id": "review-grammar", "title": "문법 복습", "path": "/review/grammar", "lane": "복습", "personas": ["empty", "filled"] }] },
   { "route": "/embed/review", "scenes": [{ "id": "embed-review", "title": "임베드 복습", "path": "/embed/review", "lane": "복습", "personas": ["guest", "filled"] }] },
 
@@ -87,8 +117,11 @@
   { "route": "/french/bunkei/[level]", "scenes": [{ "id": "french-bunkei", "title": "프랑스어 문형 · A1", "path": "/french/bunkei/a1", "lane": "단어 · 문형 · 문법", "personas": ["guest"] }] },
   { "route": "/french/grammar/[slug]", "scenes": [{ "id": "french-grammar", "title": "프랑스어 문법 한 장", "path": "/french/grammar/a1-13-survival", "lane": "단어 · 문형 · 문법", "personas": ["guest"] }] },
 
-  { "route": "/discover", "scenes": [{ "id": "discover", "title": "산책", "path": "/discover", "lane": "산책 · 지역학 · 월드", "personas": ["guest"] }] },
-  { "route": "/discover/sc", "via": "/discover", "note": "简体 판(manabi_sc 쿠키). 简体 장면은 2단계." },
+  { "route": "/discover", "scenes": [
+   { "id": "discover", "title": "산책", "path": "/discover", "lane": "산책 · 지역학 · 월드", "personas": ["guest"] },
+   { "id": "discover-sc", "title": "산책 · 简体 판", "path": "/discover", "lane": "산책 · 지역학 · 월드", "personas": ["guest"], "cookies": [{ "name": "manabi_sc", "value": "1" }] }
+  ] },
+  { "route": "/discover/sc", "via": "/discover", "note": "简体 판(manabi_sc 쿠키) — discover-sc가 그린다." },
   { "route": "/discover/reading", "scenes": [{ "id": "discover-reading", "title": "산책 · 외국어 읽을거리", "path": "/discover/reading", "lane": "산책 · 지역학 · 월드", "personas": ["guest"] }] },
   { "route": "/discover/classics", "scenes": [{ "id": "discover-classics", "title": "산책 · 고전", "path": "/discover/classics", "lane": "산책 · 지역학 · 월드", "personas": ["guest"] }] },
   { "route": "/studies", "scenes": [{ "id": "studies", "title": "지역학", "path": "/studies", "lane": "산책 · 지역학 · 월드", "personas": ["guest"] }] },

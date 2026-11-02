@@ -145,3 +145,20 @@ describe('대체 글꼴 판정', () => {
     expect(judged.reasons[0].t).toMatch(/원본 글꼴\(Galmuri9\)이 로드되지 않았다/);
   });
 });
+
+describe('조작 장면(3단계)', () => {
+  const base = { lanes: ['x'], personas: { filled: {} } };
+  const scene = extra => ({ ...base, routes: [{ route: '/p', scenes: [{ id: 'p', title: 'P', path: '/p', lane: 'x', personas: ['filled'], ...extra }] }] });
+  it('조작은 정해진 종류 하나씩 — 모르는 종류 · 두 개 겹친 조작은 잡는다', () => {
+    expect(validateRegistry(scene({ steps: [{ click: 'button' }, { waitFor: '.modal' }, { select: ['select', 'v'] }, { scroll: 'bottom' }] }))).toEqual([]);
+    expect(validateRegistry(scene({ steps: [{ hover: 'a' }] })).join('\n')).toMatch(/조작은/);
+    expect(validateRegistry(scene({ steps: [{ click: 'a', wait: 100 }] })).join('\n')).toMatch(/조작은/);
+    expect(validateRegistry(scene({ steps: { click: 'a' } })).join('\n')).toMatch(/steps는 배열/);
+  });
+  it('쿠키는 { name, value } — 펼친 장면에 조작 · 쿠키 · 찍는 방식이 실린다', () => {
+    expect(validateRegistry(scene({ cookies: [{ name: 'manabi_sc' }] })).join('\n')).toMatch(/cookies는/);
+    const reg = scene({ steps: [{ click: 'b' }], cookies: [{ name: 'manabi_sc', value: '1' }], shot: 'full' });
+    expect(validateRegistry(reg)).toEqual([]);
+    expect(expandScenes(reg)[0]).toMatchObject({ steps: [{ click: 'b' }], cookies: [{ name: 'manabi_sc', value: '1' }], shot: 'full' });
+  });
+});
