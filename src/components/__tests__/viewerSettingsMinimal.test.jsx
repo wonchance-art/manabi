@@ -112,8 +112,10 @@ describe('flat display tab',()=>{
       // 상태 견본 = 본문과 같은 클래스(word-token--new/saved/due)를 --hl 범위에서 그린다 — 본문 표시가 바뀌면(AD-R2 ② 밑줄) 범례도 따라간다.
       const legend=html.match(/<p class="reader-settings__legend reader-area--dark reader-area--hl"[^>]*>[\s\S]*?<\/p>/)?.[0];
       expect(legend,`wordStateHl ${wordStateHl}`).toBeTruthy();
-      expect([...legend.matchAll(/class="word-token (word-token--\w+)"/g)].map(m=>m[1])).toEqual(['word-token--new','word-token--saved','word-token--due']);
-      for(const label of ['새 단어','학습 중','복습'])expect(legend).toContain(`>${label}</span>`);
+      // 복습 견본은 걷었다(VIEWER-DUE-PLAIN-001 — 본문에서 복습이 저장과 같은 모양).
+      expect([...legend.matchAll(/class="word-token (word-token--\w+)"/g)].map(m=>m[1])).toEqual(['word-token--new','word-token--saved']);
+      for(const label of ['새 단어','학습 중'])expect(legend).toContain(`>${label}</span>`);
+      expect(legend).not.toContain('>복습</span>');
       expect(legend).not.toContain('data-tid');expect(legend).not.toContain('data-source-token');
       // 성조 견본 5개(경성 포함 — 뷰어 점검 D, 오너 승인 2026-10-23 KST) — 본문 병음과 같은 pinyin-tone--N 클래스(색은 --tone-N 토큰).
       expect([...html.matchAll(/class="rt-an (pinyin-tone--\d)"/g)].map(m=>m[1])).toEqual(['pinyin-tone--1','pinyin-tone--2','pinyin-tone--3','pinyin-tone--4','pinyin-tone--0']);
