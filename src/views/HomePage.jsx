@@ -179,8 +179,13 @@ export default function HomePage({ book = null, bookPromise, sessionHint }) {
   useEffect(() => {
     setDevice({ newPerDay: loadNewPerDay(), introIds: loadIntroIds() });
   }, []);
-  const quota = reviewScopeQuota(admission, { ...device, vocabIds: data?.vocab?.map(v => v.id) });
-  const reviewCount = learnReviewCount({ snapshot: data?.learning, lang, quota, now: data?.now });
+  // 한도 · 칸 숫자는 입력이 같으면 같은 값이다 — 배움이 다시 그려질 때마다(조회 · 칩 · 문단이 올 때) 3,000행 개수(countReviewScope)를
+  // 다시 세지 않는다(LOGGED-IN-SWEEP-002: 합성 무거운 계정 첫 로드에 CPU×4 약 84ms가 같은 숫자를 거듭 셌다). reviewScopeQuota는
+  // admission의 quota · compatibility만 읽는다 — 두 값과 기기 설정 · 단어 목록이 같으면 같은 한도다.
+  const quota = useMemo(() => reviewScopeQuota(admission, { ...device, vocabIds: data?.vocab?.map(v => v.id) }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- admission은 그릴 때마다 새 객체 — 읽는 두 칸만 본다
+    [admission.quota, admission.compatibility, device, data?.vocab]);
+  const reviewCount = useMemo(() => learnReviewCount({ snapshot: data?.learning, lang, quota, now: data?.now }), [data?.learning, lang, quota, data?.now]);
   const reviewHref = serializeReviewScope({ lang });
 
   const forecast = data?.forecastByLang?.[lang];
