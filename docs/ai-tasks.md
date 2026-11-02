@@ -1460,6 +1460,15 @@
 - **오너 결정 정리 (2026-11-02 KST, 「권장대로 ㄱㄱ」)**: 한자 가변 폰트 하지 않음 · 카드 종류 전체 기본값 꺼 둔 채 유지 · 유출 비밀번호 차단(Supabase Auth
   「Leaked password protection」, Pro 요금제라 가능) = 켜기 권장 — 인증 설정이라 **오너 대시보드 몫**(Authentication → 비밀번호 보안). 「통과 복습 간격이 이전보다
   줄지 않게」(Anki) 후속 아이디어는 운영 집계로 불요 — Review 상태 통과 22건 중 줄어든 것 0(줄어든 4건은 전부 다시(1)), 표본이 쌓이면 다시 센다.
+  → #1641 운영 16:27 KST 16/16.
+- **VIEWER-SSR-001 뷰어 본문 서버 그림 (2026-11-02 KST, 오너 「권장대로 ㄱㄱ」)**: 운영 손님 /viewer/45(CPU×4) FCP 1.1 s = 「자료 불러오는 중…」, LCP 2.7 s =
+  붙은 뒤 제목. 원인 = 본문이 useQuery(['material', id])에서만 오고 seed 넘겨받기(adoptViewerSeed)가 세션 확인 뒤 비동기라 서버 · 첫 클라이언트 렌더는 늘 골격.
+  범위 = **손님(seed.account 없음) · 공개 · 분석 끝난(completed · partial) · 비중국어 · 대화/작성/노트/책 장 아님 · 쿼리 returnTo뿐**(viewerSsr.viewerSsrRow).
+  머리 앞 인라인 판정: 저장 설정 · 화면 언어가 기본값이 아니거나 오프라인 · 30초 넘은 seed · 음성 미지원이면 <html data-viewer-hold>(본문 visibility:hidden ·
+  자리 유지 · 지금 골격) → 뷰어가 설정을 붙인 뒤 풀기. 기본값이면 쪽 높이 · 쪽 표시 · 다음 단추를 칠하기 전에 <html> 변수로. 첫 렌더는 seed 행 initialData ·
+  설정은 기본값에서 layout effect로 · 음성 지원 가정(useSyncExternalStore). 로컬 e2e 빌드(Pixel 5 · CPU×4, 10회 중앙값): LCP ja 1196 → 710 · en 1250 → 766 ·
+  ko 1138 → 660 ms, TBT +5~10%, CLS 0, 붙기 오류 0, 서버 그림 ↔ 붙은 뒤 픽셀 차 0. 서버 지연 0/300/500 ms × 5 조합 × 4회 프레임 표본 — 첫 본문 뒤 보이는
+  변화 없음(비기본 설정 쪽 수 4 → 5는 기존과 같음). 계약 viewerSsr(38, 저장 상태 4,000 × 5언어 퍼즈). 제외(별건): 중국어(병음 칸 칠하기 전 측정) · 로그인.
   같은 훑기의 다른 값: 뷰어 /viewer/45 LCP 2.7 s · TBT 590 ms · JS 649 KB(본문 = 붙은 뒤 — 큰 몫은 SSR 본문, 별건) · 단어 페이지 LCP 1.7 ~ 1.9 s(목록 =
   정적 묶음 뒤, VOCAB-LEVEL-DOC 배제 선례) · 나머지 1.4 s 이하, CLS 전부 0.
 - **OFFLINE-GRADE-001 단어 페이지 오프라인 채점 — 보류(오너 2026-10-31 KST 「일단 내용 저장만 해둬」)**: 카드당 요청 구조는 유지(실측 서버
