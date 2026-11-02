@@ -137,7 +137,8 @@ describe('이번 주 카드 화면 — 대화 줄 · 담은 곳 줄 · 앞면 �
     expect(src).toContain("n > 0 ? `${n.toLocaleString('ko-KR')}${unit}` : '–'");
     expect(css).toContain('.learn-week__list:empty{display:none}');
     // 넓은 창 — 실제 기억률 창과 같은 폭.
-    expect(src).toMatch(/<TileModal title=\{`이번 주[^\n]*className="tile-modal--wide"/);
+    // 창 제목 = 고른 기간 이름(이번 주 · 지난 30일) + 날짜(기간 요약 — 오너 「1번으로」 2026-11-02 KST).
+    expect(src).toMatch(/<TileModal title=\{`\$\{words\.now\} \(\$\{weekRangeLabel\(range\)\}\)`\} className="tile-modal--wide"/);
     // 거울 규약 — 이번 주 창 스타일에 경고 · 성적 색이 없다.
     const week = sliceBetween(css, '.learn-week{', '.learn-levels,.learn-memory{');
     for (const banned of ['--danger', '--warning', '--learn-go', '--learn-stop', '--grade-']) expect(week).not.toContain(banned);

@@ -21,7 +21,8 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/AuthContext';
-import { SAVED_SOURCES, buildWeeklyReport, weekRangeLabel } from '../lib/weeklyReport';
+import { PERIOD_KINDS, SAVED_SOURCES, buildRangeReport, buildWeeklyReport, periodRange, weekRangeLabel } from '../lib/weeklyReport';
+import { PERIOD_LABEL, PREV_LABEL, balanceRows, periodStandards, periodSummaryText, studyDaysIn } from '../lib/periodSummary';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { topLabeledWeakness, weaknessLine, weaknessProfile } from '../lib/weaknessProfile';
 import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
@@ -195,7 +196,7 @@ export default function ProfileStats() {
         <StreakTile profile={profile} className="learn-order-3" />
         <HeatmapCard dayCounts={studyDays} hasOlder={hasOlderRecord} className="learn-order-6" />
         {/* 빈 주에도 칸은 자리를 지킨다(오너 확정 2026-08-30 "상시 표시") — 게이트는 로드 대기만, 로드 전은 같은 칸의 「–」. */}
-        {weekly ? <WeeklyTile weekly={weekly} vocab={data?.vocab} projections={projections} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
+        {weekly ? <WeeklyTile weekly={weekly} vocab={data?.vocab} projections={projections} studyDays={studyDays} profile={profile} className="learn-order-4" /> : <StatTile value="–" label="이번 주" className="learn-order-4" />}
         <StatTile value={Array.isArray(knownRows) ? knownRows.length.toLocaleString('ko-KR') : '–'} label={METRICS.knownMarked.label} className="learn-order-5" />
         <LevelVocabCard lang={lang} vocab={vocab} projections={projections} knownRows={knownRows || []} className="learn-order-7" />
         <MemoryHealthCard lang={lang} projections={projections} now={data?.now || Date.now()} className="learn-order-8"
@@ -221,11 +222,13 @@ export default function ProfileStats() {
      사라짐'으로 읽혔다). 값은 0 대신 스트릭 타일의 '–' 선례 — 0 무표기 원칙과의
      절충점. 탭하면 전체 거울을 모달로 편다(DdayTile의 타일→모달 정본 재사용 —
      지난주 병기는 모달에만 남는다). ── */
-function WeeklyTile({ weekly, vocab = null, projections = null, className = '' }) {
+function WeeklyTile({ weekly, vocab = null, projections = null, studyDays = null, profile = null, className = '' }) {
   const [open, setOpen] = useState(false);
   // 창 안의 한 겹 더 — 「다시 만난 말」(STATS-MAP-001). 닫으면 다음에 다시 이번 주부터.
   const [view, setView] = useState('week');
-  const close = () => { setOpen(false); setView('week'); };
+  // 기간 칩(기간 요약 · 오너 「1번으로」 2026-11-02 KST) — 닫으면 다음에 다시 이번 주.
+  const [period, setPeriod] = useState('week');
+  const close = () => { setOpen(false); setView('week'); setPeriod('week'); };
   const acc = weekly.reviews.accuracy == null ? null : Math.round(weekly.reviews.accuracy * 100);
   const [value, label] = weekly.reviews.total > 0
     ? [`${weekly.reviews.total}`, `이번 주 복습${acc != null ? ` · ${acc}%` : ''}`]
@@ -241,25 +244,41 @@ function WeeklyTile({ weekly, vocab = null, projections = null, className = '' }
         <span className="learn-stat__label">{label}</span>
       </button>
       {open && (
-        <WeeklyModal weekly={weekly} vocab={vocab} projections={projections} view={view} setView={setView} onClose={close} />
+        <WeeklyModal weekly={weekly} vocab={vocab} projections={projections} studyDays={studyDays} profile={profile}
+          period={period} setPeriod={setPeriod} view={view} setView={setView} onClose={close} />
       )}
     </>
   );
 }
 
 /* ── 이번 주 창 — 이번 주 · 다시 만난 말(들어옴) · 직접 쓴 말(나감) 겹. 두 지표 재료는 창을 연 사람에게만 받는다(홈 · 현황 첫 화면 비용 0). ── */
-function WeeklyModal({ weekly, vocab, projections, view, setView, onClose }) {
+function WeeklyModal({ weekly, vocab, projections, studyDays = null, profile = null, period = 'week', setPeriod = () => {}, view, setView, onClose }) {
   const { user } = useAuth();
-  const weekStartMs = weekly.week.startMs;
+  // 기간 — 이번 주는 현황이 이미 받은 2주치 그대로, 지난 30일은 고를 때만 60일치(비교 기간 포함)를 받는다.
+  const range = useMemo(() => (period === '30d' ? periodRange('30d') : { ...periodRange('week'), startMs: weekly.week.startMs, endMs: weekly.week.endMs, prevStartMs: weekly.prevWeek.startMs }), [period, weekly]);
+  const { data: periodRows } = useQuery({
+    queryKey: ['period-report', user?.id, range.kind, range.startMs],
+    queryFn: () => fetchWeeklyReportRows(user.id, { sinceMs: range.prevStartMs }),
+    enabled: !!user?.id && range.kind === '30d',
+    staleTime: 1000 * 60 * 5,
+  });
+  const report = useMemo(() => {
+    if (range.kind === 'week') return weekly;
+    if (!periodRows) return null;
+    const r = buildRangeReport(periodRows, range);
+    return { ...r, week: r.period, prevWeek: r.prevPeriod };
+  }, [range, weekly, periodRows]);
+  const weekStartMs = range.startMs;
+  const spanMs = range.days * 86400000;
   const { data: remet } = useQuery({
-    queryKey: ['remet', user?.id, weekStartMs],
-    queryFn: () => fetchRemetWeeks(user.id, { weekStartMs, vocabRows: Array.isArray(vocab) ? vocab : null }),
+    queryKey: ['remet', user?.id, weekStartMs, range.kind],
+    queryFn: () => fetchRemetWeeks(user.id, { weekStartMs, spanMs, vocabRows: Array.isArray(vocab) ? vocab : null }),
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5,
   });
   const { data: output } = useQuery({
-    queryKey: ['output-words', user?.id, weekStartMs],
-    queryFn: () => fetchOutputWeeks(user.id, { weekStartMs, vocabRows: Array.isArray(vocab) ? vocab : [] }),
+    queryKey: ['output-words', user?.id, weekStartMs, range.kind],
+    queryFn: () => fetchOutputWeeks(user.id, { weekStartMs, spanMs, vocabRows: Array.isArray(vocab) ? vocab : [] }),
     enabled: !!user?.id && Array.isArray(vocab),
     staleTime: 1000 * 60 * 5,
   });
@@ -268,22 +287,64 @@ function WeeklyModal({ weekly, vocab, projections, view, setView, onClose }) {
   const rowsByWord = useMemo(() => new Map((vocab || []).map(v => [v.word_text, v])), [vocab]);
   const projectionById = useMemo(() => new Map((projections || []).map(p => [p?.vocabulary?.id, p])), [projections]);
   const openWord = word => { const row = rowsByWord.get(word); if (row) setDetail(row); };
+  const words = { now: PERIOD_LABEL[range.kind], prev: PREV_LABEL[range.kind] };
   const trail = view === 'remet' ? remet : view === 'output' ? output : null;
   if (trail && TRAILS[view]) {
     return (
       <>
-        <TileModal title={TRAILS[view].title} className="tile-modal--wide" onClose={detail ? () => setDetail(null) : onClose} onBack={() => setView('week')} backLabel="이번 주">
-          <TrailView spec={TRAILS[view]} data={trail} projections={projections} onWord={rowsByWord.size ? openWord : null} />
+        <TileModal title={TRAILS[view].title} className="tile-modal--wide" onClose={detail ? () => setDetail(null) : onClose} onBack={() => setView('week')} backLabel={words.now}>
+          <TrailView spec={TRAILS[view]} data={trail} projections={projections} words={words} onWord={rowsByWord.size ? openWord : null} />
         </TileModal>
         {detail && <VocabDetailCard word={detail} projection={projectionById.get(detail.id)} now={new Date()} onClose={() => setDetail(null)} ttsSupported={false} />}
       </>
     );
   }
+  // 지난 30일만 「공부한 날」 줄(한 달은 꾸준함이 중요한 숫자 — 목업) · 요약 복사는 같은 꾸러미(periodSummaryText).
+  const studied = range.kind === '30d' && studyDays ? studyDaysIn(studyDays, range) : null;
+  const summaryText = () => {
+    const standards = periodStandards(profile, range.days);
+    const balance = balanceRows({ report, output: output?.week, standards });
+    return periodSummaryText({ range, report, studyDays: studied ?? (studyDays ? studyDaysIn(studyDays, range) : null), balance, output: output?.week, remet: remet?.week });
+  };
   return (
-    <TileModal title={`이번 주 (${weekRangeLabel(weekly.week)})`} className="tile-modal--wide" onClose={onClose}>
-      <WeeklyReportCard weekly={weekly} header={false} showWeakness remetTotal={remet?.week.total || 0} onOpenRemet={() => setView('remet')}
-        outputTotal={output?.week.total || 0} onOpenOutput={() => setView('output')} />
+    <TileModal title={`${words.now} (${weekRangeLabel(range)})`} className="tile-modal--wide" onClose={onClose}>
+      <div className="learn-period" role="group" aria-label="기간">
+        {PERIOD_KINDS.map(kind => (
+          <button key={kind} type="button" aria-pressed={kind === range.kind} className={kind === range.kind ? 'is-on' : undefined}
+            onClick={() => { setPeriod(kind); setView('week'); }}>{PERIOD_LABEL[kind]}</button>
+        ))}
+      </div>
+      {report ? (
+        <WeeklyReportCard weekly={report} header={false} showWeakness={range.kind === 'week'} words={words} studied={studied} days={range.days}
+          remetTotal={remet?.week.total || 0} onOpenRemet={() => setView('remet')}
+          outputTotal={output?.week.total || 0} onOpenOutput={() => setView('output')} />
+      ) : <p className="learn-week__empty" aria-busy="true">{words.now} 기록을 불러오는 중…</p>}
+      <PeriodFoot period={range.kind} text={report ? summaryText : null} />
     </TileModal>
+  );
+}
+
+/** 창 맨 아래 — 「자세히 보기 ›」(진단지 · 오너 문구 2026-11-02 KST) · 「요약 복사」(에이전트 · 개인 메일에 붙여넣기). */
+function PeriodFoot({ period, text }) {
+  const [state, setState] = useState(null); // null | 'done' | 'failed'
+  const timer = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text());
+      setState('done');
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setState(null), 2000);
+    } catch { setState('failed'); }
+  };
+  return (
+    <div className="learn-week__foot">
+      <Link href={`/progress/report?period=${period}`} prefetch={false} className="learn-week__more">자세히 보기 <span aria-hidden="true">›</span></Link>
+      <button type="button" className={`learn-week__copy${state === 'done' ? ' is-done' : ''}`} onClick={copy} disabled={!text}>
+        <span aria-live="polite">{state === 'done' ? '복사됨 ✓' : '요약 복사'}</span>
+      </button>
+      {state === 'failed' && <p className="learn-week__copy-fail" role="status">복사하지 못했어요. 「자세히 보기」에서 글을 골라 복사해 주세요.</p>}
+    </div>
   );
 }
 
@@ -295,8 +356,8 @@ const TRAILS = Object.freeze({
   remet: {
     title: '다시 만난 말',
     cells: d => [[d.reading, '편', '글'], [d.conversation, '개', '대화'], [d.reviews, '번', '복습']],
-    note: '복습한 말이 이번 주 읽은 글 · 대화에 다시 나왔어요',
-    empty: '이번 주에는 아직 없어요. 복습한 말이 나오는 글을 읽으면 여기에 쌓여요.',
+    note: w => `복습한 말이 ${w.now} 읽은 글 · 대화에 다시 나왔어요`,
+    empty: w => `${w.now}에는 아직 없어요. 복습한 말이 나오는 글을 읽으면 여기에 쌓여요.`,
     kind: { reading: '글', conversation: '대화' },
     href: src => `/viewer/${src.id}`,
     // 핵심(채운 칩) = 만났을 때 흐려지던 말 — 복습이 마침 필요하던 때 글에서 다시 만난 말.
@@ -314,8 +375,8 @@ const TRAILS = Object.freeze({
   output: {
     title: '직접 쓴 말',
     cells: d => [[d.writing, '편', '작문'], [d.conversation, '개', '대화'], [d.firstTime, '개', '처음 씀']],
-    note: '담은 말을 이번 주 작문 · 대화에서 직접 썼어요',
-    empty: '이번 주에는 아직 없어요. 작문이나 대화에서 담은 말을 써 보면 여기에 쌓여요.',
+    note: w => `담은 말을 ${w.now} 작문 · 대화에서 직접 썼어요`,
+    empty: w => `${w.now}에는 아직 없어요. 작문이나 대화에서 담은 말을 써 보면 여기에 쌓여요.`,
     kind: { writing: '작문', conversation: '대화' },
     href: src => (src.kind === 'writing' ? '/writing' : `/viewer/${src.id}`),
     keyLabel: '처음 씀',
@@ -327,7 +388,7 @@ const TRAILS = Object.freeze({
     },
   },
 });
-function TrailView({ spec, data, projections = null, onWord = null }) {
+function TrailView({ spec, data, projections = null, words = { now: '이번 주', prev: '지난주' }, onWord = null }) {
   const { week, prev } = data;
   const cells = spec.cells(week);
   const byWord = useMemo(() => new Map((projections || []).filter(p => p?.vocabulary?.word_text).map(p => [p.vocabulary.word_text, p])), [projections]);
@@ -337,13 +398,13 @@ function TrailView({ spec, data, projections = null, onWord = null }) {
     <div className="learn-week">
       <div className="learn-week__hero">
         <div className="learn-week__hero-k">
-          <span>이번 주</span>
-          {prev.total > 0 && <span>지난주 {prev.total}개</span>}
+          <span>{words.now}</span>
+          {prev.total > 0 && <span>{words.prev} {prev.total}개</span>}
         </div>
         {week.total > 0 ? <>
           <div className="learn-week__num"><strong>{week.total.toLocaleString('ko-KR')}</strong><span>개</span></div>
-          <p className="learn-week__note">{spec.note}</p>
-        </> : <p className="learn-week__empty">{spec.empty}</p>}
+          <p className="learn-week__note">{spec.note(words)}</p>
+        </> : <p className="learn-week__empty">{spec.empty(words)}</p>}
       </div>
       {week.total > 0 && <>
         <div className="learn-week__cells">
@@ -380,7 +441,8 @@ const SAVED_SOURCE_LABEL = Object.freeze({ reading: '읽기', conversation: '대
      지난주는 회색 병기만(증감 화살표 · 빨강 · 초록 없음). 새 모양 없이 있는 화면 부품을 빌린다 —
      복습 큰 숫자 = 복습 화면 「오늘 다시 볼 표현」, 세 칸 = 내 정보 「내 기록」(0은 「–」로 자리 지킴),
      자세히 목록 = 내 정보 목록 묶음(줄이라 0인 항목은 줄째 빠진다 — 「0은 쓰지 않는다」 그대로). ── */
-function WeeklyReportCard({ weekly, header = true, showWeakness = false, remetTotal = 0, onOpenRemet = null, outputTotal = 0, onOpenOutput = null }) {
+function WeeklyReportCard({ weekly, header = true, showWeakness = false, words = { now: '이번 주', prev: '지난주' }, studied = null, days = 7,
+  remetTotal = 0, onOpenRemet = null, outputTotal = 0, onOpenOutput = null }) {
   const pct = (a) => (a == null ? null : Math.round(a * 100));
   const acc = pct(weekly.reviews.accuracy);
   const prevAcc = pct(weekly.prevReviews.accuracy);
@@ -405,7 +467,7 @@ function WeeklyReportCard({ weekly, header = true, showWeakness = false, remetTo
     return (
       <div className="learn-week">
         {header && <div className="learn-week__head">이번 주 ({weekRangeLabel(weekly.week)})</div>}
-        <p className="learn-week__empty">이번 주 기록이 아직 없어요.</p>
+        <p className="learn-week__empty">{words.now} 기록이 아직 없어요.</p>
       </div>
     );
   }
@@ -415,7 +477,7 @@ function WeeklyReportCard({ weekly, header = true, showWeakness = false, remetTo
       <div className="learn-week__hero">
         <div className="learn-week__hero-k">
           <span>복습</span>
-          {weekly.prevReviews.total > 0 && <span>지난주 {weekly.prevReviews.total}문항{prevAcc != null ? ` · ${prevAcc}%` : ''}</span>}
+          {weekly.prevReviews.total > 0 && <span>{words.prev} {weekly.prevReviews.total}문항{prevAcc != null ? ` · ${prevAcc}%` : ''}</span>}
         </div>
         {weekly.reviews.total > 0 ? <>
           <div className="learn-week__num"><strong>{weekly.reviews.total.toLocaleString('ko-KR')}</strong><span>문항</span></div>
@@ -425,7 +487,7 @@ function WeeklyReportCard({ weekly, header = true, showWeakness = false, remetTo
               <span className="learn-week__bar" role="img" aria-label={`정답 ${acc}%`}><i style={{ width: `${acc}%` }} /></span>
             </div>
           )}
-        </> : <p className="learn-week__empty">이번 주 복습 기록이 아직 없어요.</p>}
+        </> : <p className="learn-week__empty">{words.now} 복습 기록이 아직 없어요.</p>}
       </div>
       <div className="learn-week__cells">
         {cells.map(([n, unit, label]) => (
@@ -435,6 +497,12 @@ function WeeklyReportCard({ weekly, header = true, showWeakness = false, remetTo
         ))}
       </div>
       <div className="learn-week__list">
+        {studied != null && (
+          <div className="learn-week__row">
+            <span>공부한 날</span>
+            <div><b>{studied}일</b> / {days}</div>
+          </div>
+        )}
         {conv.turns > 0 && (
           <div className="learn-week__row">
             <span>대화</span>

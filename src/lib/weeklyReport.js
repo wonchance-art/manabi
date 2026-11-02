@@ -4,11 +4,12 @@
  * 주간 경계는 growthStats.learningWeekStartMs(월요일 KST 04시 — 학습일 경계, STATS-MAP-001) 정본만 쓴다 — 새 경계 계산 신설 금지.
  */
 
-import { learningWeekStartMs } from './growthStats';
+import { learningDayStartMs, learningWeekStartMs } from './growthStats';
 import { conversationCorrections } from './conversation/conversationLoop.js';
 import { STUDY_SOURCE_REF } from './reviewScopeUrl.js';
 
-const WEEK_MS = 7 * 86400000;
+const DAY_MS = 86400000;
+const WEEK_MS = 7 * DAY_MS;
 
 /**
  * 활동량에만 드는 출처 — 「한자」 탭 넘기기(HANZI-TAB-AL-001 §4)는 글자마다 스스로 「알아요 · 몰라요」를 고른 기록이다.
@@ -101,26 +102,26 @@ function savedSourceSlice(vocabRows, conversationIds, startMs, endMs) {
   return out;
 }
 
-export function buildWeeklyReport({ events, vocabRows, encounterRows, readRows, conversationRows, now = Date.now() } = {}) {
-  const weekStart = learningWeekStartMs(now);
-  const prevStart = weekStart - WEEK_MS;
-
-  const reviews = reviewSlice(events, weekStart, weekStart + WEEK_MS);
-  const prevReviews = reviewSlice(events, prevStart, weekStart);
-
-  const newWords = countInRange(vocabRows, 'created_at', weekStart, weekStart + WEEK_MS);
-  const prevNewWords = countInRange(vocabRows, 'created_at', prevStart, weekStart);
-  const metWords = countInRange(encounterRows, 'first_met_at', weekStart, weekStart + WEEK_MS);
-  const prevMetWords = countInRange(encounterRows, 'first_met_at', prevStart, weekStart);
-  const readsCompleted = countInRange(readRows, 'completed_at', weekStart, weekStart + WEEK_MS);
-  const prevReadsCompleted = countInRange(readRows, 'completed_at', prevStart, weekStart);
-  const conversation = conversationSlice(conversationRows, weekStart, weekStart + WEEK_MS);
+/**
+ * 기간 리포트(STATS-MAP-001 기간 요약 · 오너 「1번으로」 2026-11-02 KST) — 이번 주 창과 같은 셈을 아무 기간 [startMs, endMs)에.
+ * 비교 기간은 [prevStartMs, startMs). 이번 주 리포트는 이 함수의 한 경우일 뿐이다(셈 정본 하나 — 이중 진실 금지).
+ */
+export function buildRangeReport({ events, vocabRows, encounterRows, readRows, conversationRows } = {}, { startMs, endMs, prevStartMs } = {}) {
+  const reviews = reviewSlice(events, startMs, endMs);
+  const prevReviews = reviewSlice(events, prevStartMs, startMs);
+  const newWords = countInRange(vocabRows, 'created_at', startMs, endMs);
+  const prevNewWords = countInRange(vocabRows, 'created_at', prevStartMs, startMs);
+  const metWords = countInRange(encounterRows, 'first_met_at', startMs, endMs);
+  const prevMetWords = countInRange(encounterRows, 'first_met_at', prevStartMs, startMs);
+  const readsCompleted = countInRange(readRows, 'completed_at', startMs, endMs);
+  const prevReadsCompleted = countInRange(readRows, 'completed_at', prevStartMs, startMs);
+  const conversation = conversationSlice(conversationRows, startMs, endMs);
+  const prevConversation = conversationSlice(conversationRows, prevStartMs, startMs);
   const conversationIds = new Set((conversationRows || []).map(row => String(row?.id)));
-  const savedBySource = savedSourceSlice(vocabRows, conversationIds, weekStart, weekStart + WEEK_MS);
-
+  const savedBySource = savedSourceSlice(vocabRows, conversationIds, startMs, endMs);
   return {
-    week: { startMs: weekStart, endMs: weekStart + WEEK_MS },
-    prevWeek: { startMs: prevStart, endMs: weekStart },
+    period: { startMs, endMs },
+    prevPeriod: { startMs: prevStartMs, endMs: startMs },
     reviews,
     prevReviews,
     newWords,
@@ -130,10 +131,34 @@ export function buildWeeklyReport({ events, vocabRows, encounterRows, readRows, 
     readsCompleted,
     prevReadsCompleted,
     conversation,
+    prevConversation,
     savedBySource,
     // 전 축 0이면 카드 자체를 그리지 않는다(첫 주 — 0 무표기 결).
     hasAny: reviews.total > 0 || newWords > 0 || metWords > 0 || readsCompleted > 0 || conversation.turns > 0,
   };
+}
+
+export function buildWeeklyReport(rows = {}) {
+  const { now = Date.now() } = rows || {};
+  const weekStart = learningWeekStartMs(now);
+  const report = buildRangeReport(rows, { startMs: weekStart, endMs: weekStart + WEEK_MS, prevStartMs: weekStart - WEEK_MS });
+  return { ...report, week: report.period, prevWeek: report.prevPeriod };
+}
+
+/**
+ * 기간 고르기(이번 주 창 칩) — 'week' = 이번 학습 주(월요일 04시부터) · 비교 지난주,
+ * '30d' = 오늘(04시 학습일)을 포함한 최근 30학습일 · 비교 그 앞 30학습일.
+ */
+export const PERIOD_KINDS = Object.freeze(['week', '30d']);
+export const PERIOD_DAYS = Object.freeze({ week: 7, '30d': 30 });
+export function periodRange(kind, now = Date.now()) {
+  if (kind === '30d') {
+    const endMs = learningDayStartMs(now) + DAY_MS;
+    const startMs = endMs - 30 * DAY_MS;
+    return { kind, startMs, endMs, prevStartMs: startMs - 30 * DAY_MS, days: 30 };
+  }
+  const startMs = learningWeekStartMs(now);
+  return { kind: 'week', startMs, endMs: startMs + WEEK_MS, prevStartMs: startMs - WEEK_MS, days: 7 };
 }
 
 /** 카드 머리 "8/18 ~ 8/24" — KST 날짜 표기(주간 경계와 같은 시간대). */

@@ -16,8 +16,9 @@ const CHUNK = 100;
 const chunks = (list, n = CHUNK) => Array.from({ length: Math.ceil(list.length / n) }, (_, i) => list.slice(i * n, i * n + n));
 const settle = (promise, fallback) => Promise.resolve().then(() => promise).then(r => r?.data ?? r ?? fallback, () => fallback);
 
-export async function fetchRemetWeeks(userId, { weekStartMs, now = Date.now(), vocabRows: knownVocab = null } = {}) {
-  const prevStartMs = weekStartMs - 7 * DAY;
+/** spanMs — 비교 기간 길이(기본 7일 = 지난주). 기간 요약(지난 30일)은 30일을 넘긴다 — weekStartMs가 그 기간의 시작. */
+export async function fetchRemetWeeks(userId, { weekStartMs, spanMs = 7 * DAY, now = Date.now(), vocabRows: knownVocab = null } = {}) {
+  const prevStartMs = weekStartMs - spanMs;
   const sinceIso = new Date(prevStartMs).toISOString();
   const [reads, convList, vocabRows] = await Promise.all([
     settle(supabase.from('reading_progress').select('material_id, completed_at')
