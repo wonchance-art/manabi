@@ -1,6 +1,8 @@
 # AGENT-LINK-001 — 개인 에이전트 연결 설계 (초안)
 
-- 상태: **설계 초안 · 오너 승인 대기** (2026-11-02 KST). 새 제품 범위라 학습 개선 지속 승인 밖 — 이 문서 승인 뒤 단계별로 착수한다.
+- 상태: **0단계 운영 반영**(2026-11-02 KST) — 형식 계약 `src/lib/agentFormat.js`([#1639](https://github.com/wonchance-art/manabi/pull/1639)) ·
+  빠른 분석 「에이전트에게 부탁하기」 카드 + 형식 알아보기([#1645](https://github.com/wonchance-art/manabi/pull/1645), 오너 「빠른 분석에 복습한 말 최신 공동 디자인 적용」).
+  1 · 2단계는 새 제품 범위라 학습 개선 지속 승인 밖 — §12 사전 조사 · §13 실험 결과를 보고 단계별로 별도 승인.
 - 출발점: #1077 [STATS-MAP-001 · AGENT-LINK-001 기록](https://github.com/wonchance-art/manabi/issues/1077#issuecomment-6553548961) · 통계 지도 아티팩트 07 · 08절.
 - 오너 요구(보존): 프롬프트 문장만이 아니라 **결과가 어떤 프레임 · 형식으로 나오기를 바라는지까지** 설계한다.
 
@@ -94,6 +96,36 @@ A: いいね！
 - **이음새**: 들여온 대화는 출처 「에이전트」로 표시해 대화 모드의 교정 · 하루 한도 · 다시 꺼내기 셈과 섞지 않는다.
 
 ## 11. 오너 결정
-1. 0단계(형식 계약 · 프롬프트 묶음 · 붙여넣기 들여오기)부터 착수 — 승인?
-2. 0단계 들여오기의 자리: 빠른 분석 화면에 「에이전트 대화 붙여넣기」 / 대화 화면에 「가져오기」 — 목업으로 고르기.
-3. 1단계(MCP)는 0단계 사용 반응을 본 뒤 별도 승인으로.
+1. ~~0단계부터 착수~~ — 승인 · 완료(#1639 · #1645).
+2. ~~0단계 들여오기 자리~~ — **빠른 분석**(목업 「에이전트 0단계」, 대화 화면 「가져오기」는 대화 모드 셈과 섞일 위험으로 배제).
+3. 들여온 자료를 이번 주 창 「담은 곳」에 「에이전트」로 따로 셀지 — **결정 대기**(지금은 출처 표시 없이 일반 자료로 저장).
+4. 1단계(MCP)는 §13 실험 반응을 본 뒤 별도 승인으로.
+
+## 12. 1단계 사전 조사 (2026-11-02 KST · 조사만, 구현 없음)
+결론: **새 서버 · 새 인증 공급자 없이 된다.** Supabase Auth가 OAuth 2.1 인가 서버를 맡고, Next 라우트 하나가 MCP 서버를 맡는다.
+남는 일은 우리 쪽 화면 하나(동의 화면)와 운영 설정 · 문서 개정이다.
+
+| 부품 | 선례 · 상태 | 판단 | 근거 · 우리 쪽 할 일 |
+|---|---|---|---|
+| Supabase OAuth 2.1 서버 | [공식 문서](https://supabase.com/docs/guides/auth/oauth-server) · [MCP 인증 안내](https://supabase.com/docs/guides/auth/oauth-server/mcp-authentication) · [변경 기록](https://supabase.com/changelog/38022-oauth-2-1-server-capabilities-for-supabase-auth)(공개 베타 2025-11-26) | **채택** | 인가 코드 + PKCE · 동적 클라이언트 등록 · 발견 URL `/.well-known/oauth-authorization-server/auth/v1`. 토큰은 일반 Supabase JWT에 `client_id`가 붙음 → **RLS가 그대로 적용**(새 권한 모델 없음). 별도 요금 없음(에이전트 로그인도 같은 사용자 MAU 1). 베타라 운영 설정 전 대시보드에서 상태 재확인. |
+| 동의 화면 | supabase-js `auth.oauth.getAuthorizationDetails` · `approveAuthorization` · `denyAuthorization`([PR #1793](https://github.com/supabase/supabase-js/pull/1793)) — 설치본 2.100.0에 있음(실측) | **채택** | 우리 화면 하나(`/oauth/consent` 가칭): 클라이언트 이름 · 요청 범위 · 거절 · 나중에 끊기. 버전마다 서명이 달라 착수 때 설치본 타입으로 고정. |
+| MCP 서버 | [`mcp-handler`](https://github.com/vercel/mcp-handler)(Apache-2.0, Next 13+ · Node 20+) · `withMcpAuth` · `protectedResourceHandler`(RFC 9728) | **채택 후보** | 2.x는 `@modelcontextprotocol/server` ^2 · `zod` ^4 필요(우리는 셋 다 미설치 — 새 의존성 셋), SSE 제거로 **Redis 불필요**. 1.x는 `@modelcontextprotocol/sdk`. 정식 릴리스 표기가 없어 착수 때 판 고정 · 계약 테스트. `.well-known` 경로는 미들웨어 보호 밖에 둔다([Clerk 안내](https://clerk.com/docs/nextjs/mcp/build-mcp-server) · [Descope 안내](https://www.descope.com/blog/post/auth-mcp-nextjs)). |
+| `@supabase/server`(`withSupabase` · `withOAuthProtectedResource`) | Supabase가 Edge Functions · fetch 런타임용으로 안내 | **부분 채택** | 토큰 검사 · 사용자 범위 클라이언트 모양만 참고 — 우리 서버는 Vercel 라우트라 `mcp-handler` 쪽을 정본으로. |
+| FastMCP Supabase 통합 | Python | **배제** | 런타임이 다름(우리는 Next/Node 하나). |
+| 직접 OAuth 서버 구현 | — | **배제** | 인가 서버를 새로 만드는 일(보안 표면 · 유지 비용) — Supabase가 같은 일을 이미 한다. |
+
+1단계 착수 전 체크리스트(별도 승인 때 함께 결정):
+- 대시보드: Authentication › OAuth Server 켜기 · 동적 등록 여부(켜면 리다이렉트 도메인 검증 · 모든 클라이언트 사용자 승인) — **운영 설정 변경이라 오너 승인 필요**.
+- 문서: 개인정보 처리방침 §4 「사용자가 연결한 에이전트」 줄 · 약관 §3 예외(§7).
+- 범위: Supabase 기본 범위는 `openid` · `email` · `profile` · `phone`뿐 — 우리 `summary` · `words` 구분은 MCP 도구 쪽 허용 목록 + `client_id`별 RLS로 건다(토큰 범위로는 못 나눔).
+- 의존성: `mcp-handler` · MCP SDK · zod 판 고정(지금 셋 다 없음 — 번들이 아니라 서버 라우트에만 들어가는지 확인).
+- 요약 계약 v1(§6) 순수 모듈 · 「화면 숫자 = 요약 숫자」 계약 테스트부터.
+
+## 13. 0단계 실험 (오너 「실험 많이 해보자고」 2026-11-02 KST)
+| # | 실험 | 해 볼 것 | 볼 것 | 결과 |
+|---|---|---|---|---|
+| 1 | 에이전트별 형식 준수 | 「오늘 단어로 글」을 ChatGPT · Claude · dots에 각각 | 「에이전트 형식」 알아봄 · 목표 단어 밑줄이 실제 쓴 말과 맞음 | (대기) |
+| 2 | 대화 상대 → 정리 | 「이 단어로 대화 상대」 5~6턴 → 「방금 대화 정리」 | 화자 칸 · 틀린 문장이 @notes로 | (대기) |
+| 3 | 순환 한 바퀴 | 1번 결과 「자료로 저장」 → 그 글 완독 | 완독 창 「복습한 말 N개를 이 글에서 다시 만났어요」 · 다음 주 다시 만난 말 | (대기) |
+| 4 | 나감 쪽 | 직접 쓴 말 창 「아직 안 써 본 말로 작문」 → 첨삭 | 「담은 말 N개를 직접 썼어요」 숫자 | (대기) |
+형식을 못 알아본 결과가 오면 원문을 이 표에 붙이고 `parseAgentText`를 너그럽게(예: 「제목:」 앞 `#` 없음 · 구분선 길이) 고친다 — 계약 테스트에 그 원문을 그대로 박는다.
