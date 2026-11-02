@@ -156,6 +156,8 @@ export async function fetchVocabularyLearningRows(actorId, { fetchImpl = (...arg
   // 로컬 시계 하한이며, 전송 완료 후 더 최신인 snapshot 시각을 함께 사용한다.
   const options = { actorId, ...(at === undefined ? {} : { at: Math.max(schedulerTime(at), schedulerTime(body?.now)) }) };
   if (!sliced) return projectVocabularyLearningRows(body, options);
+  await yieldToMain(); // 응답 풀기(JSON 2 MB)와 첫 조각을 다른 작업으로
+  check();
   const projected = await projectVocabularyLearningRowsSliced(body, options);
   check();
   return projected;
