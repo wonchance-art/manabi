@@ -95,7 +95,9 @@ async function startBackend() {
       return;
     }
     const rpc = url.pathname.includes('/rest/v1/rpc/') ? url.pathname.split('/').pop() : null;
-    if (rpc && claimsOf(headers)?.sub === EMPTY_UID && EMPTY_RPC[rpc]) {
+    // 계정은 토큰(사용자 클라이언트) 또는 p_actor · p_user_id(서비스 클라이언트 — 토큰이 서비스 키다)로 온다.
+    const actor = claimsOf(headers)?.sub || body?.p_actor || body?.p_user_id || null;
+    if (rpc && actor === EMPTY_UID && EMPTY_RPC[rpc]) {
       res.writeHead(200, { ...cors, 'content-type': 'application/json' });
       res.end(JSON.stringify(EMPTY_RPC[rpc](body || Object.fromEntries(url.searchParams))));
       return;
