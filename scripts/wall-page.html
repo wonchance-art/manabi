@@ -1,0 +1,414 @@
+<title>manabi 화면 벽</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;800&family=Noto+Sans+KR:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 판 위의 사진 벽 — 1판 토큰(종이 · 로즈 · 언어 색)을 그대로 잇고, 판정 색은 의미색으로만 쓴다. 정본: scripts/wall-page.html */
+:root{
+  --paper:#f6f4ee;--sheet:#fffefb;--ink:#252721;--muted:#62645c;--rule:#d7d5cd;--rule-soft:#e6e3db;--note:#eeece5;
+  --rose:#994a5a;--zh:#2a7657;--en:#8a5a1c;--fr:#3a68a2;--danger:#a8362f;--danger-bg:#f8e9e6;--focus:#3a68a2;
+  --kr:'Noto Sans KR',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;--wm:'Manrope','Noto Sans KR',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1c1d1a;--sheet:#242520;--ink:#ecebe5;--muted:#a6a79e;--rule:#3c3d37;--rule-soft:#30312c;--note:#2b2c27;
+  --rose:#d48a99;--zh:#6fbf9c;--en:#d4a35c;--fr:#86a8dd;--danger:#f08c80;--danger-bg:#3a2522;--focus:#86a8dd;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#1c1d1a;--sheet:#242520;--ink:#ecebe5;--muted:#a6a79e;--rule:#3c3d37;--rule-soft:#30312c;--note:#2b2c27;
+  --rose:#d48a99;--zh:#6fbf9c;--en:#d4a35c;--fr:#86a8dd;--danger:#f08c80;--danger-bg:#3a2522;--focus:#86a8dd;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 14.5px/1.6 var(--kr);word-break:keep-all;overflow-wrap:anywhere}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--sheet)}
+a{color:var(--rose)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+button{font:inherit;color:inherit}
+.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wm{font:800 20px/1 var(--wm);letter-spacing:-1.1px}
+.wm i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--rose);margin-left:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--sheet);border-bottom:1px solid var(--rule)}
+.top .wrap{padding-block:10px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.top h1{font-size:15px;margin:0;font-weight:700}
+.meta{font:500 12px/1.4 var(--mono);color:var(--muted)}
+.cnt{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.v-fix{background:var(--danger-bg);color:var(--danger)}
+.v-data{background:var(--note);color:var(--muted);border:1px dashed var(--muted)}
+.v-skip{background:var(--sheet);color:var(--en);border:1px dashed var(--en)}
+.v-ok{background:color-mix(in srgb,var(--zh) 14%,var(--sheet));color:var(--zh)}
+.v-appr{background:color-mix(in srgb,var(--fr) 15%,var(--sheet));color:var(--fr)}
+.v-gap{background:color-mix(in srgb,var(--rose) 13%,var(--sheet));color:var(--rose)}
+main.wrap{padding-block:14px 60px}
+.stale{background:var(--danger-bg);color:var(--danger);border-radius:6px;padding:9px 12px;font-size:13px;margin-bottom:12px;font-weight:500}
+.notice{background:var(--note);border-radius:6px;padding:9px 12px;font-size:13px;color:var(--muted);margin:0 0 12px}
+.notice b{color:var(--ink)}
+.views{display:flex;gap:4px;margin:0 0 12px;border-bottom:1px solid var(--rule);overflow-x:auto}
+.vt{appearance:none;border:0;background:none;padding:9px 12px;min-height:44px;font-weight:700;font-size:13.5px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.vt[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.vt i{font-style:normal;font-family:var(--mono);font-weight:400;margin-left:5px;opacity:.75}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px;align-items:center}
+.flabel{font-size:12px;color:var(--muted);font-weight:700;margin-right:2px}
+.fchip{appearance:none;font-size:12.5px;font-weight:500;padding:7px 11px;border-radius:99px;border:1px solid var(--rule);background:var(--sheet);cursor:pointer;min-height:36px}
+.fchip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.fchip i{font-style:normal;font-family:var(--mono);margin-left:5px;opacity:.75}
+.srch{appearance:none;border:1px solid var(--rule);border-radius:99px;background:var(--sheet);color:var(--ink);padding:7px 12px;min-height:36px;font:inherit;font-size:13px;min-width:0;flex:1 1 200px;max-width:320px}
+.attn{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:12px 14px;margin:6px 0 16px}
+.attn h2{font-size:14px;margin:0 0 8px}
+.attn ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.attn li{display:flex;gap:8px;align-items:baseline;font-size:13.5px;min-width:0}
+.attn li button{appearance:none;border:0;background:none;padding:0;text-align:left;cursor:pointer;color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+.attn li span.why{color:var(--muted);font-size:12.5px;min-width:0}
+.lane{margin:20px 0 6px}
+.lane h3{font-size:13px;color:var(--muted);margin:0 0 8px;font-weight:700;letter-spacing:.02em;display:flex;gap:8px;align-items:baseline}
+.lane h3 small{font:400 11.5px var(--mono)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.tile{appearance:none;text-align:left;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;overflow:hidden;padding:0;cursor:pointer;display:flex;flex-direction:column;min-width:0}
+.tile:hover{border-color:var(--muted)}
+.tile.is-fix{border-color:color-mix(in srgb,var(--danger) 45%,var(--rule))}
+.tp{position:relative;aspect-ratio:16/10;max-width:100%;background:var(--note);overflow:hidden}
+.tp img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.cap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;padding:8px 10px;align-items:center}
+.cap b{font-size:13.5px}
+.cap code{grid-column:1/-1;font:400 11.5px var(--mono);color:var(--muted)}
+.cap small{grid-column:1/-1;color:var(--muted);font-size:11.5px;line-height:1.45}
+.cap .pills{grid-row:1;grid-column:2;display:flex;gap:4px}
+.persona{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--rule);border-radius:4px;padding:0 5px;margin-left:6px;white-space:nowrap}
+.sec{margin-top:30px}
+.sec h2{font-size:16px;margin:0 0 10px}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:680px}
+th,td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--rule-soft)}
+th{font-size:12px;color:var(--muted);background:var(--note);font-weight:700;position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td code{font:400 12px var(--mono)}
+td.c{text-align:center;white-space:nowrap}
+tr.lane-row td{background:var(--paper);font-weight:700;font-size:12px;color:var(--muted)}
+.cell{appearance:none;border:0;background:none;padding:0;cursor:pointer}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle}
+.d-fix{background:var(--danger)}.d-data{background:none;border:2px dashed var(--muted)}.d-skip{background:none;border:2px dashed var(--en)}.d-ok{background:var(--zh)}
+.d-none{color:var(--rule);font-family:var(--mono)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:0 0 14px}
+.bar{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
+.bar b{font:800 22px/1.1 var(--wm);font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.bar small{display:block;color:var(--muted);font-size:12px}
+.meter{height:6px;border-radius:3px;background:var(--note);margin-top:8px;overflow:hidden;display:flex}
+.meter i{display:block;height:100%}
+dialog{width:min(1240px,96vw);max-height:92vh;border:1px solid var(--rule);border-radius:10px;padding:0;background:var(--sheet);color:var(--ink)}
+dialog::backdrop{background:rgba(20,20,18,.5)}
+.dh{position:sticky;top:0;background:var(--sheet);border-bottom:1px solid var(--rule);padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;z-index:2}
+.dh h2{font-size:16px;margin:0}
+.dh .x{margin-left:auto;appearance:none;border:1px solid var(--rule);background:var(--sheet);border-radius:6px;min-width:44px;min-height:44px;cursor:pointer}
+.db{display:grid;grid-template-columns:minmax(0,1fr) 310px}
+@media (max-width:860px){.db{grid-template-columns:1fr}}
+.pane{padding:12px 14px;min-width:0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pair{display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:12px;align-items:start}
+@media (max-width:700px){.pair{grid-template-columns:1fr}}
+.pair figure{margin:0;min-width:0}
+.pair figcaption{font:500 11.5px var(--mono);color:var(--muted);margin-bottom:5px}
+.shot{border:1px solid var(--rule);border-radius:6px;overflow:auto;max-height:72vh;background:var(--paper)}
+.shot img{display:block;width:100%}
+.side{padding:12px 14px;border-left:1px solid var(--rule-soft);display:grid;gap:12px;align-content:start;font-size:13px;min-width:0}
+@media (max-width:860px){.side{border-left:0;border-top:1px solid var(--rule-soft)}}
+.side h3{font-size:12px;color:var(--muted);margin:0}
+.rs{margin:0;padding:0;list-style:none;display:grid;gap:7px}
+.rs li{padding:8px 10px;border-radius:6px;background:var(--note);line-height:1.55}
+.rs li[data-k="rule"]{background:var(--danger-bg)}
+.rs li b{display:block;font-size:11.5px;color:var(--muted);font-weight:700;margin-bottom:2px}
+dl.kv{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 10px}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{margin:0;font:400 12px var(--mono);overflow-wrap:anywhere}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.btn{appearance:none;border:1px solid var(--rule);border-radius:6px;font-weight:700;font-size:13px;padding:9px 12px;min-height:44px;background:var(--sheet);cursor:pointer}
+.btn-ok{background:var(--zh);border-color:var(--zh);color:var(--sheet)}
+.btn-bad{background:var(--danger-bg);border-color:transparent;color:var(--danger)}
+.btn[disabled]{opacity:.5;cursor:default}
+.ta{width:100%;min-height:64px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);color:var(--ink);font:inherit;font-size:13px;padding:8px}
+.txt{white-space:pre-wrap;font-size:12.5px;background:var(--note);border-radius:6px;padding:10px;max-height:60vh;overflow:auto}
+.muted{color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 14px;border-radius:6px;font-size:13px;z-index:20}
+.st-list{display:grid;gap:8px}
+.st{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+.st .tx{font-size:15px;font-weight:500;line-height:1.5}
+.st .wh{grid-column:1/-1;font-size:12.5px;color:var(--muted)}
+.st .wh code{font:400 11.5px var(--mono)}
+.st .is{grid-column:1/-1;font-size:12.5px;background:var(--danger-bg);color:var(--danger);border-radius:5px;padding:5px 8px}
+.grp{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
+.grp h4{margin:0 0 6px;font-size:13px}
+.grp ul{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:3px}
+.grp li code{font:400 11px var(--mono);color:var(--muted);margin-left:6px}
+.more{margin-top:10px}
+@media (max-width:600px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .cap{padding:7px 8px}.cap b{font-size:12.5px}
+  dialog{width:100vw;max-width:100vw;max-height:100vh;height:100vh;border-radius:0}
+  .cnt{margin-left:0}
+  .top{position:static}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top"><div class="wrap">
+  <span class="wm">manabi<i></i></span><h1>화면 벽</h1>
+  <span class="meta" id="meta"></span>
+  <div class="cnt" id="cnt"></div>
+</div></header>
+<main class="wrap">
+  <p class="stale" id="stale" hidden></p>
+  <div class="views" role="tablist" aria-label="보기" id="views"></div>
+
+  <section id="v-screens" aria-label="화면">
+    <p class="notice">합성 학습자로 찍은 화면이다. <b>규약 통과</b>는 넘침 · 오류 원문 · 값 누락 · 대비 · 이름 · 터치 타깃 · 이미지 검사(wall-rules §3)를 넘었다는 뜻이지 디자인 승인이 아니다. 의도 · 취향 판단과 승인은 장면 창에서 한다. 실계정 검수를 대신하지 않는다.</p>
+    <div class="filters" role="toolbar" aria-label="판정으로 거르기" id="f-verdict"></div>
+    <div class="filters" role="toolbar" aria-label="사람으로 거르기" id="f-persona"></div>
+    <div class="filters"><input class="srch" id="q" type="search" placeholder="화면 · 경로 · 문구 찾기" aria-label="화면 · 경로 · 문구 찾기"></div>
+    <section class="attn" id="attn" aria-labelledby="attn-h"><h2 id="attn-h">먼저 볼 것</h2><ul id="attn-list"></ul></section>
+    <div id="lanes"></div>
+  </section>
+
+  <section id="v-gaps" aria-label="빈칸" hidden>
+    <p class="notice">src/app의 모든 경로가 어디에 있는지 보인다. <b>장면</b>은 찍은 경로, <b>재작성 판</b>은 다른 경로의 장면이 같은 화면을 그리는 경로, <b>제외</b>는 사유를 적고 뺀 경로, <b>미등록</b>은 등록부(docs/design/scenes.json)에 없는 새 경로다. 칸을 누르면 그 장면이 열린다.</p>
+    <div class="bars" id="gap-bars"></div>
+    <div class="legend" id="gap-legend"></div>
+    <div class="tbl"><table><thead><tr><th>경로</th><th>상태</th><th class="c" id="h-guest">손님</th><th class="c" id="h-empty">빈 계정</th><th class="c" id="h-filled">채운 계정</th><th>메모</th></tr></thead><tbody id="gap-rows"></tbody></table></div>
+    <section class="sec" aria-labelledby="next-h"><h2 id="next-h">아직 찍지 않는 것</h2><div class="st-list" id="gap-next"></div></section>
+  </section>
+
+  <section id="v-states" aria-label="상태 · 알림" hidden>
+    <p class="notice" id="st-notice"></p>
+    <section class="attn" aria-labelledby="st-attn-h"><h2 id="st-attn-h">먼저 볼 것</h2><ul id="st-attn"></ul></section>
+    <div class="filters" role="toolbar" aria-label="상태 종류로 거르기" id="st-kinds"></div>
+    <div class="filters"><input class="srch" id="st-q" type="search" placeholder="문구 · 파일 · 화면 찾기" aria-label="문구 · 파일 · 화면 찾기"></div>
+    <div class="st-list" id="st-list"></div>
+  </section>
+
+  <section id="v-copy" aria-label="문구 묶음" hidden>
+    <p class="notice">같은 상황에 서로 다른 문구가 쓰인 묶음이다. 문구를 하나로 맞출 후보를 고를 때 본다. 코드에서 뽑은 목록이라 실제 화면 캡처가 아니다. 문구 표준: docs/design/copy-standard.md.</p>
+    <div class="st-list" id="cp-list"></div>
+  </section>
+
+  <section class="sec" aria-labelledby="reg-h"><h2 id="reg-h">설계 등록부</h2><div class="tbl"><table><thead><tr><th>설계</th><th>단계</th><th>대상 장면</th><th>목업 · 인계</th><th>메모</th></tr></thead><tbody id="reg"></tbody></table></div></section>
+  <section class="sec" aria-labelledby="run-h"><h2 id="run-h">갱신 기록</h2><div class="tbl"><table><thead><tr><th>갱신</th><th>종류</th><th>장면 · 캡처</th><th>시간</th><th>메모</th></tr></thead><tbody id="runs"></tbody></table></div></section>
+  <p class="muted" style="font-size:12.5px;margin-top:22px">판정 규칙: 저장소 docs/design/wall-rules.md(정본) · <a href="https://claude.ai/artifact/3a4hv43brjHj8uU1edGXxp">화면 벽 설계 2판</a>. 재현: <code>npm run wall:build && npm run wall:capture</code> → <code>node scripts/wall-page.mjs</code>.</p>
+</main>
+<dialog id="dlg" aria-labelledby="dlg-h"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+const D = /*__WALL_DATA__*/null;
+const $ = id => document.getElementById(id);
+const h = (tag, attrs = {}, ...kids) => { const el = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) { if (v == null || v === false) continue; if (k === 'class') el.className = v; else if (k === 'text') el.textContent = v; else if (k.startsWith('on')) el.addEventListener(k.slice(2), v); else el.setAttribute(k, v === true ? '' : v); } for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : String(kid)); return el; };
+const VERDICT = { fix: '수정 요청', data: '데이터 부족', skip: '캡처 실패', ok: '규약 통과' };
+const VORDER = ['fix', 'skip', 'data', 'ok'];
+const PNAME = Object.fromEntries(Object.entries(D.personas).map(([k, v]) => [k, v.label]));
+const REASON = { rule: '규약 위반', data: '판정 안 함 · 데이터', skip: '판정 안 함 · 캡처', ok: '검사 결과', design: '설계', note: '메모' };
+const state = { verdict: 'all', persona: 'all', q: '', reviews: new Map(), runs: [], canEdit: false, db: null, user: null, stKind: 'all', stQ: '' };
+const byId = new Map(D.scenes.map(s => [s.id, s]));
+const reviewKey = id => `r-${D.run.short}-${id}`;
+
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 2600); }
+function vpill(v) { return h('span', { class: `pill v-${v}`, text: VERDICT[v] }); }
+function approved(id) { const r = state.reviews.get(reviewKey(id)); return r ? r.action : null; }
+
+function header() {
+  const shots = D.scenes.reduce((n, s) => n + Object.keys(s.shots).length, 0);
+  $('meta').textContent = `${D.run.short} · ${D.run.capturedAt} · 장면 ${D.scenes.length} · 캡처 ${shots}장`;
+  const c = D.run.counts, gaps = D.coverage.rows.filter(r => r.status === 'unregistered').length;
+  $('cnt').replaceChildren(...['fix', 'skip', 'data', 'ok'].filter(v => c[v]).map(v => h('span', { class: `pill v-${v}` }, `${VERDICT[v]} ${c[v]}`)),
+    gaps ? h('span', { class: 'pill v-gap' }, `미등록 경로 ${gaps}`) : null);
+  const age = (Date.now() - Date.parse(D.run.capturedIso || 0)) / 3600000;
+  if (age > 48) { $('stale').hidden = false; $('stale').textContent = `마지막 갱신이 ${Math.floor(age / 24)}일 전이다(${D.run.capturedAt}). 그 뒤 main에 들어간 화면 변화는 여기 없다 — npm run wall:capture로 다시 찍는다.`; }
+}
+
+const VIEWS = [['screens', '화면', () => D.scenes.length], ['gaps', '빈칸', () => D.routesTotal], ['states', '상태 · 알림', () => D.states.items.length], ['copy', '문구 묶음', () => D.states.copyGroups.length]];
+function showView(name) {
+  if (!VIEWS.some(v => v[0] === name)) name = 'screens';
+  for (const [key] of VIEWS) { $(`v-${key}`).hidden = key !== name; const tab = $(`tab-${key}`); tab.setAttribute('aria-selected', String(key === name)); tab.tabIndex = key === name ? 0 : -1; }
+}
+function views() {
+  $('views').replaceChildren(...VIEWS.map(([key, label, n]) => h('button', { class: 'vt', role: 'tab', id: `tab-${key}`, 'aria-controls': `v-${key}`, onclick: () => { history.replaceState(null, '', `#${key}`); showView(key); } }, label, h('i', { text: n() }))));
+  showView(location.hash.slice(1));
+  addEventListener('hashchange', () => showView(location.hash.slice(1)));
+}
+
+function chips(boxId, label, items, key, rerender) {
+  const box = $(boxId);
+  const draw = () => box.replaceChildren(h('span', { class: 'flabel', text: label }), ...items.map(([value, text, n]) => h('button', { class: 'fchip', 'aria-pressed': String(state[key] === value), onclick: () => { state[key] = value; draw(); rerender(); } }, text, n != null ? h('i', { text: n }) : null)));
+  draw();
+}
+
+function matches(s) {
+  if (state.verdict !== 'all' && s.verdict !== state.verdict) return false;
+  if (state.persona !== 'all' && s.persona !== state.persona) return false;
+  if (state.q) { const q = state.q.toLowerCase(); if (![s.title, s.path, s.route, s.id, s.text].some(x => String(x || '').toLowerCase().includes(q))) return false; }
+  return true;
+}
+
+function tile(s) {
+  const status = approved(s.id);
+  const pills = h('span', { class: 'pills' }, status === 'approve' ? h('span', { class: 'pill v-appr', text: '승인' }) : null, vpill(s.verdict));
+  const first = s.reasons.find(r => r.k !== 'ok');
+  return h('button', { class: `tile is-${s.verdict}`, onclick: () => openScene(s.id), 'aria-label': `${s.title} · ${PNAME[s.persona]} · ${VERDICT[s.verdict]}` },
+    h('div', { class: 'tp' }, s.thumb ? h('img', { src: s.thumb, alt: '', loading: 'lazy', decoding: 'async' }) : null),
+    h('div', { class: 'cap' }, h('b', {}, s.title, h('span', { class: 'persona', text: PNAME[s.persona] })), pills, h('code', { text: s.path }),
+      first ? h('small', { text: first.t.length > 90 ? `${first.t.slice(0, 90)}…` : first.t }) : null));
+}
+
+function screens() {
+  const list = D.scenes.filter(matches);
+  const fixes = list.filter(s => s.verdict === 'fix' || s.verdict === 'skip');
+  $('attn').hidden = !fixes.length;
+  $('attn-list').replaceChildren(...fixes.slice(0, 14).map(s => h('li', {}, vpill(s.verdict), h('button', { onclick: () => openScene(s.id), text: `${s.title} · ${PNAME[s.persona]}` }),
+    h('span', { class: 'why', text: (s.reasons[0]?.t || '').slice(0, 110) }))), fixes.length > 14 ? h('li', { class: 'muted', text: `외 ${fixes.length - 14}건 — 「수정 요청」으로 거르면 모두 보인다.` }) : null);
+  $('lanes').replaceChildren(...D.lanes.map(lane => {
+    const items = list.filter(s => s.lane === lane);
+    if (!items.length) return null;
+    const bad = items.filter(s => s.verdict === 'fix').length;
+    return h('section', { class: 'lane' }, h('h3', {}, lane, h('small', { text: `${items.length}장면${bad ? ` · 수정 요청 ${bad}` : ''}` })), h('div', { class: 'tiles' }, items.map(tile)));
+  }).filter(Boolean));
+  if (!list.length) $('lanes').replaceChildren(h('p', { class: 'notice', text: '거른 조건에 맞는 장면이 없다.' }));
+}
+
+function filtersScreens() {
+  const count = key => value => D.scenes.filter(s => s[key] === value).length;
+  chips('f-verdict', '판정', [['all', '전체', D.scenes.length], ...VORDER.filter(v => count('verdict')(v)).map(v => [v, VERDICT[v], count('verdict')(v)])], 'verdict', screens);
+  chips('f-persona', '사람', [['all', '모두', null], ...Object.keys(D.personas).map(p => [p, PNAME[p], count('persona')(p)])], 'persona', screens);
+  $('q').addEventListener('input', e => { state.q = e.target.value.trim(); screens(); });
+}
+
+// ── 장면 창 ──
+function openScene(id) {
+  const s = byId.get(id); if (!s) return;
+  const dlg = $('dlg');
+  const pane = h('div', { class: 'pane' });
+  const tabBtns = h('div', { class: 'tabs', role: 'tablist' });
+  const tabs = [['shots', '두 화면'], ['text', '화면 글자'], ['checks', '측정값']];
+  const show = key => {
+    for (const b of tabBtns.children) b.setAttribute('aria-pressed', String(b.dataset.k === key));
+    if (key === 'shots') pane.lastChild.replaceWith(h('div', { class: 'pair' }, ['mobile', 'desktop'].map(vp => s.shots[vp] ? h('figure', {}, h('figcaption', { text: `${D.run.viewports[vp]?.width || ''} · ${s.checks[vp]?.url || ''}` }), h('div', { class: 'shot' }, h('img', { src: s.shots[vp], alt: `${s.title} ${vp === 'mobile' ? '휴대폰' : '데스크톱'} 캡처`, loading: 'lazy' }))) : h('figure', {}, h('figcaption', { text: vp }), h('p', { class: 'notice', text: s.checks[vp]?.error || '캡처 없음' })))));
+    if (key === 'text') pane.lastChild.replaceWith(h('div', { class: 'txt', text: s.text || '(글자 없음)' }));
+    if (key === 'checks') pane.lastChild.replaceWith(h('div', { class: 'pair' }, ['mobile', 'desktop'].map(vp => { const c = s.checks[vp] || {}; return h('figure', {}, h('figcaption', { text: vp === 'mobile' ? '390' : '1280' }), h('dl', { class: 'kv' },
+      ...[['최종 주소', c.url], ['응답', c.status], ['제목(h1)', c.h1], ['원본 글꼴', c.fontKR === true ? '로드됨' : c.fontKR === false ? '로드 안 됨' : '—'], ['문서 높이', c.scrollHeight && `${c.scrollHeight}px`], ['걸린 시간', c.ms && `${c.ms}ms`],
+        ['5xx 응답', (c.failed || []).join(' · ') || '없음'], ['콘솔 오류', (c.console || []).join(' · ') || '없음'], ['글자 해시', c.textHash], ['배치 해시', c.lmHash], ['캡처 오류', c.error]]
+        .filter(([, v]) => v != null && v !== '').flatMap(([k, v]) => [h('dt', { text: k }), h('dd', { text: String(v) })]))); })));
+  };
+  for (const [k, label] of tabs) tabBtns.append(h('button', { class: 'fchip', 'data-k': k, onclick: () => show(k) }, label));
+  pane.append(tabBtns, h('div'));
+  const review = state.reviews.get(reviewKey(s.id));
+  const side = h('div', { class: 'side' },
+    h('h3', { text: '판정 근거' }), h('ul', { class: 'rs' }, s.reasons.map(r => h('li', { 'data-k': r.k }, h('b', { text: `${REASON[r.k] || r.k}${r.at ? ` · ${r.at.join(' · ')}` : ''}` }), r.t))),
+    s.note ? h('p', { class: 'muted', text: s.note }) : null,
+    h('h3', { text: '장면' }), h('dl', { class: 'kv' }, ...[['장면 id', s.id], ['경로', s.route], ['주소', s.path], ['사람', `${PNAME[s.persona]} — ${D.personas[s.persona].detail}`], ['설계', s.design || '—'], ['빌드', D.run.short]].flatMap(([k, v]) => [h('dt', { text: k }), h('dd', { text: v })])),
+    reviewBox(s, review));
+  dlg.replaceChildren(h('div', { class: 'dh' }, h('h2', { id: 'dlg-h', text: s.title }), h('span', { class: 'persona', text: PNAME[s.persona] }), vpill(s.verdict),
+    review ? h('span', { class: `pill ${review.action === 'approve' ? 'v-appr' : 'v-fix'}`, text: review.action === 'approve' ? '승인됨' : review.action === 'fix' ? '수정 요청됨' : '보류' }) : null,
+    h('button', { class: 'x', 'aria-label': '닫기', onclick: () => dlg.close(), text: '✕' })), h('div', { class: 'db' }, pane, side));
+  show('shots');
+  if (!dlg.open) dlg.showModal();
+}
+
+function reviewBox(s, review) {
+  const box = h('div', { style: 'display:grid;gap:8px' }, h('h3', { text: '오너 판정' }));
+  if (review) box.append(h('p', { class: 'muted', text: `${review.action === 'approve' ? '승인' : review.action === 'fix' ? '수정 요청' : '보류'} · ${new Date(review.at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} KST${review.note ? ` — ${review.note}` : ''}` }));
+  if (!state.canEdit) { box.append(h('p', { class: 'muted', text: '판정은 이 화면 벽을 고칠 수 있는 사람만 남긴다.' })); return box; }
+  const ta = h('textarea', { class: 'ta', id: `note-${s.id}`, placeholder: '메모(선택) — 수정 요청이면 무엇을 고칠지', 'aria-label': '판정 메모' });
+  const act = (action, label, cls) => h('button', { class: `btn ${cls}`, onclick: async e => {
+    e.target.disabled = true;
+    try {
+      const doc = { action, at: new Date().toISOString(), by: state.user ? await state.user.id() : 'owner', note: ta.value.trim(), scene: s.id, sha: D.run.short };
+      await state.db.collection('reviews').doc(reviewKey(s.id)).set(doc);
+      state.reviews.set(reviewKey(s.id), doc); toast(`${label} — 기록했어요`); screens(); openScene(s.id);
+    } catch (err) { e.target.disabled = false; toast(`기록하지 못했어요 — ${err?.code || '다시 시도해 주세요'}`); }
+  } }, label);
+  box.append(ta, h('div', { class: 'acts' }, act('approve', '승인', 'btn-ok'), act('fix', '수정 요청', 'btn-bad'), act('hold', '보류', '')));
+  return box;
+}
+
+// ── 빈칸 ──
+function gaps() {
+  const rows = D.coverage.rows, n = k => rows.filter(r => r.status === k).length;
+  const total = rows.length, shot = n('scene'), via = n('via'), excl = n('excluded'), unreg = n('unregistered');
+  const pct = x => `${Math.round(x / total * 100)}%`;
+  const perPersona = p => D.scenes.filter(s => s.persona === p).length;
+  $('gap-bars').replaceChildren(
+    h('div', { class: 'bar' }, h('b', { text: `${shot + via} / ${total}` }), h('small', { text: `경로가 화면 벽에 보인다(${pct(shot + via)}) — 장면 ${shot} · 재작성 판 ${via}` }),
+      h('div', { class: 'meter', 'aria-hidden': 'true' }, h('i', { style: `width:${pct(shot)};background:var(--zh)` }), h('i', { style: `width:${pct(via)};background:color-mix(in srgb,var(--zh) 45%,var(--note))` }), h('i', { style: `width:${pct(excl)};background:var(--muted)` }), h('i', { style: `width:${pct(unreg)};background:var(--rose)` }))),
+    h('div', { class: 'bar' }, h('b', { text: String(excl) }), h('small', { text: '사유를 적고 뺀 경로 — 아래 「아직 찍지 않는 것」' })),
+    h('div', { class: 'bar' }, h('b', { text: String(unreg), style: unreg ? 'color:var(--rose)' : null }), h('small', { text: unreg ? '등록부에 없는 새 경로 — 설계 세션이 장면을 더한다' : '등록부에 없는 새 경로 없음' })),
+    h('div', { class: 'bar' }, h('b', { text: Object.keys(D.personas).map(perPersona).join(' · ') }), h('small', { text: `장면 수 — ${Object.keys(D.personas).map(p => PNAME[p]).join(' · ')}` })));
+  $('gap-legend').replaceChildren(...VORDER.map(v => h('span', {}, h('i', { class: `dot d-${v}` }), VERDICT[v])), h('span', {}, h('span', { class: 'd-none', text: '·' }), '이 사람으로는 찍지 않음'));
+  const sceneFor = (route, persona) => D.scenes.find(s => s.route === route && s.persona === persona);
+  const label = { scene: '장면', via: '재작성 판', excluded: '제외', unregistered: '미등록' };
+  const lanes = [...D.lanes, null];
+  const body = [];
+  for (const lane of lanes) {
+    const inLane = rows.filter(r => (r.lane || null) === lane);
+    if (!inLane.length) continue;
+    body.push(h('tr', { class: 'lane-row' }, h('td', { colspan: '6', text: lane || '줄 없음 — 제외 · 미등록' })));
+    for (const r of inLane) {
+      const cells = Object.keys(D.personas).map(p => {
+        const s = r.status === 'scene' ? sceneFor(r.route, p) : null;
+        return h('td', { class: 'c' }, s ? h('button', { class: 'cell', title: `${s.id} · ${VERDICT[s.verdict]}`, 'aria-label': `${r.route} ${PNAME[p]} ${VERDICT[s.verdict]}`, onclick: () => openScene(s.id) }, h('i', { class: `dot d-${s.verdict}` })) : h('span', { class: 'd-none', text: '·' }));
+      });
+      body.push(h('tr', {}, h('td', {}, h('code', { text: r.route })), h('td', {}, h('span', { class: `pill ${r.status === 'unregistered' ? 'v-gap' : r.status === 'excluded' ? 'v-data' : 'v-ok'}`, text: label[r.status] })), ...cells,
+        h('td', { class: 'muted', text: r.status === 'via' ? `→ ${r.via}${r.note ? ` · ${r.note}` : ''}` : (r.note || '') })));
+    }
+  }
+  for (const route of D.coverage.stale) body.push(h('tr', {}, h('td', {}, h('code', { text: route })), h('td', {}, h('span', { class: 'pill v-gap', text: '낡은 항목' })), h('td', { colspan: '3' }), h('td', { class: 'muted', text: '등록부에 있지만 저장소에 없는 경로 — 등록부에서 지운다' })));
+  $('gap-rows').replaceChildren(...body);
+  const groups = new Map();
+  for (const r of rows.filter(x => x.status === 'excluded')) { const key = r.note.split(' — ')[0]; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(r); }
+  $('gap-next').replaceChildren(...[...groups].map(([key, list]) => h('div', { class: 'grp' }, h('h4', { text: `${key} · ${list.length}경로` }), h('ul', {}, list.map(r => h('li', {}, h('code', { text: r.route }), ` ${r.note.includes(' — ') ? r.note.split(' — ').slice(1).join(' — ') : ''}`))))),
+    h('div', { class: 'grp' }, h('h4', { text: '모든 장면에 아직 없는 조건' }), h('ul', {}, ['어두운 테마(앱 data-theme 어둡게 · 종이) — 2단계', '简体 판(manabi_sc 쿠키 · /home/sc · /discover/sc) — 2단계', '상태 장면 — 로딩 · 오류 · 오프라인 · 대화상자 · 단어 카드 펼침 같은 조작 순서 — 3단계', '부품 대조(제목 · 버튼 · 빈 상태 · 오류 상자를 잘라 나란히, 토큰 밖 값 표시) — 2단계'].map(t => h('li', { text: t })))));
+}
+
+// ── 상태 · 알림 · 문구 묶음 ──
+function statesView() {
+  const S = D.states;
+  $('st-notice').textContent = `코드에서 뽑은 상태 · 알림 재고 ${S.items.length}개(${S.snapshot.sha} · ${S.snapshot.at}). 캡처가 아니다 — file:line은 그 커밋 기준이라 지금과 어긋날 수 있다.`;
+  $('st-attn').replaceChildren(...S.issues.map(t => h('li', {}, h('span', { text: t }))));
+  const kinds = Object.entries(S.counts).sort((a, b) => b[1] - a[1]);
+  chips('st-kinds', '종류', [['all', '전체', S.items.length], ['issue', '확인할 점', S.items.filter(i => i.issue).length], ...kinds.map(([k, n]) => [k, k, n])], 'stKind', drawStates);
+  $('st-q').addEventListener('input', e => { state.stQ = e.target.value.trim().toLowerCase(); drawStates(); });
+  drawStates();
+  $('cp-list').replaceChildren(...S.copyGroups.map(g => h('div', { class: 'grp' }, h('h4', { text: g.situation }), h('ul', {}, g.variants.map(v => h('li', {}, v.text, h('code', { text: v.where })))))));
+}
+function drawStates() {
+  const list = D.states.items.filter(i => (state.stKind === 'all' || (state.stKind === 'issue' ? i.issue : i.kind === state.stKind))
+    && (!state.stQ || [i.text, i.file, i.route, i.trigger, i.component].some(x => String(x || '').toLowerCase().includes(state.stQ))));
+  const shown = list.slice(0, 120);
+  $('st-list').replaceChildren(...shown.map(i => h('div', { class: 'st' }, h('div', { class: 'tx', text: i.text }), h('span', { class: 'pill v-data', text: i.kind }),
+    h('div', { class: 'wh' }, `${i.route || ''} · ${i.trigger || ''} · `, h('code', { text: `${i.file}:${i.line}` })), i.issue && i.notes ? h('div', { class: 'is', text: i.notes }) : null)),
+    list.length > shown.length ? h('p', { class: 'muted more', text: `${list.length}개 중 ${shown.length}개를 보인다 — 종류나 검색으로 좁힌다.` }) : null);
+}
+
+function registryTable() {
+  $('reg').replaceChildren(...D.designs.map(d => h('tr', {}, h('td', {}, h('b', { text: d.title }), h('br'), h('code', { text: d.code })), h('td', { text: d.stage }),
+    h('td', {}, (d.scenes || []).map(x => h('code', { text: `${x} ` })), d.global ? h('div', { class: 'muted', text: d.global }) : null),
+    h('td', {}, d.mirror ? h('a', { href: d.mirror, target: '_blank', rel: 'noopener', text: '목업' }) : null, ...(d.handoff || []).map((u, i) => [' · ', h('a', { href: u, target: '_blank', rel: 'noopener', text: `인계 ${i + 1}` })])),
+    h('td', { class: 'muted', text: d.note || '' }))));
+}
+
+function runsTable() {
+  const own = { id: D.run.short, kind: '2판 1단계 — 장면 등록부 · 합성 학습자 · 캡처 스크립트', at: D.run.capturedAt, scenes: D.scenes.length, shots: D.scenes.reduce((n, s) => n + Object.keys(s.shots).length, 0), captureSec: D.run.captureSec, note: D.run.build };
+  const rows = [own, ...state.runs.filter(r => r.id !== own.id)];
+  $('runs').replaceChildren(...rows.map(r => h('tr', {}, h('td', {}, h('code', { text: r.sha || r.id })), h('td', { text: r.kind }), h('td', { text: `${r.scenes}장면 · ${r.shots}장` }), h('td', { text: `${r.at} · ${r.captureSec ?? '—'}초` }), h('td', { class: 'muted', text: r.note || '' }))));
+}
+
+async function connect() {
+  try {
+    const db = await window.claude?.use?.('db');
+    if (!db) return;
+    state.db = db;
+    const [reviews, runs] = await Promise.all([db.collection('reviews').get(), db.collection('runs').get()]);
+    for (const doc of reviews.docs) state.reviews.set(doc.id, doc.data());
+    state.runs = runs.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    runsTable(); screens();
+    const user = await window.claude.use('user');
+    state.user = user; state.canEdit = !!(user && await user.canEdit());
+  } catch { /* 기록을 못 읽어도 캡처는 보인다 */ }
+}
+
+header(); views(); filtersScreens(); screens(); gaps(); statesView(); registryTable(); runsTable(); connect();
+addEventListener('keydown', e => { if (e.key === 'Escape' && $('dlg').open) $('dlg').close(); });
+</script>

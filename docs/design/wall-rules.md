@@ -50,7 +50,9 @@
 | 깨진 이미지 | 로드 실패 이미지 · 대체 글 없음 | `naturalWidth` 0 · axe `image-alt` |
 
 1판 캡처(2026-10-12)는 값 누락 노출과 이미지 로드 실패(`naturalWidth`)를 아직 재지 않았고, 터치 타깃은 보이지 않는 버튼까지 셌다.
-2판 캡처(#1337 WALL-002 · WALL-003)에서 이 표대로 맞춘다.
+2판 1단계 캡처(`scripts/wall-capture.mjs`, 2026-11-02 KST)부터 이 표대로 잰다 — 측정 · 판정의 코드 사본은 `scripts/wall-core.mjs`(계약 `scripts/wall-core.test.js`)이고,
+이 문서와 어긋나면 이 문서를 따른다. 캡처 빌드는 `npm run wall:build`(e2e 공개 값 + 운영과 같은 글꼴 사본 `vendor/google-fonts`)다 —
+`e2e:build`는 글꼴을 대역으로 넣어 원본 글꼴 검사를 통과하지 못한다.
 
 ## 4. 판정 표
 
@@ -125,7 +127,7 @@ AGENTS.md 공통 품질 실행 원칙의 「같은 모델의 자기 승인만으
 1. <파일:행> — <무엇을 어떻게>. 측정값: <예: #796d70/#f8f2f2 4.48:1, 기준 4.5:1>
 2. …
 
-재현: `npm run e2e:build && npm run wall:capture -- --scenes <장면 id,…>` (출력 `wall-out/`)
+재현: `npm run wall:build && npm run wall:capture -- --scenes <장면 id,…>` (출력 `wall-out/<sha 8자>/`)
 
 자동 승인 <n> · 수정 요청 <n> · 질문 <n> · 오너에게 <n> · 판정 안 함 <n>
 규칙: docs/design/wall-rules.md
