@@ -22,10 +22,11 @@ import StudyLanguageChips from './StudyLanguageChips';
 import './material-composer.css';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 
-export default function MaterialComposer() {
+export default function MaterialComposer({ sessionHint = null } = {}) {
   const { user, loading } = useAuth();
   const params=useSearchParams();
-  if (loading) return <div className="page-container" role="status">계정을 확인하고 있어요…</div>;
+  // 서버가 세션 쿠키를 못 봤으면(sessionHint === false) 확인을 기다리지 않고 손님 안내를 바로 그린다(VOCAB-GUEST-FIRST-001과 같은 규칙).
+  if (loading && sessionHint !== false) return <div className="page-container" role="status">계정을 확인하고 있어요…</div>;
   if (!user) return <section className="composer-gate"><p className="manabi-eyebrow">YOUR LIBRARY</p><h1>내 서재에 담아 두세요.</h1><p>글과 파일, 링크를 한곳에서 읽을 수 있어요.</p><Link className="manabi-button" href="/auth?from=/materials/add">로그인하고 작성하기 ↗</Link></section>;
   return <ComposerForm key={user.id} ownerId={user.id} collection={collectionId(params.get('collection'))} returnTo={safeLibraryReturn(params.get('returnTo'))} note={params.get('direction') === MATERIAL_DIRECTION.WRITE} />;
 }

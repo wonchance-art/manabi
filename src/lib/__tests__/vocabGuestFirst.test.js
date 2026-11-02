@@ -19,3 +19,15 @@ describe('손님 단어장은 로그인 확인을 기다리지 않는다', () =>
     expect(view).toContain("key={`${user?.id || 'guest'}:${scopeKey}`}");
   });
 });
+
+describe('자료 추가도 같은 규칙 — 손님은 로그인 확인을 기다리지 않는다', () => {
+  it('쪽이 힌트를 넘기고 두 입구(작성 · 가져오기)가 같은 조건으로만 기다린다', () => {
+    expect(read('src/app/(app)/materials/add/page.jsx')).toContain('<MaterialEntry sessionHint={hasSupabaseSessionInJar(await cookies())} />');
+    const entry = read('src/components/materials/MaterialEntry.jsx');
+    expect(entry).toContain('<LegacyImport sessionHint={sessionHint} />');
+    expect(entry).toContain('<MaterialComposer sessionHint={sessionHint} />');
+    for (const p of ['src/components/materials/MaterialComposer.jsx', 'src/views/MaterialAddPage.jsx']) {
+      expect(read(p)).toMatch(/if \(loading && sessionHint !== false\) return <div className="page-container" role="status">계정을 확인하고 있어요…<\/div>;/);
+    }
+  });
+});
