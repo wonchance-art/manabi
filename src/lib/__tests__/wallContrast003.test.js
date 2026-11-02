@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { TOUCH_EXCEPTIONS } from '../../../scripts/wall-core.mjs';
+import { sliceBetween } from './helpers/sliceBetween.js';
 
 // 화면 벽 WALL-003(2026-11-02 KST) 수정 요청 13건 — 오너 「권장대로 13건 모두 구현해」.
 // 13장면이 원인 8가지로 묶였다(시안: https://claude.ai/artifact/L8BeH5DzZdp7WPT52EbAJb). 같은 원인이 되살아나지 않게 값과 배선을 고정한다.
@@ -23,7 +24,7 @@ const shellToken = (name) => shell.match(new RegExp(`\\.manabi-app\\{[^}]*${name
 describe('화면 벽 WALL-003 — 대비', () => {
   it('① 복습 재대결 띠는 채점 「어려움」 글자 · 바탕 토큰을 쓴다(배경용 --warning을 글자에 쓰지 않는다)', () => {
     const css = read('src/index.css');
-    const rule = css.slice(css.indexOf('.vocab-rematch {'), css.indexOf('}', css.indexOf('.vocab-rematch {')));
+    const rule = sliceBetween(css, '.vocab-rematch {', '}');
     expect(rule).toMatch(/color:\s*var\(--grade-hard\)/);
     expect(rule).toMatch(/background:\s*var\(--grade-hard-bg\)/);
     expect(rule).not.toMatch(/var\(--warning\)/);
@@ -81,11 +82,9 @@ describe('화면 벽 WALL-003 — 터치 타깃 예외(ui-conventions §3)', () 
 
   it('⑧ 지도 핀은 모든 점 아래 한 층에 보이지 않는 터치 원(반지름 19)을 깐다 — 점보다 먼저 그린다', () => {
     const src = read('src/views/JapanStudiesMapPage.jsx');
-    const hit = src.indexOf('className="jpmap-pin-hit"');
-    const dot = src.indexOf('className={`jpmap-pin${');
-    expect(hit).toBeGreaterThan(-1);
-    expect(hit).toBeLessThan(dot);
-    expect(src.slice(hit, hit + 200)).toMatch(/r="19"/);
+    // 터치 원 층이 점 층보다 앞(=아래)에 그려진다 — 터치 원 앵커에서 점 앵커까지가 잘려 나와야 한다.
+    const hitLayer = sliceBetween(src, 'className="jpmap-pin-hit"', 'className={`jpmap-pin${');
+    expect(hitLayer).toMatch(/r="19"/);
     expect(read('src/index.css')).toMatch(/\.jpmap-pin-hit \{ fill: transparent;/);
   });
 });
