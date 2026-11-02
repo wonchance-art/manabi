@@ -388,7 +388,7 @@
 
 .lessonBody .lessonBadgeRecommended {
   background: color-mix(in srgb, var(--warning) 13%, transparent);
-  color: var(--warning);
+  color: var(--warning-text);
 }
 
 .lessonBody .lessonBadgeFormulaic {
