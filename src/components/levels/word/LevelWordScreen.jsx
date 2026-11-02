@@ -21,7 +21,7 @@ import { reducedMotion } from '@/lib/reducedMotion';
 import { learningDay, schedulerTime } from '@/lib/fsrsScheduler';
 import { fetchVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
 import { buildVocabularyWordIndex } from '@/lib/vocabularyDueIndex';
-import { preservePendingVocabularyReviews } from '@/lib/viewerVocabularyCache';
+import { preservePendingVocabularyReviews, VOCAB_WORDS_STALE_MS, vocabWordsFromLearningCache } from '@/lib/viewerVocabularyCache';
 import { LEVEL_LIST_LANGS, levelGroupsOf, levelKinds, LEVEL_KIND_LABEL } from '@/lib/levelList';
 import {
   HARD_LAPSES, LEARN_AHEAD_MS, dueTomorrowCount, gradePreviews, gradeToastText, dueAmount, inLearningStep, lapsesOf, laterDueText, learnAheadable,
@@ -183,12 +183,16 @@ export default function LevelWordScreen({ cfg, levelKey, wordsUrl, groups: given
   useEffect(() => { const t = setInterval(() => setClock(Date.now()), 60_000); return () => clearInterval(t); }, []);
 
   // 단어장 색인 — 뷰어와 같은 캐시(['vocab-words', userId]) · 같은 읽기(완전 snapshot)라 한쪽의 채점이 다른 쪽에 바로 보인다.
+  // 신선도 · 시작 값도 뷰어와 같다(SNAPSHOT-SHARE-001): 같은 키에 30초를 따로 두어 뷰어가 2분 신선하게 둔 색인을 이 화면만 다시 받았고
+  // (실측 — 뷰어 · 단어장 37초 뒤 전체 2.1 MB), 단어장이 막 받은 완전 snapshot이 있으면 그것으로 시작한다(받은 시각 그대로).
   const indexQuery = useQuery({
     queryKey: ['vocab-words', userId],
     queryFn: async ({ signal }) => preservePendingVocabularyReviews(buildVocabularyWordIndex(await fetchVocabularyLearningRows(userId, { signal })),
       queryClient.getQueryData(['vocab-words', userId])),
     enabled: mounted && !!userId,
-    staleTime: 30_000,
+    staleTime: VOCAB_WORDS_STALE_MS,
+    initialData: () => vocabWordsFromLearningCache(queryClient, userId),
+    initialDataUpdatedAt: () => queryClient.getQueryState(['vocab', userId, 'learning'])?.dataUpdatedAt,
   });
   const index = indexQuery.data;
   // 오늘 새 단어 몫 — 서버 입장 한도가 정본(LEVEL-SAVED-TAG-001 · levelNewSlots). 한도 모듈은 첫 그림에 싣지 않는다(import()).
