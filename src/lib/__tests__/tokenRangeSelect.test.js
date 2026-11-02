@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { sliceBetween } from './helpers/sliceBetween';
 import {
   createTokenRangeGesture,
   composeRangeText,
@@ -179,5 +180,35 @@ describe('clampGripX — 그립 터치 타깃은 화면 안', () => {
     expect(clampGripX(160, 0, 390)).toBe(160);
     expect(clampGripX(-30, 40, 1440)).toBe(-26);      // 기준 상자가 화면 안쪽(left 40)이면 화면 기준으로 민다
     expect(clampGripX(12, 0, Number.NaN)).toBe(12);
+  });
+});
+
+// 그립 모양(RANGE-GRIP-BAR-001 — 오너 사진 · 승인 2026-11-02 KST): 세로 막대(띠 높이) + 점. 시작 = 왼쪽 끝 · 점 위, 끝 = 오른쪽 끝 · 점 아래.
+describe('gripPlacement — 막대는 토큰 끝 · 띠 높이, 타깃은 화면 안', () => {
+  it('타깃은 띠 위아래 14px 여유, 막대는 타깃 가운데(14px) · 띠 높이', async () => {
+    const { gripPlacement, GRIP_PAD } = await import('../../views/TokenRangeGrips.jsx');
+    expect(GRIP_PAD).toBe(14);
+    const g = gripPlacement(160, { top: 300, height: 26.6 }, 0, 250, 390);
+    expect(g).toEqual({ x: 160, barOffset: 14, top: 300 - 250 - 14, height: 26.6 + 28, bar: 26.6 });
+  });
+  it('줄 머리에서 타깃을 화면 안으로 밀면 막대는 반대로 옮겨 토큰 끝에 그대로 선다', async () => {
+    const { gripPlacement } = await import('../../views/TokenRangeGrips.jsx');
+    const g = gripPlacement(12, { top: 0, height: 20 }, 0, 0, 390); // 타깃 가운데 14로 밀림
+    expect(g.x).toBe(14);
+    expect(g.x - 14 + g.barOffset).toBe(12); // 막대의 화면 x = 토큰 끝
+    const e = gripPlacement(386, { top: 0, height: 20 }, 0, 0, 390);
+    expect(e.x - 14 + e.barOffset).toBe(386);
+  });
+  it('CSS — 시작은 점이 위, 끝은 점이 아래, 막대는 --grip-bar-x · --grip-bar-h, 예전 흰 테두리 점 없음', () => {
+    const css = fs.readFileSync(path.join(process.cwd(), 'src/index.css'), 'utf8');
+    const block = sliceBetween(css, '.range-grip {', '.range-grip:active::after');
+    expect(block).toContain('left: var(--grip-bar-x, 14px);');
+    expect(block).toContain('height: var(--grip-bar-h, 1em);');
+    expect(block).toContain('.range-grip--start::after { top: 4px; }');
+    expect(block).toContain('.range-grip--end::after { bottom: 4px; }');
+    expect(block).not.toContain('border: 2.5px solid'); // 예전 흰 테두리 점
+    const jsx = fs.readFileSync(path.join(process.cwd(), 'src/views/TokenRangeGrips.jsx'), 'utf8');
+    expect(jsx).toContain('className="range-grip range-grip--start"');
+    expect(jsx).toContain('className="range-grip range-grip--end"');
   });
 });
