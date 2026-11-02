@@ -119,6 +119,15 @@ export const DATA_GAP = /불러오지 못했어요|찾을 수 없어요|문제�
 const AXE_RULES = Object.freeze({ 'color-contrast': '대비 AA', 'button-name': '이름 없는 버튼', 'link-name': '이름 없는 링크', 'image-alt': '대체 글 없는 이미지' });
 export const AXE_RULE_IDS = Object.freeze(Object.keys(AXE_RULES));
 
+/**
+ * 터치 타깃 44px의 예외(ui-conventions §3 — 오너 「권장대로」 2026-11-02 KST). 이 표에 든 것은 24px(WCAG 2.5.8 AA 최소)로 잰다.
+ * hit가 있으면 그 요소 자신 대신, 중심을 덮는 hit 요소(보이지 않는 터치 원)의 크기로 잰다.
+ */
+export const TOUCH_EXCEPTIONS = Object.freeze([
+  Object.freeze({ selector: '.line-pick', min: 24, why: '본문 줄 안의 문장 막대 — 본문 자리를 지키는 표지(#1323)' }),
+  Object.freeze({ selector: '.jpmap-pin', min: 24, hit: '.jpmap-pin-hit', why: '지도 핀 — 보이지 않는 터치 원 + 같은 화면 장소 목록' }),
+]);
+
 export const hash = (value, length = 12) => createHash('sha256').update(String(value)).digest('hex').slice(0, length);
 
 /** 화면 글자에서 값 누락 노출 줄 — 최대 3줄. */

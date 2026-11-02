@@ -87,6 +87,16 @@ export default function JapanStudiesMapPage() {
             {/* 육지(50m 해안) → 현 경계(10m) → 핀 순의 레이어 */}
             <path className="jpmap-land" d={JAPAN_PATH} />
             <path className="jpmap-pref" d={JP_PREF_LINES} />
+            {/* 터치 원(화면 벽 WALL-003, 오너 「권장대로」 2026-11-02 KST): 보이는 점(반지름 7 — 휴대폰 9px)만으로는 손가락이 잘 닿지 않아
+                보이지 않는 원(반지름 19 — 휴대폰 약 24px, WCAG 2.5.8 AA 최소)을 모든 점 아래 한 층에 깐다. 점을 직접 누르면 점이 받고,
+                빗나간 손가락만 원이 받는다(촘촘한 간사이에서도 점끼리 가리지 않는다). 키보드 · 보조기기는 점(role=button)과 아래 장소 목록으로 쓴다. */}
+            <g aria-hidden="true">
+              {pins.map((p) => {
+                const [x, y] = projectJp(p.lng, p.lat);
+                const isActive = activeVisible?.id === p.id;
+                return <circle key={p.id} className="jpmap-pin-hit" cx={x} cy={y} r="19" onClick={() => setActiveId(isActive ? null : p.id)} />;
+              })}
+            </g>
             {pins.map((p) => {
               const [x, y] = projectJp(p.lng, p.lat);
               const isActive = activeVisible?.id === p.id;

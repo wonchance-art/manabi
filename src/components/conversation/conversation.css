@@ -5,7 +5,7 @@
    푸른 회색 바탕 · 상대 말 흰 말풍선 · 내 말 노란 말풍선 · 첫 말풍선 꼬리 · 둥근 네모 프로필 · 말풍선 옆 작은 시각 · 흰 입력 막대.
    값은 이 화면 범위의 토큰으로만 두고(셸은 늘 밝은 화면), 읽기 「어둡게」 테마에서는 어두운 값으로 바꾼다. 로고·마크 재현 없음. */
 .conv {
-  --chat-bg: #BACEE0; --chat-other: #FFFFFF; --chat-me: #FEE94E; --chat-ink: #191919; --chat-meta: #4E5D6C;
+  --chat-bg: #BACEE0; --chat-other: #FFFFFF; --chat-me: #FEE94E; --chat-ink: #191919; --chat-meta: #42505E;
   --chat-name: #3A4652; --chat-bar: #FFFFFF; --chat-field: #F3F4F6; --chat-line: #A9BCCD;
   /* 프로필 바탕 8색(파스텔) + 튜터 — 사람마다 아이디로 고정(chatView profileLook). */
   --chat-av-1: #FFD3D3; --chat-av-2: #FFE0BD; --chat-av-3: #FFF0AE; --chat-av-4: #D3F0C2;

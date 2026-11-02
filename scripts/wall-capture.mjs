@@ -27,7 +27,7 @@ import { chromium } from 'playwright-core';
 import { VIEWPORTS, kstStamp } from './ux-audit.mjs';
 import { builtForE2E } from './ux-audit-auth-core.mjs';
 import {
-  AXE_RULE_IDS, DATA_GAP, PERSONAS, aggregateParts, offTokenColors, RAW_ERROR, VIEWPORT_KEYS, coverage, discoverRoutes, expandScenes, hash, judgeShot, loadRegistry,
+  AXE_RULE_IDS, DATA_GAP, PERSONAS, TOUCH_EXCEPTIONS, aggregateParts, offTokenColors, RAW_ERROR, VIEWPORT_KEYS, coverage, discoverRoutes, expandScenes, hash, judgeShot, loadRegistry,
   mergeVerdicts, missingValueLines, summaryLine, validateRegistry,
 } from './wall-core.mjs';
 import { createHeavyBackend, HEAVY_UID, HEAVY_SERVICE_KEY } from '../e2e/fixtures/heavy-account.mjs';
@@ -130,7 +130,7 @@ function sessionCookie(sub, baseURL) {
 }
 
 // ── 페이지 안 측정(순수 DOM — 판단 없음) ──
-export function wallProbe({ rawError, dataGap }) {
+export function wallProbe({ rawError, dataGap, exceptions = [] }) {
   const hidden = el => { for (let n = el; n && n.nodeType === 1; n = n.parentElement) { const s = getComputedStyle(n); if (s.display === 'none' || s.visibility === 'hidden' || Number(s.opacity) === 0) return true; } return false; };
   const shown = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !hidden(el); };
   const doc = document.documentElement;
@@ -141,6 +141,13 @@ export function wallProbe({ rawError, dataGap }) {
     if (!shown(el) || (el.innerText || '').trim()) continue;
     const r = el.getBoundingClientRect();
     if (r.width >= 44 && r.height >= 44) continue;
+    // 예외(ui-conventions §3): 24px로 잰다 — hit가 있으면 중심을 덮는 터치 원의 크기로.
+    const ex = exceptions.find(e => el.matches(e.selector));
+    if (ex) {
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const area = ex.hit ? [...document.querySelectorAll(ex.hit)].map(h => h.getBoundingClientRect()).find(h => h.left <= cx && cx <= h.right && h.top <= cy && cy <= h.bottom) : r;
+      if (area && area.width >= ex.min && area.height >= ex.min) continue;
+    }
     const name = el.getAttribute('aria-label') || el.getAttribute('title') || (typeof el.className === 'string' ? el.className.split(' ')[0] : '') || el.tagName;
     small.push(`${el.tagName.toLowerCase()} 「${String(name).slice(0, 28)}」 ${Math.round(r.width)}×${Math.round(r.height)}`);
   }
@@ -335,7 +342,7 @@ async function captureScene(context, scene, viewportKey, out, partSeen = new Map
     await page.waitForLoadState('networkidle', { timeout: 12000 }).catch(() => {});
     await page.evaluate(() => document.fonts.ready).catch(() => {});
     await page.waitForTimeout(scene.wait || 700);
-    const m = await page.evaluate(wallProbe, { rawError: RAW_ERROR.source, dataGap: DATA_GAP.source });
+    const m = await page.evaluate(wallProbe, { rawError: RAW_ERROR.source, dataGap: DATA_GAP.source, exceptions: TOUCH_EXCEPTIONS });
     m.status = response?.status() ?? null;
     m.axe = await runAxe(page).catch(e => [{ id: 'axe-error', n: 0, samples: [{ summary: String(e.message).slice(0, 80) }] }]);
     m.missing = missingValueLines(m.text);
