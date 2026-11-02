@@ -39,7 +39,7 @@ describe('직접 쓴 말 — 셈 규칙(STATS-MAP-001 목업 「셈 규칙」 �
   });
 
   it('아무것도 없으면 0', () => {
-    expect(buildOutput({})).toEqual({ total: 0, writing: 0, conversation: 0, firstTime: 0, sources: [] });
+    expect(buildOutput({})).toEqual({ total: 0, writing: 0, conversation: 0, firstTime: 0, sources: [], firstWords: [], everUsed: [] });
   });
 });
 
@@ -59,6 +59,8 @@ describe('배선 — 이번 주 창 두 줄(들어옴 ↔ 나감) · 같은 창 
     expect(page).toContain("title: '직접 쓴 말',");
     expect(page).toContain("cells: d => [[d.writing, '편', '작문'], [d.conversation, '개', '대화'], [d.firstTime, '개', '처음 씀']],");
     expect(page).toContain('{outputTotal > 0 && onOpenOutput && (');
-    for (const banned of ['연습한 표현', '써 본 말']) expect(page).not.toContain(banned);
+    // 지표 이름 후보였던 말은 쓰지 않는다 — 연계 4 행동 문구 「아직 안 써 본 말로 작문」(오너 승인 2026-11-02 KST)만 예외.
+    const named = page.replaceAll('아직 안 써 본 말', '');
+    for (const banned of ['연습한 표현', '써 본 말']) expect(named).not.toContain(banned);
   });
 });

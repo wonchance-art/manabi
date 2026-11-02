@@ -11,6 +11,7 @@
  * 순수 모듈 — 조회는 remetRows.js.
  */
 import { materialContentWords } from './materialFit';
+import { isVocabularyReviewAvailable, isVocabularyReviewDue } from './vocabularyLearningRead';
 
 /** 대화 토큰 id(`id_{줄}_{k}_{ts}` · `failed_{줄}_{ts}`)의 시각 — 줄이 붙은 때. 없으면 null. */
 export function conversationTokenTime(tokenId) {
@@ -42,7 +43,7 @@ export function conversationWordsBetween(processedJson, sinceMs, untilMs) {
 }
 
 /** 담은 말 대조표 — 표면형 · 기본형 → 담은 말 행(뷰어 isSaved 관용구). */
-function savedIndex(vocabRows) {
+export function savedIndex(vocabRows) {
   const surfaces = new Map();
   const bases = new Map();
   for (const row of vocabRows || []) {
@@ -78,7 +79,8 @@ const before = (times, at) => {
  * @param {Array<{kind:'reading'|'conversation', id, title, words:Array<{key,text,base_form,at}>}>} p.sources - 그 주 글 · 대화(단어마다 만난 시각)
  * @param {Array<{word_text, base_form}>} p.vocabRows - 담은 말
  * @param {Array<{item_key, created_at}>} p.reviewRows - 담은 말 복습(source 'vocab')
- * @returns {{ total, reading, conversation, reviews, sources: Array<{kind,id,title,words:string[]}> }}
+ * @returns {{ total, reading, conversation, reviews, sources: Array<{kind,id,title,words:string[]}>, metAt: Object<string, number> }}
+ *   metAt = 말마다 그 주에 처음 다시 만난 시각(칩의 「흐려지던 말」 판정 재료 — fadingWhenMet).
  */
 export function buildRemet({ sources = [], vocabRows = [], reviewRows = [] } = {}) {
   const match = savedIndex(vocabRows);
@@ -108,5 +110,56 @@ export function buildRemet({ sources = [], vocabRows = [], reviewRows = [] } = {
     conversation: out.filter(s => s.kind === 'conversation').length,
     reviews: reviewCount,
     sources: out,
+    metAt: Object.fromEntries(firstMet),
   };
+}
+
+const ms = v => (typeof v === 'number' ? v : Date.parse(v));
+
+/**
+ * 만났을 때 흐려지던 말(칩의 핵심 · 들어옴) — 그때 이미 복습할 때가 지나 있던 말.
+ * 지난 시각의 기억률은 vocabularyRetrievability로 잴 수 없다(평가 시각보다 앞선 시각은 거부). 그래서
+ * 「만난 뒤 다시 복습하지 않았고(마지막 복습 ≤ 만난 때) 다음 복습 시각이 만난 때 이전」일 때만 참 —
+ * 그 경우 지금 기억 상태가 곧 만난 때의 상태라 판정이 정확하다. 만난 뒤 복습했으면 거짓(부풀리지 않는 쪽).
+ */
+export function fadingWhenMet(projection, at) {
+  if (!isVocabularyReviewAvailable(projection) || !Number.isFinite(at)) return false;
+  const last = projection.memory?.lastReview;
+  const next = projection.review?.nextQuestionAt;
+  if (last == null || next == null) return false;
+  return ms(last) <= at && ms(next) <= at;
+}
+
+/** 복습한 적 있는 말인가(snapshot) — 마지막 복습이 그 시각 전에 있다. */
+const reviewedBy = (projection, at) => {
+  const last = projection?.memory?.lastReview;
+  return last != null && Number.isFinite(ms(last)) && ms(last) <= at;
+};
+
+/**
+ * 완독 창 한 줄(연계 1) — 「복습한 말 N개를 이 글에서 다시 만났어요」. 이번 주 「다시 만난 말」과 같은 대조
+ * (materialContentWords 내용어 · 표면형/기본형)이고, 「복습한 말」은 이미 받은 학습 snapshot의 마지막 복습으로 본다(추가 조회 0).
+ * 핵심 = 지금 복습할 때가 된 말(흐려지던 말 — 복습 화면 「기한」과 같은 판정).
+ * @returns {{ words: string[], keys: Set<string> }}
+ */
+export function remetInMaterial({ processedJson, projections = [], now = Date.now() } = {}) {
+  const byWord = new Map();
+  for (const p of projections || []) if (p?.vocabulary?.word_text && !byWord.has(p.vocabulary.word_text)) byWord.set(p.vocabulary.word_text, p);
+  const match = savedIndex([...byWord.values()].map(p => p.vocabulary));
+  const words = [];
+  const keys = new Set();
+  const seen = new Set();
+  for (const word of materialContentWords(processedJson || {})) {
+    const row = match(word);
+    if (!row || seen.has(row.word_text)) continue;
+    seen.add(row.word_text);
+    const p = byWord.get(row.word_text);
+    if (!reviewedBy(p, now)) continue;
+    words.push(row.word_text);
+    try {
+      const at = Math.max(now, ms(p.review.evaluatedAt) || 0);
+      if (isVocabularyReviewDue(p, new Date(at).toISOString())) keys.add(row.word_text);
+    } catch { /* 판정 못 하면 핵심 표시만 없다 */ }
+  }
+  return { words, keys };
 }

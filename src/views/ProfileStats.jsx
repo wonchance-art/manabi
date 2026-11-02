@@ -32,6 +32,10 @@ import { fetchSharedVocabularySummary } from '../lib/vocabularyLearningShare';
 import { fetchWeaknessRows } from '../lib/weaknessRows';
 import { fetchRemetWeeks } from '../lib/remetRows';
 import { fetchOutputWeeks } from '../lib/usedWordsRows';
+import { fadingWhenMet } from '../lib/remetWords';
+import { unusedReviewedWords } from '../lib/usedWords';
+import { writingWordsHref } from '../lib/writingWordsParam';
+import WordChips, { WordChipsLegend } from '../components/WordChips';
 
 // 다시 만난 말 칩 → 단어 카드(복습실과 같은 VocabDetailCard) — 칩을 누를 때만 받는다.
 const VocabDetailCard = dynamic(() => import('./VocabDetailCard'), { loading: () => null });
@@ -268,7 +272,7 @@ function WeeklyModal({ weekly, vocab, projections, view, setView, onClose }) {
     return (
       <>
         <TileModal title={TRAILS[view].title} className="tile-modal--wide" onClose={detail ? () => setDetail(null) : onClose} onBack={() => setView('week')} backLabel="이번 주">
-          <TrailView spec={TRAILS[view]} data={trail} onWord={rowsByWord.size ? openWord : null} />
+          <TrailView spec={TRAILS[view]} data={trail} projections={projections} onWord={rowsByWord.size ? openWord : null} />
         </TileModal>
         {detail && <VocabDetailCard word={detail} projection={projectionById.get(detail.id)} now={new Date()} onClose={() => setDetail(null)} ttsSupported={false} />}
       </>
@@ -286,7 +290,6 @@ function WeeklyModal({ weekly, vocab, projections, view, setView, onClose }) {
      장미색 큰 숫자 · 세 칸 · 목록. 큰 숫자 = 서로 다른 말 · 목록 = 글 · 작문 · 대화별 말(많은 순, 다섯 개 + N).
      지난주는 회색 한 줄(화살표 · 색 평가 없음 — 거울 규약). 정의 · 셈은 lib/remetWords · lib/usedWords.
      다시 만난 말 = 들어옴(복습한 말이 읽은 글 · 대화에 다시 나옴) ↔ 직접 쓴 말 = 나감(담은 말을 작문 · 대화에서 직접 씀). ── */
-const REMET_CHIPS = 5;
 const TRAILS = Object.freeze({
   remet: {
     title: '다시 만난 말',
@@ -295,6 +298,11 @@ const TRAILS = Object.freeze({
     empty: '이번 주에는 아직 없어요. 복습한 말이 나오는 글을 읽으면 여기에 쌓여요.',
     kind: { reading: '글', conversation: '대화' },
     href: src => `/viewer/${src.id}`,
+    // 핵심(채운 칩) = 만났을 때 흐려지던 말 — 복습이 마침 필요하던 때 글에서 다시 만난 말.
+    keyLabel: '흐려지던 말',
+    keys: (week, byWord) => new Set(Object.entries(week.metAt || {}).filter(([w, at]) => byWord.has(w) && fadingWhenMet(byWord.get(w), at)).map(([w]) => w)),
+    // 연계 3 — 다음 읽기. 자료실 「내 수준 맞춤」(담은 말 커버리지 정렬)이 담은 말이 많이 나오는 글을 위로 올린다.
+    footer: () => ({ href: '/materials?sort=fit', label: '내 수준 맞춤 글 읽기' }),
   },
   output: {
     title: '직접 쓴 말',
@@ -303,11 +311,21 @@ const TRAILS = Object.freeze({
     empty: '이번 주에는 아직 없어요. 작문이나 대화에서 담은 말을 써 보면 여기에 쌓여요.',
     kind: { writing: '작문', conversation: '대화' },
     href: src => (src.kind === 'writing' ? '/writing' : `/viewer/${src.id}`),
+    keyLabel: '처음 씀',
+    keys: week => new Set(week.firstWords || []),
+    // 연계 4 — 복습은 했지만 한 번도 직접 쓰지 않은 말을 작문 화면 칩으로 넘긴다.
+    footer: (week, projections) => {
+      const { language, words } = unusedReviewedWords({ projections, everUsed: week.everUsed });
+      return words.length ? { href: writingWordsHref({ words, language }), label: '아직 안 써 본 말로 작문' } : null;
+    },
   },
 });
-function TrailView({ spec, data, onWord = null }) {
+function TrailView({ spec, data, projections = null, onWord = null }) {
   const { week, prev } = data;
   const cells = spec.cells(week);
+  const byWord = useMemo(() => new Map((projections || []).filter(p => p?.vocabulary?.word_text).map(p => [p.vocabulary.word_text, p])), [projections]);
+  const keys = useMemo(() => spec.keys(week, byWord), [spec, week, byWord]);
+  const footer = useMemo(() => spec.footer(week, projections || []), [spec, week, projections]);
   return (
     <div className="learn-week">
       <div className="learn-week__hero">
@@ -335,16 +353,15 @@ function TrailView({ spec, data, onWord = null }) {
                 <span className="learn-remet__title"><span className="learn-remet__kind">{spec.kind[src.kind] || ''}</span><span>{src.title || '제목 없음'}</span></span>
                 <em>{src.words.length}개 <span aria-hidden="true">›</span></em>
               </Link>
-              <span className="learn-remet__chips">
-                {src.words.slice(0, REMET_CHIPS).map(w => (onWord
-                  ? <button key={w} type="button" onClick={() => onWord(w)} aria-label={`${w} 단어 카드`}>{w}</button>
-                  : <span key={w}>{w}</span>))}
-                {src.words.length > REMET_CHIPS && <span className="is-more">+{src.words.length - REMET_CHIPS}</span>}
-              </span>
+              <WordChips words={src.words} keys={keys} keyLabel={spec.keyLabel} onWord={onWord} />
             </div>
           ))}
         </div>
+        <WordChipsLegend label={spec.keyLabel} show={keys.size > 0} />
       </>}
+      {footer && (
+        <Link href={footer.href} prefetch={false} className="learn-remet__next">{footer.label} <span aria-hidden="true">›</span></Link>
+      )}
     </div>
   );
 }

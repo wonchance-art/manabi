@@ -6034,6 +6034,17 @@ a.viewer-badge:hover {
   flex-direction: column;
   gap: 10px;
 }
+/* 연계 1 — 「복습한 말 N개를 이 글에서 다시 만났어요」 + 단어 칩(WordChips). 세 칸 바로 아래, 행동 버튼 위. */
+.completion-remet { display: grid; justify-items: center; gap: 8px; margin: -12px 0 24px; }
+.completion-remet__line { margin: 0; font-size: 0.88rem; color: var(--text-secondary); }
+.completion-remet__line b { color: var(--text-primary); }
+.completion-remet .word-chips { justify-content: center; }
+/* 연계 2 — 첨삭 결과 카드 아래 「담은 말 N개를 직접 썼어요」 + 단어 칩. */
+.writing-used { display: grid; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.writing-used__line { margin: 0; font-size: 0.85rem; color: var(--text-secondary); }
+.writing-used__line b { color: var(--text-primary); }
+/* 완독 창(1100) 위에 단어 카드 — 카드 막(1000)이 창 아래로 깔리지 않게. */
+.completion-word-layer > .vocab-detail-overlay { z-index: 1200; }
 
 /* ========= 복습 채점 버튼 안내 ========= */
 .review-score-guide {
