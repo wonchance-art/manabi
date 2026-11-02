@@ -37,8 +37,16 @@ export function recentSavedWords(projections, language, cap = AGENT_PROMPT_WORDS
     .map(p => p.vocabulary.word_text);
 }
 
+/** 프롬프트 수준 — 작문 화면 수준(writing_level_<언어>) → 목표 수준(profiles.goal_level, goal_lang이 같은 언어일 때) → ''. */
+export function agentPromptLevel(language, profile, storage = typeof localStorage === 'undefined' ? null : localStorage) {
+  let saved = '';
+  try { saved = storage?.getItem(`writing_level_${language}`) || ''; } catch { /* 기억 못 하면 다음 후보 */ }
+  if (saved) return saved;
+  return profile?.goal_lang === language && typeof profile?.goal_level === 'string' ? profile.goal_level : '';
+}
+
 export default function AgentPromptCard({ language }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(true);
   useEffect(() => {
@@ -61,7 +69,8 @@ export default function AgentPromptCard({ language }) {
   const fromToday = today.length > 0;
   const words = useMemo(() => (fromToday ? today.map(w => w.word_text) : recentSavedWords(learning?.projections, language)), [fromToday, today, learning, language]);
   const keys = useMemo(() => new Set(today.filter(w => w.wrong).map(w => w.word_text)), [today]);
-  const level = useMemo(() => { try { return localStorage.getItem(`writing_level_${language}`) || ''; } catch { return ''; } }, [language]);
+  // 수준 — 작문 화면에서 고른 수준(이 기기) → 없으면 목표 창의 목표 수준(같은 언어일 때만). 둘 다 없으면 프롬프트에서 빠진다.
+  const level = useMemo(() => agentPromptLevel(language, profile), [language, profile]);
 
   const [copied, setCopied] = useState(null);
   const [manual, setManual] = useState(null); // 복사가 막혔을 때 직접 고르는 프롬프트

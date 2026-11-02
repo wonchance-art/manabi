@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
-import { recentSavedWords } from '../../components/quick/AgentPromptCard.jsx';
+import { agentPromptLevel, recentSavedWords } from '../../components/quick/AgentPromptCard.jsx';
 
 /* 빠른 분석 에이전트 0단계(AGENT-LINK-001 · 오너 「빠른 분석에 복습한 말 최신 공동 디자인 적용」 2026-11-02 KST). */
 const read = f => fs.readFileSync(f, 'utf8');
@@ -32,6 +32,19 @@ describe('에이전트에게 부탁하기 카드', () => {
     const projections = [p('古', 'Japanese', '2026-10-01'), p('新', 'Japanese', '2026-11-01'), p('中', 'Chinese', '2026-11-02'), p('既', 'Japanese', '2026-11-02', false)];
     expect(recentSavedWords(projections, 'Japanese')).toEqual(['新', '古']);
     expect(recentSavedWords(null, 'Japanese')).toEqual([]);
+  });
+});
+
+describe('프롬프트 수준 — 작문 수준 → 목표 수준(같은 언어) → 없음', () => {
+  const store = map => ({ getItem: k => map[k] ?? null });
+  it('작문 화면에서 고른 수준이 먼저', () => {
+    expect(agentPromptLevel('Japanese', { goal_lang: 'Japanese', goal_level: 'N2' }, store({ writing_level_Japanese: 'N4' }))).toBe('N4');
+  });
+  it('없으면 같은 언어의 목표 수준, 다른 언어 목표는 쓰지 않음', () => {
+    expect(agentPromptLevel('Japanese', { goal_lang: 'Japanese', goal_level: 'N2' }, store({}))).toBe('N2');
+    expect(agentPromptLevel('Chinese', { goal_lang: 'Japanese', goal_level: 'N2' }, store({}))).toBe('');
+    expect(agentPromptLevel('Japanese', null, null)).toBe('');
+    expect(agentPromptLevel('Japanese', null, { getItem: () => { throw new Error('blocked'); } })).toBe('');
   });
 });
 
