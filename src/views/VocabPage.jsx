@@ -104,11 +104,13 @@ function useRoomMemo(frozen, factory, deps) {
 /** 질문 입장을 서버가 거절한 「이 카드는 지금 묻지 않는다」 사유(learningAdmission databaseError) — 실패가 아니라 건너뛸 카드다. */
 const ADMISSION_GONE_CODES = new Set(['fsrs_card_not_due', 'fsrs_card_excluded', 'fsrs_already_enrolled', 'fsrs_card_not_found']);
 
-export default function VocabPage({ reviewScope = NOT_EXPLICIT, firstScreen = null, serverUserId = null }) {
+export default function VocabPage({ reviewScope = NOT_EXPLICIT, firstScreen = null, serverUserId = null, sessionHint = null }) {
   const { user, loading } = useAuth();
   // 로그인 복원을 기다리는 동안 서버가 확인한 계정의 목록을 먼저 받기 시작한다(VOCAB-FIRST-NUMBERS-001 — 같은 키 · 같은 함수).
   usePrefetchVocabLearning(serverUserId, loading);
-  if (loading) return <div className="page-container manabi-review-room" role="status">계정을 확인하고 있어요…</div>;
+  // 서버가 세션 쿠키를 못 봤으면(sessionHint === false) 확인을 기다리지 않고 손님 화면을 바로 그린다(VOCAB-GUEST-FIRST-001) — 확인이 끝나
+  // 손님이면 같은 키('guest')라 다시 그리지 않는다. 쿠키가 있거나 힌트가 없으면(다른 화면이 이 쪽을 쓰는 경우) 지금처럼 확인을 기다린다.
+  if (loading && sessionHint !== false) return <div className="page-container manabi-review-room" role="status">계정을 확인하고 있어요…</div>;
   // 명시 범위 주소가 무효면 닫힌다 — 「전체」로 새지 않고 저장된 설정도 건드리지 않는다(REV-SCOPE-R1A 원칙 5).
   if (reviewScope?.invalid) return (
     <div className="page-container manabi-review-room">

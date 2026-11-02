@@ -338,7 +338,7 @@ describe('⑷ 로그인 확인 · 캐시 경계 · 화면 배선', () => {
   });
   it('로그인 복원 전 목록 받기 — 서버가 확인한 계정만, useVocabData와 같은 키 · 같은 함수', () => {
     const page = read('src/views/VocabPage.jsx');
-    const head = sliceBetween(page, 'export default function VocabPage(', 'if (loading) return');
+    const head = sliceBetween(page, 'export default function VocabPage(', 'if (loading && sessionHint !== false) return');
     expect(head).toContain('usePrefetchVocabLearning(serverUserId, loading);');
     const data = read('src/lib/useVocabData.js');
     const prefetch = sliceBetween(data, 'export function usePrefetchVocabLearning(serverUserId, enabled) {', '\n}');

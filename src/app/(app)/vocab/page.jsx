@@ -1,4 +1,6 @@
+import { cookies } from 'next/headers';
 import VocabPage from '@/views/VocabPage';
+import { hasSupabaseSessionInJar } from '@/lib/authCookie';
 import { parseReviewScope } from '@/lib/reviewScopeUrl';
 import { prefetchReviewRoomFirstScreen, reviewRoomSession } from '@/lib/server/reviewRoomPrefetch';
 
@@ -18,6 +20,8 @@ export const dynamic = 'force-dynamic';
 export default async function Page({ searchParams }) {
   const reviewScope = parseReviewScope(await searchParams);
   const session = await reviewRoomSession();
-  return <VocabPage reviewScope={reviewScope} serverUserId={session?.user.id ?? null}
+  // 세션 쿠키 이름(값 · 계정은 읽지 않는다 — 서재 · 배움과 같은 판정)이 없으면 손님이다 — 로그인 확인을 기다리지 않고 손님 화면을 바로 그린다
+  // (VOCAB-GUEST-FIRST-001: 운영 CPU×4 손님 /vocab이 「계정을 확인하고 있어요…」로 약 1.2초 머문 뒤에야 안내가 나왔다).
+  return <VocabPage reviewScope={reviewScope} serverUserId={session?.user.id ?? null} sessionHint={hasSupabaseSessionInJar(await cookies())}
     firstScreen={session ? prefetchReviewRoomFirstScreen(reviewScope, { session }) : null} />;
 }
