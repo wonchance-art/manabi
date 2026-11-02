@@ -721,10 +721,10 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       fragileIds: practiceFragile,
     });
     // controller는 안정 객체라 canLegacy 판정 신호(registryAvailable · enrolledIds)를 명시한다.
-    // 시각은 분 단위로 본다 — 범위 FSRS id(fsrsScopeIds) · 집중 연습 후보와 같은 규칙. 밀리초 값을 그대로 두면 그릴 때마다 함수가 새로
-    // 생겨 오늘 개수(3,000행)를 다시 셌다(LOGGED-IN-SWEEP-002: 합성 무거운 계정 /vocab 첫 로드 CPU×4 약 140ms, 같은 숫자).
+    // 시각은 밀리초 그대로 둔다 — 분 단위로 묶으면 다시 세기가 줄지만 「언제 센 숫자인가」가 바뀌는 동작 변경이라 오너 결정(2026-11-02 KST
+    // VOCAB-SCOPE-PERF-001 「유지」)을 따른다(LOGGED-IN-SWEEP-002).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projections, learningAvailable, scopeKey, Math.floor(effectiveNow / 60000), scopeLevels, scopeSourceIds, scopeChapters, zhHskLevels, reviewSupported, remainingNew,
+  }, [projections, learningAvailable, scopeKey, effectiveNow, scopeLevels, scopeSourceIds, scopeChapters, zhHskLevels, reviewSupported, remainingNew,
     admission.quota, fsrsReview.cards, fsrsReview.enabled, fsrsReview.pending, enrolledIdSet, fsrsReview.registryAvailable, fsrsReview.controller, grammarRows, practiceFragile]);
   const scopeCount = useRoomMemo(inSession, () => (admission.quota && learningAvailable ? countFor(scope) : null), [countFor, scope, admission.quota, learningAvailable]);
   const roomSession = scopeCount && scopeCount.status === 'ready' ? scopeCount : { status: 'pending', total: 0, due: 0, newAllowed: 0, newLocked: 0, deferred: 0,

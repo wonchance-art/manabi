@@ -38,15 +38,8 @@ describe('배움 — 단어 복습 칸 숫자는 입력이 같으면 다시 세�
   });
 });
 
-describe('복습방 — 오늘 개수 함수(countFor)가 그릴 때마다 새로 생기지 않는다', () => {
+describe('복습방 — 받기 전 기본값이 오늘 개수 함수(countFor)를 새로 만들지 않는다', () => {
   const deps = sliceBetween(vocab, 'const countFor = useCallback(target => {', 'const scopeCount = useRoomMemo(');
-  it('시각은 분 단위(fsrsScopeIds · practiceWords와 같은 규칙) — 밀리초 effectiveNow가 의존성에 없다', () => {
-    expect(deps).toContain('[projections, learningAvailable, scopeKey, Math.floor(effectiveNow / 60000), scopeLevels,');
-    expect(sliceBetween(deps, '}, [projections, learningAvailable, scopeKey,', ']);')).not.toMatch(/[[,]\s*effectiveNow\s*[,\]]/);
-    // 같은 규칙의 기존 두 계산 — 셋이 같은 분을 본다.
-    expect(vocab).toContain('[learningAvailable, projections, scopeKey, scopeLevels, scopeSourceIds, reviewSupported, Math.floor(effectiveNow / 60000)]);');
-    expect(vocab).toContain('[vocab, learningById, reviewSupported, scope.state, practiceFragile, Math.floor(effectiveNow / 60000)]);');
-  });
   it('집중 연습 기록의 받기 전 기본값은 고정된 빈 배열 — 그릴 때마다 새 []가 practiceFragile → countFor를 새로 만들지 않는다', () => {
     expect(vocab).toContain('const { data: recentVocabEvents = EMPTY_IDS } = useQuery({');
     expect(vocab).toContain('const EMPTY_IDS = Object.freeze([]);');
