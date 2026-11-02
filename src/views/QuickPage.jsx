@@ -234,7 +234,6 @@ export default function QuickPage() {
         </div>
       ) : (
         <>
-          <AgentPromptCard language={language} />
           <div className="card" style={{ padding: '16px 18px', marginBottom: 16 }}>
             <textarea
               className="form-input"
@@ -269,18 +268,21 @@ export default function QuickPage() {
           {/* 분석 알림 — 영역은 늘 두고 내용만(A11Y-SWEEP-001). 단추 글자(「분석 중…」)와 겹치지 않는 문구 */}
           <span className="sr-only" role="status">{analyzing ? '텍스트를 분석하는 중이에요' : resultLines ? `분석을 마쳤어요 — ${resultLines.length}줄` : ''}</span>
           {resultLines && (
-            <div className="card" style={{ padding: '18px 20px' }}>
+            <div className="card" style={{ padding: '18px 20px', marginBottom: 16 }}>
               <h2 ref={resultHeadRef} tabIndex={-1} className="sr-only">분석 결과</h2>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
                 paddingBottom: 10, borderBottom: '1px solid var(--border)',
               }}>
                 {agentInfo ? (
+                  // 머리 두 줄(디자인 손질 ⑥) — 칩 · 제목 / 수준 · 목표 단어 · 밑줄 뜻. 폰에서 제목과 메타가 갈라지던 것.
                   <span className="agent-format">
-                    <span className="agent-format__chip">에이전트 형식</span>
-                    <span className="agent-format__title">{agentInfo.title}</span>
+                    <span className="agent-format__top">
+                      <span className="agent-format__chip">에이전트 형식</span>
+                      <span className="agent-format__title">{agentInfo.title}</span>
+                    </span>
                     <span className="agent-format__meta">
-                      {[agentInfo.level, agentInfo.targets.size ? `목표 단어 ${agentInfo.targets.size}` : ''].filter(Boolean).join(' · ')}
+                      {[agentInfo.level, agentInfo.targets.size ? `목표 단어 ${agentInfo.targets.size}(밑줄)` : ''].filter(Boolean).join(' · ')}
                     </span>
                   </span>
                 ) : (
@@ -305,10 +307,13 @@ export default function QuickPage() {
               </div>
               {agentInfo?.notes && <p className="agent-notes"><b>뜻 메모</b> {agentInfo.notes}</p>}
               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 6 }}>
-                단어를 탭하면 뜻과 설명이 열려요{agentInfo?.targets.size ? ' · 밑줄 = 목표 단어' : ''}
+                단어를 탭하면 뜻과 설명이 열려요
               </div>
             </div>
           )}
+
+          {/* 에이전트에게 부탁하기 — 본업(붙여넣고 분석) 아래(디자인 손질 ①, 오너 「권장대로 진행해」 2026-11-02 KST). */}
+          <AgentPromptCard language={language} />
         </>
       )}
 

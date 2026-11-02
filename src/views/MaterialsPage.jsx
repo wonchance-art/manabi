@@ -1057,7 +1057,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
                   if (!hits && (!fit || fit.coverage == null)) return null;
                   return (
                     <p className="mat-card__fit">
-                      {hits > 0 && <span className="mat-card__fit-good">다시 만난 말 {hits}개</span>}
+                      {hits > 0 && <span className="mat-card__remet">다시 만난 말 {hits}개</span>}
                       {hits > 0 && fit?.coverage != null && ' · '}
                       {fit?.coverage != null && <>아는 말 {Math.round(fit.coverage * 100)}% · 새 단어 {fit.unknown}</>}
                       {fit?.band === 'fit' && <span className="mat-card__fit-good"> · 지금 읽기 좋아요</span>}

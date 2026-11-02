@@ -37,8 +37,16 @@ export function recentSavedWords(projections, language, cap = AGENT_PROMPT_WORDS
     .map(p => p.vocabulary.word_text);
 }
 
+/** 프롬프트 수준 — 작문 화면 수준(writing_level_<언어>) → 목표 수준(profiles.goal_level, goal_lang이 같은 언어일 때) → ''. */
+export function agentPromptLevel(language, profile, storage = typeof localStorage === 'undefined' ? null : localStorage) {
+  let saved = '';
+  try { saved = storage?.getItem(`writing_level_${language}`) || ''; } catch { /* 기억 못 하면 다음 후보 */ }
+  if (saved) return saved;
+  return profile?.goal_lang === language && typeof profile?.goal_level === 'string' ? profile.goal_level : '';
+}
+
 export default function AgentPromptCard({ language }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(true);
   useEffect(() => {
@@ -61,7 +69,8 @@ export default function AgentPromptCard({ language }) {
   const fromToday = today.length > 0;
   const words = useMemo(() => (fromToday ? today.map(w => w.word_text) : recentSavedWords(learning?.projections, language)), [fromToday, today, learning, language]);
   const keys = useMemo(() => new Set(today.filter(w => w.wrong).map(w => w.word_text)), [today]);
-  const level = useMemo(() => { try { return localStorage.getItem(`writing_level_${language}`) || ''; } catch { return ''; } }, [language]);
+  // 수준 — 작문 화면에서 고른 수준(이 기기) → 없으면 목표 창의 목표 수준(같은 언어일 때만). 둘 다 없으면 프롬프트에서 빠진다.
+  const level = useMemo(() => agentPromptLevel(language, profile), [language, profile]);
 
   const [copied, setCopied] = useState(null);
   const [manual, setManual] = useState(null); // 복사가 막혔을 때 직접 고르는 프롬프트
@@ -93,29 +102,36 @@ export default function AgentPromptCard({ language }) {
       </div>
       {open && (
         <div id="agent-card-body" className="agent-card__body">
+          {/* 흐름 설명은 제목 바로 아래(디자인 손질 ④ — 카드 끝 작은 글씨에 숨어 있었다). */}
+          <p className="agent-card__sub">프롬프트를 복사해 ChatGPT · Claude 같은 에이전트에 붙이고, 받은 결과를 위 칸에 붙이면 형식을 알아봐요.</p>
           <div className="agent-card__words">
-            <span className="agent-card__label">{fromToday ? '오늘 복습한 말' : '최근 담은 말'}</span>
+            {/* 범례는 머리 줄 안으로(③ — 칩 아래 혼자 한 줄을 쓰던 것). */}
+            <div className="agent-card__label">
+              <span>{fromToday ? '오늘 복습한 말' : '최근 담은 말'}</span>
+              <WordChipsLegend label="헷갈린 말" show={keys.size > 0} />
+            </div>
             {words.length > 0
               ? <WordChips words={words} keys={keys} keyLabel="헷갈린 말" onWord={w => { const p = projectionByWord.get(w); if (p) setDetail(p); }} />
               : <span className="agent-card__empty">담은 말이 생기면 여기에 떠요</span>}
           </div>
-          <WordChipsLegend label="헷갈린 말" show={keys.size > 0} />
-          <div className="agent-card__actions">
+          {/* 단추 셋 → 한 목록 세 줄 · 오른쪽에 단추 모양 「복사」(② — 이번 주 창 목록과 같은 부품 결). */}
+          <ul className="agent-card__actions">
             {ACTIONS.map(([kind, label, sub]) => (
-              <button key={kind} type="button" className="agent-card__action" onClick={() => copy(kind)}
-                disabled={kind !== 'recap' && words.length === 0}>
-                <b>{label}</b><span>{sub}</span>
-                <em aria-live="polite">{copied === kind ? '복사됨 ✓' : '복사'}</em>
-              </button>
+              <li key={kind} className="agent-card__action">
+                <div><b>{label}</b><span>{sub}</span></div>
+                <button type="button" className={`agent-card__copy${copied === kind ? ' is-done' : ''}`} onClick={() => copy(kind)}
+                  disabled={kind !== 'recap' && words.length === 0} aria-label={`${label} 프롬프트 복사`}>
+                  <span aria-live="polite">{copied === kind ? '복사됨 ✓' : '복사'}</span>
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
           {manual && (
             <div className="agent-card__manual">
               <label htmlFor="agent-card-manual">복사하지 못했어요. 아래 글을 직접 골라 복사해 주세요.</label>
               <textarea id="agent-card-manual" ref={manualRef} readOnly value={manual} rows={6} className="form-input" />
             </div>
           )}
-          <p className="agent-card__hint">에이전트가 돌려준 결과를 아래에 붙여 넣으면 형식을 알아보고 해부해요.</p>
         </div>
       )}
       {detail && <VocabDetailCard word={detail.vocabulary} projection={detail} now={new Date()} onClose={() => setDetail(null)} ttsSupported={false} />}
