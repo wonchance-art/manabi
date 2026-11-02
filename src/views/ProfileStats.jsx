@@ -464,6 +464,14 @@ function TileModal({ title, onClose, children, className = '', onBack = null, ba
      퍼센트는 회색 그대로 — 색 · 목표선 없음(거울이지 성적표가 아니다). 기준은 첫 기록부터(1년 넘으면 1년) — studyDaysBasis.
      머리글은 「N일 · Z%」만(오너 「더 심플하게」), 기준은 말풍선. ── */
 
+/** 공부한 날 칸 요약(화면 읽기) — 「지난 1년 228일 공부 · 63% · 마지막 11월 1일」. 기록이 없으면 「아직 공부한 날이 없어요」. */
+function studyStripLabel(days, total, basis) {
+  const last = [...days].reverse().find(key => total(key) > 0);
+  if (!basis || !last) return '공부한 날 — 아직 공부한 날이 없어요';
+  const since = basis.sinceDay ? `${Number(basis.sinceDay.slice(5, 7))}월 ${Number(basis.sinceDay.slice(8))}일부터` : '지난 1년';
+  return `공부한 날 — ${since} ${basis.studied}일 공부 · ${basis.percent}% · 마지막 ${Number(last.slice(5, 7))}월 ${Number(last.slice(8))}일`;
+}
+
 function HeatmapCard({ dayCounts, hasOlder = false, className = '' }) {
   const todayStart = learningDayStartMs(Date.now());
   const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => learningDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
@@ -513,8 +521,9 @@ function HeatmapCard({ dayCounts, hasOlder = false, className = '' }) {
         aria-label="공부한 날 1년 — 옆으로 밀면 지난 기록" onScroll={e => setAtStart(e.currentTarget.scrollLeft <= 1)}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}
         onWheel={touch} onKeyDown={touch} onTouchStart={touch}>
-        <div className="learn-heatmap__strip">
-          {days.map(key => <i key={key} className={levelOf(total(key)) || undefined} title={studyDayLabel(key, dayCounts[key])} />)}
+        {/* 화면 읽기 — 빈 칸 364개 대신 요약 한 줄(칸 설명은 마우스 말풍선용 title 그대로). */}
+        <div className="learn-heatmap__strip" role="img" aria-label={studyStripLabel(days, total, basis)}>
+          {days.map(key => <i key={key} aria-hidden="true" className={levelOf(total(key)) || undefined} title={studyDayLabel(key, dayCounts[key])} />)}
         </div>
       </div>
     </div>

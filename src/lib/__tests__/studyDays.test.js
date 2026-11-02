@@ -80,6 +80,9 @@ describe('공부한 날', () => {
     expect(src).toContain('new ResizeObserver(pin)'); // 늦게 정해지는 폭에도 오늘이 맨 오른쪽
     expect(src).toContain('className={`learn-heatmap__view');
     expect(src).toContain('tabIndex={0}'); // 키보드 ← →
+    // 화면 읽기는 빈 칸 364개 대신 요약 한 줄.
+    expect(src).toContain('role="img" aria-label={studyStripLabel(days, total, basis)}');
+    expect(src).toContain('<i key={key} aria-hidden="true"');
     expect(css).toMatch(/\.learn-heatmap__view\{container-type:inline-size;[^}]*overflow-x:auto/);
     expect(css).toContain('--cell:calc((100cqi - 46px) / 24)');
     expect(css).toMatch(/\.learn-heatmap\{grid-column:span 2;height:146px/); // 카드 높이 그대로
