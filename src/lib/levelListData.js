@@ -19,6 +19,8 @@ import { alignFurigana } from './jaFurigana';
 import { splitKanjiReadings } from './jaKanjiReading';
 import { decodeJaPieces, jaExampleKey, jaExampleWords } from './jaExampleWords';
 import jaJeongja from './data/jaJeongja.json';
+import { LATIN_WORD_LEVELS } from './latinLevelWords';
+import { latinWordsData } from './latinWordsData';
 
 const bunkeiOf = { japanese: getJaBunkei, chinese: getZhBunkei };
 const bunkeiCountOf = { japanese: countJaBunkei, chinese: countZhBunkei };
@@ -328,13 +330,20 @@ export async function levelCharTilePack(lang, levelParam) {
   return levelTilePack(words, (word) => (ja ? jaCharTiles(word, null, tables) : levelCharTiles(word, tables)));
 }
 
-/** 책장 타일 숫자 — 언어별 [{ levelKey, vocab, bunkei }]. 목록과 같은 조립을 세므로 타일 = 목록 개수. */
+/** 책장 타일 숫자 — 언어별 [{ levelKey, vocab, bunkei }]. 목록과 같은 조립을 세므로 타일 = 목록 개수.
+ * 영어 · 프랑스어(SHELF-REDESIGN-001)는 단어 페이지(/english|french/words/{레벨})와 같은 조립(latinWordsData)을 센다 — 단어 줄 하나(문형 없음). */
 const tileMemo = new Map();
 export function levelTileCounts(lang) {
   const conf = LEVEL_LIST_LANGS[lang];
-  if (!conf) return Promise.resolve([]);
-  if (!tileMemo.has(lang)) tileMemo.set(lang, countTiles(lang, conf).catch((error) => { tileMemo.delete(lang); throw error; }));
+  if (!conf && !LATIN_WORD_LEVELS[lang]) return Promise.resolve([]);
+  if (!tileMemo.has(lang)) tileMemo.set(lang, (conf ? countTiles(lang, conf) : countLatinTiles(lang)).catch((error) => { tileMemo.delete(lang); throw error; }));
   return tileMemo.get(lang);
+}
+async function countLatinTiles(lang) {
+  return LATIN_WORD_LEVELS[lang].map((levelKey) => ({
+    levelKey,
+    vocab: (latinWordsData(lang, levelKey)?.groups || []).reduce((n, g) => n + g.entries.length, 0),
+  }));
 }
 // 타일은 개수만 쓴다 — 예문 단어 나눔(jieba) · 후리가나 덧붙임(withExampleSegments · withJapaneseWordExtras)은 항목을 map만 하고
 // 늘리거나 빼지 않으므로 덧붙이기 전 묶음으로 센다. 중국어는 사전 표제어 하나가 그 레벨 항목 하나라(chineseVocabGroups) 훈 · 정렬 없이 센다.

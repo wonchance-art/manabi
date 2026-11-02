@@ -9,6 +9,8 @@ import { normalizeRefWordKey } from './refWordNormalize';
 
 /** 단어 페이지가 여는 레벨(순서대로) — 라우트(서버)와 화면 판(LatinWordPage)이 같은 줄을 쓴다. 'use client' 모듈의 값은 서버에서 읽히지 않아 여기 둔다. */
 export const LATIN_WORD_LEVELS = Object.freeze({ english: Object.freeze(['A1']), french: Object.freeze(['A1']) });
+/** 단어 페이지 주소 — 화면(LatinWordPage 레벨 알약)과 책장 타일(LevelTiles)이 같은 꼴을 쓴다. */
+export const latinWordsHref = (lang, levelKey) => `/${lang}/words/${String(levelKey).toLowerCase()}`;
 
 const FR_ARTICLE = /^(l['’]|les |le |la )/i;
 

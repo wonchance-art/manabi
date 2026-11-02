@@ -4,7 +4,7 @@
 // 글자 칸 자리는 형태 · 현재형 · 어원이(LatinParts — 목업 v2, 오너 2026-10-26 KST 「다음 ㄱㄱ」), 프랑스어는 관사 매달기 · f./m. · 성 색(늘 켬).
 import LevelWordScreen from '@/components/levels/word/LevelWordScreen';
 import { LatinExtras, LatinHeadTag, LatinHeadword, LatinMeanTag } from '@/components/levels/word/LatinParts';
-import { LATIN_WORD_LEVELS } from '@/lib/latinLevelWords';
+import { LATIN_WORD_LEVELS, latinWordsHref } from '@/lib/latinLevelWords';
 
 const CEFR = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -20,7 +20,7 @@ function latinWordLang({ lang, code, language, name, levels }) {
     levelOf: (key) => String(key).toUpperCase(),
     levelKeyOf: (level) => level,
     levelPill: (key) => String(key),
-    levelHref: (key) => `/${lang}/words/${String(key).toLowerCase()}`,
+    levelHref: (key) => latinWordsHref(lang, key),
     levelRank: (level) => CEFR.indexOf(level),
     tag: (level) => level,
     title: (level) => `${name} ${level} 단어`,

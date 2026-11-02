@@ -18,7 +18,9 @@ test('new guest can start the published book and use its tools without two ident
   await go(f,'/home');await f.page.getByRole('heading',{name:'배움',exact:true}).waitFor();
   const start=f.page.locator('a.learn-resume').filter({hasText:'첫 페이지 열기'});await start.waitFor();
   assert.match(await start.getAttribute('href'),new RegExp(`${edition}#u01-start`));await capture(f,'home-new-320');
-  await go(f,'/lessons');await f.page.getByRole('link',{name:'공부 시작하기 →',exact:true}).waitFor();
+  // 책장(SHELF-REDESIGN-001) — 기록 없는 손님에게는 「이어 하기」 줄도 큰 시작 카드도 없다. 표지가 입구다.
+  await go(f,'/lessons');await f.page.getByRole('link',{name:'일본어 N5 책 둘러보기',exact:true}).waitFor();
+  assert.equal(await f.page.locator('a.shelf-continue').count(),0);
   // 언어 단추는 서버 HTML로 먼저 보인다 — 수화 전에 누르면 클릭이 사라져 이 단계가 간헐 실패했다(main에서도 6회 중 2회, 2026-10-17 KST).
   // 단추에 React 이벤트가 붙은 뒤(수화 완료) 누른다. 단언은 그대로.
   await f.page.waitForFunction(()=>{const b=[...document.querySelectorAll('button')].find(el=>el.textContent.trim()==='영어');return !!b&&Object.keys(b).some(k=>k.startsWith('__reactProps'));});
@@ -38,6 +40,9 @@ test('returning reader keeps exact edition/page and can restart only when that i
   await f.context.addInitScript(({edition})=>localStorage.setItem(`manabi-book-progress:${edition}:guest`,JSON.stringify({page:'u42-message-reading',completed:['u01'],updatedAt:new Date().toISOString()})),{edition});
   await go(f,'/home');const next=f.page.locator('a.learn-resume').filter({hasText:'이어 읽기'});await next.waitFor();
   assert.match(await next.getAttribute('href'),new RegExp(`${edition}#u42-message-reading`));await capture(f,'home-returning-390');
+  // 책장 「이어 하기」 한 줄 — 같은 기록 · 같은 자리(SHELF-REDESIGN-001).
+  await go(f,'/lessons');const shelfNext=f.page.locator('a.shelf-continue');await shelfNext.waitFor();
+  assert.match(await shelfNext.getAttribute('href'),new RegExp(`${edition}#u42-message-reading`));
   await go(f,`/books/japanese-n5?edition=${edition}`);
   const resume=f.page.getByRole('link',{name:'42과 이어 읽기 →',exact:true});await resume.waitFor();
   assert.match(await resume.getAttribute('href'),/#u42-message-reading$/);

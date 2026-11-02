@@ -121,7 +121,8 @@ describe('레벨 단어 화면 — 항목은 조각 밖 정적 묶음', () => {
       await expect(requestLevelWords('/w2')).resolves.toEqual([]);
     } finally { globalThis.fetch = real; }
     const tiles = fs.readFileSync('src/components/levels/LevelTiles.jsx', 'utf8');
-    expect(tiles).toMatch(/<LevelWordsLink className="lv-tile__go" href=\{levelListHref\(lang, 'vocab', t\.levelKey\)\} lang=\{lang\} levelKey=\{t\.levelKey\}/);
+    expect(tiles).toMatch(/<LevelWordsLink className="lv-tile__go" href=\{vocabHref\(t\.levelKey\)\} lang=\{lang\} levelKey=\{t\.levelKey\}/);
+    expect(tiles).toContain("const vocabHref = levelKey => latin ? latinWordsHref(lang, levelKey) : levelListHref(lang, 'vocab', levelKey);");
     const link = fs.readFileSync('src/components/levels/LevelWordsLink.jsx', 'utf8');
     expect(link).toContain("onPointerDown={(e) => { if (e.pointerType === 'mouse') warm(); }} onClick={warm}");
   });
