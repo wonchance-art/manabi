@@ -31,6 +31,9 @@ npm-debug.log*
 # UX 점검 산출물(scripts/ux-audit.mjs — 캡처 · 보고서)
 .ux-audit/
 
+# 화면 벽 캡처 산출물(scripts/wall-capture.mjs — 캡처는 저장소에 커밋하지 않는다, wall-rules.md §9)
+wall-out/
+
 # Supabase CLI 로컬 캐시
 supabase/.temp/
 
