@@ -80,11 +80,11 @@ describe('화면 벽 WALL-003 — 터치 타깃 예외(ui-conventions §3)', () 
     for (const e of TOUCH_EXCEPTIONS) expect(doc).toContain(`\`${e.selector}`);
   });
 
-  it('⑧ 지도 핀은 모든 점 아래 한 층에 보이지 않는 터치 원(반지름 19)을 깐다 — 점보다 먼저 그린다', () => {
+  it('⑧ 지도 핀은 모든 점 아래 한 층에 보이지 않는 터치 원(반지름 20 — 390에서 24.8px)을 깐다 — 점보다 먼저 그린다', () => {
     const src = read('src/views/JapanStudiesMapPage.jsx');
     // 터치 원 층이 점 층보다 앞(=아래)에 그려진다 — 터치 원 앵커에서 점 앵커까지가 잘려 나와야 한다.
     const hitLayer = sliceBetween(src, 'className="jpmap-pin-hit"', 'className={`jpmap-pin${');
-    expect(hitLayer).toMatch(/r="19"/);
+    expect(hitLayer).toMatch(/r="20"/);
     expect(read('src/index.css')).toMatch(/\.jpmap-pin-hit \{ fill: transparent;/);
   });
 });
