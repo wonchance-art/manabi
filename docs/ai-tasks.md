@@ -1540,6 +1540,14 @@
   왼쪽 끝 2px 막대(띠 높이 = .surface::before 계산값) + 위 12px 점, 끝 = 마지막 토큰 오른쪽 끝 막대 + 아래 점. 강조색 · 흰 테두리 · 그림자 없음,
   타깃 가로 28px(띠 + 위아래 14px). 화면 가장자리에서 타깃을 안으로 민 만큼 막대를 반대로(--grip-bar-x) — 막대는 토큰 끝에 그대로. 조정 동작 그대로.
   계약 tokenRangeSelect(gripPlacement · CSS 모양).
+- **RLS-INITPLAN-001 RLS 정책 auth 호출 질의당 한 번 (2026-11-03 KST, 오너 「1,2번은 진행」)**: Supabase 성능 진단 auth_rls_initplan(WARN 95) —
+  정책 식의 맨 auth.uid() · auth.role()이 행마다 다시 계산된다. 1단계 = 마이그레이션 20261103000000_rls_auth_initplan.sql: 지문 범위 밖 30개 테이블
+  정책 75개를 (select auth.uid())로 감싸기만(명령 · 역할 · 절 유무 불변). 같은 트랜잭션 사후 검사 = 정책 수 · 맨 호출 0 · 감싼 것을 되돌린 식 = 원래 식 ·
+  FSRS 계약 넷 = 게시값. 운영 dry-run(BEGIN … 검사 통과 뒤 강제 RAISE로 롤백): changed 75 · 정책 89 · fsrs true, 적용 뒤 맨 호출 92 그대로 확인.
+  적용 = 병합 시 supabase-migrations.yml(db push). 계약 rlsAuthInitplan(4).
+  2단계(별도): 지문 범위 6개 테이블 정책 17개(capability: user_vocabulary · user_known_words · review_events · reading_materials · uploaded_pdfs →
+  core 연쇄, activity: profiles → admission 연쇄) — 정책 문자열이 바뀌면 지문이 바뀌어 운영 학습 기능이 꺼진다(#1504 선례). 재게시(KO-CAP-REPIN-001
+  본보기)를 같은 트랜잭션에 넣어야 해 따로. multiple_permissive_policies(WARN 49)도 미착수.
 - **HOME-SHELF-LINK-001 배움 제목 줄 「교재 →」 (2026-11-02 KST, 오너 시안 승인 — artifact 「배움 홈 교재 입구 시안」 v4)**: 이어 하기 카드는 그대로,
   「배움」 제목 오른쪽 끝 글자 링크 「교재 →」 → /lessons?lang=<지금 학습 언어>(손님 = 일본어). 로그인은 같은 자리의 「현황 전체 →」와 한 덩어리
   「교재 · 현황 전체 →」(가운뎃점 aria-hidden). 카드 안 링크 시안 셋(띠 왼쪽 위 · 흰 본문 · 카드 아래)은 오너 「심플함을 해친다」로 배제 — 카드에 책장 링크
