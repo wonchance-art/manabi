@@ -143,8 +143,7 @@ describe('라우트 배선', () => {
     expect(unlock).toContain("const limitKey = `class-unlock:${getClientKey(request)}`;");
     expect(unlock).toContain('rateLimit(limitKey, { limit: 10, windowMs: 60_000 })');
     // 먼저 세고(동시 요청이 한꺼번에 통과 못 함) 맞는 암호일 때만 돌려준다 — 반 전체가 같은 IP여도 열린다.
-    const afterCheck = unlock.slice(unlock.indexOf('if (!loaded || !ok) return notFound();'));
-    expect(afterCheck).toContain('releaseRateLimit(limitKey);');
+    expect(sliceBetween(unlock, 'if (!loaded || !ok) return notFound();', 'signToken(')).toContain('releaseRateLimit(limitKey);');
     expect(unlock.indexOf('rateLimit(limitKey')).toBeLessThan(unlock.indexOf('await verifyPassword('));
     expect(unlock).toContain("if (!secret) return Response.json({ error: 'not_configured' }, { status: 503, headers: NO_STORE });");
     // 해제 응답에도 팀 이름은 목록(index) 안에만 — 잠김 화면은 index를 받지 않는다(LockedView)
