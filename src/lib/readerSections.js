@@ -53,6 +53,20 @@ export function buildReaderSections(lineGroups, { target = SECTION_TARGET_TOKENS
   return sections.length > 1 ? sections : null;
 }
 
+// 첫 그림은 앞 줄 몇 개만(VIEWER-WARM-001 — 오너 「권장대로」 2026-11-03 KST, 측정 B안). 로그인 뷰어는 본문을 브라우저가 그리는데, 다단 쪽 넘김은
+// 보이는 첫 쪽만 쓰면서도 구간 전체(최대 약 1,200칸)를 배치했다 — 635칸 글 390 · CPU×4에서 그리기 + 배치 880 ms(배치 633 ms), 70칸 글은 0.66 s 빠르다.
+// 첫 쪽을 채우고도 남을 앞 줄만 먼저 그리고(첫 쪽이 안 차면 칠하기 전에 바로 전부), 칠한 다음 나머지를 붙인다.
+export const WARM_FIRST_TOKENS = 160;
+/** 첫 그림의 줄 끝 — [from, to) 안에서 낱말 칸이 budget에 닿는 줄까지(줄은 쪼개지 않는다). 다 그려도 budget에 못 닿으면 to. */
+export function warmLineEnd(lineGroups, from, to, budget = WARM_FIRST_TOKENS) {
+  let tokens = 0;
+  for (let i = from; i < to; i++) {
+    tokens += lineGroups?.[i]?.tokenIds?.length || 0;
+    if (tokens >= budget) return i + 1;
+  }
+  return to;
+}
+
 /** 줄 번호 → 구간 번호(이진 탐색). 범위 밖이면 가장 가까운 끝 구간. */
 export function sectionOfLine(sections, line) {
   if (!sections?.length) return 0;

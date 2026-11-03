@@ -23,7 +23,7 @@ import ViewerReferenceExample from '../components/viewer/ViewerReferenceExample'
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { fetchVocabularyLearningRows, yieldToMain } from '../lib/vocabularyLearningRows';
-import { buildReaderSections, lineIndexOfTokens, readerLineGroups, sectionOfLine, sectionedPagePosition, sectionedPercent } from '../lib/readerSections';
+import { buildReaderSections, lineIndexOfTokens, readerLineGroups, sectionOfLine, sectionedPagePosition, sectionedPercent, warmLineEnd } from '../lib/readerSections';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial, findIndexedVocabulary, isIndexedVocabularyDue } from '../lib/vocabularyDueIndex';
 import { writeStudySource } from '../lib/studySourceHandoff';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
@@ -331,6 +331,8 @@ function collectDragTokens(list) {
 
 const VIEWER_FALLBACK_TITLE = '자료 뷰어 · manabi';
 
+// 본문 귀환 · 인용 주소 — 그 낱말로 바로 가므로 첫 쪽 먼저 그리기(VIEWER-WARM-001)를 하지 않는다(useScrollRestore가 되돌리기를 건너뛰는 목록과 같다).
+const WARM_SOURCE_PARAMS = ['sourceToken', 'sourceText', 'sourceContext', 'sourceEntry', 'sourceQuote'];
 // seed = 서버가 첫 HTML에 실은 본문(VIEWER-SEED-001, viewer/[id]/page.jsx) — 하이드레이션 때 한 번 등록부에 넣는다(adoptViewerSeed).
 export default function ViewerPage({ seed } = {}) {
   const languageSettings = useViewerLanguage();
@@ -375,6 +377,13 @@ export default function ViewerPage({ seed } = {}) {
   const ssrRow = typeof window === 'undefined' || !documentSsrCommitted ? viewerSsrRow(seed, id, originalParams) : null;
   const ssrFirst = useRef(ssrRow);
   useLayoutEffect(() => { if (ssrFirst.current) documentSsrCommitted = true; }, []);
+  // 첫 쪽 먼저 그리기(VIEWER-WARM-001 — lib/readerSections warmLineEnd). 브라우저가 본문을 그리는 자료(로그인 · 서버 그림이 없는 문서)의 첫 본문
+  // 그림만 앞 줄 몇 개 — 서버가 본문을 그린 문서(손님 공개 자료)는 하이드레이션이 서버 그림과 맞아야 해서 그대로 전부다(검색에 실리는 본문도 그대로).
+  // 본문 귀환 · 문장 인용 주소(source*)는 그 낱말로 바로 가야 해서 처음부터 전부. 읽던 곳 되돌리기는 다 그린 뒤로 미룬다(useScrollRestore ready).
+  // warmDoneId = 첫 그림을 끝낸 자료 — 다른 자료로 옮기면 그 자료의 첫 본문에서 다시 한 번.
+  const [warmDoneId, setWarmDoneId] = useState(() => (ssrRow ? id : null));
+  const bodyWarm = warmDoneId !== id && !WARM_SOURCE_PARAMS.some(k => originalParams.has(k));
+  const warmSliced = useRef(false), warmTimer = useRef(null);
   useEffect(() => { if (queryClient.getQueryData(['material', id]) !== undefined) discardEarlyMaterial(id); }, [id, queryClient]);
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
@@ -986,7 +995,7 @@ export default function ViewerPage({ seed } = {}) {
   const knownWordSet = useMemo(() => knownWordSetOf(knownState.data, exclusionState.data, knownLangCode), [knownState.data, exclusionState.data, knownLangCode]);
 
   // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
-  const { saveScrollPosition, tokenRefs, positionError, retryPosition } = useScrollRestore({ user, materialId: id, material, readingProgress, readerRef });
+  const { saveScrollPosition, tokenRefs, positionError, retryPosition } = useScrollRestore({ user, materialId: id, material, readingProgress, readerRef, ready: !bodyWarm });
 
   // 쪽 넘김 보기(READER-PAGED-001 — 기본, Aa 「보기」에서 스크롤 선택). 쪽 번호는 저장하지 않는다: 사용자가 쪽을
   // 넘기면 그 쪽 첫 토큰 번호를 지금과 같은 reading_progress.last_token_idx로 저장하고, 다시 열면 그 토큰의 쪽으로 간다.
@@ -1080,6 +1089,23 @@ export default function ViewerPage({ seed } = {}) {
     for (const waiter of sectionWaiters.current.splice(0)) { const el = tokenRefs.current[waiter.tokenId]; waiter.resolve(el?.isConnected ? el : null); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [section]);
+  // 첫 쪽 먼저 그리기의 마무리(VIEWER-WARM-001). 매 커밋 뒤 칠하기 전에 본다(가벼운 비교뿐 — 끝나면 바로 빠진다).
+  //  · 이번 그림이 앞 줄만 그리지 않았으면(짧은 글 · 분석 중 원문 · 대화 · 수업 등) 끝낸다 — 되돌리기가 기다리지 않게.
+  //  · 앞 줄로 첫 쪽(쪽 넘김: 둘째 쪽이 생김 · 스크롤: 화면 아래를 넘김)이 안 차면 칠하기 전에 바로 전부 — 빈 아래쪽이 한 번도 보이지 않는다.
+  //  · 찼으면 한 번 칠한 뒤(다음 프레임 → 작업 하나 뒤) 나머지를 붙인다. 쪽 제어기는 본문 변화를 보고 다시 잰다(지금 쪽 · 기준 글자 그대로).
+  useLayoutEffect(() => {
+    if (!bodyWarm || !material) return;
+    if (!warmSliced.current) { setWarmDoneId(id); return; }
+    const reader = readerRef.current, filled = pagedActive
+      ? !!pagesEl && pagesEl.scrollWidth > pagesEl.clientWidth + 1
+      : !!reader && reader.getBoundingClientRect().bottom > window.innerHeight;
+    if (!filled) { setWarmDoneId(id); return; }
+    if (warmTimer.current) return;
+    const done = () => { warmTimer.current = null; setWarmDoneId(id); };
+    const frame = requestAnimationFrame(() => { const t = setTimeout(done, 0); warmTimer.current = { cancel: () => clearTimeout(t) }; });
+    warmTimer.current = { cancel: () => cancelAnimationFrame(frame) };
+  });
+  useEffect(() => () => { warmTimer.current?.cancel(); warmTimer.current = null; }, [id]);
   // 지나온 구간의 쪽 수 — 쪽 막대 「N쪽」 · 「N / 전체쪽」(목업 승인).
   // 쪽 수는 제어기에서 읽는다 — 구간을 바꾼 첫 그리기의 pager.count는 아직 앞 구간 값이다(제어기는 위 배치 효과에서 이미 다시 쟀다).
   useEffect(() => {
@@ -1106,6 +1132,8 @@ export default function ViewerPage({ seed } = {}) {
   }, [allSections, readingProgress, material?.processed_json, tokenLine, sectionOfToken]);
   // 쪽 막대 — 구간이 있으면 앞 · 뒤 구간까지 넘길 수 있고, 표시는 글 전체 기준(목업 승인).
   const pageBarPager = (() => {
+    // 첫 쪽 먼저 그리는 동안(VIEWER-WARM-001)은 쪽 수가 아직 앞 줄만큼이다 — 틀린 「1 / 6쪽」 대신 자리만 둔다(나머지를 붙이면 바로 바뀐다).
+    if (bodyWarm && material) return { ...pager, labelText: '\u00a0' };
     if (!readerSections) return pager;
     const pos = sectionedPagePosition({ section, page: pager.page, counts: readerSections.map((_, i) => sectionPageCounts[i]),
       percent: sectionedPercent(readerSections, section, pager.progress) });
@@ -4804,7 +4832,10 @@ export default function ViewerPage({ seed } = {}) {
           // tokenId에서 원본 줄 idx 추출 (id_{lineIdx}_{tokenIdx}_...)
           const lineGroups = readerLines; // [{rawIdx, tokenIds}] — 문장 목록(sentences)과 같은 규칙
           // 긴 글의 쪽 넘김은 지금 구간의 줄만(VIEWER-SECTIONS-001) — gi는 글 전체의 줄 번호 그대로(key · 줄 바꿈 표시가 구간마다 같다).
-          const from = readerSections ? readerSections[section].start : 0, to = readerSections ? readerSections[section].end : lineGroups.length;
+          const from = readerSections ? readerSections[section].start : 0, sectionEnd = readerSections ? readerSections[section].end : lineGroups.length;
+          // 첫 쪽 먼저(VIEWER-WARM-001) — 첫 본문 그림만 앞 줄 몇 개. 칠한 뒤 아래 배치 효과가 나머지를 붙인다.
+          const to = bodyWarm ? warmLineEnd(lineGroups, from, sectionEnd) : sectionEnd;
+          warmSliced.current = to < sectionEnd;
 
           return lineGroups.slice(from, to).map((group, li) => {
             const gi = from + li;
