@@ -139,7 +139,7 @@ export default function ViewerSettings({settings:s,language,languageSettings,onC
           help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('{preset} · 문장 집중도 함께 바뀌어요. 소리와 자동 진행은 시작하지 않아요.',{preset:tr(PRESET_META.find(m=>presetActive(m.key,s,language))?'프리셋':'사용자 설정')})}</p></Help>}/>
         {phonetic&&<Choices label="발음 표기" uiLocale={uiLocale} value={s.pronDisplay} items={choices([['all','전체'],['unknown','새 단어만'],['none','숨김']])} onChange={v=>set('pronDisplay',v)}
           help={<Help uiLocale={uiLocale}><p className="reader-setting-note">{tr('새 단어만: 저장한 단어와 이미 앎 기록의 발음을 가려요.')}</p></Help>}/>}
-        <Toggle label="단어 상태" uiLocale={uiLocale} note="새 단어는 파란 밑줄, 저장한 단어는 노란 띠로 표시해요" checked={s.wordStateHl} onChange={v=>set('wordStateHl',v)}><StateLegend theme={s.theme} uiLocale={uiLocale}/></Toggle>
+        <Toggle label="단어 상태" uiLocale={uiLocale} note="새 단어는 옅은 파랑과 밑줄, 저장한 단어는 노란 띠로 표시해요" checked={s.wordStateHl} onChange={v=>set('wordStateHl',v)}><StateLegend theme={s.theme} uiLocale={uiLocale}/></Toggle>
         {/* 성조 색상은 발음을 숨겨도 단어창 표제어·글자 탐색 병음을 칠하므로 쓸 수 있는 옵션이다. */}
         {language==='Chinese'&&<><Toggle label="성조 색상" uiLocale={uiLocale} note="병음의 성조 부호는 유지하고 색을 더해요" checked={s.showToneColors} onChange={v=>set('showToneColors',v)}><ToneLegend uiLocale={uiLocale}/></Toggle><Toggle label="훈음" uiLocale={uiLocale} note="단어 카드에서 한자 아래 뜻과 소리를 보여요 (예: 图 그림 도)" checked={s.showHanjaKo} onChange={v=>set('showHanjaKo',v)}/></>}
         {supportsPatterns(language)

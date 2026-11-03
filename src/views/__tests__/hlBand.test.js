@@ -53,10 +53,15 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
   it('상태 하이라이트(B안)·저장 밑줄이 전부 ::before를 칠한다(복습은 저장과 같은 모양 — VIEWER-DUE-PLAIN-001)', () => {
     // 「만난 말」은 새 단어와 같은 표시(VIEWER-R0 버그 11 — 오너 확정 2026-10-07): 옅은 파랑
     // --ws-met(바탕 대비 1.10:1)이 사실상 안 보였다. 클래스·만남 기록은 그대로, 표시만 합친다.
-    // AD-R2(VIEWER-V2-ROUNDS-001 §5 — 오너 확정, 08-27 B안 수정): 새 단어·만난 말은 면 칠이 아니라
-    // 얇은 파란 밑줄이다. 면 칠(띠)은 학습 중·복습에만 — 첫 자료에서 화면이 파랗게 덮이던 문제.
+    // AD-R2(VIEWER-V2-ROUNDS-001 §5 — 오너 확정, 08-27 B안 수정): 새 단어·만난 말은 진한 면 칠이 아니라
+    // 얇은 파란 밑줄이다. 진한 면 칠(띠)은 학습 중·복습에만 — 첫 자료에서 화면이 파랗게 덮이던 문제.
+    // AD-R2 개정(C안 — 오너 「권장대로」 2026-11-03 KST): 밑줄은 그대로 두고 아주 옅은 칠(--ws-new-fill)만 더한다.
+    // 칠은 그 전용 규칙 하나뿐이고 그 값만 쓴다 — 다른 새 단어 규칙(밑줄 · 선택 · 문형)은 background를 쓰지 않는다.
     expect(css).not.toMatch(/--ws-new:/);
-    expect(css).not.toMatch(/:is\(\.word-token--new, \.word-token--met\)[^{]*\.surface::before \{[^}]*background(?:-color)?:/);
+    const newRules = [...css.matchAll(/[^{}]*:is\(\.word-token--new, \.word-token--met\)[^{]*\.surface::before \{[^}]*\}/g)].map((m) => m[0]);
+    const filled = newRules.filter((r) => /background(?:-color)?:/.test(r));
+    expect(filled).toHaveLength(1);
+    expect(filled[0]).toMatch(/:not\(\.word-token--picked\):not\(\[data-selected="true"\]\) \.surface::before \{\s*background-color: var\(--ws-new-fill\);\s*\}/);
     expect(css).toMatch(/\.reader-area--hl \.word-token:is\(\.word-token--new, \.word-token--met\):not\(\[data-selected="true"\]\) \.surface::before \{[^}]*border-bottom: 1\.5px solid var\(--ws-new-ln\);/s);
     expect(css).not.toMatch(/--ws-met/);
     expect(css).toMatch(/\.word-token--saved \.surface::before \{\s*border-bottom: 1\.5px solid var\(--primary-light\);/); // C3(2026-10-23 KST): 흐림 없이 얇은 밑줄만
@@ -79,7 +84,10 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
     // 붙어 이중 밑줄로 읽혔다(검수 2026-10-07). 상태는 단어창이, 자리는 테두리가 보여 준다. 지정(picked)은
     // 유지 — 밑줄 규칙의 제외는 data-selected 하나뿐이다. 선택 중엔 밑줄이 없으니 테두리를 문형+새 단어
     // 밑줄 아래로 늘리는 규칙도 없다(#1354 기하 그대로 — 문형만 있는 토큰과 같은 테두리).
-    expect(css).not.toMatch(/:is\(\.word-token--new, \.word-token--met\)[^{]*:not\(\.word-token--picked\)[^{]*\.surface::before/);
+    // 밑줄은 지정(picked) 가드가 없다 — :not(picked)이 붙은 새 단어 규칙(옅은 칠)에 밑줄이 들어가면 지정 중 밑줄이 사라진다.
+    for (const r of css.matchAll(/:is\(\.word-token--new, \.word-token--met\)[^{]*:not\(\.word-token--picked\)[^{]*\.surface::before \{[^}]*\}/g)) {
+      expect(r[0]).not.toMatch(/border-bottom/);
+    }
     expect(css).not.toMatch(/\[data-selected="true"\]:is\(\.word-token--new, \.word-token--met\)/);
     const reader = fs.readFileSync(path.join(process.cwd(), 'src/components/viewer/reader-controls.css'), 'utf8');
     expect(reader).not.toMatch(/:is\(\.word-token--new,\.word-token--met\) \{--hl-frame-bottom/);
@@ -106,9 +114,13 @@ describe('하이라이트 글자 밴드 (index.css)', () => {
       expect(css).toMatch(re);
     }
     // 새 단어·만난 말(VIEWER-R0 버그 11 한 묶음)은 AD-R2부터 밑줄이라 혼색이 없다 — 지정 중에는
-    // 중립 지정 띠 위에 같은 밑줄이 남는다(밑줄 규칙에 :not(picked) 가드 없음).
-    expect(css).not.toMatch(/color-mix\(in srgb, var\(--ws-new-ln\)/);
-    expect(css).not.toMatch(/\.reader-area--hl \.word-token:is\(\.word-token--new, \.word-token--met\)[^{]*:not\(\.word-token--picked\)[^{]*\.surface::before/);
+    // 중립 지정 띠 위에 같은 밑줄이 남는다(밑줄 규칙에 :not(picked) 가드 없음). AD-R2 개정(C안)의 옅은 칠도
+    // 지정 중에는 빠진다(:not(picked)) — 지정색과 섞지 않는다.
+    expect(css).not.toMatch(/color-mix\(in srgb, var\(--ws-new-ln\) \d+%, var\(--picked-bg/);
+    const fills = [...css.matchAll(/--ws-new-fill: color-mix\(in srgb, var\(--ws-new-ln\) (\d+)%, transparent\);/g)].map((m) => Number(m[1]));
+    expect(fills).toHaveLength(2); // 종이·밝게 / 어둡게
+    // 옅은 칠 상한 — 진한 칠(학습 중 16~18%)과 겹치면 처음 여는 글이 다시 파랗게 덮이고 단어 경계가 사라진다(시안 B안 실측).
+    for (const p of fills) expect(p).toBeLessThanOrEqual(12);
     // 밑줄 강등 문법(2px dotted)은 폐기 — 부활 금지
     expect(css).not.toMatch(/2px dotted var\(--ws-/);
   });
