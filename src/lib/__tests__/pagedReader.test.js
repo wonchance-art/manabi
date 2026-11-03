@@ -625,7 +625,8 @@ describe('auto reveal yields to people (listen follow)', () => {
   it('배선 — 쪽 넘김 진도는 readProgress(진행 막대 · 그룹 push), 쪽 막대 글은 progress', () => {
     const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     // 긴 글의 구간 그리기(VIEWER-SECTIONS-001)면 앞 구간 칸 + 지금 구간 안의 readProgress — 글 전체 기준.
-    expect(viewer).toContain('const readProgress = pagedActive\n    ? (readerSections ? Math.round(sectionedPercent(readerSections, section, pager.readProgress)) : pager.readProgress)\n    : scrollReadProgress;');
+    // 첫 쪽 먼저 그리는 동안(VIEWER-WARM-001)은 앞 줄만큼의 쪽 수라 0 — 그룹 push 최대값에 남지 않게.
+    expect(viewer).toContain('const readProgress = bodyWarm && material ? 0 : pagedActive\n    ? (readerSections ? Math.round(sectionedPercent(readerSections, section, pager.readProgress)) : pager.readProgress)\n    : scrollReadProgress;');
     expect(viewer).not.toContain('pagedActive ? pager.progress');
     expect(viewer).toContain('useGroupReadPush(material?.id, user?.id, readProgress);');
   });

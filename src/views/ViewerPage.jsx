@@ -1073,7 +1073,8 @@ export default function ViewerPage({ seed } = {}) {
   useLayoutEffect(() => { if (ssrFirst.current && (pager.ready || !pagedActive)) viewerSsrPaintDone(); }, [pager.ready, pagedActive]);
   // 진행률 소비처(진행 막대·그룹 같이 읽기 push)는 같은 값을 받는다 — 쪽 넘김이면 쪽 기준(설계 §4).
   // 쪽 넘김의 진도는 readProgress — 듣기 따라가기의 자동 이동은 진도를 올리지 않는다(따라가기 전 듣기는 쪽을 안 옮겨 진도 불변).
-  const readProgress = pagedActive
+  // 앞 줄만 그린 동안(VIEWER-WARM-001)의 쪽 수는 글 전체가 아니다 — 그 진도(1 / 3쪽 = 33%)가 그룹 같이 읽기 최대값(useGroupReadPush)에 남지 않게 0.
+  const readProgress = bodyWarm && material ? 0 : pagedActive
     ? (readerSections ? Math.round(sectionedPercent(readerSections, section, pager.readProgress)) : pager.readProgress)
     : scrollReadProgress;
   // 구간을 바꿔 끼운 직후 — 설 자리를 쪽 제어기에 넘기고 같은 틱에 다시 잰다(다음 프레임으로 미루면 옛 쪽 위치에 새 구간이 한 번 그려진다).
@@ -1096,8 +1097,9 @@ export default function ViewerPage({ seed } = {}) {
   useLayoutEffect(() => {
     if (!bodyWarm || !material) return;
     if (!warmSliced.current) { setWarmDoneId(id); return; }
-    const reader = readerRef.current, filled = pagedActive
-      ? !!pagesEl && pagesEl.scrollWidth > pagesEl.clientWidth + 1
+    // 쪽 상자는 DOM에서 읽는다 — 본문과 같은 커밋에 처음 붙으면 pagesEl(상태)은 이 커밋에서 아직 null이다(불러오기 그림 → 본문 첫 커밋).
+    const reader = readerRef.current, pagesNode = pagesEl || reader?.closest?.('[data-reader-pages]'), filled = pagedActive
+      ? !!pagesNode && pagesNode.scrollWidth > pagesNode.clientWidth + 1
       : !!reader && reader.getBoundingClientRect().bottom > window.innerHeight;
     if (!filled) { setWarmDoneId(id); return; }
     if (warmTimer.current) return;
@@ -1106,6 +1108,9 @@ export default function ViewerPage({ seed } = {}) {
     warmTimer.current = { cancel: () => cancelAnimationFrame(frame) };
   });
   useEffect(() => () => { warmTimer.current?.cancel(); warmTimer.current = null; }, [id]);
+  // 나머지를 붙인 커밋에서 바로 다시 잰다 — 다음 프레임(본문 변화 감시)까지 미루면 앞 줄만큼의 쪽 수(「1 / 3쪽」)가 한 프레임 보인다.
+  const warmWas = useRef(false);
+  useLayoutEffect(() => { if (warmWas.current && !bodyWarm) pager.controller?.()?.relayout(); warmWas.current = bodyWarm && !!material; });
   // 지나온 구간의 쪽 수 — 쪽 막대 「N쪽」 · 「N / 전체쪽」(목업 승인).
   // 쪽 수는 제어기에서 읽는다 — 구간을 바꾼 첫 그리기의 pager.count는 아직 앞 구간 값이다(제어기는 위 배치 효과에서 이미 다시 쟀다).
   useEffect(() => {

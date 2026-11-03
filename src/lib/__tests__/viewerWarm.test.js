@@ -41,10 +41,16 @@ describe('뷰어 배선', () => {
   it('마무리 — 안 잘렸으면 끝, 첫 쪽이 안 차면 칠하기 전에 전부, 차면 다음 프레임 뒤 작업에서', () => {
     const effect = sliceBetween(viewer, 'useLayoutEffect(() => {\n    if (!bodyWarm || !material) return;', '// 지나온 구간의 쪽 수');
     expect(effect).toContain('if (!warmSliced.current) { setWarmDoneId(id); return; }');
-    expect(effect).toContain('pagesEl.scrollWidth > pagesEl.clientWidth + 1');
+    // 쪽 상자는 DOM에서 — 본문과 같은 커밋에 처음 붙으면 pagesEl(상태)이 아직 null이라 쪽 넘김에서 앞 줄 그림이 칠하기 전에 버려졌다(실측 0 → 586칸).
+    expect(effect).toContain("pagesNode = pagesEl || reader?.closest?.('[data-reader-pages]')");
+    expect(effect).toContain('pagesNode.scrollWidth > pagesNode.clientWidth + 1');
     expect(effect).toContain('reader.getBoundingClientRect().bottom > window.innerHeight');
     expect(effect).toContain('if (!filled) { setWarmDoneId(id); return; }');
     expect(effect).toMatch(/requestAnimationFrame\(\(\) => \{ const t = setTimeout\(done, 0\)/);
+  });
+  it('앞 줄만 그린 동안 진도는 0(그룹 같이 읽기 최대값에 남지 않게) · 끝나는 커밋에서 바로 다시 잰다(옛 쪽 수 한 프레임 0)', () => {
+    expect(viewer).toContain('const readProgress = bodyWarm && material ? 0 : pagedActive');
+    expect(viewer).toContain('useLayoutEffect(() => { if (warmWas.current && !bodyWarm) pager.controller?.()?.relayout(); warmWas.current = bodyWarm && !!material; });');
   });
   it('쪽 막대는 앞 줄만 그린 동안 틀린 쪽 수 대신 자리만', () => {
     expect(viewer).toContain("if (bodyWarm && material) return { ...pager, labelText: '\\u00a0' };");
