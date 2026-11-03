@@ -14,7 +14,8 @@ import { HOME_DATA_KEY } from './homeQueryKey';
  *   tokenRefs: 본문 토큰 DOM ref 등록용 (token id → element)
  *   saveScrollPosition(tokenIdx): 호출 시 2초 후 DB 저장
  */
-export function useScrollRestore({ user, materialId, material, readingProgress, readerRef }) {
+// ready = 본문을 다 그렸다 — 첫 쪽 먼저 그리기(VIEWER-WARM-001) 동안은 읽던 낱말이 아직 없을 수 있어 되돌리기를 미룬다(기본 true).
+export function useScrollRestore({ user, materialId, material, readingProgress, readerRef, ready = true }) {
   const writerRef = useRef(null);
   const ownerRef = useRef(user?.id);
   ownerRef.current = user?.id;
@@ -72,7 +73,7 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
     const params = new URLSearchParams(window.location.search);
     if (params.has('sourceToken') || params.has('sourceText') || params.has('sourceContext') || params.has('sourceEntry') || params.has('sourceQuote')) return;
     const lastIdx = readingProgress?.last_token_idx;
-    if (!Number.isInteger(lastIdx) || lastIdx < 0 || restoredKey.current === key) return;
+    if (!ready || !Number.isInteger(lastIdx) || lastIdx < 0 || restoredKey.current === key) return;
     const json = material?.processed_json;
     if (!json?.sequence?.length) return;
     const tokenId = json.sequence[lastIdx];
@@ -89,7 +90,7 @@ export function useScrollRestore({ user, materialId, material, readingProgress, 
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [readingProgress, material, key]);
+  }, [readingProgress, material, key, ready]);
 
   // Record the visible text after an intentional scroll, even when no word was tapped.
   useEffect(() => {
