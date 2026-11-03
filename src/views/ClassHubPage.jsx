@@ -19,10 +19,10 @@ import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import { LANG_NAME_KO } from '../lib/constants';
-import {fetchClassBookRows as fetchBookRows} from '../lib/classTeamQueries';
+import {fetchClassBookRows as fetchBookRows,fetchTeamRoot} from '../lib/classTeamQueries';
 import { listAppendableBooks } from '../lib/bookAppend';
 import {
-  listTeams, listDayNotes, buildTeamRootRow, patchTeamRoot, TEAM_KEY_RE, TEAM_PW_MIN, dayLabel,
+  listTeams, listDayNotes, buildTeamRootRow, patchTeamRoot, getTeam, TEAM_KEY_RE, TEAM_PW_MIN, dayLabel,
 } from '../lib/classBoard';
 import { ClassroomShell,ClassroomState,ClassCover } from '../components/classroom/ClassroomUI';
 import ClassHubLearner from '../components/classroom/ClassHubLearner';
@@ -115,7 +115,8 @@ export default function ClassHubPage() {
       setCreating(false);
       refresh();
     } catch (err) {
-      toast(failureMessage('수업을 만들지 못했어요.', err), 'error');
+      // 링크 주소는 모든 선생님 사이에서 하나뿐이다(reading_materials_class_key_unique) — 내 목록에 없어도 남이 쓰고 있을 수 있다.
+      toast(err?.code === '23505' ? '이미 쓰이는 링크 주소예요. 다른 주소를 골라 주세요.' : failureMessage('수업을 만들지 못했어요.', err), 'error');
     } finally {
       setBusy(false);
     }
@@ -128,16 +129,23 @@ export default function ClassHubPage() {
     if (pwError) { toast(pwError, 'warning'); return; }
     setBusy(true);
     try {
+      // 목록 캐시의 행이 아니라 지금 행에 쓴다 — 수업 중에는 교재 위치·판 표시가 루트를 자주 바꿔, 낡은 행으로
+      // 저장하면 충돌로 계속 실패했다(설정 화면 ClassTeamSettings와 같은 순서).
+      const fresh = await fetchTeamRoot(user.id, pwTarget.key);
+      const latest = getTeam(fresh?.processed_json?.metadata);
+      if (!latest?.root) throw new Error('수업을 찾지 못했어요. 목록을 다시 확인해 주세요.');
+      if (latest.pwGen !== (pwTarget.pwGen || 0)) throw new Error('입장 암호가 다른 창에서 바뀌었어요. 목록을 다시 확인해 주세요.');
       const pwSalt = makeSalt();
       const pwHash = await hashPassword(pwDraft, pwSalt);
       // pwGen 증가 = 기존 해제 토큰 전부 무효(학생 기기는 다시 한 번 입력)
-      const next = patchTeamRoot(pwTarget.material.processed_json, { pwHash, pwSalt, pwGen: (pwTarget.pwGen || 0) + 1 });
-      await saveClassroomMetadata(supabase,pwTarget.material,next.metadata);
+      const next = patchTeamRoot(fresh.processed_json, { pwHash, pwSalt, pwGen: (latest.pwGen || 0) + 1 });
+      await saveClassroomMetadata(supabase,fresh,next.metadata);
       setRevealed({ key: pwTarget.key, name: pwTarget.name, password: pwDraft });
       setPwTarget(null);
       setPwDraft('');
       refresh();
     } catch (err) {
+      refresh();
       toast(failureMessage('암호를 바꾸지 못했어요.', err), 'error');
     } finally {
       setBusy(false);

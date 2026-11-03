@@ -5,17 +5,19 @@ import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/AuthContext';
-import { getTeam,todayKey,dayLabel,BOARD_POLL_MS } from '../lib/classBoard';
+import { getTeam,dayLabel,BOARD_POLL_MS } from '../lib/classBoard';
+import { classDay } from '../lib/classWorkspace';
 import { fetchTeamRoot,fetchDayNote } from '../lib/classTeamQueries';
 import { classroomEntries,classLanguage } from '../lib/classroomModel';
 import { openClassChannel } from '../lib/classRealtime';
 import { ClassroomShell,ClassroomState,ClassEntryDisplay } from '../components/classroom/ClassroomUI';
 export default function ClassBoardPage(){
   const {team:key}=useParams();const search=useSearchParams();const {user,loading}=useAuth();
-  const [day]=useState(()=>/^\d{4}-\d{2}-\d{2}$/.test(search.get('day')||'')?search.get('day'):todayKey());
+  const [day]=useState(()=>classDay(search.get('day')));
   const root=useQuery({queryKey:['class-root',user?.id,key],queryFn:()=>fetchTeamRoot(user.id,key),enabled:!!user?.id,refetchInterval:BOARD_POLL_MS});
   if(loading||root.isLoading)return <ClassroomState title="함께 볼 수업을 불러오고 있어요."/>;
-  if(root.error)return <ClassroomState title="수업을 불러오지 못했어요." retry={root.refetch}/>;
+  // 15초 폴링 한 번 실패로 판을 내리지 않는다 — 받아 둔 수업이 있으면 그대로(전체 화면 · 글자 크기 · 따라가기 유지).
+  if(root.error&&!root.data)return <ClassroomState title="수업을 불러오지 못했어요." retry={root.refetch}/>;
   if(!user||!root.data||root.data.owner_id!==user.id)return <ClassroomState title="선생님 계정으로 함께 보는 화면을 열어 주세요."><Link className="classroom-button" href={!user?`/auth?from=${encodeURIComponent(`/class/${key}/board?day=${day}`)}`:`/class/${key}`}>{user?'수업 홈':'로그인'}</Link></ClassroomState>;
   return <Board key={`${user.id}:${key}:${day}`} user={user} root={root.data} refreshRoot={root.refetch} day={day}/>;
 }

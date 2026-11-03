@@ -191,26 +191,41 @@ function arrange(items, rand) {
 }
 
 /**
- * 시험지 — { items, note, available, short }.
- * exclude: 직전 시험지 문장 id(새 시험지에서 다시 안 나오게). 남은 문장이 모자라면 무시한다.
+ * 시험지 — { items, note, available, short }. 시험지는 번호(seed)만으로 정해진다 — ?sheet=N을 다시 열거나
+ * 다른 학생에게 줘도 같은 문제(계약). 직전 문장을 빼는 일은 번호 고르기(freshSheetNo)가 맡는다.
  */
-export function buildTestSheet(pool, families, { seed, size = TEST_SIZE, exclude = [] } = {}) {
+export function buildTestSheet(pool, families, { seed, size = TEST_SIZE } = {}) {
   const rand = seededRandom(seed);
-  const banned = new Set(exclude);
-  const fresh = pool.filter((x) => !banned.has(x.id));
-  const base = fresh.length >= size ? fresh : pool;
   const famOf = familyIndex(families);
   const quota = levelQuota(size);
   let best = { items: [], note: null };
   for (const stage of STAGES) {
     for (let attempt = 0; attempt < 40; attempt += 1) {
-      const picked = tryStage(shuffled(base, rand), size, stage, famOf, quota);
+      const picked = tryStage(shuffled(pool, rand), size, stage, famOf, quota);
       if (picked.length > best.items.length) best = { items: picked, note: stage.note };
       if (picked.length >= size) break;
     }
     if (best.items.length >= size) break;
   }
   return { items: arrange(best.items, rand), note: best.note, available: pool.length, short: best.items.length < size };
+}
+
+/**
+ * 「새 시험지 · 다른 시험지」 번호 — 지금 시험지와 문장이 겹치지 않는 번호를 고른다(tries번 안에서 겹침이
+ * 가장 적은 번호). 예전에는 직전 문장을 시험지 계산에서 뺐는데, 주소에는 번호만 남아 같은 번호를 다시 열면
+ * 다른 시험지가 나왔다(CLASS-REVIEW-001 ①).
+ */
+export function freshSheetNo(pool, families, currentIds, { currentNo = null, rand = Math.random, tries = 30 } = {}) {
+  const current = new Set(currentIds);
+  let best = null;
+  for (let i = 0; i < tries; i += 1) {
+    const no = newSheetNo(rand);
+    if (no === currentNo) continue;
+    const overlap = buildTestSheet(pool, families, { seed: no }).items.filter((x) => current.has(x.id)).length;
+    if (!best || overlap < best.overlap) best = { no, overlap };
+    if (overlap === 0) break;
+  }
+  return best ? best.no : newSheetNo(rand);
 }
 
 export const passMark = (size) => (size === TEST_SIZE ? PASS_MARK : Math.ceil(size * 0.8));

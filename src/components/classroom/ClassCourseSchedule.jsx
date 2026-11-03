@@ -23,7 +23,7 @@ import {
 } from '../../lib/classSchedule';
 import { holidayName } from '../../lib/krHolidays';
 import './class-course.css';
-import { useClassCourse, courseErrorText } from '../../lib/classCourseClient';
+import { useClassCourse, courseErrorText, courseView, COURSE_OFFLINE_TEXT } from '../../lib/classCourseClient';
 import { friendlyToastMessage } from '../../lib/errorMessage';
 
 const same = (a, b) => JSON.stringify(parseSchedule(a)) === JSON.stringify(parseSchedule(b));
@@ -234,7 +234,9 @@ export default function CourseSchedule({ course, teamKey, user, root, schedule }
  */
 export function CourseTab({ teamKey, user, root = null }) {
   const q = useClassCourse(teamKey, user?.id);
-  if (q.isLoading) return <p aria-busy="true">코스를 불러오는 중…</p>;
-  if (q.error) return <div className="classroom-notice" role="alert">{courseErrorText(q.error)} <button onClick={() => q.refetch()}>다시 시도</button></div>;
+  const view = courseView(q);
+  if (view === 'loading') return <p aria-busy="true">코스를 불러오는 중…</p>;
+  if (view === 'offline') return <p className="course-pending">{COURSE_OFFLINE_TEXT}</p>;
+  if (view === 'error') return <div className="classroom-notice" role="alert">{courseErrorText(q.error)} <button onClick={() => q.refetch()}>다시 시도</button></div>;
   return <CourseSchedule course={q.data.course} teamKey={teamKey} user={user} root={root} schedule={q.data.team?.schedule} />;
 }

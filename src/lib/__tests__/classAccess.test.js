@@ -168,6 +168,14 @@ describe('라우트 배선', () => {
     expect(auth.indexOf('rateLimit(')).toBeLessThan(auth.indexOf('serviceClient()'));
   });
 
+  it('해제 실패 문구 — 「암호가 맞지 않거나」는 404일 때만 · 내 수업 확인 실패는 학생 화면으로 넘기지 않는다', () => {
+    const page = read('src/views/ClassTeamPage.jsx');
+    const handle = sliceBetween(page, 'async function handleUnlock(e)', '\n  }\n');
+    expect(handle).toContain("err?.status === 404 ? '암호가 맞지 않거나 없는 팀이에요.'");
+    expect(handle).toContain("'인터넷 연결을 확인한 뒤 다시 시도해 주세요.'");
+    expect(page).toContain('if (user && rootError && root === undefined) return <ClassroomState');
+  });
+
   it('서비스 롤 조회는 전부 루트 소유자(owner_id)로 좁힌다 — 학생 복제본은 절대 나가지 않는다', () => {
     const build = sliceBetween(classIndex, 'export async function buildTeamIndex(', '\n}\n');
     expect(build.match(/\.eq\('owner_id', root\.owner_id\)/g)).toHaveLength(2);

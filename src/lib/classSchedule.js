@@ -101,7 +101,7 @@ export function currentSchedule(schedule, totalDays, today) {
 export class ScheduleError extends Error {}
 
 /**
- * Day의 날짜를 옮긴 새 저장값. Day 1을 옮기면 바퀴 시작이 바뀐다. 뒤 Day의 옮김은 지운다.
+ * Day의 날짜를 옮긴 새 저장값. Day 1을 옮기면 바퀴 시작이 바뀐다(수업 요일 · 공휴일 아닌 날만). 뒤 Day의 옮김은 지운다.
  * 바로 앞 Day 날짜보다 늦어야 한다(같은 날·이전 날 금지).
  */
 export function moveSession(schedule, totalDays, day, date) {
@@ -109,7 +109,16 @@ export function moveSession(schedule, totalDays, day, date) {
   if (!s) throw new ScheduleError('먼저 첫 수업 날짜를 정해 주세요.');
   if (!isDate(date)) throw new ScheduleError('날짜를 다시 골라 주세요.');
   if (!(day >= 1 && day <= totalDays)) throw new ScheduleError('없는 수업 회차예요.');
-  if (day === 1) return { ...s, start: date, moves: {} };
+  if (day === 1) {
+    // Day 1은 바퀴 시작(start)이라 수업 요일·공휴일 아님 기준으로만 잡힌다. 다른 날을 받으면 조용히 다음 수업일로
+    // 밀리면서 뒤 옮김만 지워졌다(미리보기는 고른 날을 보여 줌) — 고른 날이 Day 1이 될 수 없으면 거절한다(CLASS-REVIEW-001 ③).
+    const natural = nextClassDate(date, s.weekdays, { inclusive: true });
+    if (natural !== date) {
+      const days = s.weekdays.map((d) => WEEKDAY_KO[d]).join('·');
+      throw new ScheduleError(`첫 수업은 ${days} 중 공휴일이 아닌 날로 골라 주세요. 가장 가까운 날은 ${shortDate(natural)}이에요.`);
+    }
+    return { ...s, start: date, moves: {} };
+  }
   const built = buildSchedule(s, totalDays);
   const prev = built.sessions[day - 2].date;
   if (date <= prev) throw new ScheduleError(`앞 수업(${shortDate(prev)})보다 뒤 날짜여야 해요.`);

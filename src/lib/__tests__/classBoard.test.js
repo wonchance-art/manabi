@@ -211,6 +211,11 @@ describe('판·입력판·허브 배선 계약', () => {
     }
   });
 
+  it('/live·/board는 폴링 · 재조회 한 번 실패로 화면을 내리지 않는다 · 날짜는 classDay 하나로 검증', () => {
+    for (const src of [live, board]) expect(src).toContain('if(root.error&&!root.data)return <ClassroomState');
+    expect(board).toContain("useState(()=>classDay(search.get('day')))");
+  });
+
   it('/board는 쓰기 0 — insert·update·delete·rpc·재분석 호출이 없다', () => {
     for (const bad of ['.insert(', '.update(', '.delete(', '.rpc(', 'runPreservedReanalysis', 'replaceViewerAnalysis']) {
       expect(board, `board에 ${bad}`).not.toContain(bad);
@@ -234,7 +239,13 @@ describe('판·입력판·허브 배선 계약', () => {
     // 행 삽입에 평문이 실리지 않는다 — insert 인자는 row 하나
     expect(create).toContain(".from('reading_materials').insert(row)");
     // 변경은 pwGen을 올린다(기존 해제 토큰 전부 무효)
-    expect(hub).toContain('pwGen: (pwTarget.pwGen || 0) + 1');
+    expect(hub).toContain('pwGen: (latest.pwGen || 0) + 1');
+    // 바꾸기는 목록 캐시 행이 아니라 지금 행에(수업 중 루트가 자주 바뀐다) — 다른 창의 변경은 덮지 않는다
+    const change = sliceBetween(hub, 'async function handlePasswordChange()', '\n  }\n');
+    expect(change).toContain('const fresh = await fetchTeamRoot(user.id, pwTarget.key);');
+    expect(change).toContain('patchTeamRoot(fresh.processed_json,');
+    expect(change).toContain('if (latest.pwGen !== (pwTarget.pwGen || 0)) throw');
+    expect(change).not.toContain('pwTarget.material');
     // 생성·변경 직후 한 번만 보여 준다
     expect(hub).toContain('암호는 지금만 보여요');
   });

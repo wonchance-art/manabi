@@ -20,7 +20,7 @@ import { getTeam, todayKey } from '../lib/classBoard';
 import { canTeachClass, classWorkspaceHref } from '../lib/classWorkspace';
 import { fetchTeamRoot, fetchBookChapters } from '../lib/classTeamQueries';
 import { readIndexCache } from '../lib/classClient';
-import { useClassCourse, courseErrorText } from '../lib/classCourseClient';
+import { useClassCourse, courseErrorText, courseView, COURSE_OFFLINE_TEXT } from '../lib/classCourseClient';
 import { currentSchedule, kstToday, shortDate, sessionStatus } from '../lib/classSchedule';
 import { ClassroomShell, ClassroomState } from '../components/classroom/ClassroomUI';
 import { CoursePending, Ja, JaLine, HideToggle, Masked, TextbookOriginal, FixNote, Hi } from '../components/classroom/ClassCourseUI';
@@ -142,8 +142,9 @@ export default function ClassCourseDayPage() {
   const unit = idx >= 0 ? course.days[idx] : null;
   const viewerHref = useViewerHref(teamKey, user, unit?.day);
 
-  if (loading || q.isLoading) return <ClassroomState title="코스를 불러오고 있어요." />;
-  if (q.error) return <ClassroomState title={courseErrorText(q.error)}><Link className="classroom-button" href={`/class/${teamKey}`}>수업 홈으로</Link></ClassroomState>;
+  const view = courseView(q);
+  if (loading || view === 'loading') return <ClassroomState title="코스를 불러오고 있어요." />;
+  if (view !== 'ready') return <ClassroomState title={view === 'offline' ? COURSE_OFFLINE_TEXT : courseErrorText(q.error)}><Link className="classroom-button" href={`/class/${teamKey}`}>수업 홈으로</Link></ClassroomState>;
   if (!unit) return <ClassroomState title="없는 챕터예요."><Link className="classroom-button" href={`/class/${teamKey}?view=course`}>챕터 목록</Link></ClassroomState>;
 
   const prev = course.days[idx - 1], next = course.days[idx + 1];

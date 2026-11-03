@@ -15,9 +15,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/AuthContext';
 import { canTeachClass } from '../lib/classWorkspace';
 import { fetchTeamRoot } from '../lib/classTeamQueries';
-import { useClassCourse, courseErrorText } from '../lib/classCourseClient';
+import { useClassCourse, courseErrorText, courseView, COURSE_OFFLINE_TEXT } from '../lib/classCourseClient';
 import {
-  coursePool, buildTestSheet, newSheetNo, passMark, siblingChapters, shuffled, seededRandom, TEST_SIZE,
+  coursePool, buildTestSheet, freshSheetNo, newSheetNo, passMark, siblingChapters, shuffled, seededRandom, TEST_SIZE,
 } from '../lib/classCourse';
 import { currentSchedule, kstToday, shortDate } from '../lib/classSchedule';
 import { ClassroomShell, ClassroomState } from '../components/classroom/ClassroomUI';
@@ -59,15 +59,15 @@ function TestMode({ course, pool, teacher }) {
   const search = useSearchParams();
   const urlSheet = Number(search.get('sheet'));
   const [sheetNo, setSheetNo] = useState(() => (urlSheet >= 1000 && urlSheet <= 9999 ? urlSheet : newSheetNo()));
-  const [exclude, setExclude] = useState([]);
   const [phase, setPhase] = useState('ready'); // ready | run | done
   const [at, setAt] = useState(0);
   const [marks, setMarks] = useState({});
   const [revealed, setRevealed] = useState(false);
-  const sheet = useMemo(() => buildTestSheet(pool, course.families, { seed: sheetNo, exclude }), [pool, course.families, sheetNo, exclude]);
+  const sheet = useMemo(() => buildTestSheet(pool, course.families, { seed: sheetNo }), [pool, course.families, sheetNo]);
   const size = sheet.items.length;
   const item = sheet.items[at];
-  const sec = useElapsed(phase === 'run' && !revealed, `${sheetNo}-${at}`);
+  // phase도 열쇠에 — 준비 화면에서 머문 시간이 1번 문제 시간으로 넘어가지 않게(시험 시작 = 0초).
+  const sec = useElapsed(phase === 'run' && !revealed, `${sheetNo}-${phase}-${at}`);
   const titleOf = useMemo(() => new Map(course.days.flatMap((d) => d.chapters.map((c) => [c.n, c.title]))), [course]);
 
   const setUrl = (no) => router.replace(`?mode=test&sheet=${no}`, { scroll: false });
@@ -79,13 +79,20 @@ function TestMode({ course, pool, teacher }) {
     if (at + 1 >= size) setPhase('done'); else setAt(at + 1);
   }, [item, at, size]);
   const again = () => { setMarks({}); setAt(0); setRevealed(false); setPhase('run'); };
-  const fresh = () => { const no = newSheetNo(); setExclude(sheet.items.map((x) => x.id)); setSheetNo(no); setUrl(no); setMarks({}); setAt(0); setRevealed(false); setPhase('ready'); };
+  const fresh = () => { const no = freshSheetNo(pool, course.families, sheet.items.map((x) => x.id), { currentNo: sheetNo }); setSheetNo(no); setUrl(no); setMarks({}); setAt(0); setRevealed(false); setPhase('ready'); };
 
   // 선생님 키보드 — Space 모범답 · 1/O 통과 · 2/X 실패
   const keyRef = useRef(null);
   keyRef.current = (e) => {
-    if (phase !== 'run' || e.target?.closest?.('input,select,textarea')) return;
-    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setRevealed((v) => !v); }
+    // 길게 누름(repeat)·조합키(Ctrl/⌘+1 = 브라우저 탭 이동)는 판정이 아니다. 자동 완성 keydown은 key가 없다.
+    if (phase !== 'run' || e.repeat || e.ctrlKey || e.metaKey || e.altKey || typeof e.key !== 'string') return;
+    if (e.target?.closest?.('input,select,textarea,[contenteditable="true"]')) return;
+    if (e.key === ' ' || e.key === 'Enter') {
+      // 시험 카드 밖 링크·버튼(← 챕터 목록 · 시험/연습)은 Enter·Space로 제 할 일을 한다.
+      const control = e.target?.closest?.('a,button,summary,[role="button"]');
+      if (control && !control.closest('.course-card')) return;
+      e.preventDefault(); setRevealed((v) => !v);
+    }
     else if (e.key === '1' || e.key.toLowerCase() === 'o') judge(true);
     else if (e.key === '2' || e.key.toLowerCase() === 'x') judge(false);
   };
@@ -210,8 +217,9 @@ export default function ClassCourseTestPage() {
   const course = q.data?.course;
   const pool = useMemo(() => (course ? coursePool(course) : []), [course]);
 
-  if (loading || q.isLoading) return <ClassroomState title="코스를 불러오고 있어요." />;
-  if (q.error) return <ClassroomState title={courseErrorText(q.error)}><Link className="classroom-button" href={`/class/${teamKey}`}>수업 홈으로</Link></ClassroomState>;
+  const view = courseView(q);
+  if (loading || view === 'loading') return <ClassroomState title="코스를 불러오고 있어요." />;
+  if (view !== 'ready') return <ClassroomState title={view === 'offline' ? COURSE_OFFLINE_TEXT : courseErrorText(q.error)}><Link className="classroom-button" href={`/class/${teamKey}`}>수업 홈으로</Link></ClassroomState>;
 
   const active = mode || (teacher ? 'test' : 'practice');
   const testDate = currentSchedule(q.data.team?.schedule, course.days.length, kstToday())?.built.testDate;
