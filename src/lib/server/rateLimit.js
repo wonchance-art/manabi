@@ -25,6 +25,15 @@ export function rateLimit(key, { limit = 30, windowMs = 60_000 } = {}) {
   return { ok: true, remaining: limit - bucket.count, resetIn: bucket.resetAt - now };
 }
 
+/**
+ * 앞서 rateLimit()으로 센 한 번을 되돌린다 — 「실패만 센다」가 필요한 곳(수업 해제: 맞는 암호는 예산을 쓰지 않는다).
+ * 먼저 세고(동기 — 동시 요청이 한꺼번에 검사를 통과하지 못한다) 성공하면 돌려주는 순서라 무차별 대입 예산은 그대로다.
+ */
+export function releaseRateLimit(key) {
+  const bucket = buckets.get(key);
+  if (bucket && bucket.count > 0) bucket.count -= 1;
+}
+
 // 주기적 GC (10분마다 만료된 버킷 제거)
 if (typeof setInterval !== 'undefined') {
   setInterval(() => {

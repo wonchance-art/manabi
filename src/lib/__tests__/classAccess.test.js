@@ -5,13 +5,15 @@ import { sliceBetween } from './helpers/sliceBetween.js';
 import { secretOf, signToken, verifyToken, verifyPassword, TOKEN_TTL_MS, TOKEN_HEADER } from '../server/classAccess.js';
 import { indexFromRows, materialBelongsToTeam, toPayload } from '../server/classIndex.js';
 import { hashPassword } from '../classPassword.js';
+import { rateLimit, releaseRateLimit } from '../server/rateLimit.js';
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 
 /**
  * 계약: v2-AB R2 해제·목록·페이로드 (#1077 5603827169 §7 R2 · 상세 5604199672 §4).
  * - 해제 토큰 없이는 목록·페이로드 라우트가 아무것도 주지 않는다; 틀린 암호와 없는 팀이 같은 응답
- * - 해제 라우트 IP 분당 제한(rateLimit 재사용); 암호 최소 6자
+ * - 해제 라우트 IP 분당 제한(rateLimit 재사용) — 실패만 센다(맞는 암호는 되돌림); 암호 최소 6자
+ * - 읽기 제한은 해제 토큰마다(한 교실 와이파이 = 한 IP)
  * - 암호 변경 시 기존 토큰 전부 무효(pwGen)
  * - 팀 API가 내주는 행은 루트 소유자의 행만(학생 복제본은 metadata.team이 있어도 제외)
  * - 비공개 원본은 토큰 없이는 어떤 경로로도 익명에게 읽히지 않는다
@@ -49,6 +51,17 @@ describe('해제 토큰 — 서명·만료·세대', () => {
     expect(secretOf({})).toBeNull();
     expect(secretOf({ SHARE_LINK_SECRET: 'short' })).toBeNull();
     expect(secretOf({ SHARE_LINK_SECRET: SECRET })).toBe(SECRET);
+  });
+});
+
+describe('해제 제한 — 실패만 센다', () => {
+  it('맞는 암호를 돌려주면 같은 IP의 열한 번째 학생도 열린다 · 틀린 암호는 10회에서 막힌다', () => {
+    const key = `class-unlock:test-${Math.random()}`;
+    const opts = { limit: 10, windowMs: 60_000 };
+    for (let i = 0; i < 25; i++) { expect(rateLimit(key, opts).ok).toBe(true); releaseRateLimit(key); }
+    for (let i = 0; i < 10; i++) expect(rateLimit(key, opts).ok).toBe(true);
+    expect(rateLimit(key, opts).ok).toBe(false);
+    releaseRateLimit('class-unlock:없는-칸'); // 없는 칸은 아무 일도 없다
   });
 });
 
@@ -122,12 +135,17 @@ describe('라우트 배선', () => {
   const material = read('src/app/api/class/[team]/material/[id]/route.js');
   const classIndex = read('src/lib/server/classIndex.js');
 
-  it('해제: 틀린 암호·없는 팀·6자 미만이 같은 404 — 팀이 없어도 해시 비용을 치른다 · IP 분당 10회 · 비밀 없으면 503', () => {
+  it('해제: 틀린 암호·없는 팀·6자 미만이 같은 404 — 팀이 없어도 해시 비용을 치른다 · IP 분당 실패 10회 · 비밀 없으면 503', () => {
     expect(unlock).toContain("const notFound = () => Response.json({ error: 'not_found' }, { status: 404, headers: NO_STORE });");
     expect(unlock).toContain('pw.trim().length < TEAM_PW_MIN) return notFound();');
     expect(unlock).toContain('const ok = await verifyPassword(pw, loaded?.team || null);');
     expect(unlock).toContain('if (!loaded || !ok) return notFound();');
-    expect(unlock).toContain("rateLimit(`class-unlock:${getClientKey(request)}`, { limit: 10, windowMs: 60_000 })");
+    expect(unlock).toContain("const limitKey = `class-unlock:${getClientKey(request)}`;");
+    expect(unlock).toContain('rateLimit(limitKey, { limit: 10, windowMs: 60_000 })');
+    // 먼저 세고(동시 요청이 한꺼번에 통과 못 함) 맞는 암호일 때만 돌려준다 — 반 전체가 같은 IP여도 열린다.
+    const afterCheck = unlock.slice(unlock.indexOf('if (!loaded || !ok) return notFound();'));
+    expect(afterCheck).toContain('releaseRateLimit(limitKey);');
+    expect(unlock.indexOf('rateLimit(limitKey')).toBeLessThan(unlock.indexOf('await verifyPassword('));
     expect(unlock).toContain("if (!secret) return Response.json({ error: 'not_configured' }, { status: 503, headers: NO_STORE });");
     // 해제 응답에도 팀 이름은 목록(index) 안에만 — 잠김 화면은 index를 받지 않는다(LockedView)
     const locked = sliceBetween(read('src/views/ClassTeamPage.jsx'), 'function LockedView(', '\n}\n');
@@ -137,12 +155,17 @@ describe('라우트 배선', () => {
 
   it('목록·페이로드: 토큰 검증 → 팀 일치 → pwGen 일치, 하나라도 어긋나면 401 · 팀 밖 id는 404', () => {
     const auth = sliceBetween(index, 'export async function authorizeTeamRequest(', '\n}\n');
-    expect(auth).toContain('verifyToken(request.headers.get(TOKEN_HEADER), secret)');
+    expect(auth).toContain('const token = request.headers.get(TOKEN_HEADER);');
+    expect(auth).toContain('verifyToken(token, secret)');
     expect(auth).toContain('if (!v.ok || v.team !== key) return { error: unauthorized() };');
     expect(auth).toContain('if (!loaded || loaded.team.pwGen !== v.gen) return { error: unauthorized() };');
     expect(material).toContain("import { authorizeTeamRequest } from '../../route';");
     expect(material).toContain("if (!payload) return Response.json({ error: 'not_found' }, { status: 404, headers: NO_STORE });");
-    expect(index).toContain("import { rateLimit, getClientKey } from '@/lib/server/rateLimit';");
+    expect(index).toContain("import { rateLimit } from '@/lib/server/rateLimit';");
+    // 읽기 제한은 서명 검증을 통과한 토큰마다 — IP로 세면 같은 교실 학생들이 한 칸을 나눠 쓴다.
+    expect(auth).toContain('rateLimit(`class-read:${token.slice(-22)}`');
+    expect(auth.indexOf('verifyToken(')).toBeLessThan(auth.indexOf('rateLimit('));
+    expect(auth.indexOf('rateLimit(')).toBeLessThan(auth.indexOf('serviceClient()'));
   });
 
   it('서비스 롤 조회는 전부 루트 소유자(owner_id)로 좁힌다 — 학생 복제본은 절대 나가지 않는다', () => {
