@@ -97,6 +97,16 @@ describe('날짜 옮기기 — 뒤 일정 자동 변동', () => {
     expect(m).toMatchObject({ start: '2026-10-20', moves: {} });
   });
 
+  it('Day 1은 수업 요일 · 공휴일 아닌 날로만 — 다른 날은 조용히 밀지 않고 거절한다(미리보기 = 저장 결과)', () => {
+    const s6 = moveSession(s0, N, 6, '2026-10-30');
+    // 한글날(금) · 수요일: 저장하면 Day 1이 다음 수업일로 밀리고 Day 6 옮김만 지워지던 길
+    expect(() => moveSession(s6, N, 1, '2026-10-09')).toThrow(/첫 수업은 화·목 중 공휴일이 아닌 날로 골라 주세요. 가장 가까운 날은 10\/13\(화\)이에요/);
+    expect(() => moveSession(s6, N, 1, '2026-10-14')).toThrow(/가장 가까운 날은 10\/15\(목\)/);
+    expect(() => moveImpact(s6, N, 1, '2026-10-14')).toThrow(ScheduleError);
+    // 수업 요일이면 그날이 그대로 Day 1
+    expect(buildSchedule(moveSession(s6, N, 1, '2026-10-15'), N).sessions[0].date).toBe('2026-10-15');
+  });
+
   it('공휴일로 옮기는 것은 허용(보강)하되 표시한다', () => {
     const b = buildSchedule(moveSession(newSchedule('2026-12-01'), N, 2, '2026-12-25'), N);
     expect(b.sessions[1]).toMatchObject({ date: '2026-12-25', holiday: '성탄절' });

@@ -17,7 +17,7 @@ export default function ClassLivePage() {
   const [day]=useState(()=>classDay(params.get('day')));
   const root=useQuery({queryKey:['class-root',user?.id,key],queryFn:()=>fetchTeamRoot(user.id,key),enabled:!!user?.id&&!!key});
   if(loading||root.isLoading)return <ClassroomState title="수업을 불러오고 있어요."/>;
-  if(root.error)return <ClassroomState title="수업을 불러오지 못했어요." retry={root.refetch}/>;
+  if(root.error&&!root.data)return <ClassroomState title="수업을 불러오지 못했어요." retry={root.refetch}/>;
   if(!user)return <ClassroomState title="선생님 계정으로 수업을 열어 주세요."><Link className="classroom-button" href={`/auth?from=${encodeURIComponent(`/class/${key}/live?day=${day}`)}`}>로그인</Link></ClassroomState>;
   if(!canTeachClass(user,root.data))return <ClassroomState title="이 수업의 선생님만 진행할 수 있어요."><Link className="classroom-button" href={`/class/${key}`}>수업 페이지</Link></ClassroomState>;
   return <ClassroomLaunch key={`${user.id}:${key}:${day}`} root={root.data} user={user} day={day}/>;

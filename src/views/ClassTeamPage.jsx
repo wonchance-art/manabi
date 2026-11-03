@@ -248,9 +248,12 @@ function StudentView({ teamKey, user, toast }) {
       setPhase('ready');
       setPw('');
     } catch (err) {
-      setLockMessage(err?.status === 429 ? '잠시 후 다시 시도해 주세요.'
-        : err?.status === 503 ? '지금은 열 수 없어요 — 설정을 준비 중이에요.'
-          : '암호가 맞지 않거나 없는 팀이에요.');
+      // 「암호가 맞지 않거나」는 404일 때만 — 연결 끊김 · 서버 오류에 맞는 암호를 다시 치게 하지 않는다.
+      setLockMessage(err?.status === 404 ? '암호가 맞지 않거나 없는 팀이에요.'
+        : err?.status === 429 ? '잠시 후 다시 시도해 주세요.'
+          : err?.status === 503 ? '지금은 열 수 없어요 — 설정을 준비 중이에요.'
+            : err?.status ? '수업을 열지 못했어요. 잠시 후 다시 시도해 주세요.'
+              : '인터넷 연결을 확인한 뒤 다시 시도해 주세요.');
     } finally {
       setBusy(false);
     }
@@ -405,12 +408,14 @@ export default function ClassTeamPage() {
   useEffect(() => { if (settingsEntry) preloadOwnerParts(); }, [settingsEntry]);
   const { user, loading } = useAuth();
   const toast = useToast();
-  const { data: root, isLoading: rootLoading } = useQuery({
+  const { data: root, isLoading: rootLoading, error: rootError, refetch: retryRoot } = useQuery({
     queryKey: ['class-root', user?.id, teamKey],
     queryFn: () => fetchTeamRoot(user.id, teamKey),
     enabled: !!user?.id && !!teamKey,
   });
   if (loading || (user && rootLoading)) return <ClassroomState title="수업을 불러오고 있어요."/>;
+  // 내 수업인지 확인하지 못했는데 학생 화면(암호 입력)으로 넘기면, 선생님이 자기 수업에 학생으로 들어간다.
+  if (user && rootError && root === undefined) return <ClassroomState title="수업을 불러오지 못했어요." retry={retryRoot}/>;
   const owned = canTeachClass(user,root);
   if (owned) return <><ClassSaveResume user={user}/><OwnerView root={root} user={user} teamKey={teamKey} toast={toast} /></>;
   return <><ClassSaveResume user={user}/><StudentView teamKey={teamKey} user={user} toast={toast} /></>;

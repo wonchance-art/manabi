@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { sliceBetween } from './helpers/sliceBetween.js';
 import {
   COURSES, courseInfo, buildCoursePayload, coursePool, buildTestSheet, levelQuota, passMark, siblingChapters,
-  dayProgress, TEST_SIZE, PASS_MARK,
+  dayProgress, TEST_SIZE, PASS_MARK, freshSheetNo, seededRandom,
 } from '../classCourse.js';
 import { loadCourse } from '../server/classCourse.js';
 import { alignFurigana } from '../../../scripts/check-furigana.mjs';
@@ -133,10 +134,16 @@ describe('시험지 — 42챕터가 다 찼을 때', () => {
     expect(buildTestSheet(pool, course.families, { seed: 4822 }).items.map((x) => x.id)).not.toEqual(a);
   });
 
-  it('새 시험지는 직전 시험지 문장을 다시 내지 않는다', () => {
-    const first = buildTestSheet(pool, course.families, { seed: 1234 }).items.map((x) => x.id);
-    const next = buildTestSheet(pool, course.families, { seed: 5678, exclude: first }).items.map((x) => x.id);
-    expect(next.filter((id) => first.includes(id))).toEqual([]);
+  it('새 시험지는 직전 시험지 문장을 다시 내지 않고, 그 번호만으로 같은 시험지가 다시 나온다', () => {
+    // 예전: 직전 문장을 시험지 계산에서 빼서 ?sheet=N을 다시 열면 다른 시험지였다(CLASS-REVIEW-001 ①).
+    for (const seed of [1234, 4821, 9001]) {
+      const first = buildTestSheet(pool, course.families, { seed }).items.map((x) => x.id);
+      const no = freshSheetNo(pool, course.families, first, { currentNo: seed, rand: seededRandom(seed + 7) });
+      expect(no).not.toBe(seed);
+      const next = buildTestSheet(pool, course.families, { seed: no }).items.map((x) => x.id);
+      expect(next.filter((id) => first.includes(id)), `seed ${seed} → ${no}`).toEqual([]);
+      expect(buildTestSheet(pool, course.families, { seed: no }).items.map((x) => x.id)).toEqual(next);
+    }
   });
 });
 
@@ -350,5 +357,37 @@ describe('화면 — 오너가 정한 섹션 이름', () => {
     expect(day).not.toContain('응용 문장');
     expect(read('src/components/classroom/ClassCourseUI.jsx')).toContain("PENDING_TEXT = '아직 입력되지 않았어요'");
     expect(day).toContain('/test');
+  });
+});
+
+describe('테스트 · 코스 화면 배선 (CLASS-REVIEW-001)', () => {
+  const page = () => read('src/views/ClassCourseTestPage.jsx');
+
+  it('시험지는 번호만으로 — 화면이 직전 문장을 시험지 계산에 넣지 않는다', () => {
+    expect(page()).toContain('buildTestSheet(pool, course.families, { seed: sheetNo })');
+    expect(page()).not.toMatch(/exclude/);
+    expect(page()).toContain('freshSheetNo(pool, course.families, sheet.items.map((x) => x.id), { currentNo: sheetNo })');
+  });
+
+  it('1번 문제 시간은 「시험 시작」부터 — 준비 화면에 머문 시간이 넘어가지 않는다', () => {
+    expect(page()).toContain("useElapsed(phase === 'run' && !revealed, `${sheetNo}-${phase}-${at}`)");
+  });
+
+  it('선생님 키 — 길게 누름 · 조합키 · 카드 밖 링크/버튼의 Enter·Space는 판정이 아니다', () => {
+    const keys = sliceBetween(page(), 'keyRef.current = (e) => {', '\n  };\n');
+    expect(keys).toContain("e.repeat || e.ctrlKey || e.metaKey || e.altKey || typeof e.key !== 'string'");
+    expect(keys).toContain("if (control && !control.closest('.course-card')) return;");
+  });
+
+  it('코스 조회 단계 — 받아 둔 코스는 갱신 실패에도 그대로 · 오프라인 첫 조회는 따로 알린다', async () => {
+    const { courseView } = await import('../classCourseClient.js');
+    expect(courseView({ data: { course: {} }, error: new Error('x') })).toBe('ready');
+    expect(courseView({ data: undefined, error: new Error('x') })).toBe('error');
+    expect(courseView({ data: undefined, error: null, fetchStatus: 'paused' })).toBe('offline');
+    expect(courseView({ data: undefined, error: null, fetchStatus: 'fetching' })).toBe('loading');
+    for (const f of ['src/views/ClassCourseTestPage.jsx', 'src/views/ClassCourseDayPage.jsx', 'src/components/classroom/ClassCourseSchedule.jsx']) {
+      expect(read(f), f).toContain('const view = courseView(q);');
+      expect(read(f), f).not.toMatch(/q\.isLoading|if \(q\.error\)/);
+    }
   });
 });
