@@ -454,7 +454,7 @@ button {
 }
 .version-badge__btn--stale {
   border-color: var(--warning);
-  color: var(--warning);
+  color: var(--warning-text);
 }
 .version-badge__sha {
   /* 7자 고정 — SHA가 바뀌어도 GNB 폭이 흔들리지 않는다 */
@@ -479,7 +479,7 @@ button {
 }
 .version-badge__warn {
   margin: 0 0 8px;
-  color: var(--warning);
+  color: var(--warning-text);
   line-height: 1.5;
 }
 .version-badge__rows {
@@ -520,7 +520,7 @@ button {
 .version-badge__reload--danger {
   margin-top: 6px;
   border-color: var(--warning);
-  color: var(--warning);
+  color: var(--warning-text);
 }
 .version-badge__hint {
   margin: 6px 0 0;
@@ -955,7 +955,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
    자료실이 같은 배지를 인라인으로 두 번째 하드코딩하고 있었다(2트랙 병). */
 .tag--due {
   background: color-mix(in srgb, var(--warning) 15%, transparent);
-  color: var(--warning);
+  color: var(--warning-text);
   font-weight: 700;
 }
 
@@ -991,7 +991,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .badge--stage-new { background: color-mix(in srgb, var(--text-muted) 15%, transparent); color: var(--text-muted); }
 .badge--stage-learning { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
 .badge--stage-relearning { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
-.badge--stage-young { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning); }
+.badge--stage-young { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning-text); }
 .badge--stage-mature { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
 
 /* 문맥 퀴즈 보기 — 정·오답 상태색(v2-K 잔여). 삼항 **안**에 리터럴이 있어 한 줄
@@ -1257,7 +1257,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .vocab-row__dot { width: 9px; height: 9px; border-radius: 50%; }
 .vocab-row__due {
-  font-size: 0.68rem; font-weight: 700; color: var(--warning);
+  font-size: 0.68rem; font-weight: 700; color: var(--warning-text);
   background: color-mix(in srgb, var(--warning-bright) 16%, transparent); padding: 2px 8px; border-radius: var(--radius-full); white-space: nowrap;
 }
 /* 상세 설명 예문의 병음 줄(표시 시점 합성 — 예문/병음/뜻 3줄) */
@@ -1747,7 +1747,7 @@ body.is-review-chrome .page-container { padding-top: 8px; }
 .mat-state--progress, .mat-state--busy { color: var(--primary-light); }
 .mat-state--danger { color: var(--danger); }
 .tag--group { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary-light); border-color: transparent; }
-.tag--score { background: color-mix(in srgb, var(--warning) 12%, transparent); color: var(--warning); border-color: transparent; }
+.tag--score { background: color-mix(in srgb, var(--warning) 12%, transparent); color: var(--warning-text); border-color: transparent; }
 .mat-menu { position: relative; flex: none; }
 .mat-menu > summary { list-style: none; }
 .mat-menu > summary::-webkit-details-marker { display: none; }
@@ -1957,7 +1957,6 @@ body.is-review-chrome .page-container { padding-top: 8px; }
   color: var(--text-muted);
   margin-top: 6px;
 }
-.form-char-count--warn { color: var(--warning); }
 .form-char-count--over { color: var(--danger); }
 
 .form-actions {
@@ -2051,7 +2050,7 @@ a.viewer-badge:hover {
 .viewer-badge--due {
   background: color-mix(in srgb, var(--warning) 15%, transparent);
   border-color: var(--warning);
-  color: var(--warning);
+  color: var(--warning-text);
 }
 /* 수집 배지는 무채색으로 내렸지만 **팝은 남긴다** — 단어를 담은 순간의 되먹임은 색이
    아니라 움직임이 나른다. 움직임을 끈 사용자에게는 애니메이션만 사라진다.
@@ -2316,7 +2315,7 @@ a.viewer-badge:hover {
 }
 .group-card__tag { font-size: 0.72rem; flex-shrink: 0; }
 .group-card__tag--done { color: var(--primary-light); }
-.group-card__tag--due { color: var(--warning); }
+.group-card__tag--due { color: var(--warning-text); }
 .group-card__tag--muted { color: var(--text-muted); }
 .group-card__tag--danger { color: var(--danger); }
 .group-card__fitnum { color: var(--accent-text); }
@@ -2862,7 +2861,7 @@ a.viewer-badge:hover {
    쓴다. 같은 뜻('지금 복습 대상')에 다른 색을 붙이면 사용자가 두 번 배운다. */
 .pattern-card__due {
   padding: 1px 6px; border-radius: var(--radius-full);
-  font-size: 0.66rem; font-weight: 700; color: var(--warning);
+  font-size: 0.66rem; font-weight: 700; color: var(--warning-text);
   background: color-mix(in srgb, var(--warning-bright) 16%, transparent);
   white-space: nowrap;
 }
@@ -5209,10 +5208,6 @@ a.viewer-badge:hover {
   font-size: 0.75rem;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
-}
-.lessons-list__score {
-  color: var(--warning);
-  font-weight: 600;
 }
 .lessons-list__pct {
   color: var(--primary-light);
@@ -7791,10 +7786,6 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
   color: var(--text-primary); font-weight: 700; margin-left: 3px;
   font-variant-numeric: tabular-nums;
 }
-.vocab-stat[data-tone="due"] {
-  background: rgba(214,158,46,0.12); border-color: var(--warning); color: var(--warning);
-}
-.vocab-stat[data-tone="due"] strong { color: var(--warning); }
 .vocab-stat--total { margin-left: auto; background: transparent; border-color: transparent; }
 
 /* 진도 — n/n 분수 칼럼 정렬 (자릿수가 변해도 슬래시 위치 고정) */
@@ -7888,7 +7879,7 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 .kana-test__score { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 8px; }
 .kana-test__pct { font-size: 2.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 .kana-test__pct.is-ok { color: var(--accent-text); }
-.kana-test__pct.is-no { color: var(--warning); }
+.kana-test__pct.is-no { color: var(--warning-text); }
 .kana-test__frac { font-size: 0.85rem; color: var(--text-muted); }
 .kana-test__wrong { margin: 16px 0 4px; padding: 12px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); }
 .kana-test__wrong-title { font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin: 0 0 8px; text-align: center; }

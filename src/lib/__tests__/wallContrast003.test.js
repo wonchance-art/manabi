@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { TOUCH_EXCEPTIONS } from '../../../scripts/wall-core.mjs';
 import { sliceBetween } from './helpers/sliceBetween.js';
 
@@ -88,3 +89,35 @@ describe('화면 벽 WALL-003 — 터치 타깃 예외(ui-conventions §3)', () 
     expect(read('src/index.css')).toMatch(/\.jpmap-pin-hit \{ fill: transparent;/);
   });
 });
+
+// WALL-005(2026-11-03 KST) — 바탕용 --warning을 글자색으로 쓴 18곳(시안: https://claude.ai/artifact/C8ydSyRGjb5op1VS5fkTsf, 오너 「ㄱㄱ」).
+// 13곳은 --warning-text, 뷰어 설정 경고는 --reader-warn, 쓰는 화면 없는 규칙 4곳은 삭제했다. 바탕 · 테두리 · color-mix 안의 쓰임은 그대로 허용.
+describe('화면 벽 WALL-005 — 글자에 바탕용 --warning을 쓰지 않는다', () => {
+  const cssFiles = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap(e => {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) return e.name === '__tests__' ? [] : cssFiles(p);
+    return /\.css$/.test(e.name) ? [p] : [];
+  });
+  // 속성 이름이 정확히 color인 선언만(border-color · background-color 제외), 값 전체가 var(--warning)일 때.
+  const TEXT_WARNING = /(?:^|[;{\s])color\s*:\s*var\(--warning\)\s*(?:!important\s*)?(?=[;}]|$)/gm;
+
+  it('src 전체 CSS · CSS 모듈에 `color: var(--warning)`이 없다', () => {
+    const hits = cssFiles('src').flatMap(f => (read(f).match(TEXT_WARNING) || []).map(() => f));
+    expect(hits).toEqual([]);
+  });
+
+  it('검사식이 실제로 잡는다 — 글자색은 잡고, 테두리 · 바탕 · 섞은 색은 놓아 둔다', () => {
+    const count = (css) => (css.match(TEXT_WARNING) || []).length;
+    expect(count('.a { color: var(--warning); }')).toBe(1);
+    expect(count('.a {color:var(--warning)}')).toBe(1);
+    expect(count('.a {\n  color: var(--warning);\n}')).toBe(1);
+    expect(count('.a { border-color: var(--warning); background-color: var(--warning); }')).toBe(0);
+    expect(count('.a { color: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning-text); }')).toBe(0);
+  });
+
+  it('글자 짝 토큰은 밝은 셸 바탕에서 4.5:1 이상, 뷰어 설정 경고는 읽기면 테마를 따르는 --reader-warn', () => {
+    expect(contrast(shellToken('--warning-text'), PAPER)).toBeGreaterThanOrEqual(4.5);
+    expect(sliceBetween(read('src/components/viewer/reader-controls.css'), '.reader-settings__warning {', '}')).toMatch(/color:var\(--reader-warn\)/);
+  });
+});
+
