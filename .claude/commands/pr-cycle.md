@@ -40,10 +40,7 @@ $ARGUMENTS
 "게시했다"고 말하고 호출을 빠뜨린 전례가 2회 있다. 게시 후 반환된 코멘트 id를 확인한다.
 
 ### 5. CI 확인 → ready → merge
-- 체크런 조회. **fonts.gstatic 플레이크**(`Failed to fetch font file` → `nextFontGoogleFontLoader`
-  → `TypeError: Cannot read properties of null`)면 코드 문제가 아니다:
-  `git commit --amend --no-edit && git push --force-with-lease`로 재트리거.
-  **2연속 red면 즉시 재시도하지 말고 10~20분 백오프**(러너 CDN 장애 창 회피 — 2026-08-17 4회 실측).
+- 체크런 조회. red면 로그로 원인을 재현한 뒤 수정 커밋으로 대응한다(빈 커밋 · amend 재푸시로 재실행하지 않는다).
 - 양 job green이어도 바로 merge하지 말고 **5-1 병합 직전 점검**을 먼저 끝낸다.
 
 ### 5-1. 병합 직전 점검 — 「끝났다」고 말하기 전에 증거로 (verification-before-completion)
