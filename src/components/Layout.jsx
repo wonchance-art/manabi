@@ -57,6 +57,9 @@ function ReaderSiteMenu({ isAdmin }) {
   </details>;
 }
 
+// 학습 월드(개발 동결) 화면 — 쪽 제목 등 옛 모양을 그대로 두는 범위 표시(오너 「월드 화면은 제외」 2026-11-05 KST, COLOR-SYS-001).
+const isWorldRoute = (pathname = '') => /^\/(world|admin\/worldmap)(\/|$)/.test(pathname || '');
+
 export default function Layout({ children }) {
   const { user, profile, isAdmin } = useAuth();
   const router = useRouter();
@@ -185,7 +188,8 @@ export default function Layout({ children }) {
   const mobileNavLinks = MAIN_NAV;
 
   return (
-    <div className={`manabi-app${focusedReading ? ' manabi-app--reading' : ''}`} data-gnb-hidden={gnbHidden || undefined}>
+    <div className={`manabi-app${focusedReading ? ' manabi-app--reading' : ''}`} data-gnb-hidden={gnbHidden || undefined}
+      data-world={isWorldRoute(pathname) || undefined}>
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       <header className="gnb" role="banner">
         <Link href="/home" prefetch={false} className="gnb__logo" aria-label="manabi 배움">
