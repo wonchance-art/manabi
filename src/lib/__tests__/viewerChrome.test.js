@@ -255,8 +255,10 @@ describe('⑦ 여러 줄 인라인 색 — 0', () => {
     for (const f of ['src/views/ReadingTextView.jsx']) {
       expect(read(f), `${f}가 스크림을 다시 손으로 그린다`).toContain('className="scrim');
     }
-    // 복습 배지: 뷰어와 **같은 식**을 쓴다(값 복제 금지 — 2트랙 병의 재발 방지)
-    const mix = 'color-mix(in srgb, var(--warning) 15%, transparent)';
+    // 복습 배지: 뷰어와 **같은 식**을 쓴다(값 복제 금지 — 2트랙 병의 재발 방지).
+    // 색 체계 단계 1(2026-11-04 KST): 그 식이 이름 하나(--warning-tint)로 모였다 — 정의는 :root 한 곳.
+    const mix = 'var(--warning-tint)';
+    expect(css).toContain('--warning-tint: color-mix(in srgb, var(--warning) 15%, transparent);');
     expect(sliceBetween(css, '.tag--due {', '}')).toContain(mix);
     expect(sliceBetween(css, '.viewer-badge--due {', '}')).toContain(mix);
     // 정오답: 판정이 한 함수에 있고 값은 토큰이 진다

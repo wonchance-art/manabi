@@ -1,6 +1,6 @@
 @import './reading-manuscript.css';
 @import './study-route.css';
-.book-reading-content{--ink:#322e30;--mauve:#994a5a;--wash:#faf4f4;--line:#e8dade;--edge:#c8a3ac;--muted:#796d70;background:transparent;container-type:inline-size;container-name:manabi-reader;font-family:var(--font-noto-kr),KR,sans-serif;font-size:16px;line-height:1.95;margin:0}
+.book-reading-content{--ink:#322e30;--mauve:#994a5a;--wash:#faf4f4;--line:#e8dade;--edge:#c8a3ac;background:transparent;container-type:inline-size;container-name:manabi-reader;font-family:var(--font-noto-kr),KR,sans-serif;font-size:16px;line-height:1.95;margin:0}
 .book-reading-content .paper{max-width:none;background:transparent;border:0;border-radius:0;box-shadow:none;margin:0;padding:44px 0 22px;scroll-margin-top:148px;min-width:0;border-top:1px solid var(--line)}
 .book-reading-content .paper:first-child{border:0;padding-top:32px}
 .book-reading-content .meta,.book-reading-content footer,.book-reading-content .audio-btn,.book-reading-content .roles,.book-reading-content .player,.book-reading-content .lex-tools{display:none!important}
@@ -36,7 +36,7 @@
 .book-reading-content .answers summary{color:var(--mauve);padding:12px 16px;min-height:44px;cursor:pointer}
 .book-reading-content .answers>.answer{margin:0;padding:18px;border-top:1px solid var(--line);border-bottom:0;min-width:0}
 .book-reading-content .answers>.answer>small{display:block;line-height:1.9;margin-top:8px}
-/* 해설 이유 글: 원고의 12px·--muted(#796d70)는 해설 바탕 #f6efef 위 4.37:1로 AA 미달 — 14px·--ink로 올리고 위계는 크기로 둔다. */
+/* 해설 이유 글: 원고의 12px·옛 교재 보조 글자색(따뜻한 회갈색)은 해설 바탕 #f6efef 위 4.37:1로 AA 미달 — 14px·--ink로 올리고 위계는 크기로 둔다. */
 .book-reading-content .answers>.answer>:is(small,.small){font-size:14px;color:var(--ink)}
 .book-reading-content .answers>.answer>h3:first-child{margin-top:0}
 /* 원고 .answer>p 18px는 짧은 정답 줄용 — 이어지는 긴 이유 문단이 오답 목록보다 커지지 않게 한다. */
