@@ -7,6 +7,8 @@ import { createClient } from '@supabase/supabase-js';
 import { SEED_JP_CORE } from '@/lib/server/seed-jp-core';
 import { SEED_JP_COMMON } from '@/lib/server/seed-jp-common';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
+import { supabaseSecretKey } from '@/lib/server/supabaseKeys';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120; // 최대 2분
@@ -14,7 +16,7 @@ export const maxDuration = 120; // 최대 2분
 function serverSupabase(token) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    supabaseSecretKey(),
     { auth: { persistSession: false } }
   );
   return supabase;
@@ -26,7 +28,7 @@ async function requireAdmin(request) {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     { auth: { persistSession: false } }
   );
   const { data: { user } } = await supabase.auth.getUser(token);
@@ -34,7 +36,7 @@ async function requireAdmin(request) {
 
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    supabaseSecretKey(),
     { auth: { persistSession: false } }
   );
   const { data: profile } = await admin

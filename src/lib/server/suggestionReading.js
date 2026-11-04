@@ -2,9 +2,10 @@ import { createClient } from '@supabase/supabase-js';
 import { kstDateString } from '../growthStats';
 import { SUGGESTION_FIELDS, SUGGESTION_ID, canReadSuggestion, suggestionSource } from '../suggestionReading';
 import { ONDEMAND_SOURCE, isOnDemandSuggestion } from '../suggestionSources';
+import { supabasePublicKey } from '../supabaseKeys';
 
 export function suggestionClient() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, supabasePublicKey(),
     { auth: { persistSession: false, autoRefreshToken: false } });
 }
 

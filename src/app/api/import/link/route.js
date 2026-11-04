@@ -19,6 +19,7 @@ import { createClient } from '@supabase/supabase-js';
 import { parseYouTubeId } from '@/lib/listenSubtitles';
 import { detectLinkKind, cleanVideoTitle, paragraphize, stripCueNoise } from '@/lib/linkImport';
 import { normalizeSupadataSegments } from '@/lib/server/media';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,7 +98,7 @@ export async function POST(request) {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const authClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     { auth: { persistSession: false } },
   );
   const { data: { user }, error: authErr } = await authClient.auth.getUser(token);

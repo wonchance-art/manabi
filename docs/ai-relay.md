@@ -54,7 +54,7 @@ Codex CLI  ──Bearer CODEX_TOKEN───┘
 Vercel Preview와 Production에 각각 설정한다. 두 토큰은 반드시 다르고 32자 이상이어야 한다.
 
 ```bash
-SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_SECRET_KEY=...            # 새 키(sb_secret_…). 없으면 legacy SUPABASE_SERVICE_ROLE_KEY를 읽는다
 MANABI_AI_RELAY_CLAUDE_TOKEN=<openssl rand -hex 32 결과>
 MANABI_AI_RELAY_CODEX_TOKEN=<다른 openssl rand -hex 32 결과>
 ```

@@ -33,6 +33,8 @@ export default Object.freeze({
     timeout: 30000,
     env: {
       NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://e2e.supabase.co',
+      // 새 이름(SUPA-KEYS-001)도 같이 고정 — 앱은 새 이름을 먼저 읽으므로, 셸의 실제 키가 e2e 더미를 이기지 않게.
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'e2e-anon-key',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'e2e-anon-key',
       NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || baseURL,
       NODE_OPTIONS: nodeOptions,

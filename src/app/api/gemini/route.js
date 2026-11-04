@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/server/auth';
 import { callLLM, resolveTier, LLMError } from '@/lib/server/llm';
 import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
 import { isInternalAnalysisRequest } from '@/lib/server/internalAnalysisRequest';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 // ── 프록시 잠금(비용 남용 방지) ──
 // 클라는 모델이 아니라 **티어**(light/standard)를 고른다 — 모델·폴백·Groq는 llm.js의 TIERS가 정한다(AA R1).
@@ -76,7 +77,7 @@ async function gate(request) {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const authClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     { auth: { persistSession: false } }
   );
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);

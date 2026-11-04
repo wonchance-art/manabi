@@ -8,9 +8,10 @@ import { combineChunks, createServerClient, stringFromBase64URL } from '@supabas
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { authCookieRemovals, invalidSessionError, withoutServerSignOut } from './authCookieGuard';
+import { supabasePublicKey } from './supabaseKeys';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_KEY = supabasePublicKey();
 
 /**
  * 쿠키 세션이 붙은 Supabase 서버 클라이언트를 만든다.

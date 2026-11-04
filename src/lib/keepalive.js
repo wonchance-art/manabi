@@ -9,6 +9,7 @@
 // 사전 요청(preflight)이 필요한 keepalive라, 일부 브라우저는 이 요청을 거절할 수 있다. 그러면 null — 호출부는 실패로 다룬다
 // (문법 보류분은 bfcache 복귀 시 다음 retry가, 아는 단어는 원래 요청이 그대로 진행 중이다).
 import { supabase } from './supabase';
+import { supabasePublicKey } from './supabaseKeys';
 
 /**
  * PostgREST 요청 하나를 keepalive로 보낸다.
@@ -18,7 +19,7 @@ import { supabase } from './supabase';
  */
 export function postgrestKeepalive({
   path, method, query = {}, body, prefer, accessToken,
-  url = process.env.NEXT_PUBLIC_SUPABASE_URL, apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  url = process.env.NEXT_PUBLIC_SUPABASE_URL, apiKey = supabasePublicKey(),
   fetchImpl = typeof fetch === 'function' ? fetch : null,
 } = {}) {
   if (!path || !method || !accessToken || !url || !apiKey || !fetchImpl) return Promise.resolve(null);

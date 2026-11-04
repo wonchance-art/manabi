@@ -38,8 +38,10 @@
 | 이름 | 필수 | 설명 |
 |------|------|------|
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase 프로젝트 URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | anon 공개키 |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | 계정 삭제 API 등 서버 전용 |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | ✅(둘 중 하나) | 새 공개키 `sb_publishable_…` — 먼저 읽힘(SUPA-KEYS-001) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (폴백) | legacy anon 공개키 — 새 키가 없을 때만 |
+| `SUPABASE_SECRET_KEY` | ✅(둘 중 하나) | 새 서버 키 `sb_secret_…` — 먼저 읽힘, 서버 전용 |
+| `SUPABASE_SERVICE_ROLE_KEY` | (폴백) | legacy service_role — 새 키가 없을 때만 |
 | `NEXT_PUBLIC_SITE_URL` | ✅ | robots/sitemap/OG에 쓰임 |
 | `GEMINI_API_KEY` | ✅ | 분석용 |
 | `GROQ_API_KEY` | ⚠️ | 폴백용 (없어도 동작) |

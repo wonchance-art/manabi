@@ -5,6 +5,7 @@ import { getReadingTrack, getBunkei } from '@/content/japanese';
 import { READING_LANG, readingIdsFromRows } from '@/lib/readingProgress';
 import { buildTrackPayload, createPatternCardResolver } from '@/lib/readingPayload';
 import ReadingTrackPage from '@/views/ReadingTrackPage';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 export const metadata = { title: '도쿄 도착 · 독해 트랙' };
 // 통과 집합이 사용자·시점마다 달라 정적 캐시 불가(review/grammar/page.jsx 관행)
@@ -25,7 +26,7 @@ async function fetchReadingScope() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },

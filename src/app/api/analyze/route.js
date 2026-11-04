@@ -11,6 +11,7 @@ import { readRequestBoundaries } from '@/lib/server/analyzeBoundaries';
 import { isInternalAnalysisRequest } from '@/lib/server/internalAnalysisRequest';
 // 분석 핵심은 analyzeCore로 꺼냈다(v2-Z Z-R1 ① — 대화 턴 경로와 함께 쓴다). 이 라우트는 인증·한도·입력 검증만 맡는다.
 import { analyzeLines } from '@/lib/server/analyzeCore';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
@@ -29,7 +30,7 @@ async function gate(request) {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const anonClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     { auth: { persistSession: false } }
   );
   const { data: { user }, error: userErr } = await anonClient.auth.getUser(token);

@@ -16,6 +16,8 @@ import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 import { readVocabularyLearningSnapshot } from './fsrsVocabulary.js';
 import { projectVocabularyLearningRows } from '../vocabularyLearningRows.js';
+import { supabasePublicKey } from '../supabaseKeys';
+import { supabaseSecretKey } from './supabaseKeys';
 
 // ── VAPID 설정 ──────────────────────────────────────────────────────────
 
@@ -44,10 +46,10 @@ function ensureVapid() {
 
 /** service-role 서버 클라이언트 — 기존 cron 라우트(fetch-suggestions)와 동일 패턴 재사용 */
 export function serverSupabase() {
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = supabaseSecretKey();
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    serviceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceKey || supabasePublicKey(),
     serviceKey ? { auth: { persistSession: false } } : {},
   );
 }

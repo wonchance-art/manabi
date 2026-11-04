@@ -8,6 +8,7 @@ import StudyOnboarding from '@/views/StudyOnboarding';
 import StudyUnavailable from '@/views/StudyUnavailable';
 import { isStudyStorageUnavailable } from '@/lib/studyUnavailable';
 import { learnerHref } from '@/lib/bookNavigation';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 export const metadata = { title: '오늘 학습' };
 export const dynamic = 'force-dynamic';
@@ -45,7 +46,7 @@ export default async function Page({ searchParams }) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },

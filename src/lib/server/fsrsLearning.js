@@ -7,6 +7,7 @@ import { DEFAULT_NEW_PER_DAY, isNewPerDayValue } from '../vocabStudy.js';
 import { readLearningAdmissionStatus } from './learningAdmission.js';
 import { normalizeAdmissionStatus } from '../learningAdmission.js';
 import { CARD_KINDS, fsrsTakesNewQuota } from '../fsrsCardKinds.js';
+import { supabaseSecretKey } from './supabaseKeys';
 
 const identity = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,200}$/.test(value);
 const canonical = value => JSON.stringify(value, Object.keys(value).sort());
@@ -22,7 +23,7 @@ const fields = {
 };
 
 export function fsrsServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = supabaseSecretKey();
   if (!url || !key) reject('fsrs_storage_unavailable');
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 }

@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import { kstDateString } from '@/lib/growthStats';
 import { fetchFromSource } from '../../../../lib/content-sources.js';
 import { groupByLanguage, isVideoSource, planCronRun, resolveActiveSources, suggestionSourceLabel } from '../../../../lib/suggestionSources.js';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
+import { supabaseSecretKey } from '@/lib/server/supabaseKeys';
 
 // 영상 수집은 영상마다 왕복이 여러 번이라 느리다. 함수 한도를 명시하고(다른 크론과 같은 60초),
 // 그 안에서 영상 소스는 남은 시간이 있을 때만 시작한다 — 넘기면 이미 모은 것까지 잃는다.
@@ -19,10 +21,10 @@ export async function GET(request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = supabaseSecretKey();
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    serviceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceKey || supabasePublicKey(),
     serviceKey ? { auth: { persistSession: false } } : {},
   );
 

@@ -6,6 +6,7 @@ import { isKnownWord, learningWeekStartIso } from '@/lib/growthStats';
 import { fsrsServiceClient } from '@/lib/server/fsrsLearning';
 import { readVocabularyLearningSnapshot } from '@/lib/server/fsrsVocabulary';
 import { projectVocabularyLearningRows } from '@/lib/vocabularyLearningRows';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 export const metadata = { title: '지난 이야기' };
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export default async function Page({ searchParams }) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },

@@ -25,6 +25,7 @@ import {
   ZH_BOUNDARY_REVIEW, applyZhBoundaryJoins, attachZhBoundaryPairs, collectZhBoundaryPairs, collectZhPairLookupForms,
   zhBoundaryBlockedRegions,
 } from '@/lib/server/zhBoundaryReview';
+import { supabaseSecretKey } from './supabaseKeys';
 
 
 // 요청당 Gemini 의미 조회 상한(미싱 base_form) — fetchMeanings 배치 폭발 방지.
@@ -35,7 +36,7 @@ const MAX_MISSING = 100;
 export function getServerSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    supabaseSecretKey(),
     { auth: { persistSession: false } }
   );
 }

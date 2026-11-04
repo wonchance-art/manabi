@@ -95,7 +95,10 @@ WHERE tablename IN ('writing_practice', 'token_corrections');
 ```
 GEMINI_API_KEY=<valid key>
 NEXT_PUBLIC_SUPABASE_URL=<prod url>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<prod anon key>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<prod publishable key, sb_publishable_… — 새 키, 먼저 읽힘>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<prod anon key — legacy 폴백(SUPA-KEYS-001 이전 기간)>
+SUPABASE_SECRET_KEY=<prod secret key, sb_secret_… — 새 키, 먼저 읽힘>
+SUPABASE_SERVICE_ROLE_KEY=<legacy 폴백>
 NEXT_PUBLIC_SITE_URL=<prod domain, for robots/sitemap>
 SUPADATA_API_KEY=<optional — 듣고 읽기 자막 폴백>
 CRON_SECRET=<cron 인증 — /api/cron/* Bearer 토큰>

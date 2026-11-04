@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 import { analyzeKoreanLines, KoreanAnalysisError, validateKoreanRequest } from '@/lib/server/koreanAnalysis';
 import { isInternalAnalysisRequest } from '@/lib/server/internalAnalysisRequest';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -14,7 +15,7 @@ async function gate(request) {
   }
   const authClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     { auth: { persistSession: false } }
   );
   const { data: { user }, error } = await authClient.auth.getUser(authHeader.replace(/^Bearer\s+/i, ''));

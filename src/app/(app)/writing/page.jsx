@@ -4,6 +4,7 @@ import { getRefLang } from '@/content/refLangs';
 import WritingStudioPage from '@/views/WritingStudioPage';
 // 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 학습자 링크는 null(VIEWER-R0-BUGS-001 버그 3).
 import { learnerHref } from '@/lib/bookNavigation';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 export const metadata = { title: '작문' };
 export const dynamic = 'force-dynamic';
@@ -16,7 +17,7 @@ export default async function Page() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },

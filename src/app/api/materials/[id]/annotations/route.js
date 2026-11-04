@@ -3,6 +3,7 @@ import {requireUser} from '@/lib/server/auth';
 import {serviceClient,materialBelongsToTeam} from '@/lib/server/classIndex';
 import {authorizeTeamRequest} from '@/app/api/class/[team]/route';
 import {validTextbookAnchor} from '@/lib/textbookAnnotations';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 export const runtime='nodejs';
 const headers={'Cache-Control':'private, no-store'};
 const respond=(data,status=200)=>Response.json(data,{status,headers});
@@ -18,7 +19,7 @@ async function access(request,id,write=false) {
  const read=async query=>{const result=await query;return write||result.error?result:{...result,data:lightRow(result.data)};};
  const auth=request.headers.get('authorization')?await requireUser(request):{};
  if(auth.error)return {error:respond({error:auth.error},auth.status)};
- const scoped=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,{auth:{persistSession:false},global:{headers:auth.user?{Authorization:request.headers.get('authorization')}:{}}});
+ const scoped=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,supabasePublicKey(),{auth:{persistSession:false},global:{headers:auth.user?{Authorization:request.headers.get('authorization')}:{}}});
  const result=await read(scoped.from('reading_materials').select(columns).eq('id',id).maybeSingle());
  if(result.error)throw result.error;
  let material=result.data;

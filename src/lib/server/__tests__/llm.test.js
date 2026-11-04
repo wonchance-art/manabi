@@ -540,5 +540,6 @@ describe('AA R2 — 텔레메트리', () => {
     expect(src).toContain('if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });');
     expect(src).toContain('getLLMStats()');
     expect(src).not.toContain('SUPABASE_SERVICE_ROLE_KEY'); // 게이트는 auth.js 관용구 하나 — 자기 복사본 0
+    expect(src).not.toMatch(/SUPABASE_SECRET_KEY|supabaseSecretKey/); // 새 이름 · 정본 접근자로도 자기 복사본 0(SUPA-KEYS-001)
   });
 });

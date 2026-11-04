@@ -41,7 +41,7 @@ const opt = name => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] 
 const list = name => (opt(name) || '').split(',').map(s => s.trim()).filter(Boolean);
 
 export const EMPTY_UID = '00000000-0000-4000-8000-000000000302';
-const E2E_PUBLIC = { NEXT_PUBLIC_SUPABASE_URL: 'https://e2e.supabase.co', NEXT_PUBLIC_SUPABASE_ANON_KEY: 'e2e-anon-key' };
+const E2E_PUBLIC = { NEXT_PUBLIC_SUPABASE_URL: 'https://e2e.supabase.co', NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'e2e-anon-key', NEXT_PUBLIC_SUPABASE_ANON_KEY: 'e2e-anon-key' };
 const PUBLISHED_BOOKS = 'japanese-n4,japanese-n3'; // N5는 기본 발행, N4 · N3 표지도 발행 상태로 비춘다.
 const SHOT_SCREENS = 4; // 긴 화면은 창 높이 4배까지만 찍는다(벽은 첫인상 · 위계를 본다 — 끝없는 목록 전체가 아니다).
 
@@ -317,7 +317,7 @@ export async function startWallEnv({ out, port = 3170 }) {
   const server = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
     cwd: root, detached: true, stdio: ['ignore', log, log],
     env: { ...process.env, ...E2E_PUBLIC, NEXT_PUBLIC_SITE_URL: baseURL, NODE_OPTIONS: nodeOptions,
-      E2E_HEAVY_BACKEND: `http://127.0.0.1:${back.port}`, SUPABASE_SERVICE_ROLE_KEY: HEAVY_SERVICE_KEY, E2E_PUBLISHED_BOOKS: PUBLISHED_BOOKS },
+      E2E_HEAVY_BACKEND: `http://127.0.0.1:${back.port}`, SUPABASE_SECRET_KEY: HEAVY_SERVICE_KEY, SUPABASE_SERVICE_ROLE_KEY: HEAVY_SERVICE_KEY, E2E_PUBLISHED_BOOKS: PUBLISHED_BOOKS },
   });
   const stop = () => { try { process.kill(-server.pid); } catch { /* gone */ } };
   process.on('exit', stop);

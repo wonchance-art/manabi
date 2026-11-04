@@ -8,6 +8,7 @@ import { SC_HINT_COOKIE } from './lib/scFontHint';
 import { hasSupabaseSessionInJar } from './lib/authCookie';
 import { isBundledEdition } from './lib/textbook/bundledEditions';
 import { suggestionBackKey } from './lib/suggestionBack';
+import { supabasePublicKey } from './lib/supabaseKeys';
 
 // 공유 캐시 갈래(GUEST-STATIC-001) — 쿼리 · 힌트 쿠키로 갈리던 화면을 갈래마다 한 판씩 정적(ISR)으로 굽고, 여기서 판을 고른다(주소창은 그대로).
 // 계정으로는 가르지 않는다: 판에는 계정 데이터가 없다. 이 갈래는 쿠키를 읽기만 하고(값 '1'인 힌트 하나) Supabase 클라이언트를 만들지 않는다.
@@ -109,7 +110,7 @@ export async function middleware(request) {
   const response = NextResponse.next();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     {
       cookies: {
         getAll() { return request.cookies.getAll(); },

@@ -14,6 +14,7 @@ import {classHistoryEntries,filterClassHistory} from '../classStudyHistory';
 import { getBook } from '../bookMeta';
 import { isCanonicalLiteratureMaterial } from '../literatureCanonical';
 import { isArtBookMaterial } from '../artBookProvider';
+import { supabaseSecretKey } from './supabaseKeys';
 
 /**
  * 정본 책(青空文庫 · Standard Ebooks · 위키문헌 · 전자책 사이트 · 그림 큐레이션)은 수업 자료로 내주지 않는다(BOOK-GUEST-GATE-1, 오너 「팀 화면 접근은 가능해도
@@ -28,7 +29,7 @@ export function isProtectedBookMetadata(metadata) {
 export function serviceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    supabaseSecretKey(),
     { auth: { persistSession: false } },
   );
 }

@@ -13,6 +13,7 @@ import { learnerHref } from '@/lib/bookNavigation';
 import { LANG_NAME_KO } from '@/lib/constants';
 import { isPatternSlug } from '@/lib/sentencePattern';
 import { buildPatternReviewItem, loadBunkeiEntries, patternUpcomingRow } from '@/lib/patternReview';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 export const metadata = { title: '문법 복습' };
 export const dynamic = 'force-dynamic';
@@ -127,7 +128,7 @@ export default async function Page() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
