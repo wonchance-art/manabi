@@ -106,13 +106,14 @@ describe('⑴ 신원 — 인증 서버 왕복 없이 서명 검증(getClaims)', 
     const good = es256();
     const other = es256();
     const forged = `${good.token.split('.').slice(0, 2).join('.')}.${other.token.split('.')[2]}`;
-    // 거절은 { error }로 오거나(서명) 던져진다(만료 — validateExp). 어느 쪽도 claims를 주지 않는다.
+    // 거절은 서명 · 만료 모두 { error }로 온다 — auth-js 2.107부터 만료(validateExp)도 던지지 않고 AuthInvalidJwtError로 돌려준다(SUPA-SSR-0127).
+    // 어느 쪽도 claims를 주지 않는다. 던짐 처리(requireUserClaims의 catch)는 옛 판 · 예외 경로 방어로 남는다.
     const outcome = (p) => p.then((r) => (r.error ? 'error' : 'ok'), () => 'thrown');
     const a = realClient(good.jwk);
     expect(await outcome(a.client.auth.getClaims(forged))).toBe('error');
     const expired = es256({ exp: Math.floor(Date.now() / 1000) - 60 });
     const b = realClient(expired.jwk);
-    expect(await outcome(b.client.auth.getClaims(expired.token))).toBe('thrown');
+    expect(await outcome(b.client.auth.getClaims(expired.token))).toBe('error');
     expect([...a.calls, ...b.calls].filter((p) => p.endsWith('/auth/v1/user'))).toEqual([]);
   });
   it('requireUserClaims: 검증된 sub만 { id }로, 오류 · sub 없음 · 던짐은 requireUser와 같은 { error }', async () => {

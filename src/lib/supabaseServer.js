@@ -145,7 +145,7 @@ export async function requireUserClaims({ now = Date.now() } = {}) {
   const session = await cookieAccessToken().catch(() => null);
   if (!session || session.exp * 1000 - now < PREFETCH_TOKEN_MARGIN_SEC * 1000) return denied;
   const supabase = await createSupabaseServerClient();
-  // 만료 · 형식 오류는 getClaims가 오류를 돌려주지 않고 던진다(supabase-js validateExp) — 던짐도 같은 「로그인 필요」.
+  // 만료 · 서명 불일치는 getClaims가 { error }로 돌려준다(auth-js 2.107부터 만료도 AuthInvalidJwtError) — 그 밖의 던짐도 같은 「로그인 필요」.
   const { data, error } = await supabase.auth.getClaims(session.token).catch((thrown) => ({ data: null, error: thrown }));
   const id = data?.claims?.sub;
   if (error || !id) return denied;
