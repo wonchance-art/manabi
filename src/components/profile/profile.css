@@ -121,5 +121,5 @@ button.pf-row:disabled{cursor:default;opacity:.6}
 .pf .pf-switch__state{font-size:12.5px;font-weight:700;color:var(--muted)}
 .pf .pf-switch[aria-pressed="true"] .pf-switch__state{color:var(--ja)}
 .pf .pf-switch:focus-visible{outline:2px solid var(--ja);outline-offset:2px}
-.pf-warn{font-size:12.5px;line-height:1.6;color:var(--warning-text);background:color-mix(in srgb,var(--warning-text) 8%,var(--sheet));padding:8px 12px;border-radius:10px;margin:0 0 10px}
-.pf-danger-title{color:var(--danger)}
+.pf-warn{font-size:12.5px;line-height:1.6;color:var(--warning-on-tint);background:var(--warning-tint);padding:8px 12px;border-radius:10px;margin:0 0 10px}
+.pf-danger-title{color:var(--danger-text)}

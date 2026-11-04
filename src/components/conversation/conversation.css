@@ -159,7 +159,7 @@
 .conv-new__start { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .conv-new__start .manabi-button { min-height: 44px; }
 .conv-new__note { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
-.conv-new__error { margin: 0; color: var(--danger); }
+.conv-new__error { margin: 0; color: var(--danger-text); }
 .conv-new__recent { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .conv-new__recent a { display: flex; flex-direction: column; gap: 2px; min-height: 44px; justify-content: center; padding: 8px 12px; border: 1px solid var(--border); border-radius: 12px; color: var(--text-primary); text-decoration: none; }
 .conv-new__recent small { color: var(--text-muted); }

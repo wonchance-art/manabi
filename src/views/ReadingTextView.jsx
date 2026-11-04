@@ -445,7 +445,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
               })() : q.qtype === 'error' ? (
                 // ── error: 콘텐츠 스키마 불충족(P2-4 fail-closed) — 게이트 상태로 영구 잠금,
                 // 채점 UI 자체를 노출하지 않는다(정답 처리 금지). "← 목록"으로만 이탈 가능.
-                <div style={{ fontSize: '0.86rem', color: 'var(--danger)', lineHeight: 1.6 }}>
+                <div style={{ fontSize: '0.86rem', color: 'var(--danger-text)', lineHeight: 1.6 }}>
                   ⚠ 이 문항은 콘텐츠 형식 오류로 표시할 수 없어요. 통과 판정에서 제외되지 않으며
                   담당자 확인 전까지는 통과할 수 없어요.
                 </div>
@@ -483,7 +483,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
               )}
 
               {a && !a.ok && q.gating && (
-                <div className="fr-quiz__answer" style={{ color: 'var(--danger)' }}>
+                <div className="fr-quiz__answer" style={{ color: 'var(--danger-text)' }}>
                   × 다시 — {q.why || '본문을 다시 읽고 재도전하세요.'} (시도 {a.tries}회)
                 </div>
               )}
@@ -520,7 +520,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
           ) : saveError ? (
             // 원격 upsert 실패({error}) — push 부터 다시 시도(P2-8)
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <p style={{ fontSize: '0.86rem', color: 'var(--danger)', margin: 0 }}>
+              <p style={{ fontSize: '0.86rem', color: 'var(--danger-text)', margin: 0 }}>
                 기록하지 못했어요. 잠시 후 다시 시도해 주세요.
               </p>
               <button type="button" className="btn btn--primary btn--md" onClick={runSave}>

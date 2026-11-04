@@ -47,21 +47,21 @@ describe('옛 주황이 화면 코드에 남지 않는다', () => {
     expect(token(root, '--primary-dark').toUpperCase()).toBe('#793B48');
     // --primary는 버튼 바탕 — 흰 글자.
     expect(contrast('#FFFFFF', token(root, '--primary'))).toBeGreaterThanOrEqual(4.5);
-    // 글자용 --primary-light / --warning-text: 어두운 바탕(:root)과 라이트 바탕 각각.
+    // 글자용 --primary-light / --warning-on-tint: 어두운 바탕(:root)과 라이트 바탕 각각(--warning-text는 COLOR-SYS-001 2-③에서 걷었다).
     for (const bg of [token(root, '--bg-primary'), token(root, '--bg-card'), token(root, '--bg-elevated')]) {
       expect(contrast(token(root, '--primary-light'), bg)).toBeGreaterThanOrEqual(4.5);
-      expect(contrast(token(root, '--warning-text'), bg)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(token(root, '--warning-on-tint'), bg)).toBeGreaterThanOrEqual(4.5);
     }
     for (const bg of [token(light, '--bg-primary'), token(light, '--bg-card'), token(light, '--bg-elevated')]) {
       expect(contrast(token(light, '--primary-light'), bg)).toBeGreaterThanOrEqual(4.5);
-      expect(contrast(token(light, '--warning-text'), bg)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(token(light, '--warning-on-tint'), bg)).toBeGreaterThanOrEqual(4.5);
     }
   });
 
   it('늘 밝은 v2 셸은 글자 토큰을 라이트 값으로 고정한다 — html 기본 data-theme(dark)를 물려받지 않게', () => {
     const shell = read('src/components/web/web-shell.css').match(/^\.manabi-app\{[^}]*\}/m)[0];
     const paper = token(shell, '--paper'), sheet = token(shell, '--sheet');
-    for (const name of ['--accent-text', '--warning-text', '--muted']) {
+    for (const name of ['--accent-text', '--warning-on-tint', '--danger-text', '--muted']) {
       const fg = token(shell, name);
       expect(fg, name).toBeTruthy();
       expect(contrast(fg, paper), name).toBeGreaterThanOrEqual(4.5);
@@ -71,8 +71,7 @@ describe('옛 주황이 화면 코드에 남지 않는다', () => {
 
   it('뜻이 있는 주황은 경고 토큰으로, 브랜드 강조는 로즈 토큰으로 갔다', () => {
     const css = read('src/index.css');
-    expect(css).toMatch(/\.goal-track__verdict\.is-late \{[^}]*var\(--warning-text\)/);
-    expect(css).toMatch(/\.fr-callout--pitfall \.fr-callout__label \{[^}]*var\(--warning-text\)/);
+    expect(css).toMatch(/\.fr-callout--pitfall \.fr-callout__label \{[^}]*var\(--warning-on-tint\)/);
     expect(css).toMatch(/\.guide-hero__accent \{\s*color: var\(--primary-light\);\s*\}/);
     expect(css).toMatch(/\.guide-cta__btn \{[^}]*background: var\(--primary\)/);
   });

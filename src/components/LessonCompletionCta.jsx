@@ -60,7 +60,7 @@ export function LessonCompletionActions({
           </Link>
         )}
       </div>
-      {error && <p role="alert" style={{ margin: '10px 0 0', color: 'var(--danger)', fontSize: '0.82rem' }}>{error}</p>}
+      {error && <p role="alert" style={{ margin: '10px 0 0', color: 'var(--danger-text)', fontSize: '0.82rem' }}>{error}</p>}
     </section>
   );
 }

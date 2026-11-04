@@ -17,7 +17,7 @@
 .course-hl {font-weight:700;color:var(--text-primary);background:linear-gradient(transparent 58%, color-mix(in srgb, var(--class-main) 30%, transparent) 58%);padding:0 1px;border-radius:2px}
 .course-chip {font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--bg-secondary);color:var(--text-secondary);white-space:nowrap}
 .course-chip--next,.course-chip--test {background:var(--class-main);color:#fff}
-.course-chip--break,.course-chip--holiday {color:var(--danger)}
+.course-chip--break,.course-chip--holiday {color:var(--danger-text)}
 .course-badge {font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;background:var(--bg-secondary);color:var(--text-muted)}
 .course-tag {font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--tb-tint);color:var(--tb-ink)}
 .course-pending {margin:0;padding:14px 16px;border-radius:10px;background:var(--bg-secondary);color:var(--text-muted);font-size:14px;line-height:1.7}
@@ -85,7 +85,7 @@
 .tb-contrast__row--ng [lang="ja"] {text-decoration:line-through;text-decoration-color:var(--danger);text-decoration-thickness:1.5px}
 .tb-contrast__row--ok {background:var(--tb-tint);color:var(--text-primary);font-weight:700}
 .tb-contrast__mark {flex:0 0 1.2em;font-family:var(--font-noto-kr, sans-serif);font-weight:800;text-align:center}
-.tb-contrast__row--ng .tb-contrast__mark {color:var(--danger)}
+.tb-contrast__row--ng .tb-contrast__mark {color:var(--danger-text)}
 .tb-contrast__row--ok .tb-contrast__mark {color:var(--tb-ink)}
 .tb-alt {display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin:0;font-size:14px;color:var(--text-secondary)}
 .tb-alt > span:first-child {font-size:11px;font-weight:800;color:var(--tb-ink)}
@@ -129,7 +129,7 @@
 .course-cal__nav button:hover {background:var(--bg-secondary)}
 .course-cal__grid {width:100%;border-collapse:collapse;table-layout:fixed}
 .course-cal__grid th {font-size:12px;font-weight:600;color:var(--text-muted);padding:4px 0}
-.course-cal__grid th:first-child,.course-cal__cell--holiday .course-cal__num {color:var(--danger)}
+.course-cal__grid th:first-child,.course-cal__cell--holiday .course-cal__num {color:var(--danger-text)}
 .course-cal__grid td {padding:2px;vertical-align:top;height:50px}
 .course-cal__cell > a,.course-cal__cell > div {display:flex;flex-direction:column;align-items:center;gap:1px;height:100%;padding:4px 1px;border-radius:8px;text-decoration:none;color:var(--text-primary)}
 .course-cal__num {font-size:13px;font-variant-numeric:tabular-nums}
@@ -138,7 +138,7 @@
 .course-cal__cell--class .course-cal__tag {color:var(--tb-ink)}
 .course-cal__cell--test > a {background:var(--class-main)}
 .course-cal__cell--test .course-cal__num,.course-cal__cell--test .course-cal__tag {color:#fff}
-.course-cal__cell--break .course-cal__tag,.course-cal__cell--holiday .course-cal__tag {color:var(--danger)}
+.course-cal__cell--break .course-cal__tag,.course-cal__cell--holiday .course-cal__tag {color:var(--danger-text)}
 .course-cal__cell--next .course-cal__tag {color:var(--tb-ink)}
 .course-cal__cell--done > a {opacity:.55}
 .course-cal__cell--today > a,.course-cal__cell--today > div {outline:2px solid var(--tb-ink);outline-offset:-2px}
@@ -171,7 +171,7 @@
 .course-date-edit {margin:8px 16px 4px;padding:12px;border-radius:10px;background:var(--bg-secondary);display:flex;flex-direction:column;gap:8px;font-size:14px}
 .course-date-edit label {display:flex;flex-direction:column;gap:4px;font-weight:600}
 .course-date-edit p {margin:0;color:var(--text-secondary);line-height:1.6}
-.course-date-edit .course-date-edit__error {color:var(--danger)}
+.course-date-edit .course-date-edit__error {color:var(--danger-text)}
 .course-date-edit__actions {display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .course-list > .course-date-edit {margin:0 0 16px}
 
@@ -185,7 +185,7 @@
 .course-card__top {display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;color:var(--text-muted);font-variant-numeric:tabular-nums;margin-bottom:14px}
 .course-timer {font-weight:700;color:var(--text-secondary)}
 .course-timer--warn {color:var(--warning)}
-.course-timer--late {color:var(--danger)}
+.course-timer--late {color:var(--danger-text)}
 .course-card__prompt {font-size:clamp(22px,5cqi,30px);font-weight:700;letter-spacing:-.02em;line-height:1.5;margin:4px 0 18px}
 .course-card__prompt--ja {font-family:var(--tb-ja);letter-spacing:0;font-weight:600}
 .course-dots {letter-spacing:2px;color:var(--tb-ink)}
@@ -197,19 +197,19 @@
 .course-judge {display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .course-judge button {min-height:54px;border-radius:12px;font-weight:700;font-size:16px;border:1.5px solid var(--border);background:transparent;color:var(--text-primary)}
 .course-judge .course-judge__pass {border-color:var(--accent-text);color:var(--accent-text)}
-.course-judge .course-judge__fail {border-color:var(--danger);color:var(--danger)}
+.course-judge .course-judge__fail {border-color:var(--danger);color:var(--danger-text)}
 .course-keys {margin:12px 0 0;font-size:12px;color:var(--text-muted);text-align:center}
 .course-result {text-align:center;padding:18px 12px 6px}
 .course-result__score {font-size:56px;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums;margin:6px 0}
 .course-result__verdict {display:inline-block;padding:4px 16px;border-radius:999px;font-weight:800}
 .course-result__verdict--pass {background:var(--tb-tint);color:var(--tb-ink)}
-.course-result__verdict--fail {background:var(--bg-secondary);color:var(--danger)}
+.course-result__verdict--fail {background:var(--bg-secondary);color:var(--danger-text)}
 .course-review {list-style:none;margin:16px 0;padding:0;display:flex;flex-direction:column;text-align:left}
 .course-review li {display:grid;grid-template-columns:2em 1fr auto;gap:2px 10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--border);font-size:14px}
 .course-review__ja {grid-column:2;color:var(--text-secondary);font-size:13px;font-family:var(--tb-ja)}
 .course-mark {min-width:64px;min-height:34px;border-radius:999px;border:1px solid var(--border);background:transparent;font-weight:700;font-size:13px}
 .course-mark--pass {color:var(--accent-text);border-color:var(--accent-text)}
-.course-mark--fail {color:var(--danger);border-color:var(--danger)}
+.course-mark--fail {color:var(--danger-text);border-color:var(--danger)}
 .course-line__no {color:var(--text-muted);font-variant-numeric:tabular-nums;font-size:13px}
 .course-line__ko {font-size:14px;color:var(--text-secondary);line-height:1.6}
 .course-actions {display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px}

@@ -337,7 +337,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
                       size="sm"
                       variant="ghost"
                       onClick={() => setConfirmDelete(pdf)}
-                      style={{ color: 'var(--danger)' }}
+                      style={{ color: 'var(--danger-text)' }}
                     >
                       휴지통
                     </Button>

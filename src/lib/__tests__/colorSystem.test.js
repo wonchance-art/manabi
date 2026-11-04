@@ -65,8 +65,68 @@ describe('단계 1 이름 도입 — 값 그대로(화면 무변화)', () => {
       const body = read(f).replace(/--(?:warning|danger)-tint:[^;]*;/g, '');
       expect(body, f).not.toMatch(/color-mix\(in srgb, var\(--(?:warning|danger)\) 15%, transparent\)/);
     }
-    for (const sel of ['.tag--due {', '.badge--stage-young {', '.viewer-badge--due {', '.badge--stage-learning {', '.badge--stage-relearning {']) {
+    for (const sel of ['.tag--due {', '.badge--stage-young {', '.badge--stage-learning {', '.badge--stage-relearning {']) {
       expect(sliceBetween(css, sel, '}'), sel).toMatch(/background: var\(--(?:warning|danger)-tint\)/);
     }
+  });
+});
+
+const srcFiles = (dir, re) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+  const p = join(dir, e.name);
+  if (e.isDirectory()) return ['__tests__', 'world', 'textbookEditions'].includes(e.name) ? [] : srcFiles(p, re);
+  return re.test(e.name) ? [p] : [];
+});
+
+describe('단계 2-② 옅은 노랑 바탕 = --warning-tint 하나 (오너 「전부 권장대로」 2026-11-04 KST)', () => {
+  // 시안: https://claude.ai/artifact/1D1pG1Zm99d4j9XoXUTLa9 — 7 · 10 · 12 · 13 · 16% · 밝은 노랑 · rgba 직접 값이 흩어져 있었다.
+  // 제외(시안에서 정함): 과정 지도 카드 바탕 7%(카드 면과 섞은 면 바탕) · 뷰어 「어려움」 채점 단추(채점 척도, 읽기면과 섞음).
+  const ALLOW = [
+    ['src/views/CourseMapPage.module.css', 'color-mix(in srgb, var(--warning) 7%, var(--bg-card))'],
+    ['src/components/viewer/reader-controls.css', 'color-mix(in srgb,var(--warning) 13%,var(--reader-paper))'],
+  ];
+  it('노랑을 손으로 옅게 섞은 바탕이 없다 — 예외 둘만', () => {
+    const offenders = [];
+    for (const f of srcFiles('src', /\.(css|jsx|js)$/)) {
+      let body = read(f).replace(/--warning-tint:[^;]*;/g, '');
+      for (const [file, expr] of ALLOW) if (f === file) body = body.split(expr).join('');
+      // 바탕 선언만 본다 — 테두리 · 급수 색 데이터(N5 노랑 bg 키)는 다른 역할.
+      const hits = body.match(/background(?:-color)?\s*:\s*['"]?(?:color-mix\(in srgb,\s*var\(--warning(?:-bright)?\)\s*\d+%,[^)]*\)|rgba\(\s*(?:212,\s*150,\s*42|245,\s*195,\s*74|252,\s*196,\s*25)[^)]*\))/g);
+      if (hits) offenders.push(`${f}: ${hits.join(' | ')}`);
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe('단계 2-③ 갈색 경고 글자 --warning-text를 걷었다 (오너 「전부 권장대로」 2026-11-04 KST)', () => {
+  // 시안: https://claude.ai/artifact/FimxNgPnvMo9pXFbFexcmU — 경고 글자는 노랑(--warning) · 옅은 노랑 위 진한 글자(--warning-on-tint) 둘뿐.
+  it('--warning-text 이름이 어디에도 없다', () => {
+    const hits = srcFiles('src', /\.(css|jsx|js)$/).filter((f) => read(f).includes('--warning-text'));
+    expect(hits).toEqual([]);
+  });
+  it('남은 자리는 on-tint로 — 함정 상자 라벨 · 알림 경고(노랑 15% 상자) · 관리자 게시 패널', () => {
+    expect(read('src/index.css')).toContain('.fr-callout--pitfall .fr-callout__label { color: var(--warning-on-tint); }');
+    expect(sliceBetween(read('src/components/profile/profile.css'), '.pf-warn{', '}')).toMatch(/color:var\(--warning-on-tint\);background:var\(--warning-tint\)/);
+    expect(read('src/components/LiteraturePublishPanel.jsx').match(/var\(--warning-on-tint\)/g)).toHaveLength(3);
+  });
+});
+
+describe('단계 2-④ 위험 글자는 --danger-text(#A3352B), 표시는 --danger (오너 「전부 권장대로」 2026-11-04 KST)', () => {
+  // 시안: https://claude.ai/artifact/9ZRVeihieRFPyEbWnGW3J6 — #C84040 글자는 종이 위 4.48 · 회색 면 위 4.17로 본문 기준(4.5) 미달.
+  // 테두리 · 줄긋기 선 · 점 · 꽉 찬 바탕은 --danger 그대로. 글자 아닌 예외: 대화 다시 보내기 ↻ 아이콘, 기억 건강 「위험」 점.
+  it('셸이 #A3352B를 정의하고, 옛 판(셸 밖)은 --danger를 가리킨다', () => {
+    expect(read('src/components/web/web-shell.css')).toMatch(/\.manabi-app\{[^}]*--danger-text:#a3352b;/);
+    expect(read('src/index.css')).toContain('--danger-text: var(--danger);');
+  });
+  it('글자색으로 --danger를 직접 쓰지 않는다 — 예외 둘만', () => {
+    const offenders = [];
+    for (const f of srcFiles('src', /\.(css|jsx|js)$/)) {
+      read(f).split('\n').forEach((line, i) => {
+        if (!/(?<![-\w])color\s*:\s*'?var\(--danger\)/.test(line)) return;
+        if (f.endsWith('conversation.css') && line.startsWith('.conv-retry {')) return;
+        if (f.endsWith('MemoryHealthCard.jsx') && line.includes("key: 'forgotten'")) return;
+        offenders.push(`${f}:${i + 1}`);
+      });
+    }
+    expect(offenders).toEqual([]);
   });
 });

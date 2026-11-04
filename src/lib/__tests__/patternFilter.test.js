@@ -291,7 +291,9 @@ describe('배선 — 필터를 우회할 길이 없다', () => {
     const vocab = sliceBetween(css, '.vocab-row__due {', '}');
     expect(pill).toContain('color: var(--warning-on-tint);');
     expect(vocab).toContain('color: var(--warning-on-tint);');
-    expect(pill).toContain('color-mix(in srgb, var(--warning-bright) 16%, transparent)');
+    // 바탕도 같은 이름 하나(색 체계 2-② — 밝은 노랑 16%에서 --warning-tint로, 서재 「N 복습」 알약과 같은 색).
+    expect(pill).toContain('background: var(--warning-tint);');
+    expect(vocab).toContain('background: var(--warning-tint);');
   });
 });
 

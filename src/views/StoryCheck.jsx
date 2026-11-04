@@ -264,13 +264,13 @@ function StoryQuestion({ q, langCode }) {
           )}
         </>
       ) : (
-        <div style={{ fontSize: '0.86rem', color: 'var(--danger)', lineHeight: 1.6 }}>
+        <div style={{ fontSize: '0.86rem', color: 'var(--danger-text)', lineHeight: 1.6 }}>
           ⚠ 이 문항은 콘텐츠 형식 오류로 표시할 수 없어요.
         </div>
       )}
 
       {result && !result.ok && (q.qtype === 'order' || q.qtype === 'fill') && (
-        <div className="fr-quiz__answer" style={{ color: 'var(--danger)' }}>
+        <div className="fr-quiz__answer" style={{ color: 'var(--danger-text)' }}>
           × 다시 — {q.why || '이야기를 다시 읽고 재도전하세요.'} (시도 {result.tries}회)
         </div>
       )}

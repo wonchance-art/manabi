@@ -1,6 +1,6 @@
 /* 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001, 목업 docs/design/mocks/lv/lv.html 8판).
    새 색은 --lv-* 토큰 — 다크 값과 함께 index.css에 등록하고, 셸(.manabi-app)은 늘 밝은 화면이라 여기서 라이트 값으로 고정한다
-   (web-shell.css --accent-text · --warning-text와 같은 방식, COLOR-V2-UNIFY-001). 장미(--ja)는 저장과 선택 표시에만 쓴다.
+   (web-shell.css --accent-text · --warning-on-tint와 같은 방식, COLOR-V2-UNIFY-001). 장미(--ja)는 저장과 선택 표시에만 쓴다.
    접힘은 셸 컨테이너(manabi-shell) 폭으로 — 새 뷰포트 쿼리를 만들지 않는다(ui-conventions §2). */
 /* --lv-faint #A3A399 → #6C6D64(화면 벽 WALL-003, 2026-11-02 KST): 개수 · 출처 · 「아직」 같은 흐린 글자가 종이 위 2.31:1이었다 — 4.76:1(카드 5.16).
    「흐림」 단계는 남기고 보조 글자(--muted #65675F)와는 크기 · 굵기로 가른다. */

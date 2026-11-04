@@ -431,7 +431,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
           <div className="fr-check__verdict-actions">
             {gradeError ? (
               <>
-                <span role="alert" style={{ color: 'var(--danger)', fontSize: '0.84rem' }}>{gradeError}</span>
+                <span role="alert" style={{ color: 'var(--danger-text)', fontSize: '0.84rem' }}>{gradeError}</span>
                 <button type="button" className="fr-check__next" onClick={() => setGradeAttempt(attempt => attempt + 1)}>저장 다시 시도</button>
               </>
             ) : (
