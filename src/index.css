@@ -1664,10 +1664,8 @@ body.is-review-chrome .page-container { padding-top: 8px; }
   cursor: pointer;
 }
 
-.review-score-btn--again { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); }
-.review-score-btn--hard  { background: linear-gradient(135deg, var(--warning-bright), #f0b400); }
-.review-score-btn--good  { background: linear-gradient(135deg, #51cf66, #40c057); }
-.review-score-btn--easy  { background: linear-gradient(135deg, #339af0, #228be6); }
+/* 채점 4단 색은 놓이는 자리가 진다 — 복습실(review-room.css --grade-*) · 뷰어 카드(reader-controls.css).
+   옛 open-color 그라데이션(#ff6b6b 등)은 두 자리가 늘 덮어써 화면에 나온 적이 없어 걷었다(COLOR-SYS-001). */
 
 .review-score-btn:active {
   transform: scale(0.95);
