@@ -13,6 +13,7 @@
 //   · 흐릿 범위(state=fragile) — 지난 14일 연습에서 「몰랐어요」 · 오답을 받은 표현
 // 그 밖(주간 리포트 · 복습 수 · 히트맵 · 알림 · 관리자 지표 · 산출 단어 …)은 제외 — isGradedReviewEvent가 거른다.
 
+import { NON_ANSWER_SOURCES } from './reviewEventSources.js';
 export const PRACTICE_SOURCE = 'practice';
 export const PRACTICE_QTYPES = Object.freeze(['self', 'choice', 'cloze', 'typing', 'listening']);
 /** 정답이 정해진 문항 — 숙련 사다리 · 난이도 다이얼에 들어간다. self(자기 채점)는 빠진다. */
@@ -45,8 +46,8 @@ export function buildPracticeEvent({ word, qtype, scope, result }) {
 /** 숙련 사다리(deriveVocabRungs) · 난이도 다이얼(EWMA)에 들어가는 연습 기록인가 — 정답이 정해진 문항만. */
 export const countsForSkillLadder = event => isPracticeEvent(event) && gradedQtype(event);
 
-/** 난이도 다이얼 표본 — 기존 규칙(ui · dict 제외) + 연습 self 제외. */
-export const countsForDifficulty = event => !!event && event.source !== 'ui' && event.source !== 'dict'
+/** 난이도 다이얼 표본 — 답 아닌 출처(reviewEventSources: ui · dict · assist — 채점 판정과 같은 집합) 제외 + 연습 self 제외. */
+export const countsForDifficulty = event => !!event && !NON_ANSWER_SOURCES.has(event.source)
   && (!isPracticeEvent(event) || gradedQtype(event));
 
 /**

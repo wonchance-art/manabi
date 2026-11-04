@@ -227,13 +227,14 @@ describe('§4 이음새 신설 0 — 읽기만 한다', () => {
     expect(rows).toMatch(/catch \{\s*return \[\];\s*\}/);
   });
 
-  it('정답률 정본을 건드리지 않는다 — isGradedReviewEvent 무변경', () => {
-    // 약점 필터는 이보다 좁다(assist·flash 제외). 그렇다고 이쪽을 좁히면 주간 리포트의
-    // 정답률 수치가 통째로 바뀐다 — 좁히기는 약점 모듈 안에서만 한다.
-    expect(isGradedReviewEvent({ source: 'assist', correct: false })).toBe(true);
+  it('정답률 정본은 답 아닌 출처 집합 하나로 거른다 — 약점 필터는 그보다 좁다', () => {
+    // 이 모듈이 처음 짚은 오염원(assist · explain이 correct:false로 쌓임)은 EVENT-SOURCE-001(2026-11-04 KST)에서
+    // 정본(reviewEventSources.NON_ANSWER_SOURCES)으로 옮겼다 — 정답률 · 난이도 다이얼이 같은 집합을 쓴다.
+    // 약점 필터는 여전히 그보다 좁다(flash 등 회상 방식 허용 목록) — 좁히기는 약점 모듈 안에서만 한다.
+    expect(isGradedReviewEvent({ source: 'assist', correct: false })).toBe(false);
     expect(isGradedReviewEvent({ source: 'ui' })).toBe(false);
-    expect(codeOf(read('src/lib/weeklyReport.js')))
-      .toContain("event.source !== 'ui' && event.source !== 'dict'");
+    expect(isGradedReviewEvent({ source: 'vocab', correct: false, detail: { qtype: 'flash' } })).toBe(true);
+    expect(codeOf(read('src/lib/weeklyReport.js'))).toContain('!NON_ANSWER_SOURCES.has(event.source)');
   });
 
   it('마이그레이션 0 — 이 축은 읽기만 한다', () => {
