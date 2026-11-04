@@ -1,4 +1,8 @@
 import Link from 'next/link';
+// (app) 레이아웃 밖이라 셸 CSS가 따라오지 않는다 — Layout과 같은 순서로 직접 불러온다(not-found 선례).
+// 셸로 감싸 기기 밝은/어두운 모드와 상관없이 종이 바탕 · 먹 글자(COLOR-SYS-001 단계 3, 오너 「전부 권장대로」 2026-11-05 KST).
+import '@/components/books/reading-shell.css';
+import '@/components/web/web-shell.css';
 
 export const metadata = {
   title: '개인정보 처리방침',
@@ -7,7 +11,7 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 20px 80px', lineHeight: 1.75 }}>
+    <div className="manabi-app"><div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 20px 80px', lineHeight: 1.75 }}>
       <h1 style={{ fontSize: '1.6rem', marginBottom: 6 }}>개인정보 처리방침</h1>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: 28 }}>
         최종 업데이트: 2026년 11월 2일
@@ -81,7 +85,7 @@ export default function PrivacyPage() {
       <p style={{ marginTop: 40 }}>
         <Link href="/terms" style={{ color: 'var(--primary)' }}>← 이용약관 보기</Link>
       </p>
-    </div>
+    </div></div>
   );
 }
 

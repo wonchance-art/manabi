@@ -773,6 +773,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 2.05rem;
   font-weight: 700;
   margin-bottom: 8px;
+  /* 쪽 제목은 먹색 하나 — 기기 밝은/어두운 모드와 상관없이(오너 「전부 권장대로」 2026-11-05 KST, 시안
+     https://claude.ai/artifact/QStowgGqxhx2CqcbktJEPP). 예전에는 밝은 모드만 로즈 그라데이션, 어두운 모드는 먹 → 회색 그라데이션이었다. */
+  color: var(--text-primary);
+}
+/* 학습 월드(개발 동결)는 옛 제목 그대로 둔다 — 오너 「월드 화면은 제외」(Layout data-world). */
+.manabi-app[data-world] .page-header__title {
   background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -3697,8 +3703,8 @@ a.viewer-badge:hover {
 .role-badge--public  { background: var(--accent-glow);    color: var(--accent-text); }
 .role-badge--private { background: var(--primary-glow);   color: var(--primary-light); }
 
-/* ========= Light theme page-header gradient ========= */
-[data-theme="light"] .page-header__title {
+/* ========= Light theme page-header gradient — 월드만(위 data-world 규칙과 짝) ========= */
+[data-theme="light"] .manabi-app[data-world] .page-header__title {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

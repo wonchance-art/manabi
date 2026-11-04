@@ -163,3 +163,26 @@ describe('단계 3 · 옛 화면 이전 (오너 「승인 및 수용」 2026-11-
     expect(icss).toMatch(/\.add-page \.toggle-btn\.toggle-btn--primary[^{]*\{ background: var\(--ja\)/);
   });
 });
+
+describe('단계 3-② 기기 모드와 상관없이 같은 화면 (오너 「전부 권장대로」 2026-11-05 KST, 시안 https://claude.ai/artifact/QStowgGqxhx2CqcbktJEPP)', () => {
+  it('앱 틀 밖 안내 쪽 네 곳은 셸로 감싸고 셸 CSS를 직접 부른다 — 404 선례', () => {
+    for (const p of ['help', 'privacy', 'terms', 'credits']) {
+      const src = read(`src/app/${p}/page.jsx`);
+      expect(src, p).toContain("import '@/components/web/web-shell.css';");
+      expect(src, p).toContain("import '@/components/books/reading-shell.css';");
+      expect(src, p).toContain('<div className="manabi-app"><div style={{ maxWidth: 760');
+    }
+  });
+  it('쪽 제목은 먹색 하나 — 그라데이션 · 밝은 모드 로즈는 학습 월드(data-world)에만 남는다', () => {
+    const css = read('src/index.css');
+    const base = sliceBetween(css, '.page-header__title {', '}');
+    expect(base).toContain('color: var(--text-primary);');
+    expect(base).not.toContain('gradient');
+    expect(css).not.toMatch(/\[data-theme="light"\] \.page-header__title\s*\{/);
+    expect(css).toContain('[data-theme="light"] .manabi-app[data-world] .page-header__title {');
+    expect(read('src/components/Layout.jsx')).toContain('data-world={isWorldRoute(pathname) || undefined}');
+  });
+  it('도움말에 내부 용어 FSRS 항목이 없다(오너 2026-11-05 KST — 내부 용어 화면 비노출)', () => {
+    expect(read('src/app/help/page.jsx')).not.toMatch(/FSRS/);
+  });
+});

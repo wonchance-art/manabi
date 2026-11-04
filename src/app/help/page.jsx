@@ -1,4 +1,8 @@
 import Link from 'next/link';
+// (app) 레이아웃 밖이라 셸 CSS가 따라오지 않는다 — Layout과 같은 순서로 직접 불러온다(not-found 선례).
+// 셸로 감싸 기기 밝은/어두운 모드와 상관없이 종이 바탕 · 먹 글자(COLOR-SYS-001 단계 3, 오너 「전부 권장대로」 2026-11-05 KST).
+import '@/components/books/reading-shell.css';
+import '@/components/web/web-shell.css';
 
 export const metadata = {
   title: '도움말',
@@ -13,10 +17,6 @@ const FAQ = [
   {
     q: '복습은 어디서 하나요?',
     a: '복습 탭에서요. 오늘 몫이 이야기 한 편에 담겨 나오고, 카드로만 돌릴 수도 있어요. 서재 글을 읽을 때도 복습 시점이 된 단어는 표시가 붙어 그 자리에서 평가할 수 있어요.',
-  },
-  {
-    q: 'FSRS는 뭐예요?',
-    a: '기억 곡선 기반 간격 반복 알고리즘이에요. 단어마다 "얼마나 잘 기억하는지"를 추적해서 다음 복습 시점을 자동으로 계산해줘요. Anki에서도 사용하는 검증된 알고리즘이에요.',
   },
   {
     q: '단어 의미가 이상해요/틀렸어요.',
@@ -46,7 +46,7 @@ const FAQ = [
 
 export default function HelpPage() {
   return (
-    <div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 20px 80px' }}>
+    <div className="manabi-app"><div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 20px 80px' }}>
       <h1 style={{ fontSize: '1.8rem', marginBottom: 6 }}>도움말</h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: 32 }}>
         자주 묻는 질문을 모았어요. 여기에 없는 질문은 가입 이메일로 문의해 주세요.
@@ -74,6 +74,6 @@ export default function HelpPage() {
           <Link href="/credits" className="btn btn--ghost btn--sm">자료 출처</Link>
         </div>
       </div>
-    </div>
+    </div></div>
   );
 }
