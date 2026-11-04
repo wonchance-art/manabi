@@ -5,6 +5,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { recordActivity } from '../lib/streak';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { recordReviewCompleted } from '../lib/learn/progressStore';
@@ -539,6 +540,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
         return;
       }
       if (result.actorId !== user?.id) return;
+      void recordActivity(result.actorId); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001) — FSRS 저장은 grade가 아니라 영수증이 없다
       invalidateVocabularyLearning(queryClient, result.actorId);
       toast('단어를 추가했어요', 'success');
       setManualAddOpen(false);

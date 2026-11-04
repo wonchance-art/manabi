@@ -924,6 +924,11 @@
   ⑫ 이번 PR — 학습 진단지 · 기간 요약(오너 「1번으로 목업」 → 인바디 결과지 컨셉 → 「ㅇㅇ · '자세히 보기' · 표준 · 권장대로 · ㅇㅇ」 2026-11-02 KST, [목업](https://claude.ai/artifact/FxNNLFrQs7EfRQUFyxd1Vx)):
     이번 주 창 「이번 주 · 지난 30일」 칩 · 공부한 날 줄 · 「자세히 보기」 · 「요약 복사」 + `/progress/report` 일곱 칸.
     셈 정본 buildRangeReport 하나. 표준 = 하루 기준 × 일수(복습 · 담기 = 목표 창). 메일 자동 발송 · 에이전트 읽기(get_summary)는 별도 승인 — 이 꾸러미가 요약 계약 v1.
+    **완료 [#1658](https://github.com/wonchance-art/manabi/pull/1658) `f36aa7d`.** 연속 04시 전환 운영 실측 11/3 · 11/4 KST: 핀 · 계약 그대로, 04~09시 표본은 아직 0(④ 미확인).
+  ⑬ 이번 PR — 공부한 날 = 연속(STREAK-STUDY-PARITY-001, 오너 상시 방침 「백엔드 데이터 관련 개선은 알아서」 2026-11-04 KST):
+    운영 읽기 실측(10/6 ~ 11/3) — 「공부한 날」 칸에는 켜지고 연속 영수증이 없던 날 7일(담기만 · 한자 탭 · 단어 목록 바퀴). 영수증은 FSRS 채점과 update_streak에서만 생긴다.
+    답 = `logReviewEvents` 한 곳(countsAsStudyAnswer 정본, vocab 제외) · 담기 = 단어를 만드는 쓰기 지점 18곳(새로 16곳)에 `recordActivity`. DB · 계약 핀 · 화면 변경 없음.
+    계약 `streakStudyParity.test.js` — 목록 밖 새 쓰기 지점이 생기면 실패. 지난 날은 고치지 않는다(지금 연속에 영향 없음 — 10/28 쉼 뒤 6일).
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —

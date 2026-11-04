@@ -30,6 +30,18 @@ function reviewEventRows(userId, events) {
     }));
 }
 
+/**
+ * 공부한 날 = 연속(STREAK-STUDY-PARITY-001, 2026-11-04 KST). 「공부한 날」 칸(studyDays)이 세는 답이면 연속(update_streak)에도 같은
+ * 날을 남긴다 — 예전엔 한자 탭 · 단어 목록 바퀴 · 읽기 · 퀘스트 답이 칸에는 켜지고 연속에는 빠졌다(운영 실측: 10/17 · 10/20 · 10/21).
+ * 판정 = weeklyReport.countsAsStudyAnswer(칸과 같은 정본). 어휘(vocab)는 뺀다 — FSRS 채점은 grade 트랜잭션이, 예전 채점은
+ * progressStore가 이미 남긴다(streak.js: 재적립하지 않는다). 쓰기 뒤에만 받는다(두 모듈 모두 첫 화면 밖) · 기다리지 않는다.
+ */
+async function noteStudyActivity(userId, rows) {
+  if (!rows.some(row => row.source !== 'vocab')) return;
+  const [{ countsAsStudyAnswer }, { recordActivity }] = await Promise.all([import('./weeklyReport'), import('./streak')]);
+  if (rows.some(row => row.source !== 'vocab' && countsAsStudyAnswer(row))) await recordActivity(userId);
+}
+
 /** 쓰기 전에 경계 확인(fsrs_legacy_boundary)이 필요한 행 — 어휘 기록 · 어휘 되돌리기 표식. */
 const needsLegacyBoundary = row => row.source === 'vocab' || (row.source === 'ui' && row.detail?.qtype === 'undo');
 
@@ -47,6 +59,7 @@ export function logReviewEvents(userId, events, { strict = false, boundary } = {
     }
     const { error } = await supabase.from('review_events').insert(rows);
     if (error) throw error;
+    noteStudyActivity(userId, rows).catch(() => {});
   };
   const result = write();
   return strict ? result : result.catch(() => {});

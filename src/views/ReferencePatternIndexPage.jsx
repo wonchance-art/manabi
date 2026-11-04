@@ -6,6 +6,7 @@ import Link from '../components/ArchiveLink';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { recordActivity } from '../lib/streak';
 import { fetchSavedWordSet } from '../lib/referenceVocab';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -91,6 +92,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
           language: lang,
         }, { onConflict: 'user_id,word_text' });
       if (error) throw error;
+      void recordActivity(user.id); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001)
       setSavedSet(prev => new Set([...prev, item.pattern]));
       toast?.(`"${item.pattern}" 문형을 저장했어요`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user.id] });

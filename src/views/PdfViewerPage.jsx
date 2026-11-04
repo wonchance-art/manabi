@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { recordActivity } from '../lib/streak';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { callGemini } from '../lib/gemini';
@@ -267,6 +268,7 @@ export default function PdfViewerPage() {
         sourceSentence: inputText,
       }), VOCAB_UPSERT);
       if (error) throw error;
+      void recordActivity(user.id); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001)
       setSaving(prev => ({ ...prev, [key]: 'done' }));
       try {
         await saveContext({ word: pdfContextWord(token), source: { kind: 'pdf', pdfId: id, page: sourcePage || null, quote: inputText } });

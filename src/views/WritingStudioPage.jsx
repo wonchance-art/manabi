@@ -239,6 +239,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       });
       const { error: err } = await supabase.from('user_vocabulary').upsert([row], VOCAB_UPSERT);
       if (err) throw err;
+      void recordActivity(user.id); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001)
       setGapAdded((prev) => ({ ...prev, [key]: true }));
     } catch {
       setError('단어장에 담지 못했어요. 잠시 후 다시 시도해 주세요.');

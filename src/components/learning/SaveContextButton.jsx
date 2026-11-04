@@ -2,6 +2,7 @@
 import { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../../lib/AuthContext';
+import { recordActivity } from '../../lib/streak';
 import './learning.css';
 import { friendlyToastMessage } from '../../lib/errorMessage';
 
@@ -22,6 +23,7 @@ export default function SaveContextButton({ word, source, label = '복습에 담
     busy.current=true;setPending(true);setError('');setMessage('');
     try {
       const result = await saveContext({word,source,...(confirm ? {confirmId:confirm.id,confirmMeaning:confirm.meaning} : {})});
+      if (result.created) void recordActivity(user.id); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001) — 새로 담을 때만(문맥만 이은 것은 칸에도 안 켜진다)
       setConflict(null);setMessage(result.contextAdded ? '출처와 함께 담았어요. 기존 복습 일정은 그대로예요.' : '이미 담아둔 문맥이에요.');
       for (const key of ['vocab','vocab-words','pdf-saved-vocab','vocabulary-contexts','book-review']) queryClient.invalidateQueries({queryKey:[key,user.id]});
       onSaved?.(result);

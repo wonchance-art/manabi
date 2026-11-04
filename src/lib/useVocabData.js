@@ -2,6 +2,7 @@
 // 수동 추가는 모달 UI 상태와 묶여 있어 VocabPage에 남겨둔다.
 import { QueryClientContext, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
+import { recordActivity } from './streak';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { failureMessage } from './errorMessage';
@@ -184,6 +185,7 @@ export function useVocabData() {
         if (error) throw error;
         imported += chunk.length;
       }
+      void recordActivity(user.id); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001)
       return imported;
     },
     onSuccess: (count, _variables, context) => {

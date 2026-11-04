@@ -5,6 +5,7 @@ import { registerLessonCards } from '../lib/learn/sandwichCards';
 import { useAuth } from '../lib/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { saveContext } from './learning/SaveContextButton';
+import { recordActivity } from '../lib/streak';
 
 /** ⑤ 산출 단계 — 레슨 어휘를 단어장(카드)에 담는 명시적 버튼 */
 export default function VocabRegisterCta({ lang, slug, vocabs, sectionIndex }) {
@@ -25,6 +26,7 @@ export default function VocabRegisterCta({ lang, slug, vocabs, sectionIndex }) {
       source:{kind:'textbook',chapterSlug:slug,sectionIndex,vocabIndex},
     })));
     const failed=results.filter(result=>result.status==='rejected');
+    if(results.some(result=>result.status==='fulfilled'&&result.value?.created))void recordActivity(user.id); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001) — 새로 담은 말이 있을 때만
     if(failed.length) setError(`${results.length-failed.length}개 저장, ${failed.length}개 확인 필요. 위 단어별 저장 버튼에서 뜻이나 연결 상태를 확인해 주세요.`);
     else setDone({added:results.filter(result=>result.value.created).length});
     for(const key of ['vocab','vocab-words']) queryClient.invalidateQueries({queryKey:[key,user.id]});
