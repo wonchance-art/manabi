@@ -156,7 +156,7 @@ describe('home and profile mixed memory integration', () => {
     const profile = await fetchProfileStats(ACTOR, NOW);
     expect(profile.vocab[1].last_reviewed_at).toBeNull();
     expect(profile.projections[1].memory.lastReview).toBe('2026-10-02T00:01:00.000Z');
-    expect(profile.heatmapDayCounts['2026-10-03']).toEqual({ answers: 0, saved: 2 }); // 10-04 00:30 KST는 학습일(04시 경계)로 10-03 — STATS-MAP-001
+    expect(profile.heatmapDayCounts['2026-10-03']).toEqual({ answers: 0, saved: 2, lessons: 0 }); // 10-04 00:30 KST는 학습일(04시 경계)로 10-03 — STATS-MAP-001
     vi.unstubAllGlobals();
   });
 

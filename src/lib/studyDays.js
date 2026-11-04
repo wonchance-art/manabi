@@ -8,6 +8,9 @@ import { supabase } from './supabase';
 import { readCompleteLegacyRows } from './legacyReviewSync';
 import { learningDateString } from './growthStats';
 import { countsAsStudyAnswer } from './weeklyReport';
+import { studyDayTotal } from './periodSummary.js';
+
+export { studyDayTotal };
 
 /** 공부한 날 기간 — 최근 52주(364일 · 「1년」), 가장 오른쪽 아래가 오늘. 칸에는 24주가 보이고 나머지는 옆으로 밀어 본다(오너 「ㅇㅋ」 2026-11-01 KST). */
 export const STUDY_DAYS_SPAN = 364;
@@ -20,17 +23,28 @@ export function fetchStudyAnswerRows(userId, sinceIso) {
 }
 
 /** { 'YYYY-MM-DD': { answers, saved } } — 시작 시각 이전 행은 뺀다. */
-export function studyDayCounts({ answers = [], saved = [], sinceMs = -Infinity } = {}) {
+export function studyDayCounts({ answers = [], saved = [], lessons = [], sinceMs = -Infinity } = {}) {
   const days = {};
   const bump = (at, key) => {
     const t = Date.parse(at);
     if (!Number.isFinite(t) || t < sinceMs) return;
     const day = learningDateString(t);
-    (days[day] ||= { answers: 0, saved: 0 })[key] += 1;
+    (days[day] ||= { answers: 0, saved: 0, lessons: 0 })[key] += 1;
   };
   for (const e of answers) if (countsAsStudyAnswer(e)) bump(e.created_at, 'answers');
   for (const row of saved) bump(row?.created_at, 'saved');
+  // 레슨(user_ref_progress — 읽음 · 확인 문제) — 연속은 레슨 완료를 이미 센다(progressStore → recordActivity). 칸도 같은 날을 켠다.
+  for (const row of lessons) bump(row?.updated_at, 'lessons');
   return days;
+}
+
+/**
+ * 레슨 기록(공부한 날 칸의 「레슨」 몫) — 레슨 진도 표(user_ref_progress, 본인 행 · RLS)의 고친 시각만. 레슨마다 마지막으로 고친 날만
+ * 남으므로 같은 레슨을 다시 연 날 이전의 날은 돌아오지 않는다(오너가 알고 고른 한계 — 목업 VNKQaW7CxTcu5aerN7euDy).
+ */
+export function fetchStudyLessonRows(userId, sinceIso) {
+  return supabase.from('user_ref_progress').select('updated_at').eq('user_id', userId).gte('updated_at', sinceIso)
+    .then(({ data, error }) => { if (error) throw error; return data || []; });
 }
 
 /**
@@ -39,7 +53,7 @@ export function studyDayCounts({ answers = [], saved = [], sinceMs = -Infinity }
  * → { studied, span, percent, sinceDay } — sinceDay가 null이면 「1년 중 N일」, 아니면 「M월 D일부터 N일」. 기록이 없으면 null.
  */
 export function studyDaysBasis(days, dayCounts, { hasOlder = false } = {}) {
-  const active = key => (dayCounts?.[key]?.answers || 0) + (dayCounts?.[key]?.saved || 0) > 0;
+  const active = key => studyDayTotal(dayCounts?.[key]) > 0;
   const first = hasOlder ? 0 : days.findIndex(active);
   if (first < 0) return null;
   const studied = days.slice(first).filter(active).length;
@@ -54,5 +68,6 @@ export function studyDayLabel(day, counts) {
   const parts = [];
   if (counts?.answers) parts.push(`답 ${counts.answers}`);
   if (counts?.saved) parts.push(`담은 말 ${counts.saved}`);
+  if (counts?.lessons) parts.push(`레슨 ${counts.lessons}`);
   return parts.length ? `${head} · ${parts.join(' · ')}` : `${head} · 쉼`;
 }

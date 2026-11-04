@@ -28,7 +28,7 @@ import { fetchTrueRetentionRows, trueRetentionQueryKey } from '../lib/trueRetent
 import { serializeReviewScope, wordScopeLanguage, scopeLevelLabel } from '../lib/reviewScope';
 import { fetchKnownWords, knownWordsLang } from '../lib/knownWords';
 import { detectLang, langNameKo } from '../lib/constants';
-import { fetchStudyAnswerRows, studyDayCounts } from '../lib/studyDays';
+import { fetchStudyAnswerRows, fetchStudyLessonRows, studyDayCounts } from '../lib/studyDays';
 import { PERIOD_LABEL, PREV_LABEL, STANDARD_BAND, ZONE_LABEL, balanceRows, historyBuckets, periodDates, periodStandards, periodSummaryText, studyDaysIn } from '../lib/periodSummary';
 import useLearnLanguage from '../components/learn/useLearnLanguage';
 import LangChips from '../components/learn/LangChips';
@@ -96,15 +96,21 @@ export default function StudyReportPage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // 공부한 날 — 현황 「공부한 날」 칸 · 이번 주 창과 같은 재료(fetchStudyAnswerRows + 담은 말)와 같은 셈(studyDayCounts).
+  // 공부한 날 — 현황 「공부한 날」 칸 · 이번 주 창과 같은 재료(답 · 담은 말 · 레슨)와 같은 셈(studyDayCounts · studyDaysIn).
   const { data: answerRows } = useQuery({
     queryKey: ['study-days', user?.id, range.startMs],
     queryFn: () => fetchStudyAnswerRows(user.id, new Date(range.startMs).toISOString()),
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5,
   });
+  const { data: lessonRows } = useQuery({
+    queryKey: ['study-days-lessons', user?.id, range.startMs],
+    queryFn: () => fetchStudyLessonRows(user.id, new Date(range.startMs).toISOString()),
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5,
+  });
   const report = useMemo(() => (rows ? buildRangeReport(rows, range) : null), [rows, range]);
-  const studied = useMemo(() => (answerRows && learning ? studyDaysIn(studyDayCounts({ answers: answerRows, saved: vocab, sinceMs: range.startMs }), range) : null), [answerRows, learning, vocab, range]);
+  const studied = useMemo(() => (answerRows && learning ? studyDaysIn(studyDayCounts({ answers: answerRows, saved: vocab, lessons: lessonRows || [], sinceMs: range.startMs }), range) : null), [answerRows, learning, vocab, lessonRows, range]);
   const standards = useMemo(() => periodStandards(profile, range.days), [profile, range.days]);
   const balance = useMemo(() => (report ? balanceRows({ report, output: output?.week, standards }) : []), [report, output, standards]);
   const history = useMemo(() => (rows ? historyBuckets(rows, { endMs: range.endMs, buckets: HISTORY_BUCKETS, buildRange: buildRangeReport }) : null), [rows, range.endMs]);
