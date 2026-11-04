@@ -949,6 +949,10 @@
   ⑰ 이번 PR — 레슨한 날도 공부한 날(STUDY-DAYS-LESSON-001, 오너 「A 대로」 2026-11-04 KST · [목업](https://claude.ai/artifact/VNKQaW7CxTcu5aerN7euDy)):
     운영 실측 — 레슨 기록 34일 중 레슨만 한 날 24일(연속은 셌고 칸은 비었다). 칸 · 이번 주 창 · 진단지가 레슨 진도 표(user_ref_progress)의 고친 시각을
     04시 학습일로 같이 센다(studyDayTotal 하나). 칸 설명 「레슨 N」. DB · 연속 계산 변경 없음. 한계(다시 연 레슨의 처음 날은 안 돌아옴)는 오너가 알고 고름.
+    **완료 [#1675](https://github.com/wonchance-art/manabi/pull/1675) `e3673d67` · 운영 19:41 KST.**
+  ⑱ 이번 PR — 관리자 「일별 추이 · 가입 퍼널」 = 학습자 화면과 같은 셈(ADMIN-METRICS-DAY-001, 오너 「전부 권장대로.」 2026-11-05 01:24 KST ·
+    [목업](https://claude.ai/artifact/9kvCCoQjGa6KUWzUtoRCuN)): 04시 학습일 · 답한 사람만 활성 · 채점 답 전체 정답률. 마이그레이션 `20261105010000`
+    (서명 · 보안 · 실행권 · 관리자 검사 그대로, 지문 밖 · 앞뒤 동치) · 복원 SQL(운영 본문 md5 일치) · PGlite 6검사 · 계약 · 설명 두 줄.
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —
