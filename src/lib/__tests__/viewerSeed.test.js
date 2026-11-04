@@ -37,8 +37,10 @@ describe('서버 — 누구의 권한으로 무엇을 싣나', () => {
     const calls = [];
     const seed = await server.loadViewerSeed('45', { sessionCookie: true, auth: async () => ({ supabase: client({ data: ROW, error: null }, calls), user: { id: 'A' } }),
       publicClient: () => { throw new Error('anon not used'); }, now: () => 777 });
-    expect(seed).toEqual({ id: '45', row: ROW, account: 'A', servedAt: 777 });
-    expect(calls).toEqual([['from', 'reading_materials'], ['select', '*'], ['eq', 'id', '45']]);
+    // VIEWER-MEMBER-SSR-001: 같은 계정 토큰으로 이 자료의 읽던 곳(자기 행)을 나란히 본다 — resume(있음/없음/모름)이 실린다.
+    expect(seed).toEqual({ id: '45', row: ROW, account: 'A', servedAt: 777, resume: false });
+    expect(calls).toEqual([['from', 'reading_progress'], ['select', 'last_token_idx'], ['eq', 'user_id', 'A'], ['eq', 'material_id', '45'],
+      ['from', 'reading_materials'], ['select', '*'], ['eq', 'id', '45']]);
   });
   it('비공개 행은 쪽에 싣지 않는다(서비스 워커 문서 캐시에 비공개 본문을 남기지 않음) — 제목은 그 행에서 지금처럼', async () => {
     const priv = { ...ROW, visibility: 'private' };

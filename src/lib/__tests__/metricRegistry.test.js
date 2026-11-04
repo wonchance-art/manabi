@@ -26,7 +26,8 @@ describe('지표 사전', () => {
     expect(GROWTH_LABELS.knownWords).toBe(METRICS.remembered.label);
     expect(GROWTH_COPY.knownWordSub).toBe(METRICS.remembered.sub);
     expect(read('src/views/ProfileStats.jsx')).toContain('label={METRICS.knownMarked.label}');
-    expect(Object.keys(VIEWER_MESSAGES.ko).some(key => key.startsWith(`${METRICS.textCoverage.label} {percent}%`))).toBe(true);
+    // 뷰어 단어 현황은 한 줄(VIEWER-MEMBER-SSR-001 ㉠ 오너 2026-11-04 KST) — 자료실 배지처럼 사전의 짧은 이름을 쓴다.
+    expect(Object.keys(VIEWER_MESSAGES.ko).some(key => key.startsWith(`${METRICS.textCoverage.short} {percent}%`))).toBe(true);
     expect(read('src/views/MaterialsPage.jsx')).toContain(`${METRICS.textCoverage.short} {Math.round(bf.coverage * 100)}%`);
   });
 

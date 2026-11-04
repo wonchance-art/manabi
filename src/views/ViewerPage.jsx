@@ -179,7 +179,7 @@ import { locateLineTokens } from '../lib/viewerSentenceLine';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot, viewerRouteId } from '../lib/classBoard';
 import { adoptViewerSeed, discardEarlyMaterial, loadMaterial, notFoundRetryKey, startEarlyMaterial, viewerSeedAdopted } from '../lib/viewerMaterial';
-import { releaseViewerSsrHold, viewerSsrHeld, viewerSsrPaintDone, viewerSsrRow, viewerSsrStale } from '../lib/viewerSsr';
+import { releaseViewerBadgesPreRead, releaseViewerSsrHold, viewerBadgesKey, viewerSeedAccount, viewerSsrHeld, viewerSsrPaintDone, viewerSsrRow, viewerSsrStale } from '../lib/viewerSsr';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
@@ -356,6 +356,11 @@ export default function ViewerPage({ seed } = {}) {
   const { user, profile, refreshProfileAfterActivity, isAdmin, loading: authLoading } = useAuth();
   // 「←」 복귀 — 확인된 손님이 맥락 없이 열면 산책(/discover). 로그인 확인 중 · 회원 · returnTo가 있으면 지금 그대로(readerReturnTarget).
   const guestReader = !user && !authLoading;
+  // 계정 줄 자리(VIEWER-MEMBER-SSR-001 ㉠) — 서버가 세션 쿠키 계정으로 본문을 읽었으면(seed.account) 계정 확인 전에도 로그인 사람으로 보고
+  // 계정 줄(서재에 담기 · 신고 · 단어 현황 한 줄)을 제자리에 그린다(흐리게 · 누름은 기다림 · 현황은 빈 막대). 손님 안내 띠는 그리지 않는다.
+  // 서버 · 하이드레이션이 같은 props(seed)와 같은 계정 상태(확인 중)를 본다. 확인 결과 손님이면 지금처럼 손님 화면이다.
+  const memberPending = !user && authLoading && !!viewerSeedAccount(seed);
+  const memberAccount = user?.id ?? (memberPending ? viewerSeedAccount(seed) : null);
   const backTarget = readerReturnTarget(originalParams.get('returnTo'), { guest: guestReader });
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -1745,13 +1750,20 @@ export default function ViewerPage({ seed } = {}) {
   // 어휘 커버리지 배지(#1077-2) — 서재 카드와 **같은 엔진·같은 인덱스**(materialFit ←
   // 담김 ∪ '이미 앎'). 뷰어에서만 다른 수를 보이면 두 화면이 서로를 반증한다.
   // 표본 미달(FIT_MIN_TYPES)·게스트·미분석은 무표기(0% 오표기 금지 — fitBand와 같은 결).
+  // 계정 단어 자료(저장 단어 · 아는 단어)가 다 오기 전에는 계산하지 않는다 — 빈 목록으로 센 「아는 말 0%」를 먼저 보였다가 바꾸지 않게.
+  // 그동안 계정 줄은 빈 막대 자리다(VIEWER-MEMBER-SSR-001 ㉠ — 받으면 같은 자리 한 줄에 채운다).
+  const badgeDataSettled = !!user && (!!savedWordsError || savedWords.complete === true) && !learningCapabilities.isLoading
+    && (!knownLangCode || knownState.isSuccess || knownState.isError);
   const coverage = useMemo(() => {
     if (!user || !material?.processed_json) return null;
+    if (!badgeDataSettled) return null;
     const knownRows = [...(knownWordSet || [])].map((word_text) => ({ word_text }));
     const index = knownRows.length ? mergeKnownIntoIndex(savedWords, knownRows) : savedWords;
     const fit = materialFit(material.processed_json, index);
     return fit.total >= FIT_MIN_TYPES ? fit : null;
-  }, [user, material?.processed_json, savedWords, knownWordSet]);
+  }, [user, material?.processed_json, savedWords, knownWordSet, badgeDataSettled]);
+  // 이 자료에 커버리지 줄이 반드시 서는가 — 표본(FIT_MIN_TYPES)은 자료만으로 정해진다(계정 무관). 서면 계정 확인 전부터 한 줄 자리를 잡는다.
+  const badgesExpected = useMemo(() => !!material?.processed_json && materialFit(material.processed_json, null).total >= FIT_MIN_TYPES, [material?.processed_json]);
   // 「N개 수집 → 단어장」(AD-R2 설계 Q4) — 이 자료의 내용어 중 단어장에 담긴 수. 같은 엔진에 '이미 앎'을 합치기 전
   // 인덱스를 넣는다(담은 것만 센다). 표본 하한은 두지 않는다 — 수집은 비율이 아니라 개수라 0% 오표기 위험이 없다.
   const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);
@@ -2808,13 +2820,17 @@ export default function ViewerPage({ seed } = {}) {
   // 위쪽 배지 줄(복습 가능 · 아는/새 단어 · 수집) ✕(오너 2026-10-20 KST 「x표시 만들어서 끌 수 있게」) — 이 자료만, 이 브라우저의 이 계정에.
   // 닫을 때의 복습 가능 수를 적어 두고, 그보다 늘면 다시 보인다(복습으로 가는 길을 영영 끊지 않는다).
   // 계정마다 따로 — 같은 브라우저의 다른 계정이 남의 닫은 수에 가려지지 않게(재검수 2026-10-22 KST).
-  const badgesKey = `viewer-badges-dismissed:${user?.id ?? 'guest'}:${id}`;
+  // 키의 계정 = 확인된 계정, 확인 전이면 서버가 읽은 계정(VIEWER-MEMBER-SSR-001 — 첫 그림 전 읽기 viewerBadgesPreRead와 같은 키).
+  const badgesKey = viewerBadgesKey(memberAccount, id);
   const [badgesDismissedAt, setBadgesDismissedAt] = useState(null); // null = 닫은 적 없음 · 숫자 = 닫을 때 복습 가능 수
-  useEffect(() => {
+  // 그리기 전에 읽는다(layout effect) — 닫아 둔 자료에 한 줄 자리를 그렸다가 거두면 본문이 올라간다. 읽은 뒤에는 첫 그림 전 표지를 뗀다.
+  useLayoutEffect(() => {
     let stored = null;
     try { const raw = localStorage.getItem(badgesKey); stored = raw === null ? null : Number(raw) || 0; } catch { stored = null; }
     setBadgesDismissedAt(stored);
-  }, [badgesKey]);
+    if (memberAccount) releaseViewerBadgesPreRead();
+  }, [badgesKey]); // eslint-disable-line react-hooks/exhaustive-deps -- memberAccount는 badgesKey에 들어 있다
+  useEffect(() => () => releaseViewerBadgesPreRead(), []);
   const [senseReviewIds, setSenseReviewIds] = useState(null); // null = 목록 닫힘
   const senseReviewOpen = senseReviewIds !== null;
   useEffect(() => { setSenseReviewIds(null); }, [id]);
@@ -4303,7 +4319,7 @@ export default function ViewerPage({ seed } = {}) {
       <div ref={classBoardTarget} className="teaching-board-host" hidden={!classStudyActive||!classBoardLayout}/>
       <div className="viewer-center" inert={dictationPickerOpen||!!dictationSentence?true:undefined} aria-hidden={dictationPickerOpen||!!dictationSentence?true:undefined} data-answer-hidden={dictationPickerOpen||!!dictationSentence}>
       {explanationLocale !== effectiveExplanationLocale && <p role="status">{vt('이 자료의 설명 언어는 한국어로 제공돼요.')}</p>}
-      {!user && <ViewerGuestBanner vt={vt} signInHref={signInHref} pending={isPending} />}
+      {!user && !memberPending && <ViewerGuestBanner vt={vt} signInHref={signInHref} pending={isPending} />}
 
         {/* 경로 줄(뷰어 정돈 A안) — 왼쪽 [← 자료실 · 형제 내비], 오른쪽 [도구]. 본문 위에는 경로·제목·도구만
             남고, 끝의 행동(읽기 완료·오늘 학습·다음 범위)은 본문 **아래**로 갔다(「끝은 끝에」). 예전 액션바는
@@ -4399,32 +4415,45 @@ export default function ViewerPage({ seed } = {}) {
             )}
           </div>
         )}
-        {!classStudyActive&&<LibrarySaveButton material={material}/>}
-        {user && material?.visibility === 'public' && material?.owner_id !== user.id && (
-          <ReportMaterialButton materialId={material.id} userId={user.id} toast={toast} />
+        {/* 계정 줄 ①(VIEWER-MEMBER-SSR-001 ㉠) — 서재에 담기 · 신고를 한 줄에. 계정 확인 전(memberPending)에도 제자리에 그리고, 그동안의 누름은 기다렸다가 확인되면 한다. */}
+        {memberAccount && material?.visibility === 'public' && material?.owner_id !== memberAccount && (
+          <div className="viewer-member-actions">
+            {!classStudyActive&&<LibrarySaveButton material={material} pendingAccount={memberPending ? memberAccount : null}/>}
+            <ReportMaterialButton materialId={material.id} userId={user?.id} pendingAccount={memberPending ? memberAccount : null} toast={toast} />
+          </div>
         )}
         {/* 배지 3종은 여태 header의 **직계 자식**이었다 — 래퍼가 없어 폭이 제각각이었고
             (inline-block 하나 vs 전체 폭 둘) 세로도 3줄을 먹었다. 한 줄로 모은다.
             인라인 style 3벌은 공용 클래스로 — v2-K R1 토큰화가 남긴 나머지다. */}
         {savedWordsError && <p role="alert">{vt("저장한 단어를 불러오지 못했어요.")} <button type="button" onClick={() => refetchSavedWords()}>{vt("다시 시도")}</button></p>}
-        {!badgesDismissed && ((user && dueInMaterial > 0) || coverage || collectedInMaterial > 0) && (
+        {/* 계정 줄 ②(VIEWER-MEMBER-SSR-001 ㉠ 오너 2026-11-04 KST) — 복습 가능 · 아는 말 · 새 단어 · 수집을 **한 줄**(넘치면 끝이 「…」)에, ✕는 줄 끝.
+            계정 단어 자료가 오기 전에는 같은 높이의 빈 막대로 자리만 잡고(badgesExpected — 커버리지 줄이 반드시 서는 자료), 다 오면 한 번에 채운다
+            (복습 · 수집만 먼저 나왔다가 아는 말이 끼어드는 글 바뀜 없음). 닫아 둔 자료는 첫 그림 전
+            기기 값을 읽어 자리도 만들지 않는다(viewerBadgesPreRead · 위 badgesKey). 두 모양의 높이가 같아 채워져도 본문이 밀리지 않는다. */}
+        {!badgesDismissed && (badgeDataSettled || !badgesExpected) && ((user && dueInMaterial > 0) || coverage || collectedInMaterial > 0) && (
           <div className="viewer-badges">
+            <span className="viewer-badges__line">
             {user && dueInMaterial > 0 && (
               <span className="viewer-badge viewer-badge--due" title={vt("복습할 것")}>
                 {vt('{count}개 복습 가능', {count: dueInMaterial})}</span>
             )}
+            {user && dueInMaterial > 0 && (coverage || collectedInMaterial > 0) && ' · '}
             {/* 통계 줄 한 덩어리(AD-R2 §5 「크롬 정리」): 커버리지 · 이 자료에서 담은 수 → 단어장. 수집 칩은 #1331이
                 지웠고(전체 단어장 수였다), 여기서는 이 자료 기준 수로 같은 줄에 되돌린다(설계 Q4). */}
             {(coverage || collectedInMaterial > 0) && (
               <span className="viewer-badge viewer-stats">
-                {coverage && <span title={vt("담은 표현과 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요")}>{vt('이 글에서 아는 말 {percent}% · 새 단어 {count}개', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>}
+                {coverage && <span title={vt("담은 표현과 '이미 알아요' 표시를 합쳐 센 값 — 서재 맞춤도와 같은 계산이에요")}>{vt('아는 말 {percent}% · 새 단어 {count}', {percent: Math.round(coverage.coverage * 100), count: coverage.unknown})}</span>}
                 {coverage && collectedInMaterial > 0 && ' · '}
                 {collectedInMaterial > 0 && <Link href={materialReviewHref} prefetch={false} className="viewer-stats__vocab">{withCountSlot(vt('{count}개 수집 · 이 자료 표현 복습', {count: COUNT_SLOT}),
                   <span key={collectPopKey} className={`viewer-stats__count${collectPopKey ? ' viewer-badge--pop' : ''}`}>{collectedInMaterial}</span>)}</Link>}
               </span>
             )}
+            </span>
             <button type="button" className="viewer-badges__close" aria-label={vt('단어 현황 닫기')} title={vt('단어 현황 닫기')} onClick={dismissBadges} data-icon-action><ActionIcon name="close"/></button>
           </div>
+        )}
+        {memberAccount && badgesExpected && !badgeDataSettled && !badgesDismissed && (
+          <div className="viewer-badges viewer-badges--pending" aria-hidden="true"><span className="viewer-badges__skeleton"/></div>
         )}
         {/* AD-R4 PR③ 「뜻 확인 필요 N개 [보기]」(설계서 §6.1·§6.4) — 통계 줄 아래 한 줄. 소유자만 · N>0만 · ✕는 이 viewerRevision 동안. 「AI」 표시 없음. */}
         {senseReviewShown && (

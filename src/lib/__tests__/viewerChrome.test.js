@@ -50,7 +50,8 @@ const newCss = () => sliceBetween(read(CSS), '/* 뷰어 크롬 배지(v2-Q)', '/
 describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 원인 제거', () => {
   it('자료 범위 배지는 .viewer-badges 안에 있다(header 직계 자식 금지)', () => {
     const wrap = sliceBetween(header(), '<div className="viewer-badges">', '</div>\n        )}');
-    for (const badge of ['개 복습 가능', '이 글에서 아는 말 ']) {
+    // 개정(VIEWER-MEMBER-SSR-001 ㉠ 오너 2026-11-04 KST): 두 줄을 한 줄로 — 커버리지는 지표 사전의 짧은 이름(「아는 말」)으로.
+    for (const badge of ['개 복습 가능', "'아는 말 {percent}%"]) {
       expect(wrap, `${badge} 배지가 래퍼 밖에 있다`).toContain(badge);
     }
   });
@@ -66,7 +67,8 @@ describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 
     // 개정(AD-R2 PR ①, VIEWER-V2-ROUNDS-001 §5 「크롬 정리」): 이 자료에서 담은 수(「N개 수집 → 단어장」)가 셋째 조건으로 들어왔다.
     // 커버리지 표본 미달이어도 수집이 있으면 줄을 그린다 — 조건이 하나도 없으면 여전히 래퍼 0.
     // 개정(오너 2026-10-20 KST 「x표시 만들어서 끌 수 있게」): 줄 끝 ✕로 닫으면 !badgesDismissed가 앞에 선다.
-    expect(header()).toMatch(/\{!badgesDismissed && \(\(user && dueInMaterial > 0\) \|\| coverage \|\| collectedInMaterial > 0\) && \(\s*\n\s*<div className="viewer-badges">/);
+    // 개정(VIEWER-MEMBER-SSR-001 ㉠): 한 줄 자리를 잡은 자료(badgesExpected)는 계정 단어 자료가 다 온 뒤 한 번에 채운다 — 조건은 그대로, 앞에 그 기다림만.
+    expect(header()).toMatch(/\{!badgesDismissed && \(badgeDataSettled \|\| !badgesExpected\) && \(\(user && dueInMaterial > 0\) \|\| coverage \|\| collectedInMaterial > 0\) && \(\s*\n\s*<div className="viewer-badges">/);
   });
 
   it('줄 끝 ✕ — 이 자료만 닫고, 복습 가능 수가 닫을 때보다 늘면 다시 보인다', () => {
@@ -74,7 +76,10 @@ describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 
     expect(wrap).toContain(`<button type="button" className="viewer-badges__close" aria-label={vt('단어 현황 닫기')}`);
     expect(wrap).toContain('onClick={dismissBadges}');
     const src = read(VIEWER);
-    expect(src).toContain("const badgesKey = `viewer-badges-dismissed:${user?.id ?? 'guest'}:${id}`;"); // 계정마다 따로(같은 브라우저의 다른 계정)
+    // 계정마다 따로(같은 브라우저의 다른 계정). 개정(VIEWER-MEMBER-SSR-001): 키는 lib/viewerSsr viewerBadgesKey 한 곳 — 첫 그림 전 읽기와 같은 키,
+    // 계정 확인 전에는 서버가 읽은 계정(memberAccount).
+    expect(src).toContain('const badgesKey = viewerBadgesKey(memberAccount, id);');
+    expect(read('src/lib/viewerSsr.js')).toContain("export const viewerBadgesKey = (account, id) => `viewer-badges-dismissed:${account ?? 'guest'}:${id}`;");
     expect(src).toContain('const badgesDismissed = badgesDismissedAt !== null && (user ? dueInMaterial : 0) <= badgesDismissedAt;');
   });
 });
@@ -448,7 +453,8 @@ describe('⑨ AD-R2 읽기 크롬 — 영문 0 · 라벨 툴바 · 통계 한 �
     const src = read(VIEWER);
     expect(src).toContain('const collectedInMaterial = useMemo(() => (user && material?.processed_json ? materialFit(material.processed_json, savedWords).known : 0), [user, material?.processed_json, savedWords]);');
     const stats = sliceBetween(header(), '<span className="viewer-badge viewer-stats"', '</Link>}');
-    expect(stats).toContain("vt('이 글에서 아는 말 {percent}% · 새 단어 {count}개'");
+    // 개정(VIEWER-MEMBER-SSR-001 ㉠): 한 줄 문구 「아는 말 37% · 새 단어 324」(오너 승인 목업).
+    expect(stats).toContain("vt('아는 말 {percent}% · 새 단어 {count}'");
     // REV-SCOPE-R1A: 전체 복습(/vocab)이 아니라 이 자료 범위의 복습방으로 간다(범위 주소 정본 serializeReviewScope).
     // 수는 숫자 자리표로 번역문을 받은 뒤 숫자만 감싼다(앱 손맛 ① 수집 팝 — 수가 늘 때만 도는 팝 자리). 수 자체는 그대로 collectedInMaterial.
     expect(stats).toContain(`<Link href={materialReviewHref} prefetch={false} className="viewer-stats__vocab">{withCountSlot(vt('{count}개 수집 · 이 자료 표현 복습', {count: COUNT_SLOT}),`);
