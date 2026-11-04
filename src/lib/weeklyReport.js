@@ -7,6 +7,7 @@
 import { learningDayStartMs, learningWeekStartMs } from './growthStats';
 import { conversationCorrections } from './conversation/conversationLoop.js';
 import { STUDY_SOURCE_REF } from './reviewScopeUrl.js';
+import { NON_ANSWER_SOURCES } from './reviewEventSources.js';
 
 const DAY_MS = 86400000;
 const WEEK_MS = 7 * DAY_MS;
@@ -18,10 +19,10 @@ const WEEK_MS = 7 * DAY_MS;
 // 단어 목록 바퀴 답(source 'level' — LEVEL-ROUND-001)도 같은 자리: 목록에서 스스로 고른 O · X라 활동량만 센다.
 export const ACTIVITY_ONLY_SOURCES = Object.freeze(new Set(['hanzi', 'level']));
 
-/** 채점 문항 판정 — EWMA 다이얼과 동일 결(ui=행동 계측·dict=자가 채점·hanzi · level=목록 자기 확인은 정답률 신호가 아니다). */
+/** 채점 문항 판정 — 난이도 다이얼과 같은 답 아닌 출처 집합(reviewEventSources: ui · dict · assist)을 빼고, hanzi · level(목록 자기 확인)도 정답률 신호가 아니다. */
 export function isGradedReviewEvent(event) {
   // 집중 연습(source 'practice')은 일정 밖 연습이라 복습 수 · 정답률 · 산출 단어에 넣지 않는다(REV-SCOPE §6-1 ⑤).
-  return !!event && event.source !== 'ui' && event.source !== 'dict' && event.source !== 'practice'
+  return !!event && !NON_ANSWER_SOURCES.has(event.source) && event.source !== 'practice'
     && !ACTIVITY_ONLY_SOURCES.has(event.source);
 }
 

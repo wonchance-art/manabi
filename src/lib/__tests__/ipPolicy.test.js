@@ -48,6 +48,15 @@ describe('IP 정책 정합 계약 (v2 — 브랜드 적극 사용)', () => {
     expect(limits).toContain('docs/policy-brand-content.md');
   });
 
+  it('AGENTS.md(Codex 규약)도 같은 정책을 가리킨다 — 옛 무재현 단정형 금지', () => {
+    // 같은 사고가 AGENTS.md에 남아 있었다(2026-11-04 원칙 문서 감사): 하드리밋에
+    // 「IP 무재현(상호·인물·작품·브랜드)」 한 줄. Codex는 AGENTS.md를 자동 로드하므로 같은 덮어쓰기가 일어난다.
+    const limits = sliceBetween(read('AGENTS.md'), '## 하드리밋', '## 코드 관례');
+    expect(limits, '옛 무재현 단정형 부활').not.toMatch(/IP 무재현/);
+    expect(limits).toMatch(/적극\s*사용/);
+    expect(limits).toContain('docs/policy-brand-content.md');
+  });
+
   it('정책 정본은 v2이고 등재제로 되돌아가지 않는다', () => {
     const policy = read('docs/policy-brand-content.md');
 

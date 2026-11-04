@@ -930,6 +930,20 @@
     운영 읽기 실측(10/6 ~ 11/3) — 「공부한 날」 칸에는 켜지고 연속 영수증이 없던 날 7일(담기만 · 한자 탭 · 단어 목록 바퀴). 영수증은 FSRS 채점과 update_streak에서만 생긴다.
     답 = `logReviewEvents` 한 곳(countsAsStudyAnswer 정본, vocab 제외) · 담기 = 단어를 만드는 쓰기 지점 18곳(새로 16곳)에 `recordActivity`. DB · 계약 핀 · 화면 변경 없음.
     계약 `streakStudyParity.test.js` — 목록 밖 새 쓰기 지점이 생기면 실패. 지난 날은 고치지 않는다(지금 연속에 영향 없음 — 10/28 쉼 뒤 6일).
+    **완료 [#1664](https://github.com/wonchance-art/manabi/pull/1664) `6ad95709`** · 운영 15:07 KST · 런타임 오류 0. RLS 2단계(#1665) 적용 후 지문 = WEB 세션 기록 일치.
+  ⑭ 이번 PR — 코스 지도 연속 = 정본(STREAK-COURSEMAP-001, 같은 상시 방침): 코스 지도가 저장된 streak_count를 그대로 보여 끊긴 연속이
+    거기만 살아 있었고(대시보드 「–」), 「오늘 레슨 했음」 · 낙관 +1이 기기 자정 기준이었다. 정본(liveStreakCount · streakAfterActivity · activityDay)을
+    import()로 받아 넘긴다(ts-fsrs는 첫 JS 밖 그대로 — authFirstLoad). 지표 사전 streak.day 'utc' → 'learning'(11/3 전환 반영). 화면 배치 변경 없음.
+    + ts-fsrs `^5.3.2` → `5.3.2` 정확 고정(FSRS-ENGINE-PIN-001 — 5.4.2는 우리 설정에서 일정 차이 0, engine 문자열이 카드 · valid_card · core 지문에 묶여 보류).
+    **완료 [#1667](https://github.com/wonchance-art/manabi/pull/1667) `fc068b4f`.**
+  ⑮ 이번 PR — 답 아닌 출처 하나(EVENT-SOURCE-001, 같은 상시 방침): /study 재료 단어 팝오버 · 「왜 이게 답이에요?」(source 'assist', correct:false)가
+    정답률(isGradedReviewEvent) · 난이도 다이얼(countsForDifficulty) 양쪽에서 오답 한 번으로 셌다(두 판정이 각자 ui · dict 목록).
+    `reviewEventSources.NON_ANSWER_SOURCES`(ui · dict · assist) 하나로. 운영 assist 1건뿐이라 지난 숫자 변화는 미미.
+    후속(DB): admin_content_health가 `source <> 'ui'`만 뺀다(assist · level · hanzi가 오답률에 섞임) — 관리자 지표라 별도 마이그레이션 PR.
+    **완료 [#1671](https://github.com/wonchance-art/manabi/pull/1671) `918bc69a`.**
+  ⑯ 이번 PR — 관리자 「콘텐츠 건강」 출처 = 정답률 정본(EVENT-SOURCE-001 후속, 같은 상시 방침): 운영 읽기 실측 — 지난 30일 상위 10개가
+    전부 단어 목록 바퀴(level) 자기 확인이었다. 마이그레이션 `20261104110000`이 ui · dict · assist · practice · hanzi · level을 뺀다(목록 = 코드 상수, 계약 대조).
+    서명 · 보안 속성 · 실행권 · 관리자 검사 그대로, 학습 계약 지문 밖(앞뒤 동치 검사). 복원 `docs/sql/admin-content-health-rollback.sql`. PGlite 6검사 + 관측 체인 33개 통과.
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —
@@ -1547,6 +1561,16 @@
   왼쪽 끝 2px 막대(띠 높이 = .surface::before 계산값) + 위 12px 점, 끝 = 마지막 토큰 오른쪽 끝 막대 + 아래 점. 강조색 · 흰 테두리 · 그림자 없음,
   타깃 가로 28px(띠 + 위아래 14px). 화면 가장자리에서 타깃을 안으로 민 만큼 막대를 반대로(--grip-bar-x) — 막대는 토큰 끝에 그대로. 조정 동작 그대로.
   계약 tokenRangeSelect(gripPlacement · CSS 모양).
+- **PERF-SNAPSHOT-KNOWN-001 단어장 snapshot 아는 단어 판정 (2026-11-04 KST, 백엔드 자율 범위)**: 운영 실측(읽기 전용) — 가장 큰 학습자
+  (단어 1,664)에서 fsrs_vocabulary_snapshot ≈ 350 ms · _light ≈ 290–330 ms, 그중 ≈ 210 ms가 아는 단어 LEFT JOIN k2(언어 하나로 merge join →
+  정규화 비교를 짝마다 Join Filter, 376,144행 제거). 세 본문(snapshot · _light · _cards)의 같은 한 군데만 행 키 CTE vv + EXISTS로(같은 운영 데이터
+  203.8 → 4.2 ms, 결과 동일) · 같은 트랜잭션 core · manual · admission 재게시(profile · capability 불변). 마이그레이션 안에서 전 학습자 출력 앞뒤 동일 ·
+  P4 registry 동일성 · 속성/권한 불변을 검사, 어긋나면 전부 롤백. 사전 확인(17:11 KST) 세 본문 = 옛 md5 · 네 핀 = _live. 복원 = 20261101120000 원문 + 같은 재게시.
+- **SEC-NEXT-15529 Next.js 보안 패치 (2026-11-04 KST, 오케스트레이터 긴급 발주 · 백엔드 자율 범위)**: lockfile next 15.5.21이 보안 릴리스 넷
+  (8/25 15.5.24 AVIF 이미지 최적화 RCE · 9/30 · 10/14 15.5.28 Critical 2 · High 1 — CVE-2026-96889 sharp ≥0.35.5 필요 · 11/3 15.5.29 7건)을 놓침 →
+  next ^15.5.29 · eslint-config-next ^15.5.29 · react/react-dom ~19.2.9 · package.json overrides sharp ^0.35.5(next의 범위 ^0.34.3 || ^0.35.5라 0.34.5가
+  남아 있었다 — 해석 0.35.5 확인). GHSA-f3mh(x-middleware-set-cookie): 해당 없음 판정 — Edge 라우트는 opengraph-image 하나(쿠키 안 씀), middleware의
+  Supabase 쿠키 갱신은 공지 범위(Edge Route Handler · Pages Edge API) 밖, 어차피 업그레이드로 덮임. 후속: Next 15 보안 지원 2027-01-31 종료 → 16.4 이전 계획.
 - **RLS-INITPLAN-001 RLS 정책 auth 호출 질의당 한 번 (2026-11-03 KST, 오너 「1,2번은 진행」)**: Supabase 성능 진단 auth_rls_initplan(WARN 95) —
   정책 식의 맨 auth.uid() · auth.role()이 행마다 다시 계산된다. 1단계 = 마이그레이션 20261103000000_rls_auth_initplan.sql: 지문 범위 밖 30개 테이블
   정책 75개를 (select auth.uid())로 감싸기만(명령 · 역할 · 절 유무 불변). 같은 트랜잭션 사후 검사 = 정책 수 · 맨 호출 0 · 감싼 것을 되돌린 식 = 원래 식 ·

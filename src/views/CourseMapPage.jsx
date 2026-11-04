@@ -326,20 +326,26 @@ export default function CourseMapPage(props) {
   useEffect(() => {
     if (authLoading) return undefined;
 
+    // 연속 셈 · 하루 = 정본(learningActivity — 대시보드 「연속」과 같은 수 · 04시 학습일, STREAK-COURSEMAP-001).
+    // 정본 모듈은 ts-fsrs를 끌고 와 첫 JS 밖이라 여기서 받는다. 받은 뒤에 그린다(예전 셈을 먼저 그리면 끊긴 연속이 잠깐 살아 보인다) —
+    // 받기를 실패하면 예전 셈 그대로.
+    let active = true, activity = null;
     const syncMotivation = () => {
+      if (!active) return;
       setMotivation(getLearningMotivation(user?.id, {
         remoteStreak: profile?.streak_count,
         remoteLastStreakDate: profile?.last_streak_date,
+        profile: user?.id && profile?.id === user.id ? profile : null,
+        activity,
       }));
     };
 
-    syncMotivation();
+    import('../lib/learningActivity').then((mod) => { activity = mod; }).catch(() => {}).finally(syncMotivation);
     window.addEventListener(LEARNING_ACTIVITY_EVENT, syncMotivation);
-    return () => window.removeEventListener(LEARNING_ACTIVITY_EVENT, syncMotivation);
+    return () => { active = false; window.removeEventListener(LEARNING_ACTIVITY_EVENT, syncMotivation); };
   }, [
     authLoading,
-    profile?.last_streak_date,
-    profile?.streak_count,
+    profile,
     user?.id,
   ]);
 
