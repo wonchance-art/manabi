@@ -153,7 +153,7 @@ describe('경고 세트 — 노랑 글자는 예외 목록 안에서만, 노랑 
     expect(onTint).toBe('#5c3a00');
     const pill = '#f9eedc'; // color-mix(--warning 15%, --sheet) 실측
     expect(contrast(onTint, pill)).toBeGreaterThanOrEqual(4.5);
-    expect(read('src/index.css')).toMatch(/\[data-theme="light"\][^}]*--warning-on-tint: #5C3A00;/s);
+    expect(read('src/index.css')).toMatch(/:root\s*\{[^}]*--warning-on-tint: #5C3A00;/s);
   });
 
   it('꽉 찬 노랑 위 흰 글자는 예외 두 자리뿐 — 오너 결정 11/4: 인접 배지와 흰 글자 통일(대비 2.56)', () => {

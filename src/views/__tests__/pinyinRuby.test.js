@@ -186,7 +186,9 @@ describe('중국어·병음 폰트 계약', () => {
       expect(css).toContain(`.word-token :is(rt, .rt-an).pinyin-tone--${n}, .word-fit :is(rt, .rt-an).pinyin-tone--${n}, :is(rt, .rt-an).pinyin-tone--${n} { color: var(--tone-${n}); }`);
     }
     expect(css).toMatch(/\.word-fit :is\(rt, \.rt-an\) \{\s*font-size: 0\.5em;\s*color: var\(--primary-light\);/);
-    expect(css).toMatch(/\[data-theme="light"\] \{\s*--tone-1:/);
+    // 성조 색은 한 벌(밝은 판 값) — 기기 모드로 갈아 끼우던 옛 층은 걷었다(COLOR-SYS-001). 월드만 어두운 모드 옛 값.
+    expect(css).toMatch(/:root \{\s*--tone-1: #c0392b;/);
+    expect(css).toMatch(/\[data-theme="dark"\] \.manabi-app\[data-world\] \{[^}]*--tone-1: #e8705f;/);
     expect(viewer).toContain("'rt-an', showToneColors && seg.pinyin ? pinyinToneClass(seg.reading) : ''");
     // 단어 카드도 병음 rt에만 합성(pinyin-text와 병행) — 팝업은 카드 단일화(②)로 소멸
     expect(viewer.match(/showToneColors && pinyinToneClass\(seg\.reading\)/g)?.length).toBe(1);

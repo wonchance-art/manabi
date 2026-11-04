@@ -39,22 +39,18 @@ describe('옛 주황이 화면 코드에 남지 않는다', () => {
     expect(hits).toEqual([]);
   });
 
-  it('루트 토큰이 v2 로즈이고, 두 테마 모두 대비 AA', () => {
+  it('루트 토큰이 v2 로즈이고, 대비 AA — 기기 모드와 상관없는 한 벌(COLOR-SYS-001 옛 층 걷기)', () => {
     const css = read('src/index.css');
     const root = css.match(/:root\s*\{[\s\S]*?\n\}/)[0];
-    const light = css.match(/\[data-theme="light"\]\s*\{[\s\S]*?\n\}/)[0];
+    expect(css, '옛 밝은 판 토큰 블록은 걷었다').not.toMatch(/\[data-theme="light"\]\s*\{/);
     expect(token(root, '--primary').toUpperCase()).toBe('#994A5A');
     expect(token(root, '--primary-dark').toUpperCase()).toBe('#793B48');
     // --primary는 버튼 바탕 — 흰 글자.
     expect(contrast('#FFFFFF', token(root, '--primary'))).toBeGreaterThanOrEqual(4.5);
-    // 글자용 --primary-light / --warning-on-tint: 어두운 바탕(:root)과 라이트 바탕 각각(--warning-text는 COLOR-SYS-001 2-③에서 걷었다).
+    // 글자용 --primary-light / --warning-on-tint: 루트 바탕 셋 위에서(--warning-text는 COLOR-SYS-001 2-③에서 걷었다).
     for (const bg of [token(root, '--bg-primary'), token(root, '--bg-card'), token(root, '--bg-elevated')]) {
       expect(contrast(token(root, '--primary-light'), bg)).toBeGreaterThanOrEqual(4.5);
       expect(contrast(token(root, '--warning-on-tint'), bg)).toBeGreaterThanOrEqual(4.5);
-    }
-    for (const bg of [token(light, '--bg-primary'), token(light, '--bg-card'), token(light, '--bg-elevated')]) {
-      expect(contrast(token(light, '--primary-light'), bg)).toBeGreaterThanOrEqual(4.5);
-      expect(contrast(token(light, '--warning-on-tint'), bg)).toBeGreaterThanOrEqual(4.5);
     }
   });
 
@@ -204,11 +200,11 @@ describe('뷰어 손님 안내 띠 링크 — 교재 네 색 밝은 바탕 AA', 
   const hex = (h) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
   const toHex = (rgb) => '#' + rgb.map(c => Math.round(c).toString(16).padStart(2, '0')).join('');
   const mix = (a, b, t) => toHex(hex(a).map((c, i) => c * t + hex(b)[i] * (1 - t)));
-  it('규칙이 밝은 테마에만 있고, 띠 바탕(주색 22% 합성) 위 4.5 이상', () => {
+  it('규칙이 늘 걸리고(기기 모드 무관 — 옛 밝은 테마 전용이던 것), 띠 바탕(주색 22% 합성) 위 4.5 이상', () => {
     const css = read('src/index.css');
-    expect(css).toMatch(/\[data-theme="light"\] \.viewer-guest-banner__cta \{\s*color: color-mix\(in srgb, var\(--primary-light\) 85%, #000\);/);
-    const light = css.match(/\[data-theme="light"\]\s*\{[\s\S]*?\n\}/)[0];
-    const pages = [token(light, '--bg-primary'), token(light, '--bg-card'), '#ffffff', '#fffefb'];
+    expect(css).toMatch(/:root \.viewer-guest-banner__cta \{\s*color: color-mix\(in srgb, var\(--primary-light\) 85%, #000\);/);
+    const root = css.match(/:root\s*\{[\s\S]*?\n\}/)[0];
+    const pages = [token(root, '--bg-primary'), token(root, '--bg-card'), '#ffffff', '#fffefb'];
     for (const name of ['mauve', 'sage', 'inkblue', 'amber']) {
       const main = token(css, `--book-${name}-main`);
       const fg = mix(main, '#000000', 0.85);

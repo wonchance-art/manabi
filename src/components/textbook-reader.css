@@ -6,7 +6,7 @@
   --reader-example-bg: #292129;
   --reader-panel-bg: var(--bg-card);
 }
-[data-theme="light"] .textbook-reader[data-textbook-language="Japanese"] {
+:root .textbook-reader[data-textbook-language="Japanese"] {
   --reader-line: #d4b5c7;
   --reader-example-bg: #fcf5f9;
   --reader-panel-bg: #fff;
