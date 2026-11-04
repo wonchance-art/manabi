@@ -105,7 +105,9 @@ export async function recordLessonCompleted(userId, lessonRef, options = {}) {
   // 코스의 명시적 레슨 완료만 오늘 목표로 센다. 실패한 챕터 체크나
   // material/reading 이벤트는 기존 스트릭·진도 계약은 유지하되 일일 목표에서 제외한다.
   if (source === 'lesson' && checkResult?.passed !== false) {
-    recordLessonActivity(userId);
+    // 하루 = 정본 활동일(04시 학습일 — 연속과 같은 날). 정본 모듈은 첫 JS 밖이라 여기서 받는다(STREAK-COURSEMAP-001).
+    const activity = await import('../learningActivity').catch(() => null);
+    recordLessonActivity(userId, { activity });
   }
 
   // 게스트 경로: localStorage만
