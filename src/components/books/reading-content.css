@@ -73,23 +73,23 @@
 @container manabi-reader (max-width:550px){
 .book-reading-content .paper{padding:34px 0 18px}.book-reading-content h2{font-size:24px}.book-reading-content .pattern{padding:0;margin:24px 0 34px}.book-reading-content .pattern h3{font-size:21px}.book-reading-content .examples{padding:16px 17px 9px}.book-reading-content .example>[lang=ja]{font-size:22px}.book-reading-content .scene,.book-reading-content .dialogue{padding:18px}.book-reading-content .words{padding:10px 15px}.book-reading-content .words [lang=ja]{font-size:21px}.book-reading-content .words>div{gap:12px}.book-reading-content .explanation{font-size:15px}.book-reading-content .turn{padding:13px 0}}
 
-.book-reading-content .manabi-example-signin{font-size:11px;display:inline-flex;align-items:center;min-height:44px;color:#994a5a;padding:7px 0}
+.book-reading-content .manabi-example-signin{font-size:11px;display:inline-flex;align-items:center;min-height:44px;color:var(--ja);padding:7px 0}
 
 /* Cover page, exercise and reference anchors alike, including wrapped toolbars. */
 .book-reader .book-reading-content [id]{scroll-margin-top:var(--book-scroll-offset)}
 
-.book-reader .manabi-reference-menu{position:relative;color:#994a5a}
+.book-reader .manabi-reference-menu{position:relative;color:var(--ja)}
 .book-reader .manabi-reference-menu>summary{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;list-style:none;white-space:nowrap}
 .book-reader .manabi-reference-menu>summary::-webkit-details-marker{display:none}
 .book-reader .manabi-reference-menu>summary::after{content:'⌄';font-size:14px}
 .book-reader .manabi-reference-menu[open]>summary::after{content:'⌃'}
 .book-reader .manabi-reference-menu>nav{position:absolute;right:0;top:100%;z-index:20;min-width:190px;display:grid;padding:8px;background:#fffdfb;border:1px solid #e8dade;border-radius:6px}
 .book-reader .manabi-reference-menu>nav :is(a,button){display:flex;align-items:center;min-height:44px;padding:8px 12px;text-align:left;white-space:normal}
-.book-reader .manabi-reference-menu :is(summary,a,button):focus-visible{outline:2px solid #994a5a;outline-offset:2px}
+.book-reader .manabi-reference-menu :is(summary,a,button):focus-visible{outline:2px solid var(--ja);outline-offset:2px}
 .book-reader .learning-links--browse{border:0;margin:0;padding:0}
 .book-reader .learning-links--browse>ul{padding-left:0;list-style:none}
 .book-reader .learning-links--browse>details{border-top:1px solid #e8dade;padding-top:14px;margin-top:20px}
-.book-reader .learning-links--browse>details>summary{min-height:44px;cursor:pointer;color:#994a5a}
+.book-reader .learning-links--browse>details>summary{min-height:44px;cursor:pointer;color:var(--ja)}
 @container manabi-reader (max-width:550px){.book-reading-content .oral{grid-template-columns:1fr}.book-reading-content .oral>div{display:block}.book-reading-content .answers>.answer{padding:16px}}
 
 /* The app search owns N4 reference filtering; the immutable standalone search remains in its artifact. */

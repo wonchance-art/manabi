@@ -113,7 +113,10 @@ describe('오류 화면', () => {
 describe('WALL-001 대비 지적 위치', () => {
   it('교재 목차·읽기 기록 글자는 연분홍 바탕 위에서도 4.5 이상', () => {
     const css = read('src/components/books/reading-shell.css');
-    const color = (sel) => css.match(new RegExp(`${sel.replace(/[.>[\]()]/g, m => `\\${m}`)}\\{[^}]*?color:(#[0-9a-f]{6})`))?.[1];
+    // 글자색은 셸 토큰(var(--ja) · var(--muted))으로 적혀 있다 — 셸 블록(web-shell.css .manabi-app)의 값으로 풀어 대비를 잰다.
+    const shell = read('src/components/web/web-shell.css').match(/^\.manabi-app\{[^}]*\}/m)[0];
+    const resolve = (v) => (v?.startsWith('var(') ? token(shell, v.slice(4, -1)) : v);
+    const color = (sel) => resolve(css.match(new RegExp(`${sel.replace(/[.>[\]()]/g, m => `\\${m}`)}\\{[^}]*?color:(#[0-9a-f]{6}|var\\(--[a-z-]+\\))`))?.[1]);
     const pairs = [
       ['.manabi-toc-group>summary>span', '#fffefb'],
       ['.manabi-toc-group li>a>span', '#f8f1f2'],

@@ -87,7 +87,8 @@ describe('① 인라인 하드코딩 색상 0', () => {
 
 /** 동결 목록 — 이 값들 밖으로 나가는 뷰포트 쿼리는 금지(docs/ui-conventions.md §2). */
 /** R3에서 767(→768 병합)·880(→@container)이 빠졌다. 목록은 줄기만 하고 늘지 않는다. */
-const ALLOWED_MAX = [400, 420, 480, 560, 600, 768, 1179];
+// 400은 쓰는 곳이 0이 되어 동결선에서 뺐다(2026-11-04 KST 실측 — stats 격자가 컨테이너 쿼리로 옮겨 감). 되살리면 새 브레이크포인트다.
+const ALLOWED_MAX = [420, 480, 560, 600, 768, 1179];
 const ALLOWED_MIN = [760, 900];
 /** 현재 총 뷰포트 쿼리 수. 늘릴 수 없다 — 새 접힘은 @container로.
  *  28 → 26 (2026-09-01): 죽은 CSS 라운드가 규칙을 걷어내며 **@media 블록 둘이 통째로
@@ -252,9 +253,10 @@ describe('⑤ 접근성 하한 — 줄어들면 잡는다', () => {
   const count = (re) => (css.match(re) || []).length;
 
   it('44px 터치 타깃·:focus-visible·prefers-reduced-motion이 하한 이상', () => {
-    expect(count(/44px/g)).toBeGreaterThanOrEqual(120);
-    expect(count(/focus-visible/g)).toBeGreaterThanOrEqual(36);
-    expect(count(/prefers-reduced-motion/g)).toBeGreaterThanOrEqual(12);
+    // 하한 재고정 2026-11-04 KST 실측(505 / 159 / 47) — 옛 하한 120 / 36 / 12는 실측의 1/4이라 가드가 거의 안 걸렸다.
+    expect(count(/44px/g)).toBeGreaterThanOrEqual(505);
+    expect(count(/focus-visible/g)).toBeGreaterThanOrEqual(159);
+    expect(count(/prefers-reduced-motion/g)).toBeGreaterThanOrEqual(47);
   });
 });
 
