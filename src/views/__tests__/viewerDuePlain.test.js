@@ -22,7 +22,7 @@ describe('뷰어 복습 표시 0', () => {
     const settings = read('src/components/viewer/ViewerSettings.jsx');
     expect(settings).toContain("[['new','새 단어'],['saved','학습 중']]");
     expect(settings).not.toContain("['due','복습']");
-    expect(settings).toContain('새 단어는 파란 밑줄, 저장한 단어는 노란 띠로 표시해요');
+    expect(settings).toContain('새 단어는 옅은 파랑과 밑줄, 저장한 단어는 노란 띠로 표시해요');
   });
   it('클래스는 남는다 — 본문 · 미리보기가 복습 상태를 계속 표시한다(e2e가 채점 뒤 해제를 본다)', () => {
     expect(read('src/views/ViewerPage.jsx')).toContain("${isDue ? 'word-token--due' : ''}");

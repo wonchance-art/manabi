@@ -878,6 +878,7 @@
 
 ## Claude (claude/*)
 ### doing
+- **VIEWER-NEWFILL-001 뷰어 새 단어 옅은 칠 + 밑줄 (2026-11-03 KST)** `claude/admiring-ritchie-tz2mxp`(WEB 최적화 세션 인계 · 오너 「권장대로.」 = C안, 오케스트레이션 세션 경유): [시안](https://claude.ai/artifact/RMtzrLJMbZmbaaVozm8Z6C) — A 밑줄 · B 파란 칠(처음 여는 글 96% 덮음 · 일본어 단어 경계 소실 · 파랑/노랑 밝기 차 1.04–1.11) · C 옅은 칠(8% · 어둡게 11%) + 밑줄. AD-R2 개정: `--ws-new-fill` 칠 규칙 하나(지정 · 선택 중 제외) · `hlBand.test.js`(칠 상한 12% · 밑줄 규칙 무배경 · 혼색 0) · 범례 문구 3언어 · e2e typography AD-R2 행렬 · 범위 지정. 칠 진하기는 실기 보고 조절.
 - **WALL-002 화면 벽 2판 1단계 (2026-11-02 KST)** `claude/admiring-ritchie-tz2mxp` (오너 「권장대로 1단계부터 진행해」):
   1판(10-12 · 21장면, 수동 1회)이 3주 멈춰 있던 화면 벽을 무인 갱신 가능한 판으로. 장면 등록부 `docs/design/scenes.json`(src/app 경로 전부 — 장면 · 재작성 판 · 사유 있는 제외) ·
   캡처 `scripts/wall-capture.mjs`(손님 · 빈 계정 · 채운 계정 = heavy-account 합성 백엔드 재사용, 390 · 1280, wall-rules §3 검사 + axe) · 판정 부품 `scripts/wall-core.mjs`(계약 `wall-core.test.js`) ·
