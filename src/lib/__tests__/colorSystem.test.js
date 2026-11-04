@@ -130,3 +130,12 @@ describe('단계 2-④ 위험 글자는 --danger-text(#A3352B), 표시는 --dang
     expect(offenders).toEqual([]);
   });
 });
+
+describe('화면 무변화 정리 — 덮여서 안 보이던 옛 색 규칙 (오케스트레이션 2026-11-04 KST 「화면 무변화 정리는 바로」)', () => {
+  it('옛 채점 단추 open-color 그라데이션이 돌아오지 않는다 — 채점 4단 색은 복습실 · 뷰어 카드가 진다', () => {
+    const css = read('src/index.css');
+    expect(css).not.toMatch(/\.review-score-btn--(?:again|hard|good|easy)\s*\{[^}]*gradient/);
+    expect(read('src/components/web/review-room.css')).toContain('.manabi-review-room .review-score-btn--again { background:var(--grade-again-bg); color:var(--grade-again); }');
+    expect(read('src/components/viewer/reader-controls.css')).toMatch(/\.viewer-layout \.reader-card-actions \.review-score-btn--again \{background:/);
+  });
+});
