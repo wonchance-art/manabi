@@ -158,8 +158,11 @@ describe('AXE-CONTRAST-001 serious 대비 5곳', () => {
     const css = read('src/components/books/reading-shell.css');
     const bg = decl(css, '.manabi-chapter-opening', 'background');
     expect(bg).toBe('#f6edef');
+    // 글자색은 교재 팔레트 이름(--reading-muted)으로 적혀 있다 — reading-shell .manabi-app 블록의 값으로 풀어 잰다.
+    const shellBlock = css.match(/^\.manabi-app\{[^}]*\}/m)[0];
     for (const sel of ['.manabi-chapter-subtitle', '.manabi-chapter-goal']) {
-      const fg = decl(css, sel, 'color');
+      const raw = decl(css, sel, 'color');
+      const fg = raw?.startsWith('var(') ? token(shellBlock, raw.slice(4, -1)) : raw;
       expect(fg, sel).toMatch(/^#[0-9a-f]{6}$/);
       expect(contrast(fg, bg), sel).toBeGreaterThanOrEqual(4.5);
     }

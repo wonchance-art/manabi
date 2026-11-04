@@ -200,3 +200,20 @@ describe('옛 :root · [data-theme=light] 층 걷기 — 기기 모드와 상관
     expect([...block.matchAll(/(--[\w-]+):/g)].map((m) => m[1]).sort()).toEqual(['--card-shadow-hover', '--mobile-nav-bg', '--tone-0', '--tone-1', '--tone-2', '--tone-3', '--tone-4']);
   });
 });
+
+describe('교재 셸(reading-shell.css) — 셸 토큰을 다시 정하지 않고, 자기 색은 이름으로 (화면 무변화 2026-11-05 KST)', () => {
+  const block = (f) => read(f).match(/^\.manabi-app\{([^}]*)\}/m)?.[1] || '';
+  it('reading-shell의 .manabi-app 블록은 web-shell이 정하는 토큰 · 바탕 · 글자색을 다시 쓰지 않는다 — 뒤에 오는 셸이 늘 덮어 죽은 값이었다', () => {
+    const shell = new Set([...block('src/components/web/web-shell.css').matchAll(/(--[\w-]+):/g)].map((m) => m[1]));
+    const own = [...block('src/components/books/reading-shell.css').matchAll(/(--[\w-]+):/g)].map((m) => m[1]);
+    expect(own.filter((n) => shell.has(n))).toEqual([]);
+    expect(block('src/components/books/reading-shell.css')).not.toMatch(/(^|;)(background|color):/);
+  });
+  it('교재 팔레트는 --reading-* 이름 일곱으로 — 규칙에 같은 값을 손으로 다시 쓰지 않는다', () => {
+    const css = read('src/components/books/reading-shell.css');
+    const names = ['--reading-ink:#322e30', '--reading-paper:#fffdf9', '--reading-rule:#e9dfe0', '--reading-rule-soft:#e8dade', '--reading-rule-strong:#d9c8cc', '--reading-wash:#f8f1f2', '--reading-muted:#74696c'];
+    for (const n of names) expect(block('src/components/books/reading-shell.css'), n).toContain(n);
+    const body = css.replace(/^\.manabi-app\{[^}]*\}/m, '');
+    expect(body.match(/#(322e30|fffdf9|e9dfe0|e8dade|d9c8cc|f8f1f2|74696c)\b/gi)).toBeNull();
+  });
+});
