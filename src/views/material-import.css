@@ -12,3 +12,23 @@
 .import-language-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .import-language-options .toggle-btn { padding-inline: 10px; white-space: nowrap; }
 @container (max-width: 600px) { .import-language-options { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* 지금 디자인으로(오너 「승인 및 수용」 2026-11-04 KST, 시안 https://claude.ai/artifact/BY6Xqfw9Zmgw9x3LQCrSNe).
+   기준은 새 자료(material-composer.css): 먹색 큰 제목 · 각진 종이 면 · 선 하나 입력칸 · 알약 고르기(고른 것은 로즈) · 3px 단추.
+   기능 · 배치 · 문구는 그대로. 색은 셸 토큰만. */
+.add-page .page-header__title { font-size: clamp(30px, 4vw, 40px); font-weight: 700; letter-spacing: -1px; background: none; -webkit-text-fill-color: currentColor; color: var(--ink); }
+.add-page .card { border-radius: 0; box-shadow: none; border: 1px solid var(--rule); background: var(--sheet); padding: 28px 32px; }
+@container (max-width: 600px) { .add-page .card { padding: 22px 20px; } }
+.add-page .form-label { font-size: 12px; font-weight: 600; letter-spacing: .2px; color: var(--muted); }
+.add-page .form-input, .add-page input[type="number"] { border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; background: transparent; box-shadow: none; padding: 12px 0; min-height: 44px; font-size: max(var(--field-font-min), 15px); color: var(--ink); }
+.add-page .form-textarea { border: 1px solid var(--rule); border-radius: 0; background: var(--paper); box-shadow: none; color: var(--ink); }
+.add-page .form-input:focus, .add-page .form-textarea:focus { outline: none; border-color: var(--ink); box-shadow: none; }
+.add-page .form-input:focus-visible, .add-page .form-textarea:focus-visible { outline: 2px solid var(--ja); outline-offset: 2px; }
+.add-page .toggle-group { gap: 8px; }
+.add-page .toggle-btn, .add-page .level-btn, .add-page .add-entries__chips .chip { border-radius: 999px; min-height: 44px; padding: 0 16px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); box-shadow: none; font-size: 14px; }
+/* 고른 것 = 로즈(셸 규칙: 장미는 저장과 선택 표시에만) — 지금과 같은 뜻, 모양만 알약. */
+.add-page .toggle-btn.toggle-btn--primary, .add-page .toggle-btn.toggle-btn--accent, .add-page .level-btn.level-btn--active, .add-page .add-entries__chips .chip[aria-selected="true"] { background: var(--ja); color: var(--sheet); border-color: var(--ja); }
+.add-page .btn { border-radius: 3px; min-height: 48px; box-shadow: none; }
+.add-page .btn--secondary, .add-page .btn--ghost { background: var(--paper); color: var(--ink); border: 1px solid var(--rule); }
+.add-page .btn--primary { background: var(--ja); border: 1px solid var(--ja); }
+@media (hover: hover) { .add-page .btn:hover:not(:disabled) { transform: none; box-shadow: none; filter: none; } .add-page .btn--secondary:hover:not(:disabled), .add-page .btn--ghost:hover:not(:disabled) { border-color: var(--ink); background: var(--paper); } }

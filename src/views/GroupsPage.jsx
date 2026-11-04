@@ -7,6 +7,7 @@
  * 데까지만 열림 — 원문이 공개 자료라 보안 아닌 UX 게이트). R3(공동 목표)는 후속.
  */
 import { usePathname } from 'next/navigation';
+import './groups.css';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -208,7 +209,7 @@ function ReadProgressBars({ members, snapshotsByUser, userId }) {
             <span style={{ width: 64, flexShrink: 0, fontWeight: isMe ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
             {pct != null ? (
               <>
-                <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'var(--border)', overflow: 'hidden' }}>
+                <div style={{ flex: 1, height: 4, background: 'var(--border)', overflow: 'hidden' }}>
                   <div style={{ width: `${pct}%`, height: '100%', background: 'var(--primary)' }} />
                 </div>
                 <span style={{ width: 40, textAlign: 'right', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
@@ -402,9 +403,9 @@ function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, us
   // 불러오기 실패를 「아직 안 정함」으로 보이면 이미 정한 자료를 덮어쓰게 된다 — 실패는 실패로(WALL-STATES-001 ⑤).
   const readFailed = readsError && !read?.material && !picking;
   return (
-    <div className="card" style={{ padding: '20px 22px' }}>
+    <div className="card">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-        <h2 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>👥 {group.name}</h2>
+        <h2 className="groups-page__group-name">{group.name}</h2>
         <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
           멤버 {members?.length ?? '–'}/{group.capacity} · {LANG_KO[group.lang] || group.lang}
         </span>
@@ -573,7 +574,7 @@ export default function GroupsPage() {
   if (!user) {
     return (
       <div className="page-container" style={{ maxWidth: 680, textAlign: 'center', paddingTop: 80 }}>
-        <h1 style={{ fontSize: '1.2rem', marginBottom: 8 }}>👥 함께 읽기</h1>
+        <h1 style={{ fontSize: '1.2rem', marginBottom: 8 }}>함께 읽기</h1>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>
           로그인하면 그룹을 만들어 같은 자료를 함께 읽을 수 있어요.
         </p>
@@ -583,9 +584,11 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="page-container" style={{ maxWidth: 680 }}>
-      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 4px' }}>👥 함께 읽기</h1>
-      <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', margin: '0 0 20px' }}>
+    <div className="page-container groups-page">
+      {/* 지금 디자인의 머리(새 자료 · 고급 가져오기와 같은 영문 머리 줄 + 큰 제목 + 보조 줄) — 오너 「승인 및 수용」 2026-11-04 KST. */}
+      <p className="manabi-eyebrow groups-page__eyebrow">TOGETHER / 서재</p>
+      <h1 className="groups-page__title">함께 읽기</h1>
+      <p className="groups-page__lede">
         같은 자료를 함께 읽는 소그룹 — 토론은 각자 읽은 데까지만, 주간 기록은 합계로만.
       </p>
 
@@ -593,7 +596,7 @@ export default function GroupsPage() {
         <div className="skeleton--card" style={{ height: 140 }} />
       ) : groupsError && !groups ? (
         /* 불러오기 실패는 「그룹 없음」 첫 화면과 구분한다(WALL-STATES-001 ⑤) */
-        <div className="card" role="alert" style={{ padding: '22px' }}>
+        <div className="card" role="alert">
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0 0 12px' }}>
             그룹 목록을 불러오지 못했어요.
           </p>
@@ -601,7 +604,7 @@ export default function GroupsPage() {
         </div>
       ) : !groups?.length ? (
         /* 목업 C — 그룹 없음 첫 화면 */
-        <div className="card" style={{ padding: '22px' }}>
+        <div className="card">
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0 0 16px' }}>
             그룹을 만들어 초대 코드를 보내거나, 받은 코드로 참가하세요. (그룹당 8명까지)
           </p>
@@ -625,7 +628,7 @@ export default function GroupsPage() {
             />
           ))}
           {groups.length < MAX_GROUPS_PER_USER && (
-            <div className="card" style={{ padding: '16px 22px' }}>
+            <div className="card">
               {showForms ? (
                 <GroupForms groupCount={groups.length} onDone={() => setShowForms(false)} />
               ) : (
