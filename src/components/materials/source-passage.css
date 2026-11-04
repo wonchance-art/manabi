@@ -3,7 +3,7 @@
 .passage-toolbar__actions { display:flex; flex-wrap:wrap; gap:8px; }
 .passage-toolbar > .study-language { flex-basis:100%; padding:4px 0 0; border-top:0; }
 .passage-toolbar .original-entry-reason { flex-basis:100%; font-size:12px; color:var(--muted); }
-.passage-toolbar .original-entry-error { flex-basis:100%; margin:0; color:var(--danger); }
+.passage-toolbar .original-entry-error { flex-basis:100%; margin:0; color:var(--danger-text); }
 .passage-toolbar--selected { position:sticky; top:var(--gnb-height); z-index:20; background:var(--paper); }
 .passage-dialog { margin:auto; inset:0; padding:0; border:1px solid var(--rule); background:var(--sheet); color:var(--ink); width:min(540px, calc(100% - 24px)); max-height:calc(100dvh - 40px); overflow:auto; overscroll-behavior:contain; }
 .passage-dialog::backdrop { background:var(--scrim); }
@@ -27,7 +27,7 @@
 .passage-settings { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; justify-content:space-between; margin-top:24px; font-size:12px; }
 .passage-settings > div { display:grid; gap:8px; }
 .passage-settings select { min-width:160px; }
-.passage-warning { color:var(--danger); font-size:13px; line-height:1.7; }
+.passage-warning { color:var(--danger-text); font-size:13px; line-height:1.7; }
 .passage-panel footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; padding-top:24px; }
 .passage-panel footer p { font-size:12px; color:var(--muted); margin:0; }
 .passage-manual { margin-top:14px; font-size:12px!important; }

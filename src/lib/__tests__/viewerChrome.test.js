@@ -189,7 +189,9 @@ describe('⑥ 제목 줄·액션 축 — 실측이 더한 것', () => {
     const base = sliceBetween(newCss(), '.viewer-badge {', '}');
     expect(base).toContain('var(--bg-secondary)');
     expect(base, '기본 배지가 강조색을 쓰면 크롬이 본문과 색을 다툰다').not.toMatch(/--warning|--accent|--primary/);
-    expect(sliceBetween(newCss(), '.viewer-badge--due {', '}')).toContain('--warning');
+    // 복습 배지의 강조는 읽기면 크롬 색이 진다(index.css의 노랑 규칙은 늘 덮여 화면에 안 나와 COLOR-SYS-001 2-③에서 걷었다).
+    expect(newCss(), '덮여서 안 보이는 노랑 규칙을 되살리지 않는다').not.toContain('.viewer-badge--due {');
+    expect(sliceBetween(read('src/components/viewer/reader-controls.css'), '.manabi-app .viewer-layout .viewer-badge--due {', '}')).toContain('var(--reader-accent)');
   });
 });
 
@@ -255,12 +257,11 @@ describe('⑦ 여러 줄 인라인 색 — 0', () => {
     for (const f of ['src/views/ReadingTextView.jsx']) {
       expect(read(f), `${f}가 스크림을 다시 손으로 그린다`).toContain('className="scrim');
     }
-    // 복습 배지: 뷰어와 **같은 식**을 쓴다(값 복제 금지 — 2트랙 병의 재발 방지).
+    // 복습 알약: 경고 세트의 같은 식을 쓴다(값 복제 금지 — 2트랙 병의 재발 방지).
     // 색 체계 단계 1(2026-11-04 KST): 그 식이 이름 하나(--warning-tint)로 모였다 — 정의는 :root 한 곳.
     const mix = 'var(--warning-tint)';
     expect(css).toContain('--warning-tint: color-mix(in srgb, var(--warning) 15%, transparent);');
     expect(sliceBetween(css, '.tag--due {', '}')).toContain(mix);
-    expect(sliceBetween(css, '.viewer-badge--due {', '}')).toContain(mix);
     // 정오답: 판정이 한 함수에 있고 값은 토큰이 진다
     expect(read('src/views/VocabReview.jsx')).toContain('export function quizOptClass');
     expect(sliceBetween(css, '.quiz-opt--right {', '}')).toContain('var(--accent)');

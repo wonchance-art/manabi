@@ -527,7 +527,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
           </div>
           {/* 첨삭(AI — 긴 작업) 알림 — 영역은 늘 두고 내용만(LOADING-ANNOUNCE-002). 단추 글자(「첨삭 중…」)와 겹치지 않는 문구 */}
           <span className="sr-only" role="status">{loading ? '첨삭을 받는 중이에요' : ''}</span>
-          {error && <p role="alert" style={{ color: 'var(--danger)', fontSize: '0.85rem', marginTop: 8 }}>{error}</p>}
+          {error && <p role="alert" style={{ color: 'var(--danger-text)', fontSize: '0.85rem', marginTop: 8 }}>{error}</p>}
         </div>
       )}
 
@@ -673,7 +673,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                   background: 'var(--bg-secondary)', fontSize: '0.85rem', lineHeight: 1.6,
                 }}>
                   <div>
-                    <span lang={lc} style={{ color: 'var(--danger)', textDecoration: 'line-through' }}>{e.part}</span>
+                    <span lang={lc} style={{ color: 'var(--danger-text)', textDecoration: 'line-through' }}>{e.part}</span>
                     {' → '}
                     <strong lang={lc} style={{ color: 'var(--accent-text)' }}>{e.fix}</strong>
                     {learnerHref(e.href) ? (

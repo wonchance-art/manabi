@@ -4044,7 +4044,7 @@ export default function ViewerPage({ seed } = {}) {
           return !a ? vt('오늘') : a.unit === '분' ? vt('{n}분 뒤', a) : a.unit === '시간' ? vt('{n}시간 뒤', a) : vt('{n}일 뒤', a);
         };
         return (
-        <div style={{ padding: '10px 12px', background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
+        <div style={{ padding: '10px 12px', background: 'var(--warning-tint)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
 
           <div className="review-score-grid save-grade save-grade--inline">
             {SAVE_GRADES.map((g) => (
@@ -4653,7 +4653,7 @@ export default function ViewerPage({ seed } = {}) {
         )}
 
         {recoveryShown && (
-          <div className="analyzing-banner" style={{ background: 'color-mix(in srgb, var(--warning-bright) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--warning-bright) 40%, transparent)' }}>
+          <div className="analyzing-banner" style={{ background: 'var(--warning-tint)', borderColor: 'color-mix(in srgb, var(--warning-bright) 40%, transparent)' }}>
             <span className="analyzing-banner__line" aria-hidden="true">{recoveryLine(reanalyze.recovery?.completed)}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               {reanalyzeMutation.isPending
@@ -5188,7 +5188,7 @@ export default function ViewerPage({ seed } = {}) {
         .analyzing-banner--error {
           border-color: rgba(255, 107, 107, 0.4);
           background: rgba(255, 107, 107, 0.08);
-          color: var(--danger);
+          color: var(--danger-text);
         }
         @keyframes slideUp {
           from { transform: translateY(100%); }

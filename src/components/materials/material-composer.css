@@ -45,7 +45,7 @@
 .composer-save-actions button { word-break: keep-all; }
 .composer-save-actions .composer-save-only { min-height: 48px; padding: 12px 18px; background: var(--paper); color: var(--ink); border: 1px solid var(--rule); border-radius: 3px; font-size: 14px; }
 .composer-study-reason { flex-basis: 100%; text-align: right; font-size: 11px; line-height: 1.7; color: var(--muted); }
-.composer-error { font-size: 13px; padding: 16px; background: color-mix(in srgb, var(--danger) 8%, var(--sheet)); color: var(--danger); line-height: 1.8; }
+.composer-error { font-size: 13px; padding: 16px; background: color-mix(in srgb, var(--danger) 8%, var(--sheet)); color: var(--danger-text); line-height: 1.8; }
 .composer-error p { margin: 8px 0 0; }
 .composer-conflict-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .composer-conflict-actions button { min-height: 44px; padding: 8px 12px; background: var(--sheet); color: var(--ink); border: 1px solid var(--rule); }

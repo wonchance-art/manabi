@@ -10,7 +10,7 @@
 .learning-links .btn--ghost, .learning-context-save .btn--ghost { color: var(--text-primary); }
 .learning-context-save { margin-top: 8px; font-size: .85rem; line-height: 1.65; }
 .learning-context-save p { margin: 6px 0; overflow-wrap: anywhere; }
-.learning-context-save [role="alert"] { color: var(--danger); }
+.learning-context-save [role="alert"] { color: var(--danger-text); }
 .learning-context-confirm { border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: var(--bg-primary); }
 .learning-context-confirm button { margin: 8px 8px 0 0; }
 .learning-source-quote { margin: 8px 0; padding-left: 12px; border-left: 3px solid var(--primary); white-space: pre-wrap; }

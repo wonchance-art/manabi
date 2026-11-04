@@ -90,7 +90,7 @@ function LockedView({ pw, setPw, busy, message, onSubmit }) {
           <Button type="submit" size="md" disabled={busy || pw.trim().length < TEAM_PW_MIN}>{busy ? '여는 중…' : '열기'}</Button>
         </div>
         {message
-          ? <p role="alert" style={{ margin: 0, fontSize: '0.84rem', color: 'var(--danger)' }}>{message}</p>
+          ? <p role="alert" style={{ margin: 0, fontSize: '0.84rem', color: 'var(--danger-text)' }}>{message}</p>
           : <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>이 기기에서는 한 번만 입력해요.</p>}
       </form>
     </div>

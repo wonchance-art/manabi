@@ -288,7 +288,7 @@ function ReadingTrack({ track, user, selectedId }) {
               <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', margin: 0 }}>기록 중이에요…</p>
             ) : isError ? (
               <>
-                <p style={{ fontSize: '0.92rem', color: 'var(--danger)', marginBottom: 14 }}>
+                <p style={{ fontSize: '0.92rem', color: 'var(--danger-text)', marginBottom: 14 }}>
                   기록하지 못했어요. 다시 시도해 주세요.
                 </p>
                 <button type="button" className="btn btn--primary btn--md" onClick={retry}>다시 시도</button>

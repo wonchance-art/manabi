@@ -51,7 +51,7 @@
 .note-choices {display:flex;gap:6px;flex-wrap:wrap;padding-top:10px;}
 .note-choices button {display:grid;gap:4px;text-align:left;font-size:15px;}
 .note-choices small {font-size:11px;color:var(--muted);}
-.note-row-error {font-size:12px;line-height:1.6;color:var(--danger);}
+.note-row-error {font-size:12px;line-height:1.6;color:var(--danger-text);}
 .note-saved {font-size:12px;color:var(--book-main);}
 .note-review>footer {padding:14px 24px max(14px,env(safe-area-inset-bottom));border-top:1px solid var(--rule);background:var(--paper);display:grid;gap:8px;}
 .note-review>footer p {font-size:12px;line-height:1.6;margin:0;}

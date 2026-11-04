@@ -216,7 +216,7 @@ function ServerJobLine({ job, books, onPause, pausing }) {
   const title = books.find((book) => book.key === job.current_key)?.title;
   const counts = `끝난 장 ${job.chapters_done}${job.chapters_failed ? ` · 건너뛴 장 ${job.chapters_failed}` : ''}`;
   if (job.status === 'failed') {
-    return <p role="alert" style={{ margin: '0 0 12px', color: 'var(--warning-text)' }}>⚠ 서버 분석이 멈췄어요 — {job.last_error || '이유를 확인하지 못했어요.'} · {counts}</p>;
+    return <p role="alert" style={{ margin: '0 0 12px', color: 'var(--warning-on-tint)' }}>⚠ 서버 분석이 멈췄어요 — {job.last_error || '이유를 확인하지 못했어요.'} · {counts}</p>;
   }
   return (
     <p className="admin-table__muted" style={{ margin: '0 0 12px' }}>
@@ -262,7 +262,7 @@ function ChapterReview({ api, queryKey, kind, book, onReview, onReviewMany, revi
             {item.hintsMissed?.length > 0 && ` · 안 붙은 제안 ${item.hintsMissed.length}개(${item.hintsMissed.join('·')} — 장에서 직접 확인)`}
             {item.remaining != null && (item.remaining > 0 ? ` · 확인 ${item.remaining}개 남음` : ' · 확인 끝')}
             {item.boundary > 0 && (
-              <span style={{ color: 'var(--warning-text)' }}>{` · 쪼개진 낱말 ${item.boundary}곳(${item.boundaryWords.join('·')} — 뷰어에서 묶기)`}</span>
+              <span style={{ color: 'var(--warning-on-tint)' }}>{` · 쪼개진 낱말 ${item.boundary}곳(${item.boundaryWords.join('·')} — 뷰어에서 묶기)`}</span>
             )}
             {material?.reviewed
               ? ' · 검수 완료 ✅'
@@ -555,7 +555,7 @@ export default function LiteraturePublishPanel({ toast, api = LITERATURE_API, ki
                     </div>
                   )}
                   {book.plan.conflicts.map((conflict) => (
-                    <div key={`${conflict.id}-${conflict.reason}`} role="alert" style={{ color: 'var(--warning-text)' }}>
+                    <div key={`${conflict.id}-${conflict.reason}`} role="alert" style={{ color: 'var(--warning-on-tint)' }}>
                       ⚠ {conflict.order ?? '?'}장 · {CONFLICT_LABEL[conflict.reason] || conflict.reason} (자료 #{conflict.id})
                     </div>
                   ))}

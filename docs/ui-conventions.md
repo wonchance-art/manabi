@@ -27,7 +27,11 @@
 - **색 체계 세트(오너 「설계 승인」 2026-11-04 KST, [설계안](https://claude.ai/artifact/Bz7Uc4dsZb4nmZXHpBQktL))**: 의미색
   (경고 · 위험 · 성공 · 안내)마다 「표시 `--S` · 옅은 바탕 `--S-tint` · 옅은 바탕 위 글자 `--S-on-tint` · 꽉 찬 바탕 위 글자 ·
   글자만 `--S-text`」 다섯 역할. 단계 1에서 `--warning-tint` · `--danger-tint`(15%)를 값 그대로 도입했다. 같은 식을 손으로
-  다시 쓰지 말고 이름을 쓴다.
+  다시 쓰지 말고 이름을 쓴다. 단계 2(오너 「전부 권장대로」 2026-11-04 KST):
+  ② 옅은 노랑 바탕은 전부 `--warning-tint` 하나(예외: 과정 지도 카드 면 7% · 뷰어 「어려움」 채점 단추) ③ 셸 갈색 경고 글자
+  `--warning-text`는 걷었다 — 경고 글자는 노랑 · `--warning-on-tint` 둘뿐 ④ 위험 **글자**는 `--danger-text`(셸 #A3352B,
+  종이 위 6.2), 테두리 · 줄긋기 선 · 점 · 꽉 찬 바탕은 `--danger`(#C84040). 계약 = `colorSystem.test.js`. 복습 채점 4단
+  (`--grade-*`)은 상태색이 아니라 척도라 세트에 합치지 않는다.
 - **색 직접 값 라쳇**: `scripts/color-literals.mjs`가 CSS 직접 값과 JS/JSX 스타일 객체 · 여러 줄 · 삼항 · 이름색까지 센다.
   파일별 개수가 `src/lib/__tests__/fixtures/colorLiteralBaseline.json`과 같아야 한다(`colorSystem.test.js`) — 늘리면 실패,
   정리로 줄었으면 `node scripts/color-literals.mjs > src/lib/__tests__/fixtures/colorLiteralBaseline.json`으로 기준을 낮춘다.

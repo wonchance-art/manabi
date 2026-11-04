@@ -63,7 +63,7 @@ describe('WRITING-FOCUS-001 — 작문 첨삭 전후 초점', () => {
     expect(area).toContain('ref={textareaRef}');
     expect(area).toContain('aria-label={`${LANGS.find(l => l.key === language)?.label} 작문`}');
     expect(writing).toContain("<span className=\"sr-only\" role=\"status\">{loading ? '첨삭을 받는 중이에요' : ''}</span>");
-    expect(writing).toContain("{error && <p role=\"alert\" style={{ color: 'var(--danger)'");
+    expect(writing).toContain("{error && <p role=\"alert\" style={{ color: 'var(--danger-text)'");
   });
 });
 

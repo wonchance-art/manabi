@@ -387,7 +387,7 @@
 }
 
 .lessonBody .lessonBadgeRecommended {
-  background: color-mix(in srgb, var(--warning) 13%, transparent);
+  background: var(--warning-tint);
   color: var(--warning-on-tint);
 }
 

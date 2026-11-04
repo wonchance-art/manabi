@@ -65,7 +65,7 @@ export default function LlmBenchPanel() {
         <button type="button" className="btn btn--primary" disabled={!!running || !models.some((m) => m.configured)} onClick={run}>{running ? `측정 중… ${running}` : '측정 시작'}</button>
         <button type="button" className="btn btn--ghost" disabled={!Object.keys(results).length || !!running} onClick={copy}>{copied ? '복사했어요' : '결과 JSON 복사'}</button>
       </div>
-      {error && <p role="alert" style={{ color: 'var(--danger)' }}>{error}</p>}
+      {error && <p role="alert" style={{ color: 'var(--danger-text)' }}>{error}</p>}
       {Object.keys(results).length > 0 && (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', fontSize: '0.82rem', borderCollapse: 'collapse' }}>
@@ -74,7 +74,7 @@ export default function LlmBenchPanel() {
               {Object.values(results).map((r) => (
                 <tr key={r.model}>
                   <td style={{ padding: 6 }}>{r.label || r.model}</td>
-                  {r.error ? <td colSpan={9} style={{ padding: 6, color: 'var(--danger)' }}>{r.error}</td> : <>
+                  {r.error ? <td colSpan={9} style={{ padding: 6, color: 'var(--danger-text)' }}>{r.error}</td> : <>
                     <td style={{ padding: 6 }}>{r.calls.ok}/{r.calls.total}</td>
                     <td style={{ padding: 6 }}>{sec(r.calls.p50)}</td>
                     <td style={{ padding: 6 }}>{sec(r.calls.p95)}</td>
@@ -117,7 +117,7 @@ function QualityTable({ quality }) {
           {rows.map((r) => (
             <tr key={r.model}>
               <td style={{ padding: 6 }}>{r.label || r.model}</td>
-              {r.error ? <td colSpan={8} style={{ padding: 6, color: 'var(--danger)' }}>{r.error}</td> : <>
+              {r.error ? <td colSpan={8} style={{ padding: 6, color: 'var(--danger-text)' }}>{r.error}</td> : <>
                 <td style={{ padding: 6 }}>{r.calls.ok}/{r.calls.total}</td>
                 <td style={{ padding: 6 }}>{sec(r.calls.p50)}</td>
                 <td style={{ padding: 6 }}>{sec(r.calls.p95)}</td>

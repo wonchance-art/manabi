@@ -195,7 +195,7 @@ export default function OnboardingModal() {
             </div>
           )}
 
-          {error && <p style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>{error}</p>}
+          {error && <p style={{ color: 'var(--danger-text)', fontSize: '0.85rem' }}>{error}</p>}
 
           <Button type="submit" size="lg" disabled={saving} style={{ width: '100%', marginTop: '8px' }}>
             {saving ? '저장 중…' : '시작하기'}
