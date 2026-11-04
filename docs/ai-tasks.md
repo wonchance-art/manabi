@@ -1558,7 +1558,9 @@
   옛 키 비활성은 안정 뒤 오너 별도 확인.
 - **SUPA-SSR-0127 @supabase/ssr 0.9 → 0.12.7 (2026-11-04 KST, 오케스트레이터 조율 — 통계 세션에서 이관, 키 이전과 같은 Preview 검수)**: supabase-js ^2.114.0(피어 요구).
   쿠키 형식 · 기본값 · 청크 · 저장 키 불변(0.9 쿠키를 0.12.7로 읽기 · 교환 · 로그아웃 교차 실측 + 계약 supabaseSsrCookieContract.test.js). 2.102부터 postgrest GET 자동 재시도 →
-  브라우저 클라이언트만 `db: { retry: false }`(오프라인 대체 화면이 늦던 e2e account-boundary ⑥ 회귀 — 계약 supabaseClientRetry.test.js), 서버는 SDK 기본(GET만 재시도) 유지.
+  앱이 만드는 클라이언트 전부(브라우저 · 서버 · 미들웨어 · 라우트 52곳)에 `db: { retry: false }` — 판 올림 전처럼 실패를 바로 받아 폴백(실측: 끊긴 조회 하나 기본 7,059 ms ·
+  retry:false 1 ms, 서버 기본값으로 둔 첫 CI는 e2e가 테스트마다 +4–5초로 30분 제한 초과). 계약 supabaseNoRetry.test.js(모든 호출 · 조건부 두 갈래) · supabaseClientRetry.test.js.
+  재시도를 켜는 것은 별도 결정.
   getClaims 만료 = { error }(2.107) 대응 테스트 갱신.
 - **PERF-SNAPSHOT-KNOWN-001 단어장 snapshot 아는 단어 판정 (2026-11-04 KST, 백엔드 자율 범위)**: 운영 실측(읽기 전용) — 가장 큰 학습자
   (단어 1,664)에서 fsrs_vocabulary_snapshot ≈ 350 ms · _light ≈ 290–330 ms, 그중 ≈ 210 ms가 아는 단어 LEFT JOIN k2(언어 하나로 merge join →
