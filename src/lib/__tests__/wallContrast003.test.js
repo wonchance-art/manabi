@@ -90,20 +90,52 @@ describe('화면 벽 WALL-003 — 터치 타깃 예외(ui-conventions §3)', () 
   });
 });
 
-// WALL-005(2026-11-03 KST) — 바탕용 --warning을 글자색으로 쓴 18곳(시안: https://claude.ai/artifact/C8ydSyRGjb5op1VS5fkTsf, 오너 「ㄱㄱ」).
-// 13곳은 --warning-text, 뷰어 설정 경고는 --reader-warn, 쓰는 화면 없는 규칙 4곳은 삭제했다. 바탕 · 테두리 · color-mix 안의 쓰임은 그대로 허용.
-describe('화면 벽 WALL-005 — 글자에 바탕용 --warning을 쓰지 않는다', () => {
-  const cssFiles = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap(e => {
+// WALL-005(2026-11-03 KST) → 경고 세트 판 5(오너 확정 2026-11-04 KST, 시안: https://claude.ai/artifact/Rvox4P1LTvxHXXtbhN5Xqq).
+// 노랑 #D4962A(--warning)는 그 색 그대로 둔다: ① 글자만 노란 자리 = --warning 글자(대비 4.5 미달을 알고 두는 예외 — 아래 목록),
+// ② 옅은 노랑 바탕 위 글자 = --warning-on-tint(#5C3A00) ③ 꽉 찬 노랑 위 글자 = 흰색(판 6 오너 예외 — 인접 배지와 통일). 어두운 판 값은 그대로.
+// 예외 목록이 정본이다 — 새 자리에 노랑 글자를 쓰면 이 목록에 사유와 함께 더해야 하고, 지우면 여기서도 지운다.
+describe('경고 세트 — 노랑 글자는 예외 목록 안에서만, 노랑 바탕 위 글자는 짝 토큰', () => {
+  const walk = (dir, re) => readdirSync(dir, { withFileTypes: true }).flatMap(e => {
     const p = join(dir, e.name);
-    if (e.isDirectory()) return e.name === '__tests__' ? [] : cssFiles(p);
-    return /\.css$/.test(e.name) ? [p] : [];
+    if (e.isDirectory()) return ['__tests__', 'world'].includes(e.name) ? [] : walk(p, re);
+    return re.test(e.name) ? [p] : [];
   });
   // 속성 이름이 정확히 color인 선언만(border-color · background-color 제외), 값 전체가 var(--warning)일 때.
   const TEXT_WARNING = /(?:^|[;{\s])color\s*:\s*var\(--warning\)\s*(?:!important\s*)?(?=[;}]|$)/gm;
+  const CSS_EXCEPTIONS = [
+    'src/components/classroom/class-course.css .course-timer--warn',
+    'src/components/viewer/reader-controls.css .reader-settings__warning',
+    'src/index.css .group-card__tag--due',
+    'src/index.css .kana-test__pct.is-no',
+    'src/index.css .version-badge__btn--stale',
+    'src/index.css .version-badge__reload--danger',
+    'src/index.css .version-badge__warn',
+  ];
+  // 인라인(JS · JSX) — 파일마다 `color: 'var(--warning)'` 개수. 기억 건강은 글자가 아니라 점(●) 색이다.
+  // 삼항 · 함수로 고르는 자리(작문 scoreColor 3점 · 재작문 하락 줄)도 같은 「글자만 노랑」 예외다 — 이 검사식 밖이라 판 5 시안 표가 정본.
+  const INLINE_EXCEPTIONS = {
+    'src/components/DictationPanel.jsx': 1, 'src/components/MaterialAddSentenceSection.jsx': 1, 'src/components/learn/MemoryHealthCard.jsx': 1,
+    'src/views/ClassTeamPage.jsx': 1, 'src/views/GroupsPage.jsx': 1, 'src/views/StudySessionPage.jsx': 1,
+  };
+  const ON_TINT = [
+    ['src/index.css', '.tag--due {'], ['src/index.css', '.badge--stage-young {'], ['src/index.css', '.vocab-row__due {'],
+    ['src/index.css', '.tag--score {'], ['src/index.css', '.pattern-card__due {'], ['src/views/CourseMapPage.module.css', '.lessonBody .lessonBadgeRecommended {'],
+  ];
 
-  it('src 전체 CSS · CSS 모듈에 `color: var(--warning)`이 없다', () => {
-    const hits = cssFiles('src').flatMap(f => (read(f).match(TEXT_WARNING) || []).map(() => f));
-    expect(hits).toEqual([]);
+  it('CSS의 노랑 글자(`color: var(--warning)`)는 예외 목록과 정확히 같다', () => {
+    const hits = walk('src', /\.css$/).flatMap(f => [...read(f).replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .filter(m => TEXT_WARNING.test(m[2]) && !(TEXT_WARNING.lastIndex = 0)).map(m => `${f} ${m[1].trim().split(/\s+/).pop()}`));
+    TEXT_WARNING.lastIndex = 0;
+    expect([...new Set(hits)].sort()).toEqual(CSS_EXCEPTIONS);
+  });
+
+  it('인라인 노랑 글자도 예외 목록과 정확히 같다', () => {
+    const counts = {};
+    for (const f of walk('src', /\.(jsx?|tsx?)$/)) {
+      const n = (read(f).match(/color:\s*'var\(--warning\)'/g) || []).length;
+      if (n) counts[f] = n;
+    }
+    expect(counts).toEqual(INLINE_EXCEPTIONS);
   });
 
   it('검사식이 실제로 잡는다 — 글자색은 잡고, 테두리 · 바탕 · 섞은 색은 놓아 둔다', () => {
@@ -112,12 +144,34 @@ describe('화면 벽 WALL-005 — 글자에 바탕용 --warning을 쓰지 않는
     expect(count('.a {color:var(--warning)}')).toBe(1);
     expect(count('.a {\n  color: var(--warning);\n}')).toBe(1);
     expect(count('.a { border-color: var(--warning); background-color: var(--warning); }')).toBe(0);
-    expect(count('.a { color: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning-text); }')).toBe(0);
+    expect(count('.a { color: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning-on-tint); }')).toBe(0);
   });
 
-  it('글자 짝 토큰은 밝은 셸 바탕에서 4.5:1 이상, 뷰어 설정 경고는 읽기면 테마를 따르는 --reader-warn', () => {
-    expect(contrast(shellToken('--warning-text'), PAPER)).toBeGreaterThanOrEqual(4.5);
-    expect(sliceBetween(read('src/components/viewer/reader-controls.css'), '.reader-settings__warning {', '}')).toMatch(/color:var\(--reader-warn\)/);
+  it('옅은 노랑 바탕 위 글자는 --warning-on-tint — 셸 값 #5C3A00이 알약 바탕(노랑 15%) 위 4.5:1 이상', () => {
+    for (const [f, sel] of ON_TINT) expect(sliceBetween(read(f), sel, '}'), sel).toMatch(/color:\s*var\(--warning-on-tint\)/);
+    const onTint = shellToken('--warning-on-tint');
+    expect(onTint).toBe('#5c3a00');
+    const pill = '#f9eedc'; // color-mix(--warning 15%, --sheet) 실측
+    expect(contrast(onTint, pill)).toBeGreaterThanOrEqual(4.5);
+    expect(read('src/index.css')).toMatch(/\[data-theme="light"\][^}]*--warning-on-tint: #5C3A00;/s);
+  });
+
+  it('꽉 찬 노랑 위 흰 글자는 예외 두 자리뿐 — 오너 결정 11/4: 인접 배지와 흰 글자 통일(대비 2.56)', () => {
+    // 오늘 학습 채점 배지 「조금 아쉬워요」(로즈 · 빨강 배지와 한 줄) · 읽기 트랙 「파일럿」(관리자 전용).
+    // 판 6에서 짙은 글자(#252721 · #4A2E00)를 견줬고 오너가 흰색을 골랐다. 새 자리는 이 목록에 사유와 함께 더한다.
+    expect(contrast('#ffffff', '#d4962a')).toBeLessThan(4.5);
+    const study = read('src/views/StudySessionPage.jsx');
+    expect(study).toContain("const badgeColor = ts >= 2 ? 'var(--accent)' : ts === 1 ? 'var(--warning)' : 'var(--danger)';");
+    expect(study).toContain("background: badgeColor, color: '#fff',");
+    expect(read('src/views/ReadingTrackPage.jsx')).toContain("background: 'var(--warning)', color: '#fff', fontWeight: 700 }}>파일럿");
+    const solidWhite = walk('src', /\.(jsx?|tsx?)$/).filter(f => /background:\s*'var\(--warning\)',\s*color:\s*'#fff'/.test(read(f)));
+    expect(solidWhite).toEqual(['src/views/ReadingTrackPage.jsx']);
+    expect(read('src/index.css')).not.toContain('--warning-on-solid');
+  });
+
+  it('뷰어 설정 경고는 밝은 면 노랑 · 어두운 면은 --reader-warn 그대로', () => {
+    const css = read('src/components/viewer/reader-controls.css');
+    expect(sliceBetween(css, '.reader-settings__warning {', '}')).toMatch(/color:var\(--warning\)/);
+    expect(css).toContain('.viewer-layout[data-reader-theme="dark"] .reader-settings__warning {color:var(--reader-warn);}');
   });
 });
-

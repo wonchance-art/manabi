@@ -289,8 +289,8 @@ describe('배선 — 필터를 우회할 길이 없다', () => {
     const css = read('src/index.css');
     const pill = sliceBetween(css, '.pattern-card__due {', '}');
     const vocab = sliceBetween(css, '.vocab-row__due {', '}');
-    expect(pill).toContain('color: var(--warning-text);');
-    expect(vocab).toContain('color: var(--warning-text);');
+    expect(pill).toContain('color: var(--warning-on-tint);');
+    expect(vocab).toContain('color: var(--warning-on-tint);');
     expect(pill).toContain('color-mix(in srgb, var(--warning-bright) 16%, transparent)');
   });
 });

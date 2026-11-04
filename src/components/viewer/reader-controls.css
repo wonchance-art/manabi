@@ -409,7 +409,8 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 .reader-setting-toggle b {display:block;font-size:.9rem;}
 .reader-setting-toggle small,.reader-setting-note {display:block;font-size:.78rem;line-height:1.7;color:var(--reader-muted);margin:4px 0;}
 .reader-setting-toggle input {accent-color:var(--reader-accent);width:22px;height:22px;flex:none;}
-.reader-settings__warning {font-size:.82rem;color:var(--reader-warn);}
+.reader-settings__warning {font-size:.82rem;color:var(--warning);}
+.viewer-layout[data-reader-theme="dark"] .reader-settings__warning {color:var(--reader-warn);}
 .reader-activity-menu {display:flex;flex-direction:column;padding-top:12px;}
 /* 학습 노트(같은 앱 안 이동)도 다른 항목과 같은 이름 + 설명 줄이다 — 혼자 회색 알약 · ↗였다(뷰어 점검 F5). */
 .reader-activity-menu>:is(button,.reader-activity-menu__item) {display:flex;flex-direction:column;gap:6px;text-align:left;padding:18px 0;border:0;border-bottom:1px solid var(--reader-line);background:transparent;color:var(--reader-ink);text-decoration:none;font:inherit;}
