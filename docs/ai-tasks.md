@@ -939,6 +939,10 @@
     정답률(isGradedReviewEvent) · 난이도 다이얼(countsForDifficulty) 양쪽에서 오답 한 번으로 셌다(두 판정이 각자 ui · dict 목록).
     `reviewEventSources.NON_ANSWER_SOURCES`(ui · dict · assist) 하나로. 운영 assist 1건뿐이라 지난 숫자 변화는 미미.
     후속(DB): admin_content_health가 `source <> 'ui'`만 뺀다(assist · level · hanzi가 오답률에 섞임) — 관리자 지표라 별도 마이그레이션 PR.
+    **완료 [#1671](https://github.com/wonchance-art/manabi/pull/1671) `918bc69a`.**
+  ⑯ 이번 PR — 관리자 「콘텐츠 건강」 출처 = 정답률 정본(EVENT-SOURCE-001 후속, 같은 상시 방침): 운영 읽기 실측 — 지난 30일 상위 10개가
+    전부 단어 목록 바퀴(level) 자기 확인이었다. 마이그레이션 `20261104110000`이 ui · dict · assist · practice · hanzi · level을 뺀다(목록 = 코드 상수, 계약 대조).
+    서명 · 보안 속성 · 실행권 · 관리자 검사 그대로, 학습 계약 지문 밖(앞뒤 동치 검사). 복원 `docs/sql/admin-content-health-rollback.sql`. PGlite 6검사 + 관측 체인 33개 통과.
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —
