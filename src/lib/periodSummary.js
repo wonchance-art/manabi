@@ -59,12 +59,17 @@ export function balanceRows({ report, output = null, standards }) {
   });
 }
 
-/** 기간 안에 공부한 날 수 — 공부한 날 칸과 같은 셈(studyDayCounts: 답 또는 담은 말이 있는 학습일). */
+/**
+ * 공부한 날 칸 하나의 합 — 답 + 담은 말 + 레슨(STUDY-DAYS-LESSON-001, 오너 「A 대로」 2026-11-04 KST). 현황 칸 · 이번 주 창 ·
+ * 진단지가 이 하나로 센다. 레슨은 연속이 이미 세던 활동이라(progressStore → recordActivity) 칸도 같은 날을 켠다.
+ */
+export const studyDayTotal = cell => (cell?.answers || 0) + (cell?.saved || 0) + (cell?.lessons || 0);
+
+/** 기간 안에 공부한 날 수 — 공부한 날 칸과 같은 셈(studyDayCounts · studyDayTotal: 답 · 담은 말 · 레슨이 있는 학습일). */
 export function studyDaysIn(dayCounts, { startMs, days }) {
   let n = 0;
   for (let i = 0; i < days; i++) {
-    const cell = dayCounts?.[learningDateString(startMs + i * DAY_MS + 12 * 3600e3)];
-    if ((cell?.answers || 0) + (cell?.saved || 0) > 0) n += 1;
+    if (studyDayTotal(dayCounts?.[learningDateString(startMs + i * DAY_MS + 12 * 3600e3)]) > 0) n += 1;
   }
   return n;
 }

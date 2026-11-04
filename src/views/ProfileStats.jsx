@@ -57,7 +57,7 @@ import { authEntryHref } from '../lib/authRedirect';
 import { useDialogReturn } from '../lib/useDialogReturn';
 import GoalSheet from '../components/goal/GoalSheet';
 import { useGroupSnapshotPush } from '../lib/useGroupSnapshotPush';
-import { STUDY_DAYS_SPAN, fetchStudyAnswerRows, studyDayCounts, studyDayLabel, studyDaysBasis } from '../lib/studyDays';
+import { STUDY_DAYS_SPAN, fetchStudyAnswerRows, fetchStudyLessonRows, studyDayCounts, studyDayLabel, studyDaysBasis, studyDayTotal } from '../lib/studyDays';
 import { METRICS } from '../lib/metrics/registry';
 
 /** 공부한 날(히트맵) — 최근 1년(52주 · 364일), 가장 오른쪽 아래가 오늘. */
@@ -100,18 +100,24 @@ export default function ProfileStats() {
     enabled: !!user && !!data?.heatmapStart,
     staleTime: 1000 * 60 * 5,
   });
+  const { data: lessonRows } = useQuery({
+    queryKey: ['study-days-lessons', user?.id, data?.heatmapStart],
+    queryFn: () => fetchStudyLessonRows(user.id, new Date(data.heatmapStart).toISOString()),
+    enabled: !!user && !!data?.heatmapStart,
+    staleTime: 1000 * 60 * 5,
+  });
   const studyDays = useMemo(() => {
     if (!data) return {};
-    const answers = studyDayCounts({ answers: answerRows || [], sinceMs: data.heatmapStart });
+    const answers = studyDayCounts({ answers: answerRows || [], lessons: lessonRows || [], sinceMs: data.heatmapStart });
     const merged = {};
     for (const source of [data.heatmapDayCounts || {}, answers]) {
       for (const [day, c] of Object.entries(source)) {
-        const cell = (merged[day] ||= { answers: 0, saved: 0 });
-        cell.answers += c.answers; cell.saved += c.saved;
+        const cell = (merged[day] ||= { answers: 0, saved: 0, lessons: 0 });
+        cell.answers += c.answers; cell.saved += c.saved; cell.lessons += c.lessons || 0;
       }
     }
     return merged;
-  }, [data, answerRows]);
+  }, [data, answerRows, lessonRows]);
   // 칸 기간(1년)보다 이른 기록 — 있으면 머리글은 「1년 중」, 없으면 첫 기록 날부터(담은 말은 전체 기록을 이미 받아 둔다).
   const hasOlderRecord = useMemo(() => !!data && (data.vocab || []).some(v => Date.parse(v.created_at) < data.heatmapStart), [data]);
 
@@ -604,7 +610,7 @@ function studyStripLabel(days, total, basis) {
 function HeatmapCard({ dayCounts, hasOlder = false, className = '' }) {
   const todayStart = learningDayStartMs(Date.now());
   const days = Array.from({ length: HEATMAP_DAYS }, (_, i) => learningDateString(todayStart - (HEATMAP_DAYS - 1 - i) * DAY_MS));
-  const total = key => (dayCounts[key]?.answers || 0) + (dayCounts[key]?.saved || 0);
+  const total = key => studyDayTotal(dayCounts[key]);
   const maxCount = Math.max(1, ...days.map(total));
   const basis = studyDaysBasis(days, dayCounts, { hasOlder });
   const levelOf = n => (!n ? '' : `l${Math.min(4, Math.max(1, Math.ceil((n / maxCount) * 4)))}`);

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
-import { studyDayCounts, studyDayLabel, studyDaysBasis, STUDY_DAYS_SPAN } from '../studyDays.js';
+import { studyDayCounts, studyDayLabel, studyDaysBasis, studyDayTotal, STUDY_DAYS_SPAN } from '../studyDays.js';
+import { periodRange } from '../weeklyReport.js';
+import { studyDaysIn } from '../periodSummary.js';
 import { buildWeeklyReport } from '../weeklyReport.js';
 
 /**
@@ -15,7 +17,7 @@ describe('공부한 날', () => {
       answers: [{ source: 'vocab', correct: true, created_at: '2026-11-02T10:00:00+09:00' }],
       saved: [],
     });
-    expect(days['2026-11-02']).toEqual({ answers: 1, saved: 0 });
+    expect(days['2026-11-02']).toEqual({ answers: 1, saved: 0, lessons: 0 });
   });
 
   it('04시 학습일로 묶는다 — 새벽 2시 답은 전날 칸', () => {
@@ -23,7 +25,7 @@ describe('공부한 날', () => {
       answers: [{ source: 'vocab', correct: true, created_at: '2026-11-02T02:00:00+09:00' }],
       saved: [{ created_at: '2026-11-02T04:00:00+09:00' }],
     });
-    expect(days).toEqual({ '2026-11-01': { answers: 1, saved: 0 }, '2026-11-02': { answers: 0, saved: 1 } });
+    expect(days).toEqual({ '2026-11-01': { answers: 1, saved: 0, lessons: 0 }, '2026-11-02': { answers: 0, saved: 1, lessons: 0 } });
   });
 
   it('답은 이번 주 「복습 N문항」과 같은 정의 — 연습 · 사전 · ui는 빼고 한자 · 목록 확인은 활동으로 센다', () => {
@@ -88,5 +90,38 @@ describe('공부한 날', () => {
     expect(css).toMatch(/\.learn-heatmap\{grid-column:span 2;height:146px/); // 카드 높이 그대로
     // 시안 2에서 뺀 것 — 버튼 · 달 이름 · 범례가 다시 붙지 않는다(「현안 심플함에서 너무 번잡해졌네」).
     for (const banned of ['이전 반년', '다음 반년', 'learn-heatmap__months', '적음', '많음']) expect(src).not.toContain(banned);
+  });
+
+  // 레슨한 날도 공부한 날(STUDY-DAYS-LESSON-001 — 오너 「A 대로」 2026-11-04 KST, 목업 VNKQaW7CxTcu5aerN7euDy).
+  // 연속은 레슨 완료를 이미 센다(progressStore → recordActivity). 칸 · 이번 주 창 · 진단지도 같은 날을 켠다.
+  it('레슨만 한 날도 칸이 켜진다 — 레슨 진도 표의 고친 시각, 04시 학습일', () => {
+    const days = studyDayCounts({ lessons: [{ updated_at: '2026-10-29T13:30:00+09:00' }, { updated_at: '2026-10-30T03:00:00+09:00' }] });
+    expect(days).toEqual({ '2026-10-29': { answers: 0, saved: 0, lessons: 2 } });
+    expect(studyDayTotal(days['2026-10-29'])).toBe(2);
+    expect(studyDayLabel('2026-10-29', days['2026-10-29'])).toBe('10월 29일 · 레슨 2');
+    expect(studyDayLabel('2026-11-04', { answers: 29, saved: 5, lessons: 1 })).toBe('11월 4일 · 답 29 · 담은 말 5 · 레슨 1');
+    expect(studyDayLabel('2026-10-27', undefined)).toBe('10월 27일 · 쉼');
+  });
+
+  it('머리글 · 기간 셈도 레슨을 센다 — 칸 · 이번 주 창 · 진단지가 같은 합(studyDayTotal)', () => {
+    const counts = studyDayCounts({ answers: [{ source: 'vocab', correct: true, created_at: '2026-11-03T10:00:00+09:00' }],
+      lessons: [{ updated_at: '2026-11-01T10:00:00+09:00' }] });
+    const days = ['2026-10-31', '2026-11-01', '2026-11-02', '2026-11-03'];
+    expect(studyDaysBasis(days, counts)).toMatchObject({ studied: 2, sinceDay: '2026-11-01' });
+    expect(studyDaysIn(counts, periodRange('30d', Date.parse('2026-11-04T12:00:00+09:00')))).toBe(2);
+  });
+
+  it('배선 — 세 자리가 레슨 기록을 같이 받고 같은 합으로 센다', () => {
+    const lib = read('src/lib/studyDays.js');
+    expect(lib).toContain("supabase.from('user_ref_progress').select('updated_at').eq('user_id', userId).gte('updated_at', sinceIso)");
+    expect(read('src/lib/periodSummary.js')).toContain('export const studyDayTotal = cell => (cell?.answers || 0) + (cell?.saved || 0) + (cell?.lessons || 0);');
+    const stats = read('src/views/ProfileStats.jsx');
+    expect(stats).toContain('queryFn: () => fetchStudyLessonRows(user.id, new Date(data.heatmapStart).toISOString()),');
+    expect(stats).toContain('studyDayCounts({ answers: answerRows || [], lessons: lessonRows || [], sinceMs: data.heatmapStart })');
+    expect(stats).toContain('const total = key => studyDayTotal(dayCounts[key]);');
+    expect(stats).not.toMatch(/dayCounts\[key\]\?\.answers \|\| 0\) \+ \(dayCounts\[key\]\?\.saved/);
+    const report = read('src/views/StudyReportPage.jsx');
+    expect(report).toContain('queryFn: () => fetchStudyLessonRows(user.id, new Date(range.startMs).toISOString()),');
+    expect(report).toContain('lessons: lessonRows || [], sinceMs: range.startMs');
   });
 });
