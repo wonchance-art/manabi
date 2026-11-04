@@ -61,6 +61,9 @@
      옅은 노랑 바탕 위 글자 = --warning-on-tint · 꽉 찬 노랑 위 글자 = 흰색(인접 로즈 · 빨강 배지와 같은 문법 — 오너 예외).
      어두운 판 값은 기존 글자색 그대로. */
   --warning-on-tint: #E6B35C;
+  /* 의미색 세트 이름(색 체계 단계 1 — 값 그대로, 화면 무변화): 옅은 바탕 = 표시색 15%. 다른 농도(10 · 12 · 13 · 16%)는 단계 2에서 이 값으로 모은다. */
+  --warning-tint: color-mix(in srgb, var(--warning) 15%, transparent);
+  --danger-tint: color-mix(in srgb, var(--danger) 15%, transparent);
 
   /* 모달 스크림 — 뒤 화면을 덮는 검정. 값이 흩어져 있던 것을 토큰으로 모은다(v2-K 잔여).
      검정이라 테마별 재정의가 없다(밝은 테마에서도 덮는 쪽은 검정이다).
@@ -959,7 +962,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* 복습 알약 — 뷰어 `.viewer-badge--due`와 **같은 값**을 쓴다(v2-K 잔여).
    자료실이 같은 배지를 인라인으로 두 번째 하드코딩하고 있었다(2트랙 병). */
 .tag--due {
-  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  background: var(--warning-tint);
   color: var(--warning-on-tint);
   font-weight: 700;
 }
@@ -994,9 +997,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
    지고 여기는 표현만 진다. 옛 인라인은 색을 삼항으로 골라 `color-mix`에 끼워 넣고
    있었는데, 그러면 경계값이 판정과 표현 두 군데에 살아 한쪽만 낡는다. */
 .badge--stage-new { background: color-mix(in srgb, var(--text-muted) 15%, transparent); color: var(--text-muted); }
-.badge--stage-learning { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
-.badge--stage-relearning { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
-.badge--stage-young { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning-on-tint); }
+.badge--stage-learning { background: var(--danger-tint); color: var(--danger); }
+.badge--stage-relearning { background: var(--danger-tint); color: var(--danger); }
+.badge--stage-young { background: var(--warning-tint); color: var(--warning-on-tint); }
 .badge--stage-mature { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
 
 /* 문맥 퀴즈 보기 — 정·오답 상태색(v2-K 잔여). 삼항 **안**에 리터럴이 있어 한 줄
@@ -2053,7 +2056,7 @@ a.viewer-badge:hover {
 /* 크롬의 강조색은 **하나만** — 복습(할 일이 있다)만 색을 쓴다. 본문이 이미 성조 4색 +
    하이라이트 2색을 쓰는 화면에서 크롬까지 3색이면 주인공과 색을 다툰다(설계 P6). */
 .viewer-badge--due {
-  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  background: var(--warning-tint);
   border-color: var(--warning);
   color: var(--warning-text);
 }

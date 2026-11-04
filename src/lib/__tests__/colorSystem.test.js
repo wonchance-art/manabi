@@ -35,3 +35,38 @@ describe('단계 2-① 교재 보조 글자 = 셸 --muted (오너 「거의 똑�
     expect(read('src/components/books/study-route.css')).toContain('.book-recall-links strong{font-size:12px;color:var(--muted)}');
   });
 });
+
+describe('단계 1 계약 확대 — 색 직접 값은 늘지 않는다(라쳇)', () => {
+  // 셈법 정본: scripts/color-literals.mjs. CSS 직접 값 전부 + JS/JSX 스타일 객체 · 여러 줄 · 삼항 · 이름색(white 등)까지 —
+  // uiConventions ①은 한 줄 style={{}} 안의 #hex/rgba만 봤다. 교재 판본 · 월드 · 오류 화면도 세되 늘지 않게만 묶는다.
+  // 값이 줄면(정리 단계 2) 기준 파일도 같이 낮춘다 — `node scripts/color-literals.mjs > src/lib/__tests__/fixtures/colorLiteralBaseline.json`.
+  it('파일별 직접 색 개수가 기준과 같다 — 새 파일 · 늘어난 파일은 실패, 줄었으면 기준을 낮춘다', async () => {
+    const { literalCounts } = await import('../../../scripts/color-literals.mjs');
+    const baseline = JSON.parse(read('src/lib/__tests__/fixtures/colorLiteralBaseline.json'));
+    expect(literalCounts()).toEqual(baseline);
+  });
+
+  it('셈법이 실제로 센다 — 스타일 객체 · 여러 줄 · 삼항 · 이름색 · CSS 선언(토큰 정의는 뺌)', async () => {
+    const { cssLiterals, jsLiterals } = await import('../../../scripts/color-literals.mjs');
+    expect(jsLiterals("const S = { del: { color: '#d4962a' } };")).toBe(1);
+    expect(jsLiterals("<b style={{\n  color: 'white',\n  background: ok ? '#fff' : 'rgba(0,0,0,.2)',\n}} />")).toBe(3);
+    expect(jsLiterals("<b style={{ color: 'var(--ink)' }} /> // color: '#fff'")).toBe(0);
+    expect(cssLiterals('.a{--x:#fff;color:#000;background:rgb(1,2,3)}')).toBe(2);
+    expect(cssLiterals('.a{color:var(--muted);font-family:Red Hat}')).toBe(0);
+  });
+});
+
+describe('단계 1 이름 도입 — 값 그대로(화면 무변화)', () => {
+  it('옅은 바탕 15%는 --warning-tint · --danger-tint 하나로 — 같은 식을 손으로 다시 쓰지 않는다', () => {
+    const css = read('src/index.css');
+    expect(css).toContain('--warning-tint: color-mix(in srgb, var(--warning) 15%, transparent);');
+    expect(css).toContain('--danger-tint: color-mix(in srgb, var(--danger) 15%, transparent);');
+    for (const f of cssFiles('src')) {
+      const body = read(f).replace(/--(?:warning|danger)-tint:[^;]*;/g, '');
+      expect(body, f).not.toMatch(/color-mix\(in srgb, var\(--(?:warning|danger)\) 15%, transparent\)/);
+    }
+    for (const sel of ['.tag--due {', '.badge--stage-young {', '.viewer-badge--due {', '.badge--stage-learning {', '.badge--stage-relearning {']) {
+      expect(sliceBetween(css, sel, '}'), sel).toMatch(/background: var\(--(?:warning|danger)-tint\)/);
+    }
+  });
+});

@@ -24,6 +24,15 @@
   어두운 판 값은 그대로. 글자만 노란 자리는 `wallContrast003.test.js`의 예외 목록(CSS 자리 · 인라인 파일별 개수)이
   정본이다 — 새 자리는 목록에 사유와 함께 더한다. 노랑을 어둡게 한 금색 · 갈색 글자는 오너가 기각했다(「거의 갈색」).
 
+- **색 체계 세트(오너 「설계 승인」 2026-11-04 KST, [설계안](https://claude.ai/artifact/Bz7Uc4dsZb4nmZXHpBQktL))**: 의미색
+  (경고 · 위험 · 성공 · 안내)마다 「표시 `--S` · 옅은 바탕 `--S-tint` · 옅은 바탕 위 글자 `--S-on-tint` · 꽉 찬 바탕 위 글자 ·
+  글자만 `--S-text`」 다섯 역할. 단계 1에서 `--warning-tint` · `--danger-tint`(15%)를 값 그대로 도입했다. 같은 식을 손으로
+  다시 쓰지 말고 이름을 쓴다.
+- **색 직접 값 라쳇**: `scripts/color-literals.mjs`가 CSS 직접 값과 JS/JSX 스타일 객체 · 여러 줄 · 삼항 · 이름색까지 센다.
+  파일별 개수가 `src/lib/__tests__/fixtures/colorLiteralBaseline.json`과 같아야 한다(`colorSystem.test.js`) — 늘리면 실패,
+  정리로 줄었으면 `node scripts/color-literals.mjs > src/lib/__tests__/fixtures/colorLiteralBaseline.json`으로 기준을 낮춘다.
+  새 색은 토큰으로 — 토큰을 새로 만들 때도 이 문서의 세트 이름을 따른다.
+
 - **투명 검정(스크림)은 `--scrim` 토큰**을 쓴다. 모달 뒤를 덮는 검정이 값으로 흩어져
   있었다 — 인라인 3벌(v2-K 잔여가 흡수)과 오버레이 클래스 **9종**(0.3·0.45·0.5×3·0.55·
   0.6·0.65·0.75). 2026-09-01 라운드가 아홉을 전부 토큰으로 모았다. `viewerChrome.test.js`
