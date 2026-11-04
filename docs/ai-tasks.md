@@ -878,7 +878,7 @@
 
 ## Claude (claude/*)
 ### doing
-- **WARN-SET-001 경고 세트 판 5 (2026-11-04 KST)** `claude/admiring-ritchie-tz2mxp`(오너 「1번 먼저 확정 및 작업 진행」, 오케스트레이션 경유): [시안 판 5](https://claude.ai/artifact/Rvox4P1LTvxHXXtbhN5Xqq) — 노랑 #D4962A 유지. 글자만 노란 자리 = `--warning`(#1659 갈색 7곳 복귀 · 계약 예외 목록), 옅은 노랑 바탕 위 글자 = `--warning-on-tint` #5C3A00(알약 6종), 꽉 찬 노랑 위 = `--warning-on-solid` #252721(채점 배지 · 파일럿). 어두운 판 그대로. 금색 · 갈색 판 1–3은 오너 기각(「거의 갈색」). 다음: 색 체계 정리 설계안([실측](https://claude.ai/artifact/SNM91N7kjTrRts5qkYr5WJ)).
+- **WARN-SET-001 경고 세트 판 5 · 6 (2026-11-04 KST)** `claude/admiring-ritchie-tz2mxp`(오너 「1번 먼저 확정 및 작업 진행」, 오케스트레이션 경유): [시안 판 5](https://claude.ai/artifact/Rvox4P1LTvxHXXtbhN5Xqq) — 노랑 #D4962A 유지. 글자만 노란 자리 = `--warning`(#1659 갈색 7곳 복귀 · 계약 예외 목록), 옅은 노랑 바탕 위 글자 = `--warning-on-tint` #5C3A00(알약 6종), 꽉 찬 노랑 위 = 흰 글자 유지(판 6 오너 「흰색이 다른 거랑 더 조합이 잘 맞을 듯」 — 채점 배지 · 파일럿 계약 예외). 어두운 판 그대로. 금색 · 갈색 판 1–3은 오너 기각(「거의 갈색」). 다음: 색 체계 정리 설계안([실측](https://claude.ai/artifact/SNM91N7kjTrRts5qkYr5WJ)).
 - **VIEWER-NEWFILL-001 뷰어 새 단어 옅은 칠 + 밑줄 (2026-11-03 KST)** `claude/admiring-ritchie-tz2mxp`(WEB 최적화 세션 인계 · 오너 「권장대로.」 = C안, 오케스트레이션 세션 경유): [시안](https://claude.ai/artifact/RMtzrLJMbZmbaaVozm8Z6C) — A 밑줄 · B 파란 칠(처음 여는 글 96% 덮음 · 일본어 단어 경계 소실 · 파랑/노랑 밝기 차 1.04–1.11) · C 옅은 칠(8% · 어둡게 11%) + 밑줄. AD-R2 개정: `--ws-new-fill` 칠 규칙 하나(지정 · 선택 중 제외) · `hlBand.test.js`(칠 상한 12% · 밑줄 규칙 무배경 · 혼색 0) · 범례 문구 3언어 · e2e typography AD-R2 행렬 · 범위 지정. 칠 진하기는 실기 보고 조절.
 - **WALL-002 화면 벽 2판 1단계 (2026-11-02 KST)** `claude/admiring-ritchie-tz2mxp` (오너 「권장대로 1단계부터 진행해」):
   1판(10-12 · 21장면, 수동 1회)이 3주 멈춰 있던 화면 벽을 무인 갱신 가능한 판으로. 장면 등록부 `docs/design/scenes.json`(src/app 경로 전부 — 장면 · 재작성 판 · 사유 있는 제외) ·
