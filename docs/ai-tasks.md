@@ -1550,6 +1550,16 @@
   왼쪽 끝 2px 막대(띠 높이 = .surface::before 계산값) + 위 12px 점, 끝 = 마지막 토큰 오른쪽 끝 막대 + 아래 점. 강조색 · 흰 테두리 · 그림자 없음,
   타깃 가로 28px(띠 + 위아래 14px). 화면 가장자리에서 타깃을 안으로 민 만큼 막대를 반대로(--grip-bar-x) — 막대는 토큰 끝에 그대로. 조정 동작 그대로.
   계약 tokenRangeSelect(gripPlacement · CSS 모양).
+- **SUPA-KEYS-001 Supabase 새 API 키 이전 기간 (2026-11-04 KST, 오너 「전부 권장대로, 병합해.」 — 새 환경 변수 범위 승인)**: 공개 키 `supabasePublicKey()`
+  (NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY → 옛 NEXT_PUBLIC_SUPABASE_ANON_KEY) · 서버 전용 `supabaseSecretKey()`(SUPABASE_SECRET_KEY → 옛 SUPABASE_SERVICE_ROLE_KEY)로
+  앱 직접 읽기 41파일 교체 — 옛 이름만 있으면 동작 동일. contentOverrides 원시 REST는 apikey 헤더만(운영 실측: publishable · anon 둘 다 apikey만으로 200).
+  계약 supabaseKeys.test.js(직접 읽기 0 · 비밀 키는 서버 경로만 · 'use client' 그래프에서 닿지 않음). DB 쪽 옛 키 의존 0(운영 읽기 전용: pg_net · pg_cron ·
+  웹훅 · HTTP 호출 함수 없음, Vault 0행). 남은 일: 오너가 Vercel Production · Preview에 새 두 이름 입력(값 열람 없음) → Preview 실계정 검수 → 옛 이름 제거 ·
+  옛 키 비활성은 안정 뒤 오너 별도 확인.
+- **SUPA-SSR-0127 @supabase/ssr 0.9 → 0.12.7 (2026-11-04 KST, 오케스트레이터 조율 — 통계 세션에서 이관, 키 이전과 같은 Preview 검수)**: supabase-js ^2.114.0(피어 요구).
+  쿠키 형식 · 기본값 · 청크 · 저장 키 불변(0.9 쿠키를 0.12.7로 읽기 · 교환 · 로그아웃 교차 실측 + 계약 supabaseSsrCookieContract.test.js). 2.102부터 postgrest GET 자동 재시도 →
+  브라우저 클라이언트만 `db: { retry: false }`(오프라인 대체 화면이 늦던 e2e account-boundary ⑥ 회귀 — 계약 supabaseClientRetry.test.js), 서버는 SDK 기본(GET만 재시도) 유지.
+  getClaims 만료 = { error }(2.107) 대응 테스트 갱신.
 - **PERF-SNAPSHOT-KNOWN-001 단어장 snapshot 아는 단어 판정 (2026-11-04 KST, 백엔드 자율 범위)**: 운영 실측(읽기 전용) — 가장 큰 학습자
   (단어 1,664)에서 fsrs_vocabulary_snapshot ≈ 350 ms · _light ≈ 290–330 ms, 그중 ≈ 210 ms가 아는 단어 LEFT JOIN k2(언어 하나로 merge join →
   정규화 비교를 짝마다 Join Filter, 376,144행 제거). 세 본문(snapshot · _light · _cards)의 같은 한 군데만 행 키 CTE vv + EXISTS로(같은 운영 데이터
