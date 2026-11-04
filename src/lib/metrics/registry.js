@@ -11,8 +11,8 @@
  * 꺼 둔 카드 종류는 통계에서 뺀다. 카드 종류가 들어오기 전까지는 카드 = 단어라 둘이 같다.
  *
  * ── 하루 경계 (오너 결정 2, 2026-11-01 KST)
- * 표시 통계는 04시 학습일(fsrsScheduler.learningDay)로 통일한다. 연속(DB 트리거)은 UTC 날짜라 마이그레이션 뒤 옮긴다 —
- * 그때까지 streak.day는 'utc'.
+ * 표시 통계는 04시 학습일(fsrsScheduler.learningDay)로 통일한다. 연속(DB fsrs_private.activity_day)도 2026-11-03 04:00 KST부터
+ * 같은 학습일이다(STREAK-LEARNING-DAY-001, 마이그레이션 20261101130000 · 운영 실측 11/3 · 11/4) — 그래서 streak.day도 'learning'.
  * 순수 상수 모듈 — import 없음.
  */
 export const COUNT_UNIT = 'word';
@@ -30,6 +30,6 @@ export const METRICS = Object.freeze({
     def: '복습 단계 단어를 다시 만났을 때 기억해 낸 비율의 측정값(trueRetention).' }),
   weeklyReviews: Object.freeze({ label: '이번 주 복습', unit: '문항', day: 'learning',
     def: '이번 주 채점 문항 수와 정답 비율(weeklyReport). 연습 · 목록 자기 확인은 활동량에만.' }),
-  streak: Object.freeze({ label: '연속', unit: '일', day: 'utc',
+  streak: Object.freeze({ label: '연속', unit: '일', day: 'learning',
     def: '하루도 빠짐없이 학습한 날 수(profiles.streak_count). 쉼 1회는 하루 빈 날을 이어 준다.' }),
 });

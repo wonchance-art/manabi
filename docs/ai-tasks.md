@@ -929,6 +929,10 @@
     운영 읽기 실측(10/6 ~ 11/3) — 「공부한 날」 칸에는 켜지고 연속 영수증이 없던 날 7일(담기만 · 한자 탭 · 단어 목록 바퀴). 영수증은 FSRS 채점과 update_streak에서만 생긴다.
     답 = `logReviewEvents` 한 곳(countsAsStudyAnswer 정본, vocab 제외) · 담기 = 단어를 만드는 쓰기 지점 18곳(새로 16곳)에 `recordActivity`. DB · 계약 핀 · 화면 변경 없음.
     계약 `streakStudyParity.test.js` — 목록 밖 새 쓰기 지점이 생기면 실패. 지난 날은 고치지 않는다(지금 연속에 영향 없음 — 10/28 쉼 뒤 6일).
+    **완료 [#1664](https://github.com/wonchance-art/manabi/pull/1664) `6ad95709`** · 운영 15:07 KST · 런타임 오류 0. RLS 2단계(#1665) 적용 후 지문 = WEB 세션 기록 일치.
+  ⑭ 이번 PR — 코스 지도 연속 = 정본(STREAK-COURSEMAP-001, 같은 상시 방침): 코스 지도가 저장된 streak_count를 그대로 보여 끊긴 연속이
+    거기만 살아 있었고(대시보드 「–」), 「오늘 레슨 했음」 · 낙관 +1이 기기 자정 기준이었다. 정본(liveStreakCount · streakAfterActivity · activityDay)을
+    import()로 받아 넘긴다(ts-fsrs는 첫 JS 밖 그대로 — authFirstLoad). 지표 사전 streak.day 'utc' → 'learning'(11/3 전환 반영). 화면 배치 변경 없음.
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —
