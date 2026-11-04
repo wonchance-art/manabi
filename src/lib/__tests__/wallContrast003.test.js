@@ -92,7 +92,7 @@ describe('화면 벽 WALL-003 — 터치 타깃 예외(ui-conventions §3)', () 
 
 // WALL-005(2026-11-03 KST) → 경고 세트 판 5(오너 확정 2026-11-04 KST, 시안: https://claude.ai/artifact/Rvox4P1LTvxHXXtbhN5Xqq).
 // 노랑 #D4962A(--warning)는 그 색 그대로 둔다: ① 글자만 노란 자리 = --warning 글자(대비 4.5 미달을 알고 두는 예외 — 아래 목록),
-// ② 옅은 노랑 바탕 위 글자 = --warning-on-tint(#5C3A00) ③ 꽉 찬 노랑 위 글자 = --warning-on-solid(#252721). 어두운 판 값은 그대로.
+// ② 옅은 노랑 바탕 위 글자 = --warning-on-tint(#5C3A00) ③ 꽉 찬 노랑 위 글자 = 흰색(판 6 오너 예외 — 인접 배지와 통일). 어두운 판 값은 그대로.
 // 예외 목록이 정본이다 — 새 자리에 노랑 글자를 쓰면 이 목록에 사유와 함께 더해야 하고, 지우면 여기서도 지운다.
 describe('경고 세트 — 노랑 글자는 예외 목록 안에서만, 노랑 바탕 위 글자는 짝 토큰', () => {
   const walk = (dir, re) => readdirSync(dir, { withFileTypes: true }).flatMap(e => {
@@ -156,12 +156,17 @@ describe('경고 세트 — 노랑 글자는 예외 목록 안에서만, 노랑 
     expect(read('src/index.css')).toMatch(/\[data-theme="light"\][^}]*--warning-on-tint: #5C3A00;/s);
   });
 
-  it('꽉 찬 노랑 위 글자는 --warning-on-solid(#252721) — 흰 글자를 노랑에 올리지 않는다', () => {
-    expect(read('src/index.css')).toContain('--warning-on-solid: #252721;');
-    expect(contrast('#252721', '#d4962a')).toBeGreaterThanOrEqual(4.5);
+  it('꽉 찬 노랑 위 흰 글자는 예외 두 자리뿐 — 오너 결정 11/4: 인접 배지와 흰 글자 통일(대비 2.56)', () => {
+    // 오늘 학습 채점 배지 「조금 아쉬워요」(로즈 · 빨강 배지와 한 줄) · 읽기 트랙 「파일럿」(관리자 전용).
+    // 판 6에서 짙은 글자(#252721 · #4A2E00)를 견줬고 오너가 흰색을 골랐다. 새 자리는 이 목록에 사유와 함께 더한다.
+    expect(contrast('#ffffff', '#d4962a')).toBeLessThan(4.5);
     const study = read('src/views/StudySessionPage.jsx');
-    expect(study).toContain("color: ts === 1 ? 'var(--warning-on-solid)' : '#fff'");
-    expect(read('src/views/ReadingTrackPage.jsx')).toContain("background: 'var(--warning)', color: 'var(--warning-on-solid)'");
+    expect(study).toContain("const badgeColor = ts >= 2 ? 'var(--accent)' : ts === 1 ? 'var(--warning)' : 'var(--danger)';");
+    expect(study).toContain("background: badgeColor, color: '#fff',");
+    expect(read('src/views/ReadingTrackPage.jsx')).toContain("background: 'var(--warning)', color: '#fff', fontWeight: 700 }}>파일럿");
+    const solidWhite = walk('src', /\.(jsx?|tsx?)$/).filter(f => /background:\s*'var\(--warning\)',\s*color:\s*'#fff'/.test(read(f)));
+    expect(solidWhite).toEqual(['src/views/ReadingTrackPage.jsx']);
+    expect(read('src/index.css')).not.toContain('--warning-on-solid');
   });
 
   it('뷰어 설정 경고는 밝은 면 노랑 · 어두운 면은 --reader-warn 그대로', () => {

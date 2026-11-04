@@ -1616,7 +1616,7 @@ export default function StudySessionPage({
               <div style={{ marginTop: 14 }}>
                 <span style={{
                   display: 'inline-block', padding: '2px 10px', borderRadius: 'var(--radius-full)',
-                  background: badgeColor, color: ts === 1 ? 'var(--warning-on-solid)' : '#fff', fontSize: '0.8rem', fontWeight: 700,
+                  background: badgeColor, color: '#fff', fontSize: '0.8rem', fontWeight: 700,
                 }}>
                   {ts != null ? badgeLabel : '채점'}
                 </span>

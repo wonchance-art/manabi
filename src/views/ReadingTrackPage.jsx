@@ -333,7 +333,7 @@ function ReadingTrack({ track, user, selectedId }) {
     <div className="page-container" style={{ maxWidth: 720 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <Link href="/lessons?lang=Japanese" className="chip">← 교재</Link>
-        <span className="chip" style={{ background: 'var(--warning)', color: 'var(--warning-on-solid)', fontWeight: 700 }}>파일럿</span>
+        <span className="chip" style={{ background: 'var(--warning)', color: '#fff', fontWeight: 700 }}>파일럿</span>
       </div>
       <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '6px 0 2px' }}>{track.title}</h1>
       <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', marginBottom: 12 }}>
