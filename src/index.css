@@ -5582,10 +5582,10 @@ a.viewer-badge:hover {
   align-items: center;
   gap: 10px;
   padding: 12px 18px;
-  border-radius: var(--radius-md);
-  background: var(--bg-elevated);
+  border-radius: 3px;
+  background: var(--sheet, var(--bg-elevated));
   border: 1px solid var(--border);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 20px rgba(37, 39, 33, 0.12);
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-primary);
@@ -5628,14 +5628,16 @@ a.viewer-badge:hover {
   .toast, .toast--leaving { animation: none; transition: none; }
 }
 
-/* 종류별 색은 불투명한 --bg-elevated 위에 얹는다(M09 실측 2026-10-13). .toast-container는 body 직속이라 밝은 셸(.manabi-app)
+/* 알림은 셸 토큰 블록을 함께 받는다(web-shell.css .manabi-app,.toast-container — COLOR-SYS-001 단계 3): 기기가 어두운 모드여도
+   밝은 앱 위에 옛 어두운 판 알림이 뜨지 않는다. 바탕은 셸 종이(--sheet), 셸 밖 옛 화면에서는 --bg-elevated로 물러선다.
+   종류별 색은 불투명한 바탕 위에 얹는다(M09 실측 2026-10-13). .toast-container는 body 직속이라 밝은 셸(.manabi-app)
    밖의 루트 토큰을 받는데, 예전처럼 배경이 반투명이면 밝은 본문이 비쳐 루트의 밝은 --text-primary가 그 위에서 거의 안 보였다.
    글자(--text-primary)와 바탕(--bg-elevated)을 같은 토큰 범위에서 받으면 어느 화면 위에서도 대비가 유지된다. */
-.toast--success { border-color: rgba(74, 138, 92, 0.35);  background: linear-gradient(rgba(74, 138, 92, 0.1), rgba(74, 138, 92, 0.1)), var(--bg-elevated); }
-.toast--error   { border-color: rgba(255, 107, 107, 0.35); background: linear-gradient(rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.1)), var(--bg-elevated); }
-.toast--warning { border-color: rgba(255, 217, 61, 0.35);  background: linear-gradient(rgba(255, 217, 61, 0.08), rgba(255, 217, 61, 0.08)), var(--bg-elevated); }
-.toast--info    { border-color: var(--border-hover);        background: linear-gradient(var(--primary-glow), var(--primary-glow)), var(--bg-elevated); }
-.toast--celebrate { border-color: color-mix(in srgb, var(--primary) 40%, transparent); background: color-mix(in srgb, var(--primary) 12%, var(--bg-elevated)); }
+.toast--success { border-color: rgba(74, 138, 92, 0.35);  background: linear-gradient(rgba(74, 138, 92, 0.1), rgba(74, 138, 92, 0.1)), var(--sheet, var(--bg-elevated)); }
+.toast--error   { border-color: rgba(255, 107, 107, 0.35); background: linear-gradient(rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.1)), var(--sheet, var(--bg-elevated)); }
+.toast--warning { border-color: rgba(255, 217, 61, 0.35);  background: linear-gradient(rgba(255, 217, 61, 0.08), rgba(255, 217, 61, 0.08)), var(--sheet, var(--bg-elevated)); }
+.toast--info    { border-color: var(--border-hover);        background: linear-gradient(var(--primary-glow), var(--primary-glow)), var(--sheet, var(--bg-elevated)); }
+.toast--celebrate { border-color: color-mix(in srgb, var(--primary) 40%, transparent); background: color-mix(in srgb, var(--primary) 12%, var(--sheet, var(--bg-elevated))); }
 
 @media (max-width: 768px) {
   .toast-container {

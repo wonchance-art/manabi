@@ -139,3 +139,27 @@ describe('화면 무변화 정리 — 덮여서 안 보이던 옛 색 규칙 (�
     expect(read('src/components/viewer/reader-controls.css')).toMatch(/\.viewer-layout \.reader-card-actions \.review-score-btn--again \{background:/);
   });
 });
+
+describe('단계 3 · 옛 화면 이전 (오너 「승인 및 수용」 2026-11-04 KST, 시안 https://claude.ai/artifact/BY6Xqfw9Zmgw9x3LQCrSNe)', () => {
+  it('알림(body 직속 .toast-container)은 셸과 같은 토큰 값을 받는다 — 기기가 어두운 모드여도 옛 어두운 판 알림이 뜨지 않는다', () => {
+    const shell = read('src/components/web/web-shell.css');
+    const block = (sel) => shell.match(new RegExp(`^${sel.replace('.', '\\.')}\\{([^}]*)\\}`, 'm'))?.[1] || '';
+    const tokens = (b) => Object.fromEntries(b.split(';').filter(Boolean).map((d) => d.split(/:(.*)/s).slice(0, 2)));
+    const app = tokens(block('.manabi-app')), toast = tokens(block('.toast-container'));
+    expect(Object.keys(toast).length).toBeGreaterThan(5);
+    for (const [name, value] of Object.entries(toast)) expect(value, name).toBe(app[name]);
+    expect(block('.toast-container'), '토큰만 — 알림 상자 밖을 칠하지 않는다').not.toMatch(/(^|;)(background|color):/);
+    expect(sliceBetween(read('src/index.css'), '.toast {', '}')).toContain('background: var(--sheet, var(--bg-elevated));');
+  });
+  it('함께 읽기 · 고급 가져오기는 지금 디자인의 부품 — 머리 그림 글자 없음 · 각진 면 · 선 입력칸', () => {
+    const groups = read('src/views/GroupsPage.jsx');
+    expect(groups).not.toContain('👥');
+    expect(groups).toContain('<p className="manabi-eyebrow groups-page__eyebrow">TOGETHER / 서재</p>');
+    const gcss = read('src/views/groups.css');
+    expect(sliceBetween(gcss, '.groups-page .card {', '}')).toContain('border-radius: 0;');
+    expect(sliceBetween(gcss, '.groups-page .group-field {', '}')).toContain('border-bottom: 1px solid var(--rule);');
+    const icss = read('src/views/material-import.css');
+    expect(sliceBetween(icss, '.add-page .card {', '}')).toContain('border-radius: 0;');
+    expect(icss).toMatch(/\.add-page \.toggle-btn\.toggle-btn--primary[^{]*\{ background: var\(--ja\)/);
+  });
+});
