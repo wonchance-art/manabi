@@ -933,6 +933,12 @@
   ⑭ 이번 PR — 코스 지도 연속 = 정본(STREAK-COURSEMAP-001, 같은 상시 방침): 코스 지도가 저장된 streak_count를 그대로 보여 끊긴 연속이
     거기만 살아 있었고(대시보드 「–」), 「오늘 레슨 했음」 · 낙관 +1이 기기 자정 기준이었다. 정본(liveStreakCount · streakAfterActivity · activityDay)을
     import()로 받아 넘긴다(ts-fsrs는 첫 JS 밖 그대로 — authFirstLoad). 지표 사전 streak.day 'utc' → 'learning'(11/3 전환 반영). 화면 배치 변경 없음.
+    + ts-fsrs `^5.3.2` → `5.3.2` 정확 고정(FSRS-ENGINE-PIN-001 — 5.4.2는 우리 설정에서 일정 차이 0, engine 문자열이 카드 · valid_card · core 지문에 묶여 보류).
+    **완료 [#1667](https://github.com/wonchance-art/manabi/pull/1667) `fc068b4f`.**
+  ⑮ 이번 PR — 답 아닌 출처 하나(EVENT-SOURCE-001, 같은 상시 방침): /study 재료 단어 팝오버 · 「왜 이게 답이에요?」(source 'assist', correct:false)가
+    정답률(isGradedReviewEvent) · 난이도 다이얼(countsForDifficulty) 양쪽에서 오답 한 번으로 셌다(두 판정이 각자 ui · dict 목록).
+    `reviewEventSources.NON_ANSWER_SOURCES`(ui · dict · assist) 하나로. 운영 assist 1건뿐이라 지난 숫자 변화는 미미.
+    후속(DB): admin_content_health가 `source <> 'ui'`만 뺀다(assist · level · hanzi가 오답률에 섞임) — 관리자 지표라 별도 마이그레이션 PR.
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —
