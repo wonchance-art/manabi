@@ -132,7 +132,7 @@ export default async function Page({ searchParams }) {
       {/* ① 가입 퍼널 */}
       <Card
         title="① 가입 퍼널"
-        hint="가입 → 첫 세션(첫 학습 이벤트) → D1 재방문(가입 익일 이벤트) → D7 유지(가입 +7일 이벤트). 각 단계는 전 단계 대비 유지율. 최근 가입자는 D7 창이 아직 안 열려 D7이 낮게 잡힐 수 있음."
+        hint="가입 → 첫 세션(첫 학습 답) → D1 재방문(가입 다음 학습일에 답) → D7 유지(가입 +7학습일에 답). 04시 학습일(KST) 기준, 화면 계측 · 사전 확인 · 도움 열람은 답이 아님. 각 단계는 전 단계 대비 유지율. 최근 가입자는 D7 창이 아직 안 열려 D7이 낮게 잡힐 수 있음."
       >
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           <Stat label="가입" value={num(signups)} />
@@ -145,7 +145,7 @@ export default async function Page({ searchParams }) {
       {/* ② 일별 추이 */}
       <Card
         title="② 일별 추이"
-        hint="일자별 활성 사용자 수(막대) · 세션 근사(일×유저 그룹) · vocab 정답률. UTC 날짜 기준. 막대 높이=활성 사용자, 위 숫자=vocab 정답률."
+        hint="학습일별 활성 사용자 수(막대 — 그날 답한 사람) · 세션 근사(일×유저 그룹) · 정답률(채점 답 — 단어 · 문법 · 읽기 · 작문). 04시 학습일(KST) 기준 — 학습자 화면의 이번 주 정답률과 같은 셈. 막대 높이=활성 사용자, 위 숫자=정답률."
       >
         {daily.length === 0 ? (
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>데이터 없음</p>
