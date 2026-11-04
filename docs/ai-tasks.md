@@ -1550,6 +1550,12 @@
   core 연쇄, activity: profiles → admission 연쇄) — 정책 문자열이 바뀌면 지문이 바뀌어 운영 학습 기능이 꺼진다(#1504 선례). 재게시(KO-CAP-REPIN-001
   본보기)를 같은 트랜잭션에 넣어야 해 따로. multiple_permissive_policies(WARN 49)도 미착수.
   → **#1660 squash `588c99a1`(09:23 KST db push 성공 · 운영 맨 호출 92 → 17(지문 범위 6개 테이블만) · 정책 193 그대로 · FSRS 계약 넷 true)**. 2단계는 데이터 세션 11/4 10:13 KST 실측 뒤 오너 재확인(오케스트레이터 조율).
+  2단계(2026-11-04 KST, 오너 상시 방침 「백엔드 데이터 관련 개선은 알아서 진행」 · 데이터 세션 11/4 실측 ①②③ 정상): 마이그레이션
+  20261104060000_rls_auth_initplan_fingerprinted.sql — 지문 범위 6개 테이블 정책 17개 감싸기 + 같은 트랜잭션 재게시(capability 상수 → core →
+  activity profile → admission, _live 값). 사전 = 네 계약 · 한국어 ready · 17개 원래 식(또는 전부 감싼 식 = 무변경), 사후 = 네 게시값 = _live = 캐시 ·
+  manual 불변 · 한국어 ready · 감싼 것을 되돌린 capability 지문 = 적용 전 · 전 학습자 snapshot 동일. PGlite(관측 fixture) post-observation 하네스 ·
+  rls-auth-initplan-fingerprinted.mjs(거부 6종 · 적용 · 재실행 무변경 · 복원 · 재적용) 통과. 운영 사전 조건 읽기 확인(본문 모양 md5 둘 · 네 계약 ·
+  17개 cmd · 식 일치, 학습자 2명 — 잠금 짧음).
 - **VIEWER-WARM-001 뷰어 첫 쪽 먼저 그리기 (2026-11-03 KST, 오너 「권장대로」 — 측정 B안)**: 로그인 뷰어 첫 화면 측정(로그인 공개 자료 390 · CPU×4 본문
   1.99 s vs 손님 1.39 s — 원인: 서버 그림 없이 하이드레이션 → 세션 확인 → 글 전체 그리기 + 배치 880 ms). 브라우저가 그리는 첫 본문만 앞 줄(약 160칸,
   warmLineEnd) → 첫 쪽이 안 차면 칠하기 전에 전부, 차면 칠한 뒤 나머지. 서버가 그린 문서(손님 · 검색 본문 그대로) · 본문 귀환 주소는 제외, 읽던 곳
