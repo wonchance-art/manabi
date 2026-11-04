@@ -1550,6 +1550,23 @@
   왼쪽 끝 2px 막대(띠 높이 = .surface::before 계산값) + 위 12px 점, 끝 = 마지막 토큰 오른쪽 끝 막대 + 아래 점. 강조색 · 흰 테두리 · 그림자 없음,
   타깃 가로 28px(띠 + 위아래 14px). 화면 가장자리에서 타깃을 안으로 민 만큼 막대를 반대로(--grip-bar-x) — 막대는 토큰 끝에 그대로. 조정 동작 그대로.
   계약 tokenRangeSelect(gripPlacement · CSS 모양).
+- **VIEWER-MEMBER-SSR-001 로그인 첫 열기 서버 그림 · 계정 줄 처음부터 자리 잡기 (2026-11-04 KST, 오너 「㉠ 권장대로」 — [목업](https://claude.ai/artifact/NooshvXtWbg2ZJ2q3kG4kj) ㉠)**:
+  범위 = 로그인 계정이 **남의 공개 자료를 처음 여는 것**도 손님과 같은 서버 그림(VIEWER-SSR-001 조건 그대로 — 분석 끝남 · 비중국어 · 대화/작성/노트/책 장 아님 · 질의 returnTo뿐).
+  「처음」 = 그 계정의 읽던 곳 없음: viewerSeed가 **같은 세션 토큰**(서비스 키 없음 · RLS 자기 행)으로 reading_progress.last_token_idx를 본문 조회와 나란히 읽어
+  seed.resume(> 0 있음 · 없음/0 false · 오류/시간 초과 모름). 서버 그림은 false일 때만 — 내 자료(소유자 도구) · 읽던 곳 있음(그 쪽으로 넘김) · 모름 ·
+  returnTo /class/(수업 사본 안내가 본문 위)는 지금처럼(B). 서재 담김 여부는 가르지 않음(버튼 글만 제자리에서 바뀜). 손님 seed · 판정 · 첫 HTML 그대로
+  (base ↔ 이번 빌드 /viewer/60000 손님 문서 해시 · 빌드 id 정규화 뒤 바이트 같음). 회원 응답은 동적 화면 Cache-Control: private, no-store 그대로(공유 캐시 없음),
+  서버 그림 안 계정 값 = seed의 계정 id · resume 참거짓뿐(수 · 진도 없음 — 계정 줄은 자리만 그린다).
+  계정 줄 ① 서재에 담기 · 신고 한 줄(.viewer-member-actions), 확인 전에도 제자리 — 담기는 흐리게(data-pending), 그동안 누름은 기다렸다 같은 계정으로 확인되면 한 번
+  (lib/pendingPress: 이미 담겼으면 빼지 않음 · 휴지통이면 복원 · 다른 계정이면 버림. 신고는 확인 뒤 창). ② 복습 가능 · 아는 말 · 새 단어 · 수집 한 줄 28px
+  「55개 복습 가능 · 아는 말 37% · 새 단어 324 · 187개 수집 · 이 자료 표현 복습」(넘치면 「…」 · ✕ 줄 끝), 단어 자료가 다 오기 전 같은 높이 빈 막대(커버리지 줄이
+  반드시 서는 자료 — FIT_MIN_TYPES는 자료만으로 정해짐), 다 오면 한 번에 채움(빈 목록 「아는 말 0%」 먼저 표시하던 것도 걷힘). ③ ✕로 닫아 둔 자료는 본문 앞 인라인
+  스크립트가 같은 키(viewerBadgesKey)를 읽어 <html data-viewer-badges-dismissed> → 빈 막대 없음, 뷰어는 layout effect로 읽고 뗀다. 확인 전 손님 띠 없음.
+  로컬 e2e 빌드 Pixel 5 390 · 1280 · CPU×4(다른 세션 e2e 동시 — 절대값 잡음 큼) A/B 교차 5회: 제목+본문 보임 base(B) 1414 → 1290 ms(390) · 1348 → 1276 ms(1280),
+  본문 밀림 base 390 52 px(두 줄 배지가 붙으며) → 0, 1280 0 → 0. 이번 빌드 3회: 계정 줄 채움 2.6 ~ 3.4 s · 담기 버튼 확인 2.9 ~ 3.6 s(서버 그림 하이드레이션이 무거워
+  계정 확인이 B보다 약 0.2 ~ 0.5 s 늦다), 본문 위치 변화 0 · 본문 CLS 0(남은 0.0002는 셸 머리). 닫아 둔 뒤 복습 수가 늘어 줄이 다시 서는 경우(기존 규칙)만 자리가
+  없어 36 px 밀림 — 오너 확인 필요. 밝게 · 어둡게 등 기본이 아닌 설정은 첫 그림 전 판정이 지금처럼 본문을 감춘다(손님과 같음).
+  계약 viewerMemberSsr(신규) · viewerChrome · coverageBadge · metricRegistry · viewerMinimal · viewerSeed 갱신(문구 · 키 · seed 모양). 측정 전용 합성 자료 HEAVY_EXTRA_PUBLIC.
 - **SUPA-KEYS-001 Supabase 새 API 키 이전 기간 (2026-11-04 KST, 오너 「전부 권장대로, 병합해.」 — 새 환경 변수 범위 승인)**: 공개 키 `supabasePublicKey()`
   (NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY → 옛 NEXT_PUBLIC_SUPABASE_ANON_KEY) · 서버 전용 `supabaseSecretKey()`(SUPABASE_SECRET_KEY → 옛 SUPABASE_SERVICE_ROLE_KEY)로
   앱 직접 읽기 41파일 교체 — 옛 이름만 있으면 동작 동일. contentOverrides 원시 REST는 apikey 헤더만(운영 실측: publishable · anon 둘 다 apikey만으로 200).
