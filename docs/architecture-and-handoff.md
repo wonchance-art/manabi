@@ -2,13 +2,13 @@
 
 이 문서는 코드만 봐서는 드러나지 않는 **설계 결정·함정·미검증 가설·게이트**를 다음 작업자(사람 또는 AI 세션)에게 넘기기 위한 지도다. "무엇이 있나"는 코드가 말하고, 여기서는 "왜 그렇게 됐고, 건드릴 때 뭘 조심해야 하나"를 말한다.
 
-최종 갱신: 2026-08-20 (4축 전수 조사 + 구조 정리 3종 반영 — §1.1 순환 지도·§4.9-0 최근 지뢰 신설)
+최종 갱신: 2026-11-04 (§2 운영 규약에서 대체된 규칙 정리 — 정본은 CLAUDE.md · AGENTS.md)
 
 ---
 
 ## 0. 한 문단 요약
 
-manabi(UI명 Anatomy Studio)는 **한국어 화자를 위한 4개 언어(일·영·불·중) 학습 웹앱**이다. 메인은 **공부 모드(/study)** — AI가 매일 생성하는 문단 하나에 새 문법·새 단어·복습이 전부 녹아 있고, 모든 문항이 거기서 파생된다. 정체성은 *"내 복습 항목이 등장인물로 돌아오는, 매일 이어지는 이야기"*(연재 스토리). 나머지(교재·어휘장·자료실·뷰어·듣고읽기)는 조연.
+manabi는 **한국어 화자를 위한 4개 언어(일·영·불·중) 학습 웹앱**이다. 메인은 **공부 모드(/study)** — AI가 매일 생성하는 문단 하나에 새 문법·새 단어·복습이 전부 녹아 있고, 모든 문항이 거기서 파생된다. 정체성은 *"내 복습 항목이 등장인물로 돌아오는, 매일 이어지는 이야기"*(연재 스토리). 나머지(교재·어휘장·자료실·뷰어·듣고읽기)는 조연.
 
 ---
 
@@ -65,16 +65,13 @@ manabi(UI명 Anatomy Studio)는 **한국어 화자를 위한 4개 언어(일·�
 
 ## 2. 운영 규약 (개발 프로세스)
 
-- **Fable 5 = 기획·설계·오케스트레이션·리뷰 게이트.** 구현은 Opus/Sonnet 서브에이전트에 위임한다. 오너 지시: "Opus·Sonnet이 할 수 있는 건 Fable이 하지 마라."
 - **검증 루프 (오너 명시)**: "됐다"고 하기 전에 **실행 증거**(테스트·빌드·grep 결과)를 보여라. 검증 못 한 건 "미검증"이라고 정직하게 말한다. 컨테이너에서 못 하는 것(vercel·supabase·youtube egress 차단) → 프리뷰에서 오너가 첫 검증자.
-- **Git**: 단일 브랜치 `claude/french-grammar-vocab-ref-x6me5f`. 커밋 전 `git checkout public/sw.js`(prebuild가 캐시 버전 bump). PR은 draft로 생성 → 오너 "merge" → draft 해제·squash 머지 → main 동기화 → `git checkout -B <branch> origin/main`으로 재시작 → 새 draft. 커밋 메시지에 **제어문자·화살표(→) 금지**(Bash InputValidationError) — 파일(`git commit -F`)로 우회.
-- **머지 마이그레이션은 CI 자동 적용 안 됨** (GitHub Secrets 미설정 — workflow가 조용히 skip). 오너가 Supabase SQL Editor에 붙여넣어 실행. **코드에는 테이블/컬럼 부재 시 무해 폴백 필수.**
-- **Claude ↔ Codex 직접 인계**는 `docs/ai-relay.md`의 서버 전용 큐를 우선 사용하고 GitHub를 폴백·최종 감사 기록으로 유지한다. Relay가 꺼져도 앱과 기존 GitHub 인계는 정상이어야 한다.
+- **Git·병합·브랜치**: 정본은 CLAUDE.md(세션 편성과 브랜치 규칙 · 게이트)와 `/pr-cycle`. 커밋 전 `git checkout public/sw.js`(prebuild가 캐시 버전 bump).
+- **마이그레이션**은 CI가 정본이다(§8). **코드에는 테이블/컬럼 부재 시 무해 폴백 필수.**
 - 커밋/PR/코드에 모델 ID(claude-fable-5 등) 노출 금지.
-- **제안·구현 전 3문 체크(오너 승인 2026-08-20, CLAUDE.md '제품 나침반'과 동일)**:
-  ⑴ 두 순환(§1.1)의 어느 정거장인가 ⑵ 기존 정본·부품 재사용인가(중복 신설 금지 —
-  persistVocabGrade·speechLang·fetchSavedWordSet·buildContextPrompt 선례) ⑶ 이음새를
-  새로 만들지 않나(§1.1 이음새 지도 — 의도적 단절을 부채로 오인해 임의로 잇는 것도 금지).
+- **제안·구현 전 3문 체크**: 정본은 CLAUDE.md '제품 나침반'. 여기서는 지도만 — 정거장은 §1.1,
+  재사용 선례는 persistVocabGrade·speechLang·fetchSavedWordSet·buildContextPrompt, 이음새는 §1.1 이음새 지도
+  (의도적 단절을 부채로 오인해 임의로 잇는 것도 금지).
 
 ---
 
