@@ -1546,6 +1546,11 @@
   왼쪽 끝 2px 막대(띠 높이 = .surface::before 계산값) + 위 12px 점, 끝 = 마지막 토큰 오른쪽 끝 막대 + 아래 점. 강조색 · 흰 테두리 · 그림자 없음,
   타깃 가로 28px(띠 + 위아래 14px). 화면 가장자리에서 타깃을 안으로 민 만큼 막대를 반대로(--grip-bar-x) — 막대는 토큰 끝에 그대로. 조정 동작 그대로.
   계약 tokenRangeSelect(gripPlacement · CSS 모양).
+- **SEC-NEXT-15529 Next.js 보안 패치 (2026-11-04 KST, 오케스트레이터 긴급 발주 · 백엔드 자율 범위)**: lockfile next 15.5.21이 보안 릴리스 넷
+  (8/25 15.5.24 AVIF 이미지 최적화 RCE · 9/30 · 10/14 15.5.28 Critical 2 · High 1 — CVE-2026-96889 sharp ≥0.35.5 필요 · 11/3 15.5.29 7건)을 놓침 →
+  next ^15.5.29 · eslint-config-next ^15.5.29 · react/react-dom ~19.2.9 · package.json overrides sharp ^0.35.5(next의 범위 ^0.34.3 || ^0.35.5라 0.34.5가
+  남아 있었다 — 해석 0.35.5 확인). GHSA-f3mh(x-middleware-set-cookie): 해당 없음 판정 — Edge 라우트는 opengraph-image 하나(쿠키 안 씀), middleware의
+  Supabase 쿠키 갱신은 공지 범위(Edge Route Handler · Pages Edge API) 밖, 어차피 업그레이드로 덮임. 후속: Next 15 보안 지원 2027-01-31 종료 → 16.4 이전 계획.
 - **RLS-INITPLAN-001 RLS 정책 auth 호출 질의당 한 번 (2026-11-03 KST, 오너 「1,2번은 진행」)**: Supabase 성능 진단 auth_rls_initplan(WARN 95) —
   정책 식의 맨 auth.uid() · auth.role()이 행마다 다시 계산된다. 1단계 = 마이그레이션 20261103000000_rls_auth_initplan.sql: 지문 범위 밖 30개 테이블
   정책 75개를 (select auth.uid())로 감싸기만(명령 · 역할 · 절 유무 불변). 같은 트랜잭션 사후 검사 = 정책 수 · 맨 호출 0 · 감싼 것을 되돌린 식 = 원래 식 ·
