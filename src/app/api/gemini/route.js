@@ -78,7 +78,7 @@ async function gate(request) {
   const authClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {

@@ -25,7 +25,7 @@ export async function GET(request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     serviceKey || supabasePublicKey(),
-    serviceKey ? { auth: { persistSession: false } } : {},
+    serviceKey ? { db: { retry: false }, auth: { persistSession: false } } : { db: { retry: false } },
   );
 
   // KST 날짜 정본 — 이 크론은 15:00 UTC(=KST 자정)에 돌므로 UTC 날짜는 'KST 어제'가 된다

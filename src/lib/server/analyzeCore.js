@@ -37,7 +37,7 @@ export function getServerSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseSecretKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 }
 

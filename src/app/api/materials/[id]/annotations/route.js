@@ -19,7 +19,7 @@ async function access(request,id,write=false) {
  const read=async query=>{const result=await query;return write||result.error?result:{...result,data:lightRow(result.data)};};
  const auth=request.headers.get('authorization')?await requireUser(request):{};
  if(auth.error)return {error:respond({error:auth.error},auth.status)};
- const scoped=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,supabasePublicKey(),{auth:{persistSession:false},global:{headers:auth.user?{Authorization:request.headers.get('authorization')}:{}}});
+ const scoped=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,supabasePublicKey(),{ db: { retry: false },auth:{persistSession:false},global:{headers:auth.user?{Authorization:request.headers.get('authorization')}:{}}});
  const result=await read(scoped.from('reading_materials').select(columns).eq('id',id).maybeSingle());
  if(result.error)throw result.error;
  let material=result.data;

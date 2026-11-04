@@ -20,6 +20,7 @@ const SUPABASE_KEY = supabasePublicKey();
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_KEY, {
+    db: { retry: false },
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -45,7 +46,7 @@ export async function createSupabaseServerClient() {
  * 세션이 없으니 RLS는 anon 기준이다(공개 행만).
  */
 export function createSupabasePublicClient() {
-  return createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+  return createClient(SUPABASE_URL, SUPABASE_KEY, { db: { retry: false }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 }
 
 /**

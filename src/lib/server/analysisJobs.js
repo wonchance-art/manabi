@@ -37,7 +37,7 @@ const ORDER_PATH = 'processed_json->metadata->book->>order';
 export function serviceClient() {
   const key = supabaseSecretKey();
   if (!key || !process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, key, { auth: { persistSession: false } });
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, key, { db: { retry: false }, auth: { persistSession: false } });
 }
 
 const ROUTES = Object.freeze({ '/api/analyze': analyzeRoute, '/api/analyze/korean': koreanRoute, '/api/gemini': geminiRoute });

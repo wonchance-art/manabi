@@ -15,7 +15,7 @@ export async function POST(request) {
   const limit=rateLimit(`classroom-lookup:${auth.user.id}`,{limit:20,windowMs:60_000});
   if(!limit.ok)return json({error:'조회가 많아요. 잠시 뒤 다시 찾아 주세요.'},429);
   try{
-    const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,supabasePublicKey(),{global:{headers:{Authorization:request.headers.get('authorization')}},auth:{persistSession:false}});
+    const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,supabasePublicKey(),{ db: { retry: false },global:{headers:{Authorization:request.headers.get('authorization')}},auth:{persistSession:false}});
     const {data,error}=await db.from('morpheme_dictionary').select('reading,meanings,source').eq('language',input.language).eq('base_form',input.text).maybeSingle();
     const senses=lookupSenses(data?.meanings);
     if(!error&&senses.length)return json({text:input.text,language:input.language,reading:data.reading||'',senses,source:data.source||'stored'});

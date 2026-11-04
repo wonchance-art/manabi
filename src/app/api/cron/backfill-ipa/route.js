@@ -31,7 +31,7 @@ export async function GET(request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseSecretKey(),
-    { auth: { persistSession: false } },
+    { db: { retry: false }, auth: { persistSession: false } },
   );
 
   // 1. furigana NULL 또는 빈 문자열인 영어 단어 수집 (배치당 최대 200)

@@ -112,6 +112,7 @@ export async function middleware(request) {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
     {
+      db: { retry: false },
       cookies: {
         getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet) {

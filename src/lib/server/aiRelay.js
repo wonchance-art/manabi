@@ -81,6 +81,7 @@ export function createRelaySupabase(env = process.env) {
     throw new RelayHttpError(503, 'relay_storage_unavailable', 'AI Relay storage is not configured.');
   }
   return createClient(url, serviceKey, {
+    db: { retry: false },
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 }

@@ -48,6 +48,7 @@ export default async function Page({ searchParams }) {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
     {
+      db: { retry: false },
       cookies: {
         getAll() { return cookieStore.getAll(); },
         setAll() {},

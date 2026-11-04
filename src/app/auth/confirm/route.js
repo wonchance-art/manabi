@@ -27,6 +27,7 @@ export async function GET(request) {
   if (tokenHash && EMAIL_OTP_TYPES.has(type)) {
     try {
       const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
+        db: { retry: false },
         cookies: {
           getAll() {
             return request.cookies.getAll();

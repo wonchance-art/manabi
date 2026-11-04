@@ -13,7 +13,7 @@ export default async function Page() {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
-    { cookies: { getAll() { return cookieStore.getAll(); }, setAll() {} } }
+    { db: { retry: false }, cookies: { getAll() { return cookieStore.getAll(); }, setAll() {} } }
   );
   const { data: { user } = {} } = await supabase.auth.getUser();
   if (!user) redirect('/auth');

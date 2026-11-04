@@ -18,14 +18,14 @@ async function requireAdmin(request) {
   const sa = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user } } = await sa.auth.getUser(token);
   if (!user) return null;
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseSecretKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single();
   return profile?.role === 'admin' ? user : null;
@@ -38,7 +38,7 @@ export async function POST(request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseSecretKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 
   // base_form NULL 항목 조회 (배치 한정)

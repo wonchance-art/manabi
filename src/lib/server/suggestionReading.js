@@ -6,7 +6,7 @@ import { supabasePublicKey } from '../supabaseKeys';
 
 export function suggestionClient() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, supabasePublicKey(),
-    { auth: { persistSession: false, autoRefreshToken: false } });
+    { db: { retry: false }, auth: { persistSession: false, autoRefreshToken: false } });
 }
 
 // A global suggestion may never point visitors at somebody else's private import.

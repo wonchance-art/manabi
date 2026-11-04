@@ -6,7 +6,7 @@ import { supabasePublicKey } from '@/lib/supabaseKeys';
 export async function GET() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    supabasePublicKey(),
+    supabasePublicKey(), { db: { retry: false } },
   );
   return Response.json(await todaySuggestions(supabase), { headers: { 'Cache-Control': 'no-store' } });
 }

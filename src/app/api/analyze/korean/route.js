@@ -16,7 +16,7 @@ async function gate(request) {
   const authClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user }, error } = await authClient.auth.getUser(authHeader.replace(/^Bearer\s+/i, ''));
   if (error || !user) return Response.json({ error: 'authentication_required' }, { status: 401 });

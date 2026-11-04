@@ -14,7 +14,7 @@ function anonClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 }
 
@@ -35,7 +35,7 @@ export async function isAdminUser(userId) {
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseSecretKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: profile } = await admin
     .from('profiles').select('role').eq('id', userId).single();

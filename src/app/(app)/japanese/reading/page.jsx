@@ -28,6 +28,7 @@ async function fetchReadingScope() {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
     {
+      db: { retry: false },
       cookies: {
         getAll() { return cookieStore.getAll(); },
         setAll() {},

@@ -16,7 +16,7 @@ export async function POST(request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseSecretKey(),
-    { auth: { persistSession: false } },
+    { db: { retry: false }, auth: { persistSession: false } },
   );
 
   // 이미 존재하는 스타터 자료 확인 (title 기준)

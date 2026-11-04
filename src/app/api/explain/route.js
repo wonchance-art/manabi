@@ -56,7 +56,7 @@ export async function POST(request) {
   const authClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {
@@ -111,7 +111,7 @@ export async function POST(request) {
           const rlsClient = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
             supabasePublicKey(),
-            { auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${token}` } } }
+            { db: { retry: false }, auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${token}` } } }
           );
           rlsClient.from('token_corrections').insert({
             material_id: materialId,

@@ -25,7 +25,7 @@ const fields = {
 export function fsrsServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL, key = supabaseSecretKey();
   if (!url || !key) reject('fsrs_storage_unavailable');
-  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+  return createClient(url, key, { db: { retry: false }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 }
 
 /** 5xx만 원인 단계를 남긴다. 사용자 ID · 요청 본문 · 키는 싣지 않는다. */

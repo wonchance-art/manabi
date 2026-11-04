@@ -124,7 +124,7 @@ export async function POST(request) {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = supabasePublicKey();
-  const authClient = createClient(url, anonKey, { auth: { persistSession: false } });
+  const authClient = createClient(url, anonKey, { db: { retry: false }, auth: { persistSession: false } });
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {
     return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해 주세요.' } }, { status: 401 });
@@ -147,6 +147,7 @@ export async function POST(request) {
 
   // RLS 조회·저장용 사용자 토큰 클라이언트 (모든 요청에 Authorization 헤더 부착)
   const userClient = createClient(url, anonKey, {
+    db: { retry: false },
     global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false },
   });

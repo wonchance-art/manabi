@@ -99,7 +99,7 @@ export async function POST(request) {
   const authClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
-    { auth: { persistSession: false } },
+    { db: { retry: false }, auth: { persistSession: false } },
   );
   const { data: { user }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !user) {

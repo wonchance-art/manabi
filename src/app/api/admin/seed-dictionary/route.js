@@ -17,7 +17,7 @@ function serverSupabase(token) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseSecretKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   return supabase;
 }
@@ -29,7 +29,7 @@ async function requireAdmin(request) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user } } = await supabase.auth.getUser(token);
   if (!user) return null;
@@ -37,7 +37,7 @@ async function requireAdmin(request) {
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseSecretKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: profile } = await admin
     .from('profiles').select('role').eq('id', user.id).single();

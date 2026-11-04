@@ -50,7 +50,7 @@ export function serverSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     serviceKey || supabasePublicKey(),
-    serviceKey ? { auth: { persistSession: false } } : {},
+    serviceKey ? { db: { retry: false }, auth: { persistSession: false } } : { db: { retry: false } },
   );
 }
 

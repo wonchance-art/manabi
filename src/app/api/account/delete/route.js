@@ -16,7 +16,7 @@ export async function POST(request) {
   const anonClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabasePublicKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user }, error: userErr } = await anonClient.auth.getUser(token);
   if (userErr || !user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -27,7 +27,7 @@ export async function POST(request) {
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     supabaseSecretKey(),
-    { auth: { persistSession: false } }
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 
   try {
