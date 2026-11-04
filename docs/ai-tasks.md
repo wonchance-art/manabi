@@ -1567,6 +1567,8 @@
   계정 확인이 B보다 약 0.2 ~ 0.5 s 늦다), 본문 위치 변화 0 · 본문 CLS 0(남은 0.0002는 셸 머리). 닫아 둔 뒤 복습 수가 늘어 줄이 다시 서는 경우(기존 규칙)만 자리가
   없어 36 px 밀림 — 오너 확인 필요. 밝게 · 어둡게 등 기본이 아닌 설정은 첫 그림 전 판정이 지금처럼 본문을 감춘다(손님과 같음).
   계약 viewerMemberSsr(신규) · viewerChrome · coverageBadge · metricRegistry · viewerMinimal · viewerSeed 갱신(문구 · 키 · seed 모양). 측정 전용 합성 자료 HEAVY_EXTRA_PUBLIC.
+  오너 결정 ①(11/4 KST 「전부 권장대로」 — [구현 대조](https://claude.ai/artifact/NPqHcPTYrso9smmcu3gKwy)): 닫아 둔 줄은 이번 방문 내내 닫힌 채(복습 수가 늘어도 끼워 넣지 않음 — 밀림 0),
+  늘었으면 저장 키를 지워 다음 열람 때 자리를 잡고 다시 보인다(`viewerBadgesVisit` · 계약 viewerMemberSsr ③-2).
 - **SUPA-KEYS-001 Supabase 새 API 키 이전 기간 (2026-11-04 KST, 오너 「전부 권장대로, 병합해.」 — 새 환경 변수 범위 승인)**: 공개 키 `supabasePublicKey()`
   (NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY → 옛 NEXT_PUBLIC_SUPABASE_ANON_KEY) · 서버 전용 `supabaseSecretKey()`(SUPABASE_SECRET_KEY → 옛 SUPABASE_SERVICE_ROLE_KEY)로
   앱 직접 읽기 41파일 교체 — 옛 이름만 있으면 동작 동일. contentOverrides 원시 REST는 apikey 헤더만(운영 실측: publishable · anon 둘 다 apikey만으로 200).
