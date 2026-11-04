@@ -58,6 +58,17 @@ const queryValue = (query, key) => (typeof query?.get === 'function' ? query.get
 export const viewerBadgesKey = (account, id) => `viewer-badges-dismissed:${account ?? 'guest'}:${id}`;
 
 /**
+ * 닫아 둔 단어 현황 줄의 이번 방문 판정(오너 결정 ① 2026-11-04 KST 「전부 권장대로」 — 본문 밀림 0).
+ * closedAt = 닫을 때의 복습 가능 수(null = 닫은 적 없음), due = 지금 이 자료의 복습 가능 수.
+ * - hidden: 닫아 둔 자료는 이번 방문 내내 닫힌 채다(복습 수가 늘어도 줄을 끼워 넣지 않는다 — 자리가 없어 본문이 밀린다).
+ * - reopenNext: 닫은 뒤 복습 수가 늘었다 → 저장 키를 지워, 다음 열람 때 첫 그림 전 읽기가 자리를 잡고 줄을 다시 보인다.
+ */
+export function viewerBadgesVisit(closedAt, due) {
+  const closed = closedAt !== null && closedAt !== undefined;
+  return { hidden: closed, reopenNext: closed && Number(due) > Number(closedAt) };
+}
+
+/**
  * 단어 현황 줄을 닫아 둔 자료인가 — 첫 그림 전에 이 기기 값을 읽어 <html data-viewer-badges-dismissed>를 붙인다(VIEWER-MEMBER-SSR-001 ④).
  * 붙으면 CSS가 비워 둔 한 줄 자리(.viewer-badges--pending)를 그리지 않는다 — 자리를 잡았다가 거두며 본문이 올라가는 일 0.
  * 뷰어가 같은 키를 읽어 상태로 옮기면 뗀다(releaseViewerBadgesPreRead). 인라인 스크립트로 싣는다(toString — 바깥 이름 · 새 문법 없음).

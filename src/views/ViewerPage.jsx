@@ -179,7 +179,7 @@ import { locateLineTokens } from '../lib/viewerSentenceLine';
 import { useSentencePrefetch } from '../lib/useSentencePrefetch';
 import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot, viewerRouteId } from '../lib/classBoard';
 import { adoptViewerSeed, discardEarlyMaterial, loadMaterial, notFoundRetryKey, startEarlyMaterial, viewerSeedAdopted } from '../lib/viewerMaterial';
-import { releaseViewerBadgesPreRead, releaseViewerSsrHold, viewerBadgesKey, viewerSeedAccount, viewerSsrHeld, viewerSsrPaintDone, viewerSsrRow, viewerSsrStale } from '../lib/viewerSsr';
+import { releaseViewerBadgesPreRead, releaseViewerSsrHold, viewerBadgesKey, viewerBadgesVisit, viewerSeedAccount, viewerSsrHeld, viewerSsrPaintDone, viewerSsrRow, viewerSsrStale } from '../lib/viewerSsr';
 import { readIndexCache } from '../lib/classClient';
 import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
@@ -2831,6 +2831,12 @@ export default function ViewerPage({ seed } = {}) {
     if (memberAccount) releaseViewerBadgesPreRead();
   }, [badgesKey]); // eslint-disable-line react-hooks/exhaustive-deps -- memberAccount는 badgesKey에 들어 있다
   useEffect(() => () => releaseViewerBadgesPreRead(), []);
+  // 닫은 뒤 복습 수가 늘면 이번 방문은 닫힌 채로 두고 저장 키만 지운다 → 다음 열람 때 자리를 잡고 다시 보인다(viewerBadgesVisit · 오너 결정 ①).
+  const badgesReopenNext = viewerBadgesVisit(badgesDismissedAt, user ? countVocabularyDueInMaterial(savedWords, material) : 0).reopenNext;
+  useEffect(() => {
+    if (!badgesReopenNext) return;
+    try { localStorage.removeItem(badgesKey); } catch { /* 개인 편의 — 실패하면 다음 열람에도 닫힌 채 */ }
+  }, [badgesReopenNext, badgesKey]);
   const [senseReviewIds, setSenseReviewIds] = useState(null); // null = 목록 닫힘
   const senseReviewOpen = senseReviewIds !== null;
   useEffect(() => { setSenseReviewIds(null); }, [id]);
@@ -3348,7 +3354,7 @@ export default function ViewerPage({ seed } = {}) {
 
   // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
   const dueInMaterial = countVocabularyDueInMaterial(savedWords, material);
-  const badgesDismissed = badgesDismissedAt !== null && (user ? dueInMaterial : 0) <= badgesDismissedAt;
+  const badgesDismissed = viewerBadgesVisit(badgesDismissedAt, user ? dueInMaterial : 0).hidden;
   const dismissBadges = () => {
     const at = user ? dueInMaterial : 0;
     setBadgesDismissedAt(at);

@@ -21,7 +21,7 @@ vi.mock('../supabase', () => ({ supabase: { from: () => { throw new Error('netwo
 vi.mock('next/headers', () => ({ headers: async () => new Headers(), cookies: async () => ({ getAll: () => [], get: () => undefined }) }));
 vi.mock('@/lib/supabaseServer', () => ({ requireUserClaims: async () => ({ error: 'x' }), createSupabasePublicClient: () => null }));
 
-const { viewerSsrRow, viewerBadgesKey, viewerBadgesPreRead, viewerBadgesPreReadScript, viewerSeedAccount, releaseViewerBadgesPreRead } = await import('../viewerSsr');
+const { viewerSsrRow, viewerBadgesKey, viewerBadgesPreRead, viewerBadgesPreReadScript, viewerSeedAccount, releaseViewerBadgesPreRead, viewerBadgesVisit } = await import('../viewerSsr');
 const { loadViewerSeed } = await import('../server/viewerSeed');
 const { libraryToggleOp, queuedPressStep } = await import('../pendingPress');
 const { default: LibrarySaveButton } = await import('@/components/library/LibrarySaveButton');
@@ -143,6 +143,28 @@ describe('③ 닫아 둔 단어 현황 줄은 첫 그림 전에 읽는다', () =
     // 뷰어가 상태로 옮긴 뒤 뗀다
     releaseViewerBadgesPreRead(f.w.document);
     expect(f.attrs['data-viewer-badges-dismissed']).toBeUndefined();
+  });
+});
+
+describe('③-2 닫아 둔 줄은 이번 방문 내내 닫힌 채 — 늘어난 복습 수는 다음 열람 때(오너 결정 ① 2026-11-04 KST)', () => {
+  it('판정 — 닫은 적 없으면 보임 · 닫았으면 복습 수가 늘어도 이번엔 숨김, 늘었으면 다음 열람용으로 키를 지운다', () => {
+    expect(viewerBadgesVisit(null, 9)).toEqual({ hidden: false, reopenNext: false });
+    expect(viewerBadgesVisit(undefined, 9)).toEqual({ hidden: false, reopenNext: false });
+    expect(viewerBadgesVisit(5, 3)).toEqual({ hidden: true, reopenNext: false });
+    expect(viewerBadgesVisit(5, 5)).toEqual({ hidden: true, reopenNext: false });
+    expect(viewerBadgesVisit(5, 6)).toEqual({ hidden: true, reopenNext: true });
+    expect(viewerBadgesVisit(0, 0)).toEqual({ hidden: true, reopenNext: false });
+    expect(viewerBadgesVisit(0, 1)).toEqual({ hidden: true, reopenNext: true });
+  });
+  it('뷰어 배선 — 숨김은 판정의 hidden, 늘면 저장 키만 지운다(이번 화면 상태는 그대로 닫힘) · 훅은 이른 return 앞', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(src).toContain('const badgesDismissed = viewerBadgesVisit(badgesDismissedAt, user ? dueInMaterial : 0).hidden;');
+    const effect = sliceBetween(src, 'const badgesReopenNext = viewerBadgesVisit(', '}, [badgesReopenNext, badgesKey]);');
+    expect(effect).toContain('localStorage.removeItem(badgesKey)');
+    expect(effect).not.toContain('setBadgesDismissedAt');
+    expect(src.indexOf('const badgesReopenNext')).toBeLessThan(src.indexOf('if (isLoading) return'));
+    // 옛 규칙(늘면 이번 화면에 바로 다시 보임 → 자리가 없어 본문이 36px 밀림)은 없다.
+    expect(src).not.toContain('(user ? dueInMaterial : 0) <= badgesDismissedAt');
   });
 });
 

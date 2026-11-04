@@ -80,7 +80,8 @@ describe('① 자료 범위 배지가 한 컨테이너 안 — 폭 어긋남의 
     // 계정 확인 전에는 서버가 읽은 계정(memberAccount).
     expect(src).toContain('const badgesKey = viewerBadgesKey(memberAccount, id);');
     expect(read('src/lib/viewerSsr.js')).toContain("export const viewerBadgesKey = (account, id) => `viewer-badges-dismissed:${account ?? 'guest'}:${id}`;");
-    expect(src).toContain('const badgesDismissed = badgesDismissedAt !== null && (user ? dueInMaterial : 0) <= badgesDismissedAt;');
+    // 개정(오너 결정 ① 2026-11-04 KST): 닫아 둔 줄은 이번 방문 내내 닫힌 채 — 늘어난 복습 수는 저장 키를 지워 다음 열람 때 보인다.
+    expect(src).toContain('const badgesDismissed = viewerBadgesVisit(badgesDismissedAt, user ? dueInMaterial : 0).hidden;');
   });
 });
 
