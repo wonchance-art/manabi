@@ -18,6 +18,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useAuth } from '@/lib/AuthContext';
 import { sessionHintScript } from '@/lib/authCookie';
 import { supabase } from '@/lib/supabase';
+import { recordActivity } from '@/lib/streak';
 import { useTTS } from '@/lib/useTTS';
 import { useKnownWords } from '@/lib/useKnownWords';
 import { knownWordKeys, knownWordSetOf, normalizeKnownWord } from '@/lib/knownWordControl';
@@ -452,6 +453,7 @@ export default function LevelListPage({ lang, kind, levelKey, groups: rawGroups 
       if (response?.ok === true || response?.status === 'pending' || response?.status === 'applied' || response?.status === 'replayed') {
         nudgeReview();
         noteDailyLoad(userId);
+        void recordActivity(userId); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001) — 여러 개를 이어 담아도 RPC는 dedupe로 한 번
         return done(true);
       }
       done(false);

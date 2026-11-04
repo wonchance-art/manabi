@@ -6,6 +6,7 @@ import {claimClassSaveIntent,finishClassSaveIntent} from '../../lib/classSaveInt
 import {requestClassCopy,studentReaderHref} from '../../lib/classCopyClient';
 import {supabase} from '../../lib/supabase';
 import {buildVocabRow,VOCAB_UPSERT} from '../../lib/vocabIO';
+import {recordActivity} from '../../lib/streak';
 import {tokenContext} from '../../lib/learningSources';
 import {saveContext} from '../learning/SaveContextButton';
 import { friendlyToastMessage } from '../../lib/errorMessage';
@@ -29,6 +30,7 @@ export default function ClassSaveResume({user}){
       const row=buildVocabRow({userId:user.id,surface:word.text,base:word.base,meaning:word.meaning,pos:word.pos,reading:word.reading,language:word.language,sourceSentence:quote,sourceMaterialId:state.copyId,grade:intent.grade});
       if(!active)return;
       const {error:saveError}=await supabase.from('user_vocabulary').upsert(row,VOCAB_UPSERT);if(saveError)throw saveError;wordSaved=true;
+      void recordActivity(user.id); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001)
       // A changed meaning requires the same explicit confirmation as ordinary context saving.
       const source={kind:'reading',materialId:String(state.copyId),quote,surface:word.text,...(exactToken?{tokenId:intent.tokenId}:{})};
       await saveContext({word:row,source,...(confirm?{confirmId:confirm.id,confirmMeaning:confirm.meaning}:{})});

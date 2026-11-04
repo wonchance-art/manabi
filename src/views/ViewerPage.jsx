@@ -2930,6 +2930,7 @@ export default function ViewerPage({ seed } = {}) {
       const result = await saveContext({ word: contextWord(token), source: readingContextSource(token),
         ...(Number.isInteger(grade) && grade >= 1 && grade <= 4 ? { initialGrade: grade } : {}) });
       if (result.vocabulary) insertConfirmedVocabulary(queryClient, accountId, result.vocabulary);
+      if (result.created) void recordActivity(accountId); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001) — 한국어 저장 경로(다른 언어는 저장 뒤 아래 recordActivity)
       // 저장 · 만기 색인은 그 카드만(SNAPSHOT-CARDS-001), 나머지 목록은 전처럼 무효화.
       void refreshVocabWordsCards(queryClient, accountId, [result.vocabulary?.id || result.vocabularyId]);
       for (const key of ['vocab', 'vocabulary-contexts', 'book-review']) {

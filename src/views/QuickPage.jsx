@@ -15,6 +15,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '../lib/supabase';
+import { recordActivity } from '../lib/streak';
 import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -185,6 +186,7 @@ export default function QuickPage() {
         sourceSentence: line,
       }), VOCAB_UPSERT);
       if (err) throw err;
+      void recordActivity(user.id); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001)
       setSaving((prev) => ({ ...prev, [key]: 'done' }));
       toast(`"${token.text}" 단어를 저장했어요`, 'success');
     } catch {

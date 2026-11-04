@@ -5,9 +5,12 @@ import {noteCandidatePayload} from '@/lib/studyNotes';
 import {requestNote} from '@/lib/useStudyNote';
 import BoardIcon from '@/components/classroom/BoardIcon';
 import { friendlyToastMessage } from '@/lib/errorMessage';
+import { useAuth } from '@/lib/AuthContext';
+import { recordActivity } from '@/lib/streak';
 
 export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, onClose, sync, message}) {
   const queryClient = useQueryClient(), working = useRef(false);
+  const { user } = useAuth();
   const alive = useRef(true);
   useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
   const [busy, setBusy] = useState(false), [lookupId, setLookupId] = useState(null), [choices, setChoices] = useState({}), [outcomes, setOutcomes] = useState({}), [notice, setNotice] = useState('');
@@ -47,6 +50,7 @@ export default function NoteVocabulary({saved, noteId, note, onChange, onFocus, 
           setOutcomes(current => ({...current, [row.id]: {ok: true, text: result.created ? '새로 담음' : '기존 단어에 문맥 연결'}}));
         } catch (error) { failed++; setOutcomes(current => ({...current, [row.id]: {...error.detail, error: friendlyToastMessage(error)}})); }
       }
+      if (created && user?.id) void recordActivity(user.id); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001) — 새로 담은 말이 있을 때만
       await sync();
       setNotice(`새 단어 ${created}개 · 기존 단어 ${linked}개 연결${failed ? ` · 확인/재시도 ${failed}개` : ''}`);
       queryClient.invalidateQueries({predicate: query => /vocab|learning-summary/.test(String(query.queryKey[0]))});

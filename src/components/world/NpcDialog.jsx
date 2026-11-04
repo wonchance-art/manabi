@@ -122,7 +122,11 @@ export default function NpcDialog({
         pos: row.pos,
         language: 'Japanese',
       })], VOCAB_UPSERT);
-      if (!error) setSavedWords((prev) => new Set(prev).add(row.text));
+      if (!error) {
+        setSavedWords((prev) => new Set(prev).add(row.text));
+        // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001) — 같은 결로 동적 import.
+        import('../../lib/streak').then(({ recordActivity }) => recordActivity(saveUser.id)).catch(() => {});
+      }
     } catch {
       // 실패는 조용히 — 같은 말을 다음에 다시 담을 수 있다.
     }

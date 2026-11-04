@@ -748,11 +748,12 @@ export default function StudySessionPage({
   async function saveEncounterWord() {
     if (!recorderRef.current || !item?.word?.word_text || encounterSaveState) return;
     setEncounterSaveState('saving');
+    const actor = recorderRef.current; // 저장한 계정 그대로 연속에 남긴다(기다리는 사이 계정이 바뀌어도)
     try {
       // 세션 단어는 이미 사전 표제어라 surface/base가 갈리지 않는다 — 그래도 조립은
       // 정본으로 보내, 나중에 필드가 늘 때 이 자리만 뒤처지지 않게 한다.
       const { error } = await supabase.from('user_vocabulary').upsert([buildVocabRow({
-        userId: recorderRef.current,
+        userId: actor,
         surface: item.word.word_text,
         base: item.word.word_text,
         reading: item.word.furigana,
@@ -761,6 +762,7 @@ export default function StudySessionPage({
         language: lang,
       })], VOCAB_UPSERT);
       if (error) throw error;
+      void recordActivity(actor); // 담은 날 = 공부한 날 = 연속(STREAK-STUDY-PARITY-001)
       setEncounterSaveState('saved');
     } catch {
       setEncounterSaveState(null);
