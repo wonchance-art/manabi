@@ -221,10 +221,17 @@ R3에서 `myplan` 격자를 실제로 옮겨 그 차이를 실측했다 — 260p
 
 ## 4. 테마
 
-- `data-theme` 속성 + `[data-theme="light"]` 재정의가 정본.
-- **저장값이 있으면 그것, 없을 때만 OS 설정**(`prefers-color-scheme`)을 따른다.
-  저장은 사용자가 토글할 때만 한다 — 자동 저장하면 '저장값 없음'(OS 추종) 상태가
-  첫 렌더에 사라진다.
+- **앱 화면은 기기 모드와 상관없이 한 벌이다**(COLOR-SYS-001 옛 층 걷기, 오너 「전부 권장대로」 2026-11-05 KST).
+  셸(`.manabi-app`, `web-shell.css`)이 화면 색의 정본이고, 셸 밖 기본값은 `:root` 한 벌(옛 밝은 판 값)이다.
+  옛 어두운 판(`:root`)과 밝은 판(`[data-theme="light"]`)을 기기 모드로 갈아 끼우던 두 벌은 걷었다 —
+  화면 벽을 기기 밝은 · 어두운 모드로 두 번 찍어 같은지로 지킨다.
+- 앱 틀 밖 쪽(404 · 오류 · 도움말 · 이용약관 · 개인정보 · 출처)은 셸 CSS를 직접 부르고 `.manabi-app`으로 감싼다.
+  body 직속 알림(`.toast-container`)은 셸과 같은 토큰 값을 따로 받는다(값 일치는 계약).
+- `data-theme` 속성은 아직 붙는다(저장값이 있으면 그것, 없으면 OS 설정 — `useTheme` · `app/layout.jsx` 첫 스크립트).
+  이 속성에 따라 갈리는 것은 **학습 월드(개발 동결)뿐**이다 — Layout이 월드 경로에 `data-world`를 달고,
+  `[data-theme="dark"] .manabi-app[data-world]` · `[data-theme="light"] .manabi-app[data-world] .page-header__title`만 남겼다
+  (오너 「월드 화면은 제외」). 새 화면에 `[data-theme=…]` 규칙을 쓰지 않는다 — 계약 `colorSystem.test.js`.
+- 어두운 화면이 필요한 곳은 뷰어 읽기 테마(`--reader-*`, 종이 · 밝게 · 어둡게)다 — 기기 모드가 아니라 사용자가 뷰어에서 고른다.
 
 ## 5. 계약과 e2e의 경계
 

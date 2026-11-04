@@ -186,3 +186,17 @@ describe('단계 3-② 기기 모드와 상관없이 같은 화면 (오너 「�
     expect(read('src/app/help/page.jsx')).not.toMatch(/FSRS/);
   });
 });
+
+describe('옛 :root · [data-theme=light] 층 걷기 — 기기 모드와 상관없는 한 벌 (오너 「전부 권장대로」 2026-11-05 KST)', () => {
+  // 셸 밖 기본값은 옛 밝은 판 값 한 벌. 기기 모드(data-theme)가 남아 갈라 놓는 곳은 학습 월드(개발 동결 — 오너 「월드 화면은 제외」)뿐.
+  const all = cssFiles('src').map((f) => [f, read(f)]);
+  it('[data-theme=…] 선택자는 월드 범위(.manabi-app[data-world])에만 남는다', () => {
+    const bad = [];
+    for (const [f, t] of all) for (const m of t.matchAll(/\[data-theme="(?:light|dark)"\][^{,]*/g)) if (!m[0].includes('.manabi-app[data-world]')) bad.push(`${f}: ${m[0].trim()}`);
+    expect(bad).toEqual([]);
+  });
+  it('월드 어두운 모드 블록은 셸이 다시 정하지 않는 일곱 토큰만 옛 값으로 둔다', () => {
+    const block = sliceBetween(read('src/index.css'), '[data-theme="dark"] .manabi-app[data-world] {', '}');
+    expect([...block.matchAll(/(--[\w-]+):/g)].map((m) => m[1]).sort()).toEqual(['--card-shadow-hover', '--mobile-nav-bg', '--tone-0', '--tone-1', '--tone-2', '--tone-3', '--tone-4']);
+  });
+});

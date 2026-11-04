@@ -7,7 +7,7 @@
   --primary-glow: color-mix(in srgb, var(--book-main) 22%, transparent);
   --border-hover: var(--book-dark-text);
 }
-[data-theme="light"] .textbook-theme {
+:root .textbook-theme {
   --book-text: var(--book-main);
   --book-tint: var(--book-wash);
   --primary-light: var(--book-main);

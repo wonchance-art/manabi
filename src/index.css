@@ -19,14 +19,14 @@
      셸이 다시 정의하지 않는 파생 토큰(glow·border-hover)에 옛 주황이 남던 것을 정리했다.
      --primary는 배경용(흰 글자 6.0:1), 글자에는 --primary-light(어두운 바탕 5.5:1 이상)를 쓴다. */
   --primary: #994A5A;
-  --primary-light: #D9909E;
+  --primary-light: #994A5A;
   --primary-dark: #793B48;
   --primary-glow: rgba(153, 74, 90, 0.18);
   /* 배경으로 쓸 때 흰 글자 대비가 4.13이라 AA(4.5) 미달이었다 — 5%만 어둡혀 4.51.
      글자로 쓸 때는 아래 --accent-text를 쓴다(반대 방향으로 밝혀야 하므로 토큰이 둘로 갈린다). */
-  --accent: #468357;
+  --accent: #3A6D49;
   /* 배경으로 쓰면 문제없지만 글자로 쓰면 3.32라 AA 미달 — 글자 전용 변형을 따로 둔다(같은 색상, 밝기만). */
-  --accent-text: #58A46D;   /* 3.32 → 4.51 */
+  --accent-text: #3A6D49;   /* 3.32 → 4.51 */
   --accent-glow: rgba(74, 138, 92, 0.18);
   /* 자동 진행 체류 선(v2-I R1b) — 주변시로만 감지되게 옅게. --primary-light에서 파생하므로
      라이트 테마의 대비 보정(B85A30)을 그대로 물려받는다. */
@@ -55,11 +55,11 @@
   --speaker-2: #E0729A;
   --danger: #C84040;
   --warning: #D4962A;
-  /* 경고 「글자」 — --warning(#D4962A)은 테두리·바탕용이라 글자로는 대비가 모자란다. 라이트 값은 [data-theme="light"]와 셸에서. */
+  /* 경고 「글자」 — --warning(#D4962A)은 테두리·바탕용이라 글자로는 대비가 모자란다. 값은 아래 한 벌과 셸에서. */
   /* 경고 세트(판 5 · 6 — 오너 확정 2026-11-04 KST): 표시 = --warning(#D4962A, 바탕 · 점 · 글자만 쓰는 자리) ·
      옅은 노랑 바탕 위 글자 = --warning-on-tint · 꽉 찬 노랑 위 글자 = 흰색(인접 로즈 · 빨강 배지와 같은 문법 — 오너 예외).
      어두운 판 값은 기존 글자색 그대로. */
-  --warning-on-tint: #E6B35C;
+  --warning-on-tint: #5C3A00;
   /* 의미색 세트 이름(색 체계 단계 1 — 값 그대로, 화면 무변화): 옅은 바탕 = 표시색 15%. 다른 농도(10 · 12 · 13 · 16%)는 단계 2에서 이 값으로 모은다. */
   --warning-tint: color-mix(in srgb, var(--warning) 15%, transparent);
   --danger-tint: color-mix(in srgb, var(--danger) 15%, transparent);
@@ -72,25 +72,26 @@
         모달 넷의 겉모습이 바뀌는 일이라 목업 우선 규약대로 별도 라운드로 뺐다. */
   --scrim: rgba(0, 0, 0, 0.45);
 
-  /* Neutral (dark — warm espresso) */
-  --bg-primary: #1A1410;
-  --bg-secondary: #231C15;
-  --bg-card: #2D2318;
-  --bg-elevated: #382B1E;
-  --border: rgba(255, 215, 170, 0.08);
-  --border-hover: rgba(217, 144, 158, 0.35);
+  /* Neutral — 셸(.manabi-app) 밖 기본값. 옛 어두운 판(에스프레소) · 밝은 판 두 벌을 기기 모드로 갈아 끼우던 것을
+     옛 밝은 판 값 한 벌로 걷었다(COLOR-SYS-001, 2026-11-05 KST) — 기기 모드와 상관없이 같은 화면. 월드만 아래 data-world 블록. */
+  --bg-primary: #F5EFE6;
+  --bg-secondary: #EDE4D8;
+  --bg-card: #FDFAF6;
+  --bg-elevated: #E8DDD0;
+  --border: rgba(100, 65, 30, 0.10);
+  --border-hover: rgba(153, 74, 90, 0.40);
 
   /* Text */
-  --text-primary: #F4EDE4;
-  /* 대비는 가장 밝은 배경(--bg-elevated #382B1E) 위에서 재야 한다 — 카드 안 텍스트가 최악이다.
-     muted는 거기서 2.96:1로 AA(4.5) 미달이었다. 둘을 함께 올려 위계(휘도 차 0.123)를 유지한다. */
-  --text-secondary: #C4A98E;  /* 4.57 → 6.13 */
-  --text-muted: #AF8E6C;      /* 2.96 → 4.52 */
+  --text-primary: #261A0E;
+  /* 대비 실측(2026-11-05 KST): 바탕 --bg-primary 위 6.45 · 4.84, 가장 어두운 --bg-elevated 위 5.51 · 4.13.
+     muted는 --bg-elevated 위에서 4.5 미만 — 셸 안에서는 셸 --muted(#65675F)가 덮으므로 셸 밖 화면에서만 해당한다. */
+  --text-secondary: #6B5040;
+  --text-muted: #7C6450;
 
   /* Chrome components */
-  --gnb-bg: rgba(26, 20, 16, 0.90);
-  --mobile-nav-bg: rgba(35, 28, 21, 0.97);
-  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --gnb-bg: rgba(245, 239, 230, 0.92);
+  --mobile-nav-bg: rgba(237, 228, 216, 0.98);
+  --card-shadow-hover: 0 8px 32px rgba(100, 50, 20, 0.12);
 
   /* Layout — 머리 높이는 상태 표시줄 자리(설치 앱에서만 0보다 크다)를 포함한다(PWA-SHELL-001 ⑧) */
   --gnb-height: calc(64px + env(safe-area-inset-top,0px));
@@ -110,42 +111,14 @@
   --ease-settle: cubic-bezier(0.23, 1, 0.32, 1);
 
   /* 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 다크 값. 셸(.manabi-app)은 밝은 화면이라 level-list.css가 라이트 값으로 고정한다. */
-  --lv-card: #26231f; --lv-line: #3a352e; --lv-chip: #34302a; --lv-chip-hover: #3f3a33; --lv-field: #2e2a25;
-  --lv-have: #4a2c33; --lv-busy: #8c5462; --lv-formula: #332f28; --lv-ex-rule: #6b4a52; --lv-warn: #e1b36a; --lv-faint: #8a877e;
-  --lv-miss: #3d262c; --lv-warnbg: #352c1d; --lv-ok: #8cc7a6; /* 한자 탭(HANZI-TAB-AL-001) */
+  --lv-card: #fffdf9; --lv-line: #e2ddd2; --lv-chip: #ece8df; --lv-chip-hover: #e2ddd2; --lv-field: #ede9e0;
+  --lv-have: #f3e4e7; --lv-busy: #b77885; --lv-formula: #efeae0; --lv-ex-rule: #d9c4c9; --lv-warn: #8a5a12; --lv-faint: #6c6d64;
+  --lv-miss: #fbf1f3; --lv-warnbg: #f6eedd; --lv-ok: #2f6b4f; /* 한자 탭(HANZI-TAB-AL-001) */
   /* 단어 목록 병음 성조 색(⚙ 옵트인) — 뷰어 성조 색과 같은 값(--tone-*) */
-  --lv-tone-1: #e8705f; --lv-tone-2: #6fbf73; --lv-tone-3: #6aa9e8; --lv-tone-4: #b48ae8; --lv-tone-0: #9a9a9a;
+  --lv-tone-1: #c0392b; --lv-tone-2: #2e7d32; --lv-tone-3: #1565c0; --lv-tone-4: #6a3fb5; --lv-tone-0: #7a7a72;
 }
 
 /* ========= Light Theme (warm cream) ========= */
-[data-theme="light"] {
-  --bg-primary: #F5EFE6;
-  --bg-secondary: #EDE4D8;
-  --bg-card: #FDFAF6;
-  --bg-elevated: #E8DDD0;
-  --border: rgba(100, 65, 30, 0.10);
-  --border-hover: rgba(153, 74, 90, 0.40);
-
-  --text-primary: #261A0E;
-  --text-secondary: #6B5040;
-  --text-muted: #7C6450; /* WCAG 개선: 9E8270 → 7C6450 (3.2 → 4.8) */
-
-  /* WCAG 개선: 라이트 모드에서 링크/강조색 대비 강화 */
-  --primary-light: #994A5A; /* v2 로즈 — 라이트 바탕 글자 5.3:1 이상(COLOR-V2-UNIFY-001) */
-  --warning-on-tint: #5C3A00;
-  --accent: #3A6D49;        /* 4A8A5C → 3A6D49 (3.3 → 5.0) */
-  --accent-text: #3A6D49;   /* 라이트에선 글자도 같은 값으로 충분(5.0) — 다크의 밝은 변형을 물려받으면 안 된다 */
-
-  --gnb-bg: rgba(245, 239, 230, 0.92);
-  --mobile-nav-bg: rgba(237, 228, 216, 0.98);
-  --card-shadow-hover: 0 8px 32px rgba(100, 50, 20, 0.12);
-
-  /* 레벨별 단어 · 문형 목록(LEVEL-LIST-AJ-001) — 목업 8판 값 */
-  --lv-card: #fffdf9; --lv-line: #e2ddd2; --lv-chip: #ece8df; --lv-chip-hover: #e2ddd2; --lv-field: #ede9e0;
-  --lv-have: #f3e4e7; --lv-busy: #b77885; --lv-formula: #efeae0; --lv-ex-rule: #d9c4c9; --lv-warn: #8a5a12; --lv-faint: #6c6d64;
-  --lv-miss: #fbf1f3; --lv-warnbg: #f6eedd; --lv-ok: #2f6b4f;
-  --lv-tone-1: #c0392b; --lv-tone-2: #2e7d32; --lv-tone-3: #1565c0; --lv-tone-4: #6a3fb5; --lv-tone-0: #7a7a72;
-}
 
 /* ========= Reset ========= */
 *, *::before, *::after {
@@ -164,18 +137,22 @@ html {
    익숙한 배색. 본문 가독성을 해치지 않게 채도를 낮추고, 0.26em 소형 병음에서도
    구분되도록 명도 대비를 테마별로 잡았다(다크 기본 → 라이트 재정의). */
 :root {
-  --tone-1: #e8705f; /* 1성 빨강 */
-  --tone-2: #6fbf73; /* 2성 초록 */
-  --tone-3: #6aa9e8; /* 3성 파랑 */
-  --tone-4: #b48ae8; /* 4성 보라 */
-  --tone-0: #9a9a9a; /* 경성 회색 */
+  --tone-1: #c0392b; /* 1성 빨강 */
+  --tone-2: #2e7d32; /* 2성 초록 */
+  --tone-3: #1565c0; /* 3성 파랑 */
+  --tone-4: #6a3fb5; /* 4성 보라 */
+  --tone-0: #8a8a8a; /* 경성 회색 */
 }
-[data-theme="light"] {
-  --tone-1: #c0392b;
-  --tone-2: #2e7d32;
-  --tone-3: #1565c0;
-  --tone-4: #6a3fb5;
-  --tone-0: #8a8a8a;
+/* 학습 월드(개발 동결)만 기기 어두운 모드에서 옛 어두운 판 값을 그대로 쓴다 — 오너 「월드 화면은 제외」(2026-11-05 KST).
+   앱의 나머지는 기기 모드와 상관없이 위 :root 한 벌(옛 밝은 판 값)이다. 셸(.manabi-app)이 다시 정하지 않는 토큰 중 두 판의 값이 달랐던 것만 둔다(COLOR-SYS-001 옛 층 걷기). */
+[data-theme="dark"] .manabi-app[data-world] {
+  --mobile-nav-bg: rgba(35, 28, 21, 0.97);
+  --card-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --tone-1: #e8705f;
+  --tone-2: #6fbf73;
+  --tone-3: #6aa9e8;
+  --tone-4: #b48ae8;
+  --tone-0: #9a9a9a;
 }
 /* 본문 병음의 기본색 규칙(.word-token rt — 특이도 0,1,1)이 파일 뒤쪽에 있어, 같은
    특이도(rt.pinyin-tone--N)로는 순서에서 진다 — 실제로 본문만 색이 안 나왔다(오너
@@ -3553,7 +3530,7 @@ a.viewer-badge:hover {
 }
 /* 밝은 바탕: 교재 테마(모브 #80576A) 링크가 안내 띠 바탕(--primary-glow 합성 #e6d5d1) 위 4.24:1로 AA(4.5) 미달이었다(운영 axe 2026-11-02 KST).
    글자색에 검정 15%를 섞어 네 교재 색 모두 4.5:1 이상(모브 5.3:1) — 어두운 테마는 밝은 글자라 그대로 둔다. 계약 colorV2Unify(안내 띠 링크). */
-[data-theme="light"] .viewer-guest-banner__cta {
+:root .viewer-guest-banner__cta {
   color: color-mix(in srgb, var(--primary-light) 85%, #000);
 }
 
@@ -5524,8 +5501,8 @@ a.viewer-badge:hover {
   cursor: pointer;
   font-size: 0.85rem;
 }
-[data-theme="light"] .auth-alert--error,
-[data-theme="light"] .auth-alert__link,
+:root .auth-alert--error,
+:root .auth-alert__link,
 .manabi-app .auth-alert--error,
 .manabi-app .auth-alert__link {
   color: #A12B39;
