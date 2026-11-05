@@ -78,10 +78,11 @@ try {
   });
 
   await check('③ 동작 — 전환 다리 · 같은 학습일 · 다음 날 · 다리 없는 사람은 보통 규칙', async () => {
-    // 시험 전용: 전환 시각을 5일 전 KST 04시로(실제 append_activity는 미래 시각을 받지 않는다). 프로필 지문이 이 함수에 걸리면 다시 게시.
-    const now = Date.now(), dayMs = 86400000;
-    const kstDate = ms => new Date(ms + 9 * 3600000).toISOString().slice(0, 10);
-    const D0 = kstDate(now - 5 * dayMs);
+    // 시험 전용: 전환 시각을 고정 과거 날(10/20 KST 04시)로 옮긴다. 영수증이 모두 과거(append_activity는 미래 시각을 받지 않는다)이면서
+    // 실제 전환 시각(11/3 04시)보다 앞이어야 아래 ④의 재적용 가드(「전환 뒤 영수증이 이미 있음」)에 걸리지 않는다.
+    // 예전에는 「지금 − 5일」이라 11/6부터 마지막 영수증(D0+2)이 실제 전환 뒤로 넘어가 CI가 깨졌다(시각 의존 실측 2026-11-06 00:42 KST).
+    const dayMs = 86400000;
+    const D0 = '2026-10-20';
     const at = (day, hh) => new Date(Date.parse(`${day}T${hh}:00:00+09:00`)).toISOString();
     const plus = (day, n) => new Date(Date.parse(`${day}T00:00:00Z`) + n * dayMs).toISOString().slice(0, 10);
     await db.exec(`CREATE OR REPLACE FUNCTION fsrs_private.activity_day_switch_at() RETURNS timestamptz LANGUAGE sql IMMUTABLE SET search_path TO ''
