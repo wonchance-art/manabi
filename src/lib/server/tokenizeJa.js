@@ -99,6 +99,9 @@ export async function tokenizeJaLine(line) {
       base_form: baseForm,
       furigana,
       pos,
+      // な형용사 어간(静か · 綺麗) — kuromoji는 名詞/形容動詞語幹으로 낸다. 품사(명사)는 그대로 두고 표식만 남긴다:
+      // 읽기 화면이 静か+でした를 한 덩어리로 묶는 근거(JA-UNITS-001 후속). 새로 분석한 자료부터 — 지난 자료는 그대로.
+      ...(t.pos === '名詞' && t.pos_detail_1 === '形容動詞語幹' ? { na_stem: true } : {}),
     };
   });
 }
