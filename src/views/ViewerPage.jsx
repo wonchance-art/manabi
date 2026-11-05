@@ -1230,19 +1230,13 @@ export default function ViewerPage({ seed } = {}) {
   // 본문 낱말(ReaderToken, memo)에 넘기는 고정 함수(VIEWER-TAP-PERF-001) — 매 렌더 새 함수면 memo가 깨져 낱말 수백 개가
   // 모두 다시 그려진다. 부를 때는 이번 렌더의 handleTokenClick · 문장 지정을 그대로 쓴다(ref는 렌더마다 갱신).
   const tokenClickRef = useRef(null);
-  // 일본어 덩어리(JA-UNITS-001 C2): 조각 칸 어디를 눌러도 덩어리 전체를 고른다 — 카드 토큰은 덩어리 표면 · 덩어리 기본형, id는 첫 조각.
-  const readerChunksRef = useRef(null);
-  const onReaderTokenClick = useCallback((token, tokenId) => {
-    const chunk = readerChunksRef.current?.get(tokenId);
-    if (chunk) {
-      const out = chunkCardToken(readerChunksRef.current.dictionary, chunk);
-      return tokenClickRef.current?.(out.token, out.id);
-    }
-    return tokenClickRef.current?.(token, tokenId);
-  }, []);
+  const onReaderTokenClick = useCallback((token, tokenId) => tokenClickRef.current?.(token, tokenId), []);
   const linePickRef = useRef(null);
   const onReaderLinePick = useCallback((lineHead) => linePickRef.current?.(lineHead), []);
   const handleTokenClick = (token, tokenId) => {
+    // 일본어 덩어리(JA-UNITS-001 C2): 조각 칸 어디를 눌러도 덩어리 전체를 고른다 — 카드 토큰은 덩어리 표면 · 덩어리 기본형, id는 첫 조각.
+    const chunk = readerChunks?.get(tokenId);
+    if (chunk) ({ token, id: tokenId } = chunkCardToken(material.processed_json.dictionary, chunk));
     setRestoredClassSource(null);
     if (token.pos === '개행') return;
     // 집중 모드 단일 규칙(오너 확정 2026-08-20): 지정 문장 '밖' 탭 = 순수 이동 — 지정만
@@ -1446,11 +1440,8 @@ export default function ViewerPage({ seed } = {}) {
   const readerChunks = useMemo(() => {
     const pj = material?.processed_json;
     if (materialLang !== 'Japanese' || !pj?.sequence || !pj?.dictionary) return null;
-    const chunkOf = buildReaderChunks(pj.sequence, pj.dictionary);
-    chunkOf.dictionary = pj.dictionary;
-    return chunkOf;
+    return buildReaderChunks(pj.sequence, pj.dictionary);
   }, [material?.processed_json, materialLang]);
-  readerChunksRef.current = readerChunks;
   const lineTokensByIndex = useMemo(() => {
     const seq = material?.processed_json?.sequence, dict = material?.processed_json?.dictionary;
     const lines = new Map();
@@ -3822,7 +3813,7 @@ export default function ViewerPage({ seed } = {}) {
         </div>
       )}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${enPronunciation ? ' word-detail-card__meaningrow--tight' : ''}`}>
-        <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined} aria-busy={(materialLang === 'Korean' && !koreanPieceSelected && localizedWord.loading) || undefined}>
+        <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined} aria-busy={(materialLang === 'Korean' && !koreanPieceSelected && localizedWord.loading) || (jaPatternSelected && chunkIndexState === 'loading') || undefined}>
           {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <span className="word-detail-card__meaning-error">{vt('뜻을 불러오지 못했어요.')} <button type="button" className="btn btn--ghost btn--sm" onClick={localizedWord.retry}>{vt('다시 시도')}</button></span> : localizedWord.meaning) : jaPatternSelected ? (chunkEntry?.ko || (chunkIndexState === 'loading' ? vt('문형 뜻을 불러오는 중…') : vt('(뜻 없음)'))) : refMeaning || selectedToken.meaning || vt('(뜻 없음)')}
         </div>
         {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
@@ -4162,7 +4153,7 @@ export default function ViewerPage({ seed } = {}) {
         const saved = !!slug && !!savedPatterns?.has(slug);
         return (
           <div className="word-detail-card__actrow reader-card-pattern-save">
-            <p className="save-grade__guide">{chunkEntry ? vt('문형은 문법 복습에 담아요.') : chunkIndexState === 'loading' ? vt('문형 정보를 불러오는 중…') : vt('문형 사전에 없는 표현이에요.')}</p>
+            <p className="save-grade__guide" aria-busy={(!chunkEntry && chunkIndexState === 'loading') || undefined}>{chunkEntry ? vt('문형은 문법 복습에 담아요.') : chunkIndexState === 'loading' ? vt('문형 정보를 불러오는 중…') : vt('문형 사전에 없는 표현이에요.')}</p>
             {chunkEntry && <button type="button" className="btn btn--primary btn--sm" disabled={saved || !slug || !!patternSaving} onClick={() => savePattern(chunkEntry)}>
               {saved ? vt('✓ 문법 복습에 있음') : patternSaving === slug ? vt('담는 중…') : vt('☆ 문법 복습에 담기')}</button>}
           </div>
@@ -4858,17 +4849,19 @@ export default function ViewerPage({ seed } = {}) {
             // 덩어리(JA-UNITS-001): 고른 덩어리의 조각은 한 바탕으로 이어 칠하고, 문형 덩어리는 정본 문형 밑줄을 늘 단다.
             const chunk = readerChunks?.get(tokenId);
             const chunkSelected = !!(chunk && isSheetOpen && selectedToken?.__chunk?.ids?.includes(tokenId));
+            const tokenSelected = (selectedToken?.id === tokenId && isSheetOpen) || chunkSelected;
+            const patternMarked = chunk?.kind === 'pattern' || !!visibleScan?.byToken.has(tokenId);
             // 루비 조각 · 발음 가림 · 문형 밑줄 · 단어 조작 마크업은 ReaderToken(memo)이 그린다 — 바뀐 낱말만 다시 그린다(VIEWER-TAP-PERF-001).
             return (
               <ReaderToken key={tokenId} tokenId={tokenId} token={token} tokenRefs={tokenRefs}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${listenTokens?.has(tokenId) ? ' word-token--listening' : ''}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}${chunkSelected ? ' word-token--chunk-selected' : ''}`}
-                selected={(selectedToken?.id === tokenId && isSheetOpen) || chunkSelected}
+                selected={tokenSelected}
                 paceStyle={paceStyle}
                 lineHeadText={lineHead ? lineHead.text : null} lineHeadKey={lineHead ? lineHead.key : null}
                 linePickLabel={linePickLabel} onLinePick={onReaderLinePick} onTokenClick={onReaderTokenClick}
                 nextText={token.furigana ? kuruNext.get(tokenId) : ''}
                 pronDisplay={pronDisplay} isKnown={tokKnown} isSaved={isSaved}
-                patternMark={chunk?.kind === 'pattern' || !!visibleScan?.byToken.has(tokenId)} zhGrid={!!zhGrid} showToneColors={!!showToneColors}
+                patternMark={patternMarked} zhGrid={!!zhGrid} showToneColors={!!showToneColors}
                 variantText={scriptSurfaces?.get(tokenId)} />
             );
           };

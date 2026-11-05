@@ -215,7 +215,7 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
     expect(memo).toContain('!json?.sequence) return null;');
   });
 
-  it('밑줄은 스캔이 잡은 토큰에만', () => {
+  it('밑줄은 스캔이 잡은 토큰 · 일본어 문형 덩어리에만', () => {
     expect(card).toMatch(/word-token--pattern/);
     expect(card).toContain("visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''");
     // 단정하는 면 칠이 아니라 가는 밑줄 — 톤이 CSS에도 남아야 한다
@@ -231,7 +231,9 @@ describe('배선 — 기본 꺼짐, 켜야 로드', () => {
     expect(css).toContain('.word-token--picked .surface::after {'); // 이음매 자리(연속 지정 신호 --picked-seam일 때만 그려진다)
     expect(css).toContain("content: var(--picked-seam, none);");
     // 낱말 마크업은 ReaderToken(memo, VIEWER-TAP-PERF-001) — 뷰어는 스캔이 잡았는지(불리언)만 넘긴다.
-    expect(card).toContain('patternMark={!!visibleScan?.byToken.has(tokenId)}');
+    // 밑줄 = 스캔이 잡은 토큰 + 일본어 문형 덩어리(JA-UNITS-001 C2 — かもしれない · なければならない는 늘 밑줄).
+    expect(card).toContain("const patternMarked = chunk?.kind === 'pattern' || !!visibleScan?.byToken.has(tokenId);");
+    expect(card).toContain('patternMark={patternMarked}');
     const token = codeOf(read('src/components/viewer/ReaderToken.jsx'));
     expect(token).toContain('const mark = patternMark ? <span className="pattern-mark" aria-hidden="true" /> : null;');
     // 단어 조작은 .surface(#1323). 중국어 격자(ZH-GRID-001)는 글자를 칸으로 나눌 뿐 밑줄 요소의 자리(.surface 안 글자 뒤 — 그 뒤는 선택 테두리 칸 .word-frame, VIEWER-TAP-INP-002)는 그대로다.

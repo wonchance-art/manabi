@@ -35,9 +35,11 @@ describe('AD-R3 §7.5 한국어 나누기 배선', () => {
     expect(sliceBetween(viewer, 'function koreanSaveReady(token) {', '\n  }')).toContain('!koreanBoundaryPiece(material?.processed_json, token.id)');
     // 키 1~4: 저장(addToVocab)은 koreanSaveReady에서, 인라인 등급은 gradeInline 첫 줄에서 막는다.
     expect(sliceBetween(viewer, 'const addToVocab = async (grade) => {', '\n  };')).toContain('if (!selectedToken || !koreanSaveReady(selectedToken)) return;');
-    expect(sliceBetween(viewer, 'const gradeInline = (rating) => {', '\n  };')).toContain('if (koreanPieceSelected) return;');
-    expect(viewer).toContain('{user && learningStorageSupported && !koreanPieceSelected && (() => {\n        // 네 등급은 FSRS 평가다.');
-    expect(viewer).toContain('{user && learningCapabilities.review && !koreanPieceSelected && findSavedVocab(');
+    // 단어 등급 차단은 noWordSave 하나로 — 한국어 나눈 조각 · 일본어 문형 덩어리(JA-UNITS-001)가 같은 문을 쓴다.
+    expect(viewer).toContain('const noWordSave = koreanPieceSelected || jaPatternSelected;');
+    expect(sliceBetween(viewer, 'const gradeInline = (rating) => {', '\n  };')).toContain('if (noWordSave) return;');
+    expect(viewer).toContain('{user && learningStorageSupported && !noWordSave && (() => {\n        // 네 등급은 FSRS 평가다.');
+    expect(viewer).toContain('{user && learningCapabilities.review && !noWordSave && findSavedVocab(');
     expect(viewer).toContain('{!koreanPieceSelected && <section ref={learnRef}');
     expect(viewer).toContain("{koreanPieceSelected && <p className=\"reader-card-boundary-note\" role=\"status\">{vt('나눈 조각은 단어장에 담지 않아요.')}</p>}");
   });
