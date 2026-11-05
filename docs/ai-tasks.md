@@ -953,6 +953,13 @@
   ⑱ 이번 PR — 관리자 「일별 추이 · 가입 퍼널」 = 학습자 화면과 같은 셈(ADMIN-METRICS-DAY-001, 오너 「전부 권장대로.」 2026-11-05 01:24 KST ·
     [목업](https://claude.ai/artifact/9kvCCoQjGa6KUWzUtoRCuN)): 04시 학습일 · 답한 사람만 활성 · 채점 답 전체 정답률. 마이그레이션 `20261105010000`
     (서명 · 보안 · 실행권 · 관리자 검사 그대로, 지문 밖 · 앞뒤 동치) · 복원 SQL(운영 본문 md5 일치) · PGlite 6검사 · 계약 · 설명 두 줄.
+    **완료 [#1681](https://github.com/wonchance-art/manabi/pull/1681) `60fd0771`.**
+  ⑲ 이번 PR — 일본어 누르는 단위 C2(JA-UNITS-001, 오너 「적합한 형태 … 비교해보자」 → 판 2 후보 아홉 비교 → 「권장대로」 2026-11-05 21:13 KST ·
+    [목업 판 2](https://claude.ai/artifact/Gm3HScyj7gzhQd8jsPWKjZ)): 운영 실측 — 일본어 낱말 칸 6,826 중 32%가 활용 사슬(しれ · ませ · ん).
+    본문 칸 · processed_json · 토큰 id는 그대로, 누르면 덩어리(食べています → 저장 食べる, 단어장 · FSRS 경로 그대로).
+    굳은 문형(かもしれない · なければならない)은 정본 문형 밑줄의 문형 덩어리 → 문법 복습 담기(savePattern). 카드 「이 모양」 조각 풀이 + 정본 문법 줄(뜻은 한 곳).
+    묶음 정본 groupTokensToUnits를 jaWordUnits.js로 공용화(듣기 자막 재내보내기). 계약 `jaReaderChunks.test.js`. 지문 · DB 무관.
+    후속(오너 허용, 착수 전 오케스트레이터 알림): な형용사 어간 정보를 새 분석부터 남기기(静か | でした).
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —

@@ -198,6 +198,7 @@ import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, opensWordCard, wordStateOf, wordStateExtraClass } from '../lib/wordState';
+import { buildReaderChunks, chunkCardToken, chunkPatternEntry } from '../lib/jaReaderChunks';
 import { TTS_RATES, ttsOptsFor, pronHiddenFor, nextTtsRate } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
 import ViewerGlyphColumn from '../components/viewer/ViewerGlyphColumn';
@@ -577,8 +578,14 @@ export default function ViewerPage({ seed } = {}) {
   useEffect(() => {
     detailGate.current.cancel(); selectionGate.current.cancel();
     setWordDetail(null); setLeftPanelLoading(false); setDragAnalyzing(false); setLeftPanelResult('');
-    setSelectedToken(selected => refreshViewerToken(selected, material?.processed_json));
-  }, [material?.raw_text, material?.processed_json]);
+    setSelectedToken(selected => {
+      const fresh = refreshViewerToken(selected, material?.processed_json);
+      // 덩어리를 고른 채 본문이 갱신되면(뜻 · 경계 수정) 같은 자리의 덩어리로 다시 고른다 — 첫 조각만 남지 않게.
+      const chunk = fresh && selected?.__chunk && materialLang === 'Japanese'
+        ? buildReaderChunks(material.processed_json.sequence, material.processed_json.dictionary).get(selected.id) : null;
+      return chunk ? { ...chunkCardToken(material.processed_json.dictionary, chunk).token, id: selected.id } : fresh;
+    });
+  }, [material?.raw_text, material?.processed_json]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { detailGate.current.cancel(); }, [selectedToken]);
 
   useLibraryActivity(materialActivity(material,passageOf(material)||originalParams.get('study')==='1'?'study':'text',null,null,user?.id),!!material&&!isLoading&&!error&&!shouldReadComposerOriginal(material,originalParams)&&!conversationOf(material)); // 대화(v2-Z)는 「읽던 곳」 기록을 남기지 않는다 — 서재 「대화」 묶음이 입구
@@ -1227,6 +1234,9 @@ export default function ViewerPage({ seed } = {}) {
   const linePickRef = useRef(null);
   const onReaderLinePick = useCallback((lineHead) => linePickRef.current?.(lineHead), []);
   const handleTokenClick = (token, tokenId) => {
+    // 일본어 덩어리(JA-UNITS-001 C2): 조각 칸 어디를 눌러도 덩어리 전체를 고른다 — 카드 토큰은 덩어리 표면 · 덩어리 기본형, id는 첫 조각.
+    const chunk = readerChunks?.get(tokenId);
+    if (chunk) ({ token, id: tokenId } = chunkCardToken(material.processed_json.dictionary, chunk));
     setRestoredClassSource(null);
     if (token.pos === '개행') return;
     // 집중 모드 단일 규칙(오너 확정 2026-08-20): 지정 문장 '밖' 탭 = 순수 이동 — 지정만
@@ -1426,6 +1436,12 @@ export default function ViewerPage({ seed } = {}) {
   };
   // AE-R1 문장 줄(VIEWER-V2-ROUNDS-001 §2.1): 줄 번호 → 그 줄 토큰(json.sequence 순서). 누른 자리를 문자열 검색이 아니라
   // 토큰 순서로 찾아 같은 단어가 여러 번 나와도 누른 곳 하나만 칠한다(sentenceAroundToken).
+  // 일본어 누르는 덩어리(JA-UNITS-001 C2) — 분석 결과 · 토큰 id · 본문 칸은 그대로, 누름과 선택만 덩어리로.
+  const readerChunks = useMemo(() => {
+    const pj = material?.processed_json;
+    if (materialLang !== 'Japanese' || !pj?.sequence || !pj?.dictionary) return null;
+    return buildReaderChunks(pj.sequence, pj.dictionary);
+  }, [material?.processed_json, materialLang]);
   const lineTokensByIndex = useMemo(() => {
     const seq = material?.processed_json?.sequence, dict = material?.processed_json?.dictionary;
     const lines = new Map();
@@ -1445,9 +1461,16 @@ export default function ViewerPage({ seed } = {}) {
     if (!tok || !line) return null;
     const m = typeof tok.id === 'string' ? /^(?:id|failed)_(\d+)_/.exec(tok.id) : null;
     const tokens = m ? lineTokensByIndex.get(Number(m[1])) || [] : [];
-    const index = m ? tokens.findIndex((t) => t.id === tok.id) : -1;
+    let lineTokens = tokens, index = m ? tokens.findIndex((t) => t.id === tok.id) : -1;
+    // 덩어리를 고르면 문장 줄도 덩어리 전체를 칠한다(첫 조각 자리 + 덩어리 표면).
+    const chunk = tok.__chunk;
+    if (chunk && index >= 0) {
+      const rest = new Set(chunk.ids.slice(1));
+      lineTokens = tokens.filter((t) => !rest.has(t.id)).map((t) => (t.id === chunk.ids[0] ? { ...t, text: chunk.surface } : t));
+      index = lineTokens.findIndex((t) => t.id === tok.id);
+    }
     const found = index >= 0
-      ? sentenceAroundToken({ line, tokens, index, language: materialLang, term: tok.text })
+      ? sentenceAroundToken({ line, tokens: lineTokens, index, language: materialLang, term: tok.text })
       : sentenceAroundTerm({ line, term: tok.text, language: materialLang });
     return found ? clipSentenceToBudget(found, tight ? { budget: SENTENCE_LINE_BUDGET_TIGHT } : undefined) : null;
   };
@@ -1461,6 +1484,9 @@ export default function ViewerPage({ seed } = {}) {
     && !/^\/class\//.test(originalParams.get('returnTo') || '') && !!selectedToken && isSheetOpen;
   // AD-R3 §7.5 한국어 나눈 조각 — 뜻은 저장된 형태 분석 설명뿐이다. 문맥 설명 오버레이(AI)·단어장 저장·등급을 붙이지 않는다.
   const koreanPieceSelected = materialLang === 'Korean' && !!selectedToken?.id && !!koreanBoundaryPiece(material?.processed_json, selectedToken.id);
+  // 일본어 문형 덩어리(かもしれない · なければならない) — 단어장 등급 대신 문법 복습 담기(JA-UNITS-001 C2).
+  const jaPatternSelected = materialLang === 'Japanese' && selectedToken?.__chunk?.kind === 'pattern';
+  const noWordSave = koreanPieceSelected || jaPatternSelected;
   const localizedWord = useViewerExplanation({token: selectedToken, sentence: ctxSentenceOf(selectedToken) ?? leftPanelText,
     locale: effectiveExplanationLocale, sourceLocale: selectedToken?.meaningLocale || selectedToken?.explanationLocale || material?.processed_json?.metadata?.explanationLocale || 'ko',
     scope: cacheScope, enabled: materialLang === 'Korean' && isSheetOpen && !koreanPieceSelected});
@@ -2515,6 +2541,21 @@ export default function ViewerPage({ seed } = {}) {
     return scanTokens(tokens, patternIndex);
   }, [showPatterns, patternIndex, patternIndexLang, materialLang, material?.processed_json]);
 
+  // 덩어리의 정본 문형 항목(JA-UNITS-001) — 문법 줄 · 문형 덩어리 뜻 · 담기 열쇠. 덩어리 카드를 처음 열 때만 받는다(문법 표시 토글과 별개).
+  const [chunkPatternIndex, setChunkPatternIndex] = useState(null);
+  const [chunkIndexState, setChunkIndexState] = useState('idle');
+  const chunkIndexStarted = useRef(false);
+  const chunkRef = selectedToken?.__chunk?.ref || null;
+  useEffect(() => {
+    if (!chunkRef || chunkIndexStarted.current) return;
+    chunkIndexStarted.current = true; // 인덱스는 언어 단위 캐시라 한 번만 받는다
+    setChunkIndexState('loading');
+    loadPatternIndex('Japanese', { allKernels: true })
+      .then((ix) => { setChunkPatternIndex(ix); setChunkIndexState('ready'); })
+      .catch(() => setChunkIndexState('failed'));
+  }, [chunkRef]);
+  const chunkEntry = chunkPatternEntry(chunkPatternIndex, chunkRef);
+
   // '복습할 것' 필터(v2-G R2) — 이미 쌓이고 있는 grammar_review 큐를 읽기만 한다.
   // 좁힐 때만 조회한다: 전체로 보는 사람에게 쿼리를 태울 이유가 없다(goal-known 결).
   const patternOn = showPatterns && supportsPatterns(materialLang);
@@ -2563,7 +2604,7 @@ export default function ViewerPage({ seed } = {}) {
   const { data: savedPatterns } = useQuery({
     queryKey: ['pattern-saved', user?.id, materialLang],
     queryFn: () => fetchSavedPatternRows(user.id, materialLang),
-    enabled: !!user && sentencePatternOn && !!leftPanelText,
+    enabled: !!user && ((sentencePatternOn && !!leftPanelText) || jaPatternSelected),
     staleTime: 1000 * 60,
   });
   const [patternSaving, setPatternSaving] = useState(null);
@@ -3057,7 +3098,7 @@ export default function ViewerPage({ seed } = {}) {
 
   // W R3㉮ 인라인 복습 — 4등급 정본. 스냅샷은 훅이 돌려준 prev·reviewedAt으로 호출부가 만든다.
   const gradeInline = (rating) => {
-    if (koreanPieceSelected) return; // AD-R3 §7.5: 한국어 나눈 조각은 등급 대상이 아니다(키 1~4 포함)
+    if (noWordSave) return; // AD-R3 §7.5: 한국어 나눈 조각 · 일본어 문형 덩어리는 단어 등급 대상이 아니다(키 1~4 포함)
     const vocab = findSavedVocab(savedWords, selectedToken, materialLang);
     if (!learningCapabilities.review || !vocab || !isTokenInlineDue(savedWords, selectedToken, materialLang) || selectedExcluded || !wordStateReady || knownPending || exclusionState.mutation.isPending || inlineReviewMutation.isPending) return;
     const requestKey = `${user.id}:${vocab.id}`;
@@ -3746,9 +3787,34 @@ export default function ViewerPage({ seed } = {}) {
       {enPronunciation && <div className="reader-card-pronunciation">{enPronunciation}</div>}
       </div>
       </div>}
+      {selectedToken.__chunk && !classStudyActive && (
+        // 「이 모양」(JA-UNITS-001): 덩어리 조각과 풀이. 문형 덩어리는 앞 말(読ま)을 흐리게 함께 둔다.
+        <div className="reader-card-unit" aria-label={vt('이 모양 풀이')}>
+          <span className="reader-card-unit__label">{vt('이 모양')}</span>
+          <span className="reader-card-unit__parts" lang={contentLangTag}>
+            {selectedToken.__chunk.headSurface && <span className="reader-card-unit__part reader-card-unit__part--ctx"><span className="reader-card-unit__text">{selectedToken.__chunk.headSurface}</span><span className="reader-card-unit__gloss">{vt('앞 말')}</span></span>}
+            {selectedToken.__chunk.parts.map((part, i) => (
+              <span key={i} className="reader-card-unit__part">
+                <span className="reader-card-unit__text">{part.text}</span>
+                <span className="reader-card-unit__gloss">{part.gloss ? vt(part.gloss) : part.base !== part.text ? <span lang={contentLangTag}>{part.base}</span> : ''}</span>
+              </span>
+            ))}
+          </span>
+        </div>
+      )}
+      {chunkEntry && !classStudyActive && (
+        // 문법 줄 — 정본 문형 사전으로. 문형 덩어리의 뜻은 아래 뜻 칸 한 곳에만 둔다(오너 보완 11/5: 두 번 나오지 않게).
+        <div className="reader-card-grammar">
+          <span className="reader-card-grammar__tag">{vt('문법')}</span>
+          <span lang={contentLangTag}>{chunkEntry.pattern}</span>
+          <span className="reader-card-grammar__lv">{chunkEntry.level}</span>
+          {!jaPatternSelected && chunkEntry.ko && <span className="reader-card-grammar__ko">{chunkEntry.ko}</span>}
+          {chunkEntry.href && <Link className="reader-card-grammar__go" href={chunkEntry.href}>{vt('문법 보기')}{' ›'}</Link>}
+        </div>
+      )}
       {classMeaning?.editor||(!classStudyActive&&<div className={`word-detail-card__meaningrow${enPronunciation ? ' word-detail-card__meaningrow--tight' : ''}`}>
-        <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined} aria-busy={(materialLang === 'Korean' && !koreanPieceSelected && localizedWord.loading) || undefined}>
-          {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <span className="word-detail-card__meaning-error">{vt('뜻을 불러오지 못했어요.')} <button type="button" className="btn btn--ghost btn--sm" onClick={localizedWord.retry}>{vt('다시 시도')}</button></span> : localizedWord.meaning) : refMeaning || selectedToken.meaning || vt('(뜻 없음)')}
+        <div className="word-detail-card__meaning" lang={materialLang === 'Korean' ? effectiveExplanationLocale : undefined} aria-busy={(materialLang === 'Korean' && !koreanPieceSelected && localizedWord.loading) || (jaPatternSelected && chunkIndexState === 'loading') || undefined}>
+          {materialLang === 'Korean' ? (koreanPieceSelected ? koreanPieceMeaning(selectedToken) : localizedWord.loading ? vt('문맥 뜻을 불러오는 중…') : localizedWord.error ? <span className="word-detail-card__meaning-error">{vt('뜻을 불러오지 못했어요.')} <button type="button" className="btn btn--ghost btn--sm" onClick={localizedWord.retry}>{vt('다시 시도')}</button></span> : localizedWord.meaning) : jaPatternSelected ? (chunkEntry?.ko || (chunkIndexState === 'loading' ? vt('문형 뜻을 불러오는 중…') : vt('(뜻 없음)'))) : refMeaning || selectedToken.meaning || vt('(뜻 없음)')}
         </div>
         {/* 리스트 단어는 자료 토큰이 아니라(id 없음) 이 자료의 교정 대상이 될 수 없다 */}
         {canEditToken && selectedToken.id && (
@@ -4004,7 +4070,7 @@ export default function ViewerPage({ seed } = {}) {
       <div className="reader-card-actions">
       {koreanPieceSelected && <p className="reader-card-boundary-note" role="status">{vt('나눈 조각은 단어장에 담지 않아요.')}</p>}
       {!learningStorageSupported && !koreanPieceSelected && <p role="status">{vt("한국어 단어 저장·복습은 아직 준비 중이에요.")}</p>}
-      {user && learningStorageSupported && !koreanPieceSelected && (() => {
+      {user && learningStorageSupported && !noWordSave && (() => {
         // 아는 단어 = 등급 줄(또는 저장 줄) 오른쪽 체크(정본 §2.1 하단, 오너 확정). aria-pressed·문구·쓰기 경로는 그대로.
         const knownToggle = learningCapabilities.known && knownLangCode && <button type="button" className="btn btn--ghost btn--sm word-detail-card__known" aria-pressed={selectedKnown}
           title={vt(selectedKnown ? '아는 단어 표시 해제' : '아는 단어로 표시')}
@@ -4034,7 +4100,7 @@ export default function ViewerPage({ seed } = {}) {
       })()}
       {user && (exclusionState.isError || knownState.isError) && <button type="button" className="btn btn--ghost btn--sm" onClick={() => { exclusionState.refetch(); knownState.refetch(); }}>{vt("다시 시도")}</button>}
 
-      {user && learningCapabilities.review && !koreanPieceSelected && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (() => {
+      {user && learningCapabilities.review && !noWordSave && findSavedVocab(savedWords, selectedToken, materialLang) && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending && (() => {
         // W R3㉮ — 척도를 정본에 맞춘다: 모름/애매/알아=1/2/3(Easy 없음)이 아니라 복습 화면과 같은 4등급.
         // 라벨·순서·클래스 = SAVE_GRADES(복습 화면 ScoreSection과 동일 계약). 키 1~4·⌘Z는 카드 리스너.
         // 보조 글 = 이 단어의 다음 간격(학습 단계 anki-v2 — 단어 페이지 네 칸과 같은 계산 legacyGradePreviews, 2026-10-19 KST).
@@ -4065,7 +4131,7 @@ export default function ViewerPage({ seed } = {}) {
         </div>
         );
       })()}
-      {!user && material?.__local && !koreanPieceSelected && (
+      {!user && material?.__local && !noWordSave && (
         // 팀 사본(v2-AB R2 S2) — 담기 CTA. 「로그인이 필요합니다」 토스트 대신 돌아올 길이 있는 시트.
         <div className="save-grade__guest">
           <p className="save-grade__guide">{vt('로그인하면 「{word}」이(가) 담은 표현에 들어가고 며칠 뒤 복습으로 돌아와요.', {word: headText})}</p>
@@ -4081,7 +4147,19 @@ export default function ViewerPage({ seed } = {}) {
       {user && learningStorageSupported && materialLang === 'Korean' && koreanSaveConflict && koreanSaveConflict.tokenId === selectedToken.id && koreanSaveConflict.text === selectedToken.text && koreanSaveReady(selectedToken) &&
         <SaveContextButton key={`${id}:${selectedToken.id}:${effectiveExplanationLocale}:${readingContextSource(selectedToken)?.sourceRevision}:conflict`} label={vt("이 문맥 추가")}
           word={contextWord(selectedToken)} source={readingContextSource(selectedToken)} onSaved={() => setKoreanSaveConflict(null)} />}
-      {user && learningStorageSupported && !koreanPieceSelected && (() => {
+      {user && jaPatternSelected && (() => {
+        // 문형 덩어리 = 문법 복습에 담기(기존 [문장] 탭 ☆와 같은 savePattern · grammar_review bk: 행). 단어장에는 넣지 않는다.
+        const slug = patternSlug(chunkEntry);
+        const saved = !!slug && !!savedPatterns?.has(slug);
+        return (
+          <div className="word-detail-card__actrow reader-card-pattern-save">
+            <p className="save-grade__guide" aria-busy={(!chunkEntry && chunkIndexState === 'loading') || undefined}>{chunkEntry ? vt('문형은 문법 복습에 담아요.') : chunkIndexState === 'loading' ? vt('문형 정보를 불러오는 중…') : vt('문형 사전에 없는 표현이에요.')}</p>
+            {chunkEntry && <button type="button" className="btn btn--primary btn--sm" disabled={saved || !slug || !!patternSaving} onClick={() => savePattern(chunkEntry)}>
+              {saved ? vt('✓ 문법 복습에 있음') : patternSaving === slug ? vt('담는 중…') : vt('☆ 문법 복습에 담기')}</button>}
+          </div>
+        );
+      })()}
+      {user && learningStorageSupported && !noWordSave && (() => {
         // 네 등급은 FSRS 평가다. 아는 단어 표시는 별도로 복습을 멈추며 원래 기록을 보존한다.
         if (isWordSaved && isTokenInlineDue(savedWords, selectedToken, materialLang) && !inlineReviewMutation.isPending) return null;
         if (!selectedExcluded && (saveAnim || inlineReviewMutation.isPending)) {
@@ -4768,17 +4846,22 @@ export default function ViewerPage({ seed } = {}) {
               );
             }
             const {isSaved, isDue, isKnown:tokKnown, highlight:hlClass} = tokenDisplayState(token);
+            // 덩어리(JA-UNITS-001): 고른 덩어리의 조각은 한 바탕으로 이어 칠하고, 문형 덩어리는 정본 문형 밑줄을 늘 단다.
+            const chunk = readerChunks?.get(tokenId);
+            const chunkSelected = !!(chunk && isSheetOpen && selectedToken?.__chunk?.ids?.includes(tokenId));
+            const tokenSelected = (selectedToken?.id === tokenId && isSheetOpen) || chunkSelected;
+            const patternMarked = chunk?.kind === 'pattern' || !!visibleScan?.byToken.has(tokenId);
             // 루비 조각 · 발음 가림 · 문형 밑줄 · 단어 조작 마크업은 ReaderToken(memo)이 그린다 — 바뀐 낱말만 다시 그린다(VIEWER-TAP-PERF-001).
             return (
               <ReaderToken key={tokenId} tokenId={tokenId} token={token} tokenRefs={tokenRefs}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${listenTokens?.has(tokenId) ? ' word-token--listening' : ''}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}`}
-                selected={selectedToken?.id === tokenId && isSheetOpen}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${hlClass ? ` ${hlClass}` : ''}${pickedClass}${listenTokens?.has(tokenId) ? ' word-token--listening' : ''}${sepLink?.partnerIds.includes(tokenId) ? ' word-token--sep-linked' : ''}${visibleScan?.byToken.has(tokenId) ? ' word-token--pattern' : ''}${sourceFocusId === tokenId ? ' learning-source-highlight' : ''}${isSaved && justSaved === tokenId ? ' word-token--just-saved' : ''}${chunkSelected ? ' word-token--chunk-selected' : ''}`}
+                selected={tokenSelected}
                 paceStyle={paceStyle}
                 lineHeadText={lineHead ? lineHead.text : null} lineHeadKey={lineHead ? lineHead.key : null}
                 linePickLabel={linePickLabel} onLinePick={onReaderLinePick} onTokenClick={onReaderTokenClick}
                 nextText={token.furigana ? kuruNext.get(tokenId) : ''}
                 pronDisplay={pronDisplay} isKnown={tokKnown} isSaved={isSaved}
-                patternMark={!!visibleScan?.byToken.has(tokenId)} zhGrid={!!zhGrid} showToneColors={!!showToneColors}
+                patternMark={patternMarked} zhGrid={!!zhGrid} showToneColors={!!showToneColors}
                 variantText={scriptSurfaces?.get(tokenId)} />
             );
           };
