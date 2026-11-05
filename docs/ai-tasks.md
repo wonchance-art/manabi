@@ -959,7 +959,10 @@
     본문 칸 · processed_json · 토큰 id는 그대로, 누르면 덩어리(食べています → 저장 食べる, 단어장 · FSRS 경로 그대로).
     굳은 문형(かもしれない · なければならない)은 정본 문형 밑줄의 문형 덩어리 → 문법 복습 담기(savePattern). 카드 「이 모양」 조각 풀이 + 정본 문법 줄(뜻은 한 곳).
     묶음 정본 groupTokensToUnits를 jaWordUnits.js로 공용화(듣기 자막 재내보내기). 계약 `jaReaderChunks.test.js`. 지문 · DB 무관.
-    후속(오너 허용, 착수 전 오케스트레이터 알림): な형용사 어간 정보를 새 분석부터 남기기(静か | でした).
+    **완료 [#1684](https://github.com/wonchance-art/manabi/pull/1684) `4832c60a` · 운영 22:30 KST(런타임 오류 0).**
+  ⑳ 이번 PR — な형용사 어간 표식(JA-UNITS-001 후속, 오케스트레이터 착수 지시 11/6 00:24 KST · 백엔드 자율): 분석기가 名詞/形容動詞語幹에
+    `na_stem: true`만 덧붙인다(품사 · 뜻 · 기본형 그대로) → 새로 분석한 자료부터 静かでした = 한 덩어리(저장 키 静か 그대로), 学生 | でした는 지금대로.
+    지난 자료 재분석 없음(표식 없으면 지금 C2 그대로). DB · 지문 무관. 계약 `jaReaderChunks.test.js`.
 
 - **CANON-RELEASE-001 정본 발행 기록 → DISCOVER-CLASSICS-001 산책 세 칸 · 고전 명작 (2026-10-22 KST, 오너 「권장대로 ㄱㄱ」 — 보드의 「발행 기록 C안, 오너 결정 대기」 → A안 결정)** `claude/funny-hopper-0zed5t`:
   ① **완료 [#1532](https://github.com/wonchance-art/manabi/pull/1532) squash `e5008222`(2026-10-22 17:37 KST) · 운영 자동 적용 · 사후 검증(RLS · 권한 셋 · 정책 둘 · 기록 0줄 · FSRS 핀 넷 그대로)** —
