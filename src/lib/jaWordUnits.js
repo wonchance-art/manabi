@@ -87,7 +87,8 @@ export function groupTokensToUnits(tokens, { copulaAfterNoun = true } = {}) {
       furigana: null,
       meaning: t?.meaning || '',
       tokens: [t],
-      _verbal: VERBAL_POS.has(pos) || pos === '조동사', // でし+た처럼 조동사로 시작한 술어도 뒤 활용을 받는다
+      // でし+た처럼 조동사로 시작한 술어, な형용사 어간(静か — 분석이 na_stem을 남긴 자료)도 뒤 활용을 받는다.
+      _verbal: VERBAL_POS.has(pos) || pos === '조동사' || !!t?.na_stem,
       _mergeable: true,       // 내용어·접두사로 시작 → 뒤 어미/조동사를 받을 수 있음
       _pendingPrefix: pendingPrefix,
     };

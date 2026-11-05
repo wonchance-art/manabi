@@ -10,7 +10,7 @@ import { loadPatternIndex } from '../patternIndex.js';
 import { patternSlug } from '../sentencePattern.js';
 import { buildVocabRow } from '../vocabIO.js';
 
-const LINES = ['このテストは難しいかもしれません。', '毎朝ご飯を食べています。', '昨日は学校に行きませんでした。', '今日は本を読まなければならない。', '図書館はとても静かでした。', '家で本を読んでいました。'];
+const LINES = ['このテストは難しいかもしれません。', '毎朝ご飯を食べています。', '昨日は学校に行きませんでした。', '今日は本を読まなければならない。', '図書館はとても静かでした。', '家で本を読んでいました。', '私は学生でした。'];
 let seq, dict, chunks;
 const idsOf = (li) => seq.filter((id) => id.startsWith(`id_${li}_`));
 // 줄 하나를 「누르는 칸」 열로 — 덩어리는 [표면], 나머지는 토큰 그대로.
@@ -42,8 +42,9 @@ describe('덩어리 경계', () => {
   it('굳은 문형은 앞 활용과 떼어 문형 덩어리로 — 앞 말이 한 조각이면 그대로 한 칸', () => {
     expect(tapRow(3)).toBe('今日 は 本 を 読ま [なければならない*] 。');
   });
-  it('명사 뒤 です는 떼어 둔다(静か | でした) — 분석이 な형용사 어간을 명사로만 남기는 동안', () => {
-    expect(tapRow(4)).toBe('図書館 は とても 静か [でした] 。');
+  it('な형용사 어간(새 분석의 na_stem)은 でした까지 한 덩어리, 명사 뒤 です는 떼어 둔다(学生 | でした)', () => {
+    expect(tapRow(4)).toBe('図書館 は とても [静かでした] 。');
+    expect(tapRow(6)).toBe('私 は 学生 [でした] 。');
   });
   it('줄을 넘어 묶지 않고, 덩어리의 조각은 모두 같은 덩어리를 가리킨다', () => {
     for (const c of new Set(chunks.values())) {
@@ -56,6 +57,35 @@ describe('덩어리 경계', () => {
     const before = JSON.stringify(dict);
     buildReaderChunks(seq, dict);
     expect(JSON.stringify(dict)).toBe(before);
+  });
+});
+
+describe('な형용사 어간(na_stem) — 새 분석부터 静かでした 한 덩어리 · 지난 자료는 그대로', () => {
+  it('분석기가 な형용사 어간에만 표식을 남긴다(품사 · 기본형은 그대로)', async () => {
+    const shizuka = (await tokenizeJaLine('図書館はとても静かでした。')).find((t) => t.text === '静か');
+    expect(shizuka).toMatchObject({ base_form: '静か', pos: '명사', na_stem: true });
+    const gakusei = (await tokenizeJaLine('私は学生でした。')).find((t) => t.text === '学生');
+    expect(gakusei.na_stem).toBeUndefined();
+  });
+  it('표식이 있으면 静かでした = 한 덩어리 · 저장 키 静か, 없으면(지난 자료 · 명사) 지금처럼 静か | でした', async () => {
+    const toks = await tokenizeJaLine('図書館はとても静かでした。');
+    const sequence = toks.map((_, i) => `id_0_${i}`);
+    const withStem = Object.fromEntries(toks.map((t, i) => [`id_0_${i}`, t]));
+    const legacy = Object.fromEntries(toks.map((t, i) => { const { na_stem: _drop, ...rest } = t; return [`id_0_${i}`, rest]; }));
+    const at = toks.findIndex((t) => t.text === '静か');
+    const fresh = buildReaderChunks(sequence, withStem).get(`id_0_${at}`);
+    expect(fresh).toMatchObject({ kind: 'word', surface: '静かでした', base: '静か' });
+    expect(fresh.ref?.pattern).toBe('〜でした');
+    const old = buildReaderChunks(sequence, legacy);
+    expect(old.get(`id_0_${at}`)).toBeUndefined();
+    expect(old.get(`id_0_${at + 1}`)?.surface).toBe('でした');
+    const nouns = await tokenizeJaLine('私は学生でした。');
+    const nSeq = nouns.map((_, i) => `id_0_${i}`), nDict = Object.fromEntries(nouns.map((t, i) => [`id_0_${i}`, t]));
+    expect(buildReaderChunks(nSeq, nDict).get(`id_0_${nouns.findIndex((t) => t.text === '学生')}`)).toBeUndefined();
+  });
+  it('분석 결과에 표식이 실린다(일본어만, 품사 · 뜻 · 기본형과 따로)', () => {
+    const core = fs.readFileSync(new URL('../server/analyzeCore.js', import.meta.url), 'utf8');
+    expect(core).toContain("...(language === 'Japanese' && t.na_stem ? { na_stem: true } : {}),");
   });
 });
 

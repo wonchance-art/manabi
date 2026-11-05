@@ -301,6 +301,8 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
         // AD-R4 PR④ 미등재 묶음 후보(앞 토큰에만 — 뷰어 「한 단어로 묶을까요?」). 경계는 바꾸지 않는다.
         ...(t.boundarySuggest ? { boundarySuggest: t.boundarySuggest } : {}),
         ...(t.sep_link ? { sep_link: t.sep_link } : {}),
+        // 일본어 な형용사 어간 표식(tokenizeJa) — 품사 · 뜻 · 기본형과 무관한 덧붙임. 읽기 화면 덩어리 묶음만 쓴다.
+        ...(language === 'Japanese' && t.na_stem ? { na_stem: true } : {}),
         ...(posAll ? { pos_all: posAll } : {}),
         // 화면 표시용 내부 표식('ctx' 문맥 뜻 | 'doubt' 의심) — 「AI」 표로 그리지 않는다(오너 결정 10-07).
         ...(zhSense?.meaningCheck ? { meaningCheck: zhSense.meaningCheck } : {}),
