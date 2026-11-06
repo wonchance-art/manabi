@@ -73,13 +73,14 @@ describe('① 서버 분류 — 서비스 설정은 용량이 아니다', () => 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('음성 — 쿼터 429는 지금처럼 용량 재시도 · 폴백 모델을 탄다(서비스 설정으로 끊지 않는다)', async () => {
+  it('음성 — 쿼터 429는 서비스 설정으로 끊지 않고 폴백 모델을 탄다 · 같은 모델 재시도는 없다(무료 등급 한도 차단기, GEMINI-FREE-001)', async () => {
     const fetchSpy = vi.fn(async () => geminiFail(429, GEMINI_QUOTA));
     vi.stubGlobal('fetch', fetchSpy);
     const { callLLM } = await freshLlm();
     const err = await callLLM('standard', 'p', { retry: { max: 1, delays: [0] } }).catch((e) => e);
     expect(err.code).not.toBe('service_config');
-    expect(fetchSpy).toHaveBeenCalledTimes(4); // 본선 2(1 + 재시도 1) + 폴백 모델 2
+    // 2026-11-06 결제 취소 뒤 Gemini 429는 무료 한도 — 기다려도 풀리지 않아 재시도하지 않고 모델을 10분 끊는다(이전: 본선 2 + 폴백 2).
+    expect(fetchSpy).toHaveBeenCalledTimes(2); // 본선 1 + 폴백 모델 1
   });
 
   it('결제로 막히면 같은 키의 다른 Gemini 모델 · 용량 재시도를 건너뛰고 code service_config로 던진다', async () => {

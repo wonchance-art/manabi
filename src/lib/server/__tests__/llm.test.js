@@ -342,10 +342,11 @@ describe('AA R1 — callLLM 동작 계약', () => {
 
   it('용량 재시도 — retry를 준 호출만, 용량 오류(429·503·네트워크)만, 그 밖(400)은 즉시 다음 후보', async () => {
     const { callLLM } = await fresh();
-    const rate = vi.fn(async () => geminiFail(429));
+    // Gemini 429는 무료 등급 한도라 재시도하지 않는다(아래 GEMINI-FREE-001) — 용량 재시도는 503으로 본다.
+    const rate = vi.fn(async () => geminiFail(503));
     vi.stubGlobal('fetch', rate);
     let err = await callLLM('light', 'p', { retry: { max: 2, delays: [1, 1] } }).catch((e) => e);
-    expect(err.status).toBe(429);
+    expect(err.status).toBe(503);
     expect(rate).toHaveBeenCalledTimes(3); // 1 + 재시도 2
 
     const bad = vi.fn(async () => geminiFail(400, { error: { message: 'bad schema' } }));
@@ -366,9 +367,37 @@ describe('AA R1 — callLLM 동작 계약', () => {
     expect(none).toHaveBeenCalledTimes(1);
   });
 
+  it('GEMINI-FREE-001 — Gemini 429(무료 한도)는 재시도하지 않고 그 모델을 10분 끊는다 · 다음 후보로 · 시간이 지나면 다시', async () => {
+    const { callLLM, geminiQuotaOpen, GEMINI_QUOTA_COOLDOWN_MS } = await fresh();
+    expect(GEMINI_QUOTA_COOLDOWN_MS).toBe(10 * 60 * 1000);
+    // standard: 3.6-flash가 429 → 재시도 없이 lite로 넘어가 답한다.
+    let fetchSpy = vi.fn(async (url) => (isGemini(url, 'gemini-3.6-flash') ? geminiFail(429, { error: { status: 'RESOURCE_EXHAUSTED', message: 'quota' } }) : geminiOk('답')));
+    vi.stubGlobal('fetch', fetchSpy);
+    const { meta } = await callLLM('standard', 'p', { retry: { max: 3, delays: [1, 1, 1] } });
+    expect(meta.model).toBe('gemini-3.5-flash-lite');
+    expect(fetchSpy).toHaveBeenCalledTimes(2); // 3.6 한 번(재시도 0) + lite 한 번
+    expect(geminiQuotaOpen('gemini-3.6-flash')).toBe(true);
+    expect(geminiQuotaOpen('gemini-3.5-flash-lite')).toBe(false); // 모델별
+    // 끊긴 동안 3.6은 부르지 않는다.
+    fetchSpy.mockClear();
+    await callLLM('standard', 'p');
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(isGemini(fetchSpy.mock.calls[0][0], 'gemini-3.5-flash-lite')).toBe(true);
+    // 시간이 지나면 다시 부른다.
+    expect(geminiQuotaOpen('gemini-3.6-flash', Date.now() + GEMINI_QUOTA_COOLDOWN_MS + 1)).toBe(false);
+  });
+
+  it('GEMINI-FREE-001 — 결제 · 크레딧(서비스 설정)은 차단기가 아니라 제공자 전체 막기(기존 blocked) 그대로', async () => {
+    const { callLLM, geminiQuotaOpen } = await fresh();
+    vi.stubGlobal('fetch', vi.fn(async () => geminiFail(402, { error: { message: 'prepayment credits are depleted' } })));
+    const err = await callLLM('light', 'p').catch((e) => e);
+    expect(err.code).toBe('service_config');
+    expect(geminiQuotaOpen('gemini-3.5-flash-lite')).toBe(false);
+  });
+
   it('deadline — 넘길 대기는 하지 않고, 지났으면 Groq 폴백도 생략한다', async () => {
     vi.stubEnv('GROQ_API_KEY', 'groq-test-key');
-    const fetchSpy = vi.fn(async () => geminiFail(429));
+    const fetchSpy = vi.fn(async () => geminiFail(503));
     vi.stubGlobal('fetch', fetchSpy);
     const { callLLM } = await fresh();
     // 시각만 멈춘다 — 실제 시계면 병렬 부하로 Gemini 실패 처리에 100ms가 넘게 걸려 Groq가 생략될 수 있다(벽시계 의존 제거).
@@ -379,7 +408,7 @@ describe('AA R1 — callLLM 동작 계약', () => {
     } finally {
       vi.useRealTimers();
     }
-    expect(err.status).toBe(429);
+    expect(err.status).toBe(503);
     expect(fetchSpy).toHaveBeenCalledTimes(2); // Gemini 1(대기 포기) + Groq 1(아직 deadline 전)
     fetchSpy.mockClear();
     await callLLM('light', 'p', { deadlineMs: Date.now() - 1 }).catch(() => null);
