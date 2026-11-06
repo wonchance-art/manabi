@@ -4,11 +4,12 @@ import Link from 'next/link';
 import '@/components/books/reading-shell.css';
 import '@/components/web/web-shell.css';
 import { DATA_CREDIT_SECTIONS, DATA_CREDITS_UPDATED } from '@/lib/dataCredits';
+import { publicMetadata } from '@/lib/seo';
 
-export const metadata = {
+export const metadata = publicMetadata('/credits', {
   title: '자료 출처',
   description: 'manabi가 사용하는 공개 자료의 출처와 라이선스',
-};
+});
 
 export default function CreditsPage() {
   return (

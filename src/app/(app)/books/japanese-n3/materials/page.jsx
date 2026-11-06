@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation';
 import { publishedReading, readingCatalog } from '@/lib/server/bookReading';
 import BookMaterials from '@/components/books/BookMaterials';
+import { publicMetadata } from '@/lib/seo';
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '일본어 N3 · 함께 읽기' };
+export const metadata = publicMetadata('/books/japanese-n3/materials', { title: '일본어 N3 · 함께 읽기' });
 export default async function Page({ searchParams }) {
   const params = await searchParams;
   let book, preview;

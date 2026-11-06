@@ -1,8 +1,9 @@
 import HomePage from '@/views/HomePage';
 import { ScFontLink } from '@/components/fonts/ScFontLink';
 import { publishedOrNull, publishedReadingWith, readingCatalog } from '@/lib/server/publishedBook';
+import { publicMetadata } from '@/lib/seo';
 
-export const homeMetadata = { title: '배움', description: '읽던 페이지 · 단어 복습 · 오늘 문단을 한 화면에서.', alternates: { canonical: '/home' } };
+export const homeMetadata = publicMetadata('/home', { title: '배움', description: '읽던 페이지 · 단어 복습 · 오늘 문단을 한 화면에서.' });
 
 /**
  * 배움(/home) 판 — ISR(GUEST-STATIC-001 4단계). 누구에게나 같은 바이트다: 서버가 그리는 재료는 발행 교재(N5)의 작은 카탈로그(공개 행 ·

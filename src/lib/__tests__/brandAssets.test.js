@@ -166,8 +166,8 @@ describe('BRAND-APPLY-001 ⑤ 바꾸면 안 되는 내부 이름(데이터·캐�
     ['src/lib/reportError.js', 'window.__anatomyErrorHooked'],
     ['src/lib/content-sources.js', "'AnatomyStudio/1.0 (language-learning)'"],
     ['src/app/api/import/link/route.js', "'AnatomyStudio/1.0 (language-learning)'"],
-    ['src/app/robots.js', "'https://anatomy-studio.vercel.app'"],
-    ['src/app/sitemap.js', "'https://anatomy-studio.vercel.app'"],
+    // robots.js · sitemap.js의 옛 기본 주소(anatomy-studio.vercel.app)는 LAUNCH-META-001에서 걷었다 — 데이터 · 캐시 이름이 아니라
+    // 검색 엔진에 옛 호스트를 알리던 기본값이었다. 정본 호스트는 lib/seo siteUrl() 한 곳(계약 seoMeta.test.js).
     // Anki 태그 — 바꾸면 기존 사용자의 Anki 덱과 이어지지 않는다(오너 결정 2026-10-09: 파일 이름만 manabi로).
     ['src/lib/vocabIO.js', "const tags = ['anatomy-studio',"],
   ])('%s — %s 유지', (file, needle) => {

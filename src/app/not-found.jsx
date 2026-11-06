@@ -4,8 +4,12 @@ import { MAIN_NAV } from '@/lib/webNavigation';
 import '@/components/books/reading-shell.css';
 import '@/components/web/web-shell.css';
 
+// 검색 메타(LAUNCH-META-001): 404 응답에는 Next가 `<meta name="robots" content="noindex">`를 직접 단다(app-render NonIndex).
+// 루트의 index, follow를 물려받으면 두 robots 줄이 서로 어긋났다(운영 실측 2026-11-06 KST) — 여기서는 robots를 비워 Next의 noindex 한 줄만 남긴다.
+// 정본 주소도 두지 않는다(없는 주소의 정본은 없다 — 루트도 이제 정본을 물려주지 않는다).
 export const metadata = {
   title: '페이지를 찾을 수 없어요',
+  robots: null,
 };
 
 // 루트 404는 (app) 레이아웃 밖이라 v2 셸 토큰을 직접 입는다(COLOR-V2-UNIFY-001).

@@ -1,11 +1,11 @@
 import LessonsShelf from '@/components/books/LessonsShelf';
+import { publicMetadata } from '@/lib/seo';
 
 export const revalidate = 3600;
-export const metadata = {
+export const metadata = publicMetadata('/lessons', {
   title: '나의 책장',
   description: '작은 문장부터 차근차근. 일본어 교재를 읽고, 기억할 표현과 내 자료를 연결하세요.',
-  alternates: { canonical: '/lessons' },
-};
+});
 // #1077 판정의 다음 판(GUEST-STATIC-001 3단계, 2026-10-23 KST). 예전 이 자리는 「쿠키 확인 발행 · searchParams 때문에 동적 SSR(private, no-store) —
 // 효과 없는 revalidate를 달지 말라」였다. 이제 동적 재료를 걷어 냈으므로 revalidate가 실제로 효과가 있다:
 //  · 쿠키 · searchParams를 읽지 않는다(src/lib/__tests__/staticSegments.test.js). 옛 ?lang 링크 · 단어 목록의 「← 교재」(?lang=…)는
