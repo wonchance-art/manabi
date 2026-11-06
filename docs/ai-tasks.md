@@ -978,18 +978,23 @@
     화면에서만 보정 — 저장 키 · 품사 칸 · 뜻 · FSRS · processed_json 그대로. 읽기 카드는 바로 뒤가 を · が · は · の 같은 조사면 명사 쓰임으로 둔다(自由を).
     계약 `jaNaAdjectives.test.js`. 정본 품사 집합(posCanon)은 분석기 값 그대로.
     **완료 [#1689](https://github.com/wonchance-art/manabi/pull/1689) `dafdfb94` · 운영 18:0x KST(런타임 오류 0).** 목업과 다른 점 둘(명사 쓰임 거름 · 폰 칩 「な…」)은 오너 「권장대로」 17:59 KST.
-    ③ 이번 PR — する동사 묶음(오너 「권장대로」 20:38 KST, [목업](https://claude.ai/artifact/JMQuZ8ZqgUPmHxLn3BTKk8)): 한자 · 가타카나 명사 바로 뒤 する는 한 덩어리
+    ③ する동사 묶음(오너 「권장대로」 20:38 KST, [목업](https://claude.ai/artifact/JMQuZ8ZqgUPmHxLn3BTKk8)): 한자 · 가타카나 명사 바로 뒤 する는 한 덩어리
     (勉強します · 説明してくれました), 표제어 勉強 + 작은 「する」 · 품사 「する동사」, 저장 키 勉強 그대로. 명사 쓰임 · に 사이 · 히라가나 명사는 묶지 않음.
     운영 실측 일본어 자료 11개 · 42곳. 단어장 · 복습의 작은 する는 범위 밖(담긴 단어에 문맥 없음). 계약 `jaReaderChunks.test.js`.
-    ⑥ 이번 PR — 폰 단어장 D안(같은 승인, [목업](https://claude.ai/artifact/BChN1oCYYZExzAtRYYVhAi)): 폰에서 중국어 행 뜻 칸 폭 0(뜻이 안 보임) ·
+    ⑥ 폰 단어장 D안(같은 승인, [목업](https://claude.ai/artifact/BChN1oCYYZExzAtRYYVhAi)): 폰에서 중국어 행 뜻 칸 폭 0(뜻이 안 보임) ·
     세 글자 품사 칩 잘림 실측 → 1행 듣기 · 단어 · 품사 · 오른쪽 묶음 / 2행 읽기 · 뜻 / 3행 예문. 560px 이하 CSS만, PC · 데이터 그대로.
     실제 빌드 실측 뜻 칸 232–263px · 칩 다 보임 · 줄 높이 거의 같음(목업과 같은 값).
+    **③ · ⑥ 완료 [#1694](https://github.com/wonchance-art/manabi/pull/1694) `238cecd8` · 운영 21:2x KST(런타임 오류 0).**
     ⑤ 중국어 빈 뜻 예방(오케스트레이터 승인 20:24 KST · 백엔드 자율): 분석기가 공유 사전에서 뜻을 못 얻은 토큰에만 교재 표제어
     (content/chinese/vocab 40세트) 뜻을 넣는다 — 토큰 병음 대조(두 글자 이상 = 성조 뺀 글자, 한 글자 = 성조 + 품사까지), 토큰에 `meaning_src: 'curated'`,
     공유 사전 행은 읽기 · 쓰기 모두 없음(user_verified 무변경). 화면 무변화. AI 호출 · 유료 API · 새 환경 변수 0. 계약 `zhCuratedMeaning.test.js` ·
     라우트 끝까지 `zhCuratedMeaningRoute.test.js`. 표본(운영 무작위 40낱말, 사전이 비었다고 가정): 33칸 채움 · 문맥 불일치 2칸(6% — 可以 「~해도 된다」,
     为 독음 wèi 오분석은 사전 뜻도 같음) · 경계 1(战斗 동사형 뜻). 같은 33칸의 기존 AI 사전 뜻 불일치도 2칸(检讨 「검토하다」 · 为).
     **완료 [#1692](https://github.com/wonchance-art/manabi/pull/1692) `a62c7dd3`.**
+    ① 3차 이번 PR — 남은 12칸(2차 제외 4 · 교재 밖 합성어 8)을 교재 조각 바탕으로 다듬은 뜻 표 → 오케스트레이터 검토 승인(21:27 KST) →
+    **운영 적용 — 중국어 빈 칸 14 → 2(분석 실패 줄만, 재분석 대상)**. 制服은 2차 판단 정정(문맥 制服对手 = 제압하다). 기록 `zh-meaning-fill-20261106-r3.sql` ·
+    복원 `…-r3-rollback.sql`(PGlite 적용 · 재실행 거절 · 무관 칸 무변경 · 복원 확인).
+    QA 잔여물(오너 계정 こもれび 뜻 꼬리 「· 검수 수정 09/27」 · m09-qa-026 3행, 복습 대기열에 섞임) — 삭제 · 사용자 값 수정이라 오너 결정 대기.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
     작성기 메모만)**, 영어 · 일본어 자료 렌더를 같은 데이터로 로컬 실제 빌드에서 확인. 기록 `docs/sql/material-language-fill-20261106.sql` · 복원 `…-rollback.sql`(PGlite 확인).
