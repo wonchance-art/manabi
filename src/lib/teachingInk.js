@@ -16,7 +16,7 @@ export function editInkRow(row,patch) {
 export function inkValues(rows,language) {
   return rows.filter(row=>row.selected&&!row.placed&&row.text.trim()&&row.meaning.trim()).map(row=>({
     index:row.index,text:row.text.trim(),reading:['Japanese','Chinese'].includes(language)?row.reading:'',
-    meaning:row.meaning.trim(),language,source:{kind:'manual'},lookupSource:'Gemini · 필기에서 확인',
+    meaning:row.meaning.trim(),language,source:{kind:'manual'},lookupSource:'AI · 필기에서 확인',
   }));
 }
 

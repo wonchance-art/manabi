@@ -136,8 +136,6 @@ const EN_OWNER_PENDING = '영문 눈썹 글(디자인 장식) — 한국어로 �
 const EN_ALLOWLIST = [
   { file: 'app/privacy/page.jsx', text: 'Supabase', reason: '처리 위탁 서비스 이름(고유명사)' },
   { file: 'app/privacy/page.jsx', text: 'Vercel', reason: '처리 위탁 서비스 이름(고유명사)' },
-  { file: 'components/notes/NoteRecognition.jsx', text: 'Google Gemini', reason: '서비스 이름(고유명사)' },
-  { file: 'components/classroom/BoardInkRecognition.jsx', text: 'Google Gemini', reason: '서비스 이름(고유명사)' },
   { file: 'components/LiteraturePublishPanel.jsx', text: 'src/content/art', reason: '저장 경로 표시(코드 경로)' },
   { file: 'components/LiteraturePublishPanel.jsx', text: 'src/content/literature', reason: '저장 경로 표시(코드 경로)' },
   { file: 'components/Layout.jsx', text: 'manabi', reason: '서비스 이름(로고)' },

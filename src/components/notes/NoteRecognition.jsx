@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {requestNote} from '@/lib/useStudyNote';
-import {recognitionFingerprint} from '@/lib/noteRecognition';
+import {recognitionFingerprint,INK_RECOGNITION_CONSENT,INK_RECOGNITION_PROVIDER_LABEL} from '@/lib/noteRecognition';
 import BoardIcon from '@/components/classroom/BoardIcon';
 import { friendlyToastMessage } from '@/lib/errorMessage';
 
@@ -22,7 +22,7 @@ export default function NoteRecognition({noteId,capture,sync,current,onApply,onC
       if(controller.signal.aborted||!alive.current)return;
       const page=saved.document.board.pages.find(page=>page.id===capture.pageId);
       if(await recognitionFingerprint(page,capture.elementIds)!==capture.fingerprint)throw new Error('필기가 바뀌었어요. 닫은 뒤 다시 선택해 주세요.');
-      const result=await requestNote(`/api/notes/${noteId}/recognize`,{method:'POST',signal:controller.signal,body:JSON.stringify({...capture,revision:saved.revision,consent:'selected-ink-to-gemini'})});
+      const result=await requestNote(`/api/notes/${noteId}/recognize`,{method:'POST',signal:controller.signal,body:JSON.stringify({...capture,revision:saved.revision,consent:INK_RECOGNITION_CONSENT})});
       if(!alive.current||controller.signal.aborted)return;
       const latest=current();
       if(latest.revision!==saved.revision||result.revision!==saved.revision||result.fingerprint!==capture.fingerprint||await recognitionFingerprint(latest.document.board.pages.find(page=>page.id===capture.pageId),capture.elementIds)!==capture.fingerprint)throw new Error('노트가 바뀌었어요. 닫은 뒤 최신 필기를 다시 선택해 주세요.');
@@ -38,7 +38,7 @@ export default function NoteRecognition({noteId,capture,sync,current,onApply,onC
     event.preventDefault();const index=items.indexOf(document.activeElement);items[(index+(event.shiftKey?-1:1)+items.length)%items.length].focus();
   }}>
     <header><div><small>HANDWRITING → WORDS</small><h2 id="note-recognition-title">선택한 필기 읽기<span>.</span></h2></div><button className="note-icon" aria-label={busy?'필기 인식 취소':'필기 인식 닫기'} onClick={onClose}><BoardIcon name="close"/></button></header>
-    <div className="note-recognition-body"><p>아래에 보이는 부분만 <strong>Google Gemini</strong>로 보내요.</p>
+    <div className="note-recognition-body"><p>아래에 보이는 부분만 <strong>{INK_RECOGNITION_PROVIDER_LABEL}</strong>로 보내요.</p>
       {/* Local PNG generated from the explicitly selected elements. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={capture.image} alt="인식할 선택 영역의 필기"/>
