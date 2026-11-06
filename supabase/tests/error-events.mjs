@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { PGlite } = require(process.env.PGLITE_MODULE || '@electric-sql/pglite');
 const db = new PGlite();
-const MIGRATION = new URL('../migrations/20261106150000_error_events.sql', import.meta.url);
+const MIGRATION = new URL('../migrations/20261106180000_error_events.sql', import.meta.url);
 const ROLLBACK = new URL('../../docs/sql/error-events-20261106-rollback.sql', import.meta.url);
 let checks = 0;
 async function check(name, fn) { await fn(); checks++; console.log(`PASS ${name}`); }

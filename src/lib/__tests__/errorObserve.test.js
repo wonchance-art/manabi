@@ -209,7 +209,7 @@ describe('⑶ 보내기(reportError → /api/client-error)', () => {
 });
 
 describe('⑷ 마이그레이션 · CI(정적 — 동적 접근 행렬은 supabase/tests/error-events.mjs)', () => {
-  const sql = read('supabase/migrations/20261106150000_error_events.sql');
+  const sql = read('supabase/migrations/20261106180000_error_events.sql');
   const code = sql.replace(/--[^\n]*/g, '');
 
   it('표는 Data API 밖 스키마 observe · RLS 켜짐 · 정책 없음 · API 역할 표 권한 회수', () => {
