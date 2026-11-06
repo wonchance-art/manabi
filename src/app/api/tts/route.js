@@ -6,6 +6,7 @@
  */
 
 import { isServiceConfigError } from '@/lib/errorMessage';
+import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 
 const TTS_MODEL = 'models/gemini-3.1-flash-tts-preview'; // 2.5-preview-tts 승계 — 동일 요청·PCM 응답 실측
 
@@ -94,6 +95,10 @@ export async function GET(request) {
   if (isRateLimited(ip) || isInstanceBudgetExceeded()) {
     return Response.json({ error: 'rate limited' }, { status: 429 });
   }
+  // 하루 상한 — 로그인 없이 쓰는 경로라 주체는 IP 해시(원문은 남기지 않는다). 넘으면 useTTS가 브라우저 음성으로 넘어간다(AI-QUOTA-001).
+  // 캐시(1년 immutable)에 맞은 같은 문구는 이 함수까지 오지 않으니 세지 않는다.
+  const overDaily = await dailyQuotaGate('tts', quotaSubject(request, null));
+  if (overDaily) return overDaily;
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {

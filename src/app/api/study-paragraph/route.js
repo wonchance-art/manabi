@@ -3,6 +3,7 @@ import { buildParagraphPrompt, validateParagraph, verifyParagraph, PARAGRAPH_SCH
 import { assembleStudyMaterials, deriveArc } from '@/lib/studyMaterials';
 import { callLLM } from '@/lib/server/llm';
 import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
+import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 
 /**
  * 오늘의 문단 생성 — 공부 모드의 재료(새 문법·새 어휘·복습 문법·복습 어휘)를
@@ -131,6 +132,8 @@ export async function POST(request) {
   if (isRateLimited(`u:${authUser.id}`)) {
     return Response.json({ error: { message: '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요.' } }, { status: 429 });
   }
+  const overDaily = await dailyQuotaGate('paragraph', quotaSubject(request, authUser.id), { shape: 'nested' }); // 하루 상한(AI-QUOTA-001)
+  if (overDaily) return overDaily;
 
   if (!hasPrimaryLLMKey() && !process.env.GROQ_API_KEY) {
     return Response.json(

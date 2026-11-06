@@ -148,6 +148,8 @@ export async function fetchWithRateLimitRetry(url, init, signal, transport = nul
   for (let attempt = 0; ; attempt += 1) {
     const res = await (transport ? transport(url, init) : fetch(url, init));
     if (res?.status !== 429 || attempt >= RATE_LIMIT_RETRIES) return res;
+    // 하루 상한(AI-QUOTA-001 — 헤더 X-Daily-Limit)은 기다려도 오늘은 풀리지 않는다 — 다시 보내지 않는다.
+    if (res.headers?.get?.('x-daily-limit')) return res;
     await waitAbortable(retryAfterMs(res), signal);
   }
 }
@@ -190,6 +192,8 @@ export function createServiceStop() {
     /** 서버 응답 본문(code) 또는 던져진 오류(status · 문자열)를 본다 — 오류 문자열은 분류에만 쓰고 화면에 싣지 않는다. 서비스 설정이면 멈춘다. */
     note({ code, error } = {}) {
       if (code === 'service_config' || (error && isServiceConfigError(error.status, String(error)))) stopped = true;
+      // 하루 상한(AI-QUOTA-001)도 오늘은 풀리지 않는 벽이다 — 남은 줄은 기존 실패 길(이어서 분석)로 남긴다.
+      if (code === 'daily_limit' || error?.code === 'daily_limit') stopped = true;
       return stopped;
     },
   };

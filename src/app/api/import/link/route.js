@@ -19,6 +19,7 @@ import { createClient } from '@supabase/supabase-js';
 import { parseYouTubeId } from '@/lib/listenSubtitles';
 import { detectLinkKind, cleanVideoTitle, paragraphize, stripCueNoise } from '@/lib/linkImport';
 import { normalizeSupadataSegments } from '@/lib/server/media';
+import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,6 +108,8 @@ export async function POST(request) {
   if (isRateLimited(`u:${user.id}`)) {
     return Response.json({ error: 'rate_limited', message: '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요.' }, { status: 429 });
   }
+  const overDaily = await dailyQuotaGate('import', quotaSubject(request, user.id), { shape: 'coded' }); // 하루 상한(AI-QUOTA-001)
+  if (overDaily) return overDaily;
 
   let body = {};
   try { body = await request.json(); } catch { /* 빈 본문 → 아래 판별에서 400 */ }
