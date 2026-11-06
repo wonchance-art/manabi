@@ -127,11 +127,15 @@ export function jobAfterChapter(job, materialId, outcome) {
   if (outcome.ok) return { chapters_done: job.chapters_done + 1, failure_streak: 0 };
   const id = String(materialId);
   const tries = (Number(job.attempts?.[id]) || 0) + 1;
-  const streak = job.failure_streak + 1;
+  // 연달아 실패는 「포기한 장」 단위로 센다(STARTER-ANALYSIS-001 운영 실측 2026-11-07 KST — 한 자료의 재시도 3회가 그대로
+  // 「연달아 3장」으로 세져 자료 하나가 망가지면 작업 전체가 멈췄다). 재시도 중인 실패는 세지 않고, 세 번째 시도까지 실패해
+  // 그 장을 건너뛸 때 1을 더한다 — 서로 다른 장 FAILURE_STOP개가 연달아 포기되면(할당량 · 네트워크 같은 공통 원인) 멈춘다.
+  const gaveUp = tries >= CHAPTER_ATTEMPTS;
+  const streak = job.failure_streak + (gaveUp ? 1 : 0);
   const last_error = shortError(outcome.error);
   return {
     attempts: { ...job.attempts, [id]: tries },
-    chapters_failed: job.chapters_failed + (tries >= CHAPTER_ATTEMPTS ? 1 : 0),
+    chapters_failed: job.chapters_failed + (gaveUp ? 1 : 0),
     failure_streak: streak,
     last_error,
     ...(streak >= FAILURE_STOP ? { status: 'failed', last_error: `연달아 ${streak}장을 분석하지 못해 멈췄어요 — ${last_error}`.slice(0, 500) } : {}),
