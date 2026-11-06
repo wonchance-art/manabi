@@ -977,7 +977,14 @@
     단어장 목록 · 복습 카드도 같은 규칙(목록 품사 칩 명사 → な형용사), 지난 자료 · 담긴 단어는 240어 목록(jaYomiIndex 분류 na와 계약으로 일치)으로
     화면에서만 보정 — 저장 키 · 품사 칸 · 뜻 · FSRS · processed_json 그대로. 읽기 카드는 바로 뒤가 を · が · は · の 같은 조사면 명사 쓰임으로 둔다(自由を).
     계약 `jaNaAdjectives.test.js`. 정본 품사 집합(posCanon)은 분석기 값 그대로.
-    ③ サ변 + する 묶음(② 결정 뒤 다음 목업).
+    **완료 [#1689](https://github.com/wonchance-art/manabi/pull/1689) `dafdfb94` · 운영 18:0x KST(런타임 오류 0).** 목업과 다른 점 둘(명사 쓰임 거름 · 폰 칩 「な…」)은 오너 「권장대로」 17:59 KST.
+    ③ サ변 + する 묶음 — [목업](https://claude.ai/artifact/JMQuZ8ZqgUPmHxLn3BTKk8) 오너 결정 대기(勉強します 한 덩어리 · 勉強 + 작은 する · 저장 키 勉強 그대로).
+    폰 단어장 품사 칩 — [목업](https://claude.ai/artifact/BChN1oCYYZExzAtRYYVhAi) 오너 결정 대기(폰에서 중국어 뜻 칸 폭 0 실측 → D: 뜻을 읽기 줄로 · 칩은 단어 옆).
+    ⑤ 이번 PR — 중국어 빈 뜻 예방(오케스트레이터 승인 20:24 KST · 백엔드 자율): 분석기가 공유 사전에서 뜻을 못 얻은 토큰에만 교재 표제어
+    (content/chinese/vocab 40세트) 뜻을 넣는다 — 토큰 병음 대조(두 글자 이상 = 성조 뺀 글자, 한 글자 = 성조 + 품사까지), 토큰에 `meaning_src: 'curated'`,
+    공유 사전 행은 읽기 · 쓰기 모두 없음(user_verified 무변경). 화면 무변화. AI 호출 · 유료 API · 새 환경 변수 0. 계약 `zhCuratedMeaning.test.js` ·
+    라우트 끝까지 `zhCuratedMeaningRoute.test.js`. 표본(운영 무작위 40낱말, 사전이 비었다고 가정): 33칸 채움 · 문맥 불일치 2칸(6% — 可以 「~해도 된다」,
+    为 독음 wèi 오분석은 사전 뜻도 같음) · 경계 1(战斗 동사형 뜻). 같은 33칸의 기존 AI 사전 뜻 불일치도 2칸(检讨 「검토하다」 · 为).
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
     작성기 메모만)**, 영어 · 일본어 자료 렌더를 같은 데이터로 로컬 실제 빌드에서 확인. 기록 `docs/sql/material-language-fill-20261106.sql` · 복원 `…-rollback.sql`(PGlite 확인).
