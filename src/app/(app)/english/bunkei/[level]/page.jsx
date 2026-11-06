@@ -1,6 +1,7 @@
 import ReferencePatternIndexPage from '@/views/ReferencePatternIndexPage';
 import { REF_LANGS } from '@/content/refLangs';
 import { getBunkei, countBunkei } from '@/content/english';
+import { withOgDefaults } from '@/lib/seo';
 
 const ref = REF_LANGS.English;
 
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }) {
   if (!bunkei) return { title: '영어 문형 사전' };
   const title = `${bunkei.title} | 영어 문형 사전`;
   const description = bunkei.desc || `영어 ${level.toUpperCase()} 핵심 구문·표현 전수 수록 — 구조·뜻·예문·챕터 링크`;
-  return { title, description, openGraph: { title, description } };
+  return { title, description, openGraph: withOgDefaults({ title, description }) };
 }
 
 export default async function Page({ params }) {

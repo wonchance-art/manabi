@@ -11,7 +11,7 @@
  * 그건 진단 도구가 아니라 사고다. 계약이 이를 강제한다.
  */
 
-/** 짧게 — 캐시명은 콘텐츠 해시가 붙어 길다(anatomy-studio-vebbf66b965be201d). */
+/** 짧게 — 캐시명은 콘텐츠 해시가 붙어 길다(manabi-vebbf66b965be201d). */
 export function shortenCacheName(name, keep = 20) {
   const s = String(name || '');
   return s.length > keep ? `${s.slice(0, keep)}…` : s;

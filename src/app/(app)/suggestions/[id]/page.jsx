@@ -1,4 +1,5 @@
 import SuggestionStaticPage from '@/components/materials/SuggestionStaticPage';
+import { suggestionMetadata } from '@/lib/seo';
 
 // 추천 읽을거리 한 편 — ISR 5분(GUEST-STATIC-001 6단계). /api/suggestions/[id]의 공유 캐시(s-maxage=300)와 같은 주기다:
 // 행은 수집 크론(KST 자정)만 쓰고, 바뀌는 것은 연결 자료의 처리 완료 여부뿐이다. 빌드 때는 굽지 않고(id를 모른다) 첫 방문에 굽는다.
@@ -7,7 +8,11 @@ import SuggestionStaticPage from '@/components/materials/SuggestionStaticPage';
 export const revalidate = 300;
 export const dynamicParams = true;
 export function generateStaticParams() { return []; }
-export const metadata = { title: '추천 읽을거리' };
+// 외부 기사라 기본 noindex(seo.js INDEX_EXTERNAL_SUGGESTIONS) · 정본 주소는 돌아갈 곳(?from=) 판과 상관없이 글 한 편의 주소다(LAUNCH-META-001) — params만 읽는다(쿠키 · 헤더 · 질의 없음, 판은 그대로 ISR).
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  return suggestionMetadata(id);
+}
 
 export default async function Page({ params }) {
   const { id } = await params;

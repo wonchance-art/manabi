@@ -4,13 +4,14 @@ import { SERIES_TITLE_ILIKE } from '@/lib/constants';
 import { kstDateString } from '@/lib/growthStats';
 import { releasedArtOf, releasedClassicsOf } from '@/lib/server/classicsReading';
 import { suggestionClient, todaySuggestions } from '@/lib/server/suggestionReading';
+import { publicMetadata } from '@/lib/seo';
 // 산책(쿼리 없음)은 ISR 5분이다(GUEST-STATIC-001 2단계 — 오너 「권장대로」 2026-10-23 KST, 신선도 최대 5분 수용). 누구에게나 같은 바이트다:
 // 조회는 전부 쿠키 없는 anon 클라이언트(suggestionClient)이고 계정 데이터가 없다. 이 파일은 쿠키 · 헤더 · searchParams를 읽지 않는다
 // (src/lib/__tests__/staticSegments.test.js · 빌드 대조 scripts/check-static-routes.mjs).
 // 갈래는 middleware가 나눈다(src/middleware.js): 「함께 읽는 글」(?view=reading)은 /discover/reading(동적 — 고르기 줄 세션 힌트),
 // 간체 힌트 쿠키가 있으면 /discover/sc(이 화면 + 간체 스타일시트 미리 걸기, 역시 ISR). 주소창은 늘 /discover다.
 export const revalidate = 300;
-export const metadata = { title: '산책', description: '오늘 화제 · 고전 명작 · 여행 매거진 — 누구나 읽는 읽을거리.', alternates: { canonical: '/discover' } };
+export const metadata = publicMetadata('/discover', { title: '산책', description: '오늘 화제 · 고전 명작 · 여행 매거진 — 누구나 읽는 읽을거리.' });
 export default async function Page() {
   // 지역학은 발견에서 내렸다(오너 「지역학 치워버려 지우진 말고」 2026-10-16 KST) — /studies 경로 · 콘텐츠는 그대로다.
   // 큰 칸 셋(DISCOVER-CLASSICS-001, 오너 「권장대로 ㄱㄱ」 2026-10-22 KST): 오늘 화제 · 고전 명작 · 여행 매거진. 「일본어 N5 · 문화 읽기」는

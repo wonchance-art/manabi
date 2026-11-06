@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { STUDY_COUNTRIES, STUDY_DOMAINS, getStudyCountry } from '@/content/studies';
+import { publicMetadata } from '@/lib/seo';
 
 export function generateStaticParams() {
   return STUDY_COUNTRIES.map((country) => ({ country: country.id }));
@@ -9,11 +10,11 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { country: countryId } = await params;
   const country = getStudyCountry(countryId);
-  if (!country) return { title: '지역학' };
-  return {
+  if (!country) return { title: '지역학', robots: null }; // 없는 주소 — 쪽의 notFound()가 noindex 한 줄을 단다(루트 index와 겹치지 않게)
+  return publicMetadata(`/studies/${country.id}`, {
     title: `${country.nameKo} | 지역학`,
     description: country.intro,
-  };
+  });
 }
 
 // 나라 허브 — 도메인별 문서 목차. 저작된 문서만 링크, 미저작 도메인은 준비 중 표기.

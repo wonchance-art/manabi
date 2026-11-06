@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { BookReaderView } from '@/components/books/BookReader';
 import { publishedOrNull, publishedReadingWith, readingCatalog, readingSections } from '@/lib/server/publishedBook';
+import { publicMetadata } from '@/lib/seo';
 
 // 교재 화면 이름(metadata) — 동적 갈래(쿼리가 붙은 page.jsx)와 표지 판(cover/[hint])이 같은 값을 쓴다.
 export const BOOK_METADATA = Object.freeze({
-  'japanese-n5': { title: '일본어 N5 · 작은 문장으로 시작하는 일본어', alternates: { canonical: '/books/japanese-n5' } },
-  'japanese-n4': { title: '일본어 N4 · 문장을 이어, 내 이야기를 하는 일본어', alternates: { canonical: '/books/japanese-n4' } },
-  'japanese-n3': { title: '일본어 N3 · 근거를 읽고, 내 생각을 전하는 일본어', alternates: { canonical: '/books/japanese-n3' } },
+  'japanese-n5': publicMetadata('/books/japanese-n5', { title: '일본어 N5 · 작은 문장으로 시작하는 일본어' }),
+  'japanese-n4': publicMetadata('/books/japanese-n4', { title: '일본어 N4 · 문장을 이어, 내 이야기를 하는 일본어' }),
+  'japanese-n3': publicMetadata('/books/japanese-n3', { title: '일본어 N3 · 근거를 읽고, 내 생각을 전하는 일본어' }),
 });
 // 판 둘 — 세션 쿠키(이름만) 유무. 판정 · 고르기는 middleware(hasSupabaseSessionInJar), 이름은 내부 경로 /books/<책>/cover/<판> · /books/<책>/edition/<id>/<판>.
 export const COVER_HINTS = Object.freeze(['guest', 'member']);

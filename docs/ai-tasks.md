@@ -878,6 +878,19 @@
 
 ## Claude (claude/*)
 ### doing
+- **LAUNCH-META-001 검색 메타 묶음 + 서비스 워커 캐시 이름 (2026-11-06 ~ 11-07 KST)** `claude/wip/launch-meta` → PR `claude/launch-meta`(오케스트레이터 발주 · 출시 감사 2026-11-06 운영 실측, 화면 무변화):
+  ① 정본: 루트 `canonical: '/'` 상속 제거 → 공개 화면마다 자기 정본 + og:url(= 정본) + 공통 og(그림 · manabi · ko_KR · website). 정본 호스트는 `src/lib/seo.js` `siteUrl()` 한 곳
+  (NEXT_PUBLIC_SITE_URL 그대로, 없으면 https://manabi.co.kr) — **www · apex는 오너 결정 대기**(운영은 apex → www 308인데 정본은 apex: 결정 시 운영 값 또는 `DEFAULT_SITE_URL` 한 줄).
+  ② 사이트 지도: 손 주소 7개 → 지역학 등록부(문서 updated) · 레벨 목록(OPEN_LEVEL_LIST) · 발행된 교재만(published_at) · 공개 정적 화면(66개, ISR 1시간). 옛 문법 장은 보관함이라 제외.
+  ③ robots.txt: 학습 · 현황 · 복습 · 빠른 복습 · 로그인 · 오프라인 · /home/member · 함께 읽기 · 대화 · 단어장 · 내 정보 · 서재 · 노트 · 수업 · 작문 · PDF · 관리자 · 월드 · 임베드 · API Disallow,
+  같은 화면들은 noindex, nofollow 메타(층 metadata). ④ 없는 뷰어 자료(0행 · 숫자 아닌 id) noindex(화면 그대로, 조회 장애는 색인 유지). ⑤ 404 · 지역학 없는 주소 robots 한 줄.
+  ⑥ SW 캐시 이름 anatomy-studio-v → manabi-v(오너 「버그 먼저」): 활성화 때 옛 · 지난 배포 캐시의 뷰어 문서 · 조각 · 글꼴을 새 캐시로 옮긴 뒤 지운다(매 배포 유실도 함께 고침).
+  계약 `seoMeta.test.js`(21 — src/app 모든 page · layout 실모듈 분류) · `service-worker-cache-rename.test.js`(6). 기존 계약 갱신: brandAssets(옛 호스트 「유지」 2줄 · SW 접두) · update-sw-version 접두.
+  검증: npm test 941파일/11,118 중 1 실패(libraryPrefetchWait getClaims — origin/main 단독 재현, 공유 node_modules supabase-js 차이) · eslint 0 · e2e 빌드 + check-static-routes 통과 ·
+  e2e smoke 19 통과/6 건너뜀/0 실패 · 빌드 curl(/home · /lessons · /books/japanese-n5 · /discover · /studies/japan/jp-culture · /privacy · /viewer/45 = 자기 정본 · 공유 그림,
+  /study · /vocab · /auth · /offline = noindex, nofollow, /viewer/94771 B 계정(행 없음) = noindex, 404 = noindex 한 줄).
+  남김: 쪽 안 notFound가 (app) 로딩 경계 안에서 200(기존) — 공개 정본 화면에서 나면 index와 noindex가 함께(교재 함께 읽기 미발행 · 없는 추천 글 = 기존 soft 404).
+  공개 뷰어 자료 · 추천 글은 사이트 지도에 아직 없음(목록 기준은 별도 판단).
 - **ERROR-OBSERVE-001 운영 오류 기록 30일 (2026-11-06 KST — 오너 11/4 「백엔드 · 데이터 자율」, 화면 변화 없음 · 새 환경 변수 없음)** `claude/wip/error-observe`:
   Vercel Hobby 런타임 로그 1시간 → 오류 화면 「오류 ID」(digest)를 다음 날 못 찾던 구멍. 브라우저 오류(오류 화면 6곳 `reportError` · 루트 Providers 전역 고리 →
   `/api/client-error`, sendBeacon → keepalive fetch)와 서버 오류(`src/instrumentation.js` onRequestError, Node 가지만)를 `observe.error_events`에 남긴다.

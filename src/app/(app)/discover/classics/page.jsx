@@ -6,8 +6,9 @@ import { classicsFilters, classicsHref, classicsSection } from '@/lib/classicsSh
 import { classicsProgressOf, releasedArtOf, releasedClassicsOf } from '@/lib/server/classicsReading';
 import { suggestionClient } from '@/lib/server/suggestionReading';
 import { requireUserClaims } from '@/lib/supabaseServer';
+import { publicMetadata } from '@/lib/seo';
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '고전 명작', description: '원문 그대로 읽는 고전 — 명작 책과 그림을 일본어 · 영어 · 프랑스어 · 중국어 · 한국어로.' };
+export const metadata = publicMetadata('/discover/classics', { title: '고전 명작', description: '원문 그대로 읽는 고전 — 명작 책과 그림을 일본어 · 영어 · 프랑스어 · 중국어 · 한국어로.' });
 
 // 산책 「고전 명작」(DISCOVER-CLASSICS-001) — 구간 둘: 「책」(발행 기록 서가 canonical_book_shelf)과 「그림」(그림 서가 canonical_art_shelf, DISCOVER-ART-001).
 // 구간 탭은 두 구간 모두 열 것이 있을 때만 — 한쪽이 비면 탭 없이 있는 쪽만 보인다(누르면 빈 화면인 탭을 만들지 않는다).
