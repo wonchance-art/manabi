@@ -221,6 +221,16 @@ export default function HomePage({ book = null, bookPromise, sessionHint }) {
   // 로그인은 같은 자리의 「현황 전체 →」와 한 줄 — 「교재 · 현황 전체 →」.
   if (guestLayout) {
     return <div className="manabi-page learn-page">
+      {/* 처음 온 사람에게 manabi가 무엇인지 한 줄로(발매 점검 #1 — 오너 승인 목업 Ez2VCekG8Nub5dTT5wBamA ①, 카피 A, 2026-11-06 KST). 손님 판에만. */}
+      <section className="learn-intro" aria-labelledby="learn-intro-title">
+        <p className="manabi-eyebrow learn-intro__eyebrow">무료 · 한국인 학습자를 위한 일본어 · 중국어</p>
+        <h2 id="learn-intro-title" className="learn-intro__title">읽으면서 배우는 일본어 · 중국어</h2>
+        <p className="learn-intro__text">모르는 말은 눌러서 뜻과 발음을 보고, 담아 둔 말은 잊을 때쯤 다시 만나요. 설명은 모두 한국어예요.</p>
+        <div className="learn-intro__actions">
+          <Link href="/auth?mode=signup&from=%2Fhome" prefetch={false} className="learn-intro__start">무료로 시작하기</Link>
+          <Link href="/lessons?lang=Japanese" prefetch={false} className="learn-intro__browse">로그인 없이 교재 둘러보기 →</Link>
+        </div>
+      </section>
       <div className="learn-top"><div className="learn-top__title"><h1>배움</h1></div><Link href="/lessons?lang=Japanese" prefetch={false} className="learn-toplink">교재 →</Link></div>
       <div className="learn-grid">
         {resumeSlot}
