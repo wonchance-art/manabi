@@ -8,7 +8,7 @@ import fs from 'node:fs';
  * 여기는 라우트 순서 · 실패 처리.
  */
 const calls = [];
-let rpcError = null, listError = null, removeError = null, objects = [];
+let rpcError = null, listError = null, removeError = null, usageError = null, objects = [];
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     auth: {
@@ -18,6 +18,7 @@ vi.mock('@supabase/supabase-js', () => ({
     rpc: async (name, args) => {
       calls.push(['rpc', name, args]);
       if (name === 'account_storage_objects') return { data: listError ? null : objects, error: listError };
+      if (name === 'forget_ai_daily_usage') return { data: usageError ? null : 3, error: usageError };
       return { data: null, error: rpcError };
     },
     storage: { from: bucket => ({ remove: async names => { calls.push(['remove', bucket, names]); return { data: [], error: removeError }; } }) },
@@ -30,7 +31,7 @@ const post = async () => {
 };
 
 describe('POST /api/account/delete', () => {
-  beforeEach(() => { calls.length = 0; rpcError = null; listError = null; removeError = null; objects = []; });
+  beforeEach(() => { calls.length = 0; rpcError = null; listError = null; removeError = null; usageError = null; objects = []; });
 
   it('저장소 목록 → 학습 기록 · 비공개 자료 함수 → deleteUser 순서로 부른다(파일 없음)', async () => {
     const res = await post();
@@ -38,8 +39,23 @@ describe('POST /api/account/delete', () => {
     expect(calls).toEqual([
       ['rpc', 'account_storage_objects', { p_user: 'u-1' }],
       ['rpc', 'delete_account_learning_records', { p_user: 'u-1' }],
+      ['rpc', 'forget_ai_daily_usage', { p_user: 'u-1' }],
       ['deleteUser', 'u-1'],
     ]);
+  });
+
+  // 처리방침 「탈퇴 즉시 삭제」 — 하루 상한 사용량(u:<uid>)은 CASCADE 밖이라 여기서 지운다(ACCOUNT-DELETE-004).
+  // 30일 집계 숫자뿐이라 지우지 못해도 탈퇴는 막지 않는다(30일 뒤 자동 정리).
+  it('사용량 줄을 못 지워도 탈퇴는 끝낸다', async () => {
+    usageError = new Error('function missing');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await post();
+    expect(res.status).toBe(200);
+    expect(calls.map(([name, what]) => `${name}:${what}`)).toEqual([
+      'rpc:account_storage_objects', 'rpc:delete_account_learning_records', 'rpc:forget_ai_daily_usage', 'deleteUser:u-1',
+    ]);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('저장소 파일은 버킷별로 100개씩 지운 뒤 DB를 지운다', async () => {
@@ -50,7 +66,7 @@ describe('POST /api/account/delete', () => {
     expect(calls.map(c => c[0] === 'remove' ? `remove:${c[1]}:${c[2].length}` : `${c[0]}:${c[1]}`)).toEqual([
       'rpc:account_storage_objects',
       'remove:user-pdfs:100', 'remove:user-pdfs:1', 'remove:material-originals:1',
-      'rpc:delete_account_learning_records', 'deleteUser:u-1',
+      'rpc:delete_account_learning_records', 'rpc:forget_ai_daily_usage', 'deleteUser:u-1',
     ]);
     expect(calls.find(c => c[0] === 'remove' && c[1] === 'material-originals')[2]).toEqual(['u-1/m/1.txt']);
   });
@@ -81,5 +97,6 @@ describe('POST /api/account/delete', () => {
     const ci = fs.readFileSync('.github/workflows/ci.yml', 'utf8');
     expect(ci).toContain('node supabase/tests/account-delete-learning-records.mjs');
     expect(ci).toContain('node supabase/tests/account-delete-owned-content.mjs');
+    expect(ci).toContain('node supabase/tests/ai-daily-quota.mjs');
   });
 });
