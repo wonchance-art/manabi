@@ -44,11 +44,18 @@ describe('middleware — 재설정 · 오류 링크만 미루는 판으로, 질�
     expect(response.headers.get('location')).toBeNull();
     expect(createServerClientMock).not.toHaveBeenCalled();
   });
-  it.each(['/auth?mode=reset', '/auth?error=auth_callback_failed&from=%2Fhome'])('%s → /auth/from-link(질의 보존)', async (input) => {
+  it.each(['/auth?mode=reset', '/auth?mode=signup', '/auth?error=auth_callback_failed&from=%2Fhome'])('%s → /auth/from-link(질의 보존)', async (input) => {
     const response = await middleware(new NextRequest(`https://example.test${input}`));
     const target = new URL(response.headers.get('x-middleware-rewrite'));
     expect(target.pathname).toBe('/auth/from-link');
     expect(target.search).toBe(new URL(`https://example.test${input}`).search);
     expect(createServerClientMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('?mode=signup — 가입으로 바로 연다(발매 점검 #11, 2026-11-06 KST)', () => {
+  it('마운트 뒤 한 번 읽어 회원가입 판으로(예전엔 읽지 않아 로그인으로 열렸다)', () => {
+    const src = read('src/views/AuthPage.jsx');
+    expect(src).toMatch(/if \(searchParams\.get\('mode'\) === 'signup'\) \{\s*setIsLogin\(false\);\s*setIsForgot\(false\);\s*\}/);
   });
 });
