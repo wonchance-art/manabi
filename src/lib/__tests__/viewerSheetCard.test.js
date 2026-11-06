@@ -71,7 +71,7 @@ describe('③ 카드 — 빈 줄을 메타가 쓰고, 뜻이 제 무게를 갖�
   it('메타가 헤더 줄 왼쪽에 있다 — 단어와 뜻 사이에 끼지 않는다', () => {
     const actions = sliceBetween(card(), '<div className="word-detail-card__actions">', '{(() => {');
     expect(actions).toContain('word-detail-card__meta');
-    expect(actions).toContain('<TokenPosLabel token={selectedToken} naAdjective={jaNaHead} />');
+    expect(actions).toContain('<TokenPosLabel token={selectedToken} naAdjective={jaNaHead} sahen={jaSahenHead} />');
     // 옛 자리(단어 아래 독립 줄)가 남아 있으면 줄을 회수하지 못한 것이다.
     expect((card().match(/<TokenPosLabel/g) || []).length, '메타가 두 곳에 있다').toBe(1);
   });

@@ -13,7 +13,7 @@ const GLOSS_BY_BASE = {
   ます: '정중', です: '정중', た: '과거', ん: '부정', ない: '부정', ぬ: '부정',
   いる: '~고 있다', ある: '~어 있다', おく: '~어 두다', しまう: '~어 버리다', みる: '~어 보다', いく: '~어 가다', くる: '~어 오다',
   たい: '~고 싶다', れる: '수동 · 가능', られる: '수동 · 가능', せる: '사역', させる: '사역', う: '~자 · ~겠지', よう: '~자 · ~겠지',
-  なる: '~게 되다', くれる: '~어 주다', もらう: '~어 받다', あげる: '~어 주다',
+  する: '~하다', なる: '~게 되다', くれる: '~어 주다', もらう: '~어 받다', あげる: '~어 주다',
 };
 
 /** 덩어리 안 n번째 조각의 풀이(첫 조각은 null — 카드가 기본형을 보인다). */
@@ -93,12 +93,12 @@ export function buildReaderChunks(sequence, dictionary) {
       if (pat?.kind === 'set' && pat.at > 0) {
         // 활용 + 굳은 문형(読ま | なければならない) — 앞은 단어 덩어리(두 조각 이상일 때만), 뒤는 문형 덩어리.
         const head = toks.slice(0, pat.at), tail = toks.slice(pat.at);
-        if (head.length > 1) put(make('word', head, { base: u.base, headSurface: '', parts: partsOf(head), ref: null }));
+        if (head.length > 1) put(make('word', head, { base: u.base, headSurface: '', parts: partsOf(head), ref: null, sahen: !!u.sahen }));
         put(make('pattern', tail, { base: pat.lemma, headSurface: head.map((t) => t.text).join(''), parts: partsOf(tail, 1), ref: pat.ref }));
         continue;
       }
       if (toks.length < 2) continue;
-      put(make('word', toks, { base: u.base, headSurface: '', parts: partsOf(toks), ref: pat?.kind === 'conj' ? pat.ref : null }));
+      put(make('word', toks, { base: u.base, headSurface: '', parts: partsOf(toks), ref: pat?.kind === 'conj' ? pat.ref : null, sahen: !!u.sahen }));
     }
   }
   return chunkOf;

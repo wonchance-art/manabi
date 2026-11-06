@@ -1269,11 +1269,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .vocab-row__act:hover { border-color: var(--primary-light); color: var(--primary-light); }
 .vocab-row__act--danger:hover { border-color: var(--danger); color: var(--danger-text); }
 @media (max-width: 560px) {
+  /* 폰 D안(오너 승인 2026-11-06 KST): 1행 = 듣기 · 단어 · 품사 · (급수 · 복습 · 편집 · 삭제), 2행 = 읽기 · 뜻, 3행 = 예문.
+     옛 한 줄 배치는 중국어 행에서 오른쪽 묶음이 줄을 다 차지해 뜻 칸 폭이 0이었고, 세 글자 품사 칩은 「형…」로 잘렸다. */
   .vocab-row {
-    grid-template-columns: 38px 28px 92px minmax(0, 1fr) auto;
+    grid-template-columns: 28px auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "tts word pos right"
+      ".   reading meaning meaning"
+      ".   ex ex ex";
     column-gap: 9px; padding: 10px 12px;
   }
-  .vocab-row--sel { grid-template-columns: 24px 38px 28px 92px minmax(0, 1fr) auto; }
+  .vocab-row--sel {
+    grid-template-columns: 24px 28px auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "check tts word pos right"
+      "check .   reading meaning meaning"
+      "check .   ex ex ex";
+  }
+  .vocab-row__pos { align-self: center; }
+  .vocab-row__pos--empty { visibility: hidden; }
   .vocab-row__pos { font-size: 0.66rem; }
   .vocab-row__tts { width: 28px; height: 28px; }
   .vocab-row__word { font-size: 1.12rem; }

@@ -9,12 +9,14 @@ import {t} from '../lib/viewerMessages';
 import { isCanonPos } from '../lib/server/posCanon';
 
 // naAdjective: 일본어 な형용사 카드(오너 승인 2026-11-06 KST) — 저장된 품사(명사 · 형용동사) 대신 「な형용사」 한 칸.
+// sahen: 일본어 명사 + する 덩어리(勉強します) — 「する동사」 한 칸.
 // 정본 품사 집합(posCanon)은 분석기 값 그대로 두고, 이 표시만 화면에서 바꾼다.
-export default function TokenPosLabel({ token, naAdjective = false }) {
+export default function TokenPosLabel({ token, naAdjective = false, sahen = false }) {
   const uiLocale=useContext(ViewerUiLocaleContext);
   // Translate only after canonical validation; keep the exact legacy spacing for Korean.
   const displayPos=value=>uiLocale==='ko'?value:value.split('·').map(part=>t(uiLocale,part.trim())).join('·');
   if (naAdjective) return displayPos('な형용사');
+  if (sahen) return displayPos('する동사');
   const pos = isCanonPos(null, token?.pos) ? token.pos : '';
   const all = token?.pos_all
     ? token.pos_all.split('·').map((s) => s.trim()).filter((s) => isCanonPos(null, s))
