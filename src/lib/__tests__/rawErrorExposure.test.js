@@ -24,9 +24,10 @@ const walk = (dir, out = []) => {
 };
 
 // 서버 코드(학습자 화면이 아님)와 매핑·기록 모듈 자신은 검사 밖이다.
+// errorEvent.js = 운영 오류 기록의 정리기(ERROR-OBSERVE-001) — 원문을 화면이 아니라 기록으로 보낸다(errorObserve.test.js가 화면 무변화를 고정).
 const EXEMPT_PATH = [
   /^app\/api\//, /^lib\/server\//, /(^|\/)server\.js$/,
-  /^lib\/errorMessage\.js$/, /^lib\/authErrors\.js$/, /^lib\/reportError\.js$/,
+  /^lib\/errorMessage\.js$/, /^lib\/authErrors\.js$/, /^lib\/reportError\.js$/, /^lib\/errorEvent\.js$/,
 ];
 
 // 원문이 화면에 가도 되는 좁은 예외 — 파일과 그 줄의 고유 조각, 이유.

@@ -319,3 +319,13 @@ button.learn-stat{text-align:center}
 .learn-login{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .learn-login .learn-button-s{min-height:44px}
 span.learn-chip{cursor:default}
+/* 손님 첫 화면 소개 띠(발매 점검 #1 — 오너 승인 2026-11-06 KST). 셸 면 · 3px 주 단추. 링크 둘은 .manabi-page a(색 inherit · 밑줄 없음)보다 높게 건다. */
+.learn-intro{margin:0 0 26px;padding:22px 24px;background:var(--sheet);border:1px solid var(--rule);display:grid;gap:10px}
+.learn-intro__eyebrow{margin:0}
+.learn-intro__title{margin:0;font-size:clamp(21px,2.6vw,26px);font-weight:700;letter-spacing:-.6px;line-height:1.35;text-wrap:balance}
+.learn-intro__text{margin:0;color:var(--muted);font-size:14px;line-height:1.75}
+.learn-intro__actions{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;margin-top:4px}
+.learn-page .learn-intro__start{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:3px;background:var(--ja);color:var(--on-fill);font-size:15px;font-weight:700}
+.learn-page .learn-intro__browse{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.learn-intro__start:focus-visible,.learn-intro__browse:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+

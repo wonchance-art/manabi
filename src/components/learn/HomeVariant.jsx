@@ -3,7 +3,7 @@ import { ScFontLink } from '@/components/fonts/ScFontLink';
 import { publishedOrNull, publishedReadingWith, readingCatalog } from '@/lib/server/publishedBook';
 import { publicMetadata } from '@/lib/seo';
 
-export const homeMetadata = publicMetadata('/home', { title: '배움', description: '읽던 페이지 · 단어 복습 · 오늘 문단을 한 화면에서.' });
+export const homeMetadata = publicMetadata('/home', { title: '배움', description: '읽으면서 배우는 일본어 · 중국어 — 한국인 학습자를 위한 무료 학습장. 모르는 말은 눌러서 뜻과 발음을 보고, 담아 둔 말은 잊을 때쯤 다시 만나요.' });
 
 /**
  * 배움(/home) 판 — ISR(GUEST-STATIC-001 4단계). 누구에게나 같은 바이트다: 서버가 그리는 재료는 발행 교재(N5)의 작은 카탈로그(공개 행 ·

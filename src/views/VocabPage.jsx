@@ -111,6 +111,10 @@ const ADMISSION_GONE_CODES = new Set(['fsrs_card_not_due', 'fsrs_card_excluded',
 export function firstWordsHref(lang) {
   return lang && lang !== 'Japanese' ? `/lessons?lang=${encodeURIComponent(lang)}` : '/books/japanese-n5';
 }
+// 같은 단추의 이름 — 그 언어 입구 이름(발매 점검 #5 — 오너 승인 2026-11-06 KST). 중국어는 교재가 준비 중이라 HSK 단어 목록.
+export function firstWordsLabel(lang) {
+  return lang === 'Chinese' ? 'HSK 단어 목록에서 고르기 →' : '교재에서 표현 고르기 →';
+}
 
 export default function VocabPage({ reviewScope = NOT_EXPLICIT, firstScreen = null, serverUserId = null, sessionHint = null }) {
   const { user, loading } = useAuth();
@@ -122,7 +126,7 @@ export default function VocabPage({ reviewScope = NOT_EXPLICIT, firstScreen = nu
   // 명시 범위 주소가 무효면 닫힌다 — 「전체」로 새지 않고 저장된 설정도 건드리지 않는다(REV-SCOPE-R1A 원칙 5).
   if (reviewScope?.invalid) return (
     <div className="page-container manabi-review-room">
-      <header className="review-room-heading"><div><p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>복습</h1></div></header>
+      <header className="review-room-heading"><div><p className="manabi-eyebrow">복습실</p><h1>복습</h1></div></header>
       <section className="review-room-state" role="alert"><h2>범위 주소를 읽지 못했어요.</h2><p>전체로 바꾸지 않았어요. 범위를 풀고 다시 골라 주세요.</p><Link href="/vocab" className="btn btn--primary btn--md">범위 풀기</Link></section>
     </div>
   );
@@ -1471,7 +1475,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
   // 하단 네비는 Layout 소유라 컴포넌트에서 못 지운다 — body 클래스로 CSS에 알린다.
   // 훅은 아래 `if (!user)` 조기 return보다 **위**에 있어야 한다(#838 Hooks 순서 사고와 같은 자리).
   inSessionRef.current = inSession;
-  // 끝 화면(복습 · 집중 연습) — 세션 머리줄을 그대로 두고 복습방 머리(「THE REVIEW ROOM 복습」)는 「목록으로」 뒤에만 그린다
+  // 끝 화면(복습 · 집중 연습) — 세션 머리줄을 그대로 두고 복습방 머리(「복습실 복습」)는 「목록으로」 뒤에만 그린다
   // (VOCAB-FLOW-001 A, 오너 「권장대로」 2026-10-17 KST). 끝으로 넘어가는 순간 머리가 다시 생겨 본문이 390 +107px · 1440 +131px
   // 내려앉았다(layout-shift 0.074 · 0.030, 입력 직후라 CLS 밖이지만 눈에 보인다).
   const onEndScreen = tab === 'review' && reviewFinished || tab === 'practice' && !!practice && practice.finished;
@@ -1526,7 +1530,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
     // '복습' 탭이 게스트에게 막다른 길이 되지 않도록 경로를 함께 연다.
     return (
       <div className="page-container manabi-review-room review-guest">
-        <p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>기억에 남는 건,<br />다시 만난 문장.</h1>
+        <p className="manabi-eyebrow">복습실</p><h1>기억에 남는 건,<br />다시 만난 문장.</h1>
         <p style={{ color: 'var(--text-secondary)', margin: '6px 0 16px', lineHeight: 1.6 }}>
           단어장은 로그인 후 기기 간 동기화와 함께 쓸 수 있어요.<br />
           문법 복습은 지금 이 기기의 기록만으로도 바로 이어갈 수 있어요.
@@ -1586,7 +1590,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       {/* 헤더 — 세션 중 · 끝 화면에는 없앤다(끝 화면은 세션 머리줄 유지). 부제와 총계는 아래 통계와 중복이라 뺐다. */}
       {!sessionChrome && (
         <header className="review-room-heading">
-          <div><p className="manabi-eyebrow">THE REVIEW ROOM</p><h1>{tab === 'browse' ? '담은 표현' : scopeHeading(scope, { materialTitles })}</h1></div>
+          <div><p className="manabi-eyebrow">복습실</p><h1>{tab === 'browse' ? '담은 표현' : scopeHeading(scope, { materialTitles })}</h1></div>
           {!isBookScope && <p>읽다가 담은 표현을,<br />내가 쓰는 말로.</p>}
         </header>
       )}
@@ -1655,7 +1659,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
           {/* 오늘-할-일 카드 — 위계는 셋뿐: 얼마나(수) → 무엇을(버튼) → 어떻게(조용한 셀렉트).
               현황은 단어장 카드 안, 단어장 관리는 ⋯ 메뉴 — 시선이 시작 버튼에 모이게. */}
           <section className="card vocab-hero" aria-labelledby="review-today-title">
-            <div className="vocab-hero__top"><span className="vocab-hero__kicker">이 범위에서 오늘</span><span className="manabi-eyebrow">01 / RECALL</span></div>
+            <div className="vocab-hero__top"><span className="vocab-hero__kicker">이 범위에서 오늘</span><span className="manabi-eyebrow">01 / 떠올리기</span></div>
             {/* 「첫 표현」 안내는 정말 담은 표현이 없을 때만 — 좁힌 범위가 비었을 뿐이면 범위 문구가 말한다(교재 범위는 그 교재 기준). */}
             {/* 준비 중(입장 한도 · FSRS 목록을 받는 중)에는 제목도 골격이다(VOCAB-FLOW-001 · LOADING-SKELETON-001 「받는 중엔 빈 상태 대신
                 골격」). session.total이 아직 0이라 「잠시, 읽기로 돌아가요.」(오늘 끝)가 0.1~1초 보였다가 「오늘 다시 볼 표현」으로 바뀌었다
@@ -1691,8 +1695,8 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
                   세어진 거짓 빈 상태다. 이때는 아래 오류 알림 「복습 일정을 불러오지 못했어요. 다시 시도」 하나만 말한다(제목 중립과 같은 판정). */}
               <ReviewScopeNotice empty scope={scope} count={session} countFor={countFor} remainingNew={roomRemainingNew} languages={[...languageCounts.keys()]} onChange={changeScope} materialTitles={materialTitles}
                 onPractice={hasPractice ? () => { if (!firstView) startPractice(practiceWords); } : null} onFillMeaning={() => { setMissingMeaningOnly(true); setTab('browse'); }}
-                fallback={!hasAnyWords ? '교재 예문의 ‘예문 담기’로 기억하고 싶은 문장을 골라 주세요.' : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'} />
-              <Link href={isBookScope ? reviewScope.returnTo : hasAnyWords ? '/home' : firstWordsHref(scope.lang)} className="btn btn--primary">{isBookScope ? '읽던 교재로 돌아가기 →' : hasAnyWords ? '오늘로 →' : '교재에서 표현 고르기 →'}</Link>
+                fallback={!hasAnyWords ? '자료를 읽다가 모르는 말을 누르고 「얼마나 알겠어요?」를 고르면 여기에 모여요.' : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'} />
+              <Link href={isBookScope ? reviewScope.returnTo : hasAnyWords ? '/home' : firstWordsHref(scope.lang)} className="btn btn--primary">{isBookScope ? '읽던 교재로 돌아가기 →' : hasAnyWords ? '오늘로 →' : firstWordsLabel(scope.lang)}</Link>
             </>}
             {/* 멈춘 복습 이어 하기(§5-6) — 같은 화면이면 메모리의 줄, 새로고침 뒤면 세션 저장소의 기록(24시간). */}
             {(inMemoryResume || restorable) && <button type="button" className="review-room-resume" onClick={resumeRun}>
@@ -1707,8 +1711,8 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
             </p>}
           </section>
           {!isBookScope && <section className="review-room-grammar" aria-labelledby="review-grammar-title">
-            <p className="manabi-eyebrow">02 / PATTERNS</p><h2 id="review-grammar-title">문법도 한 번 더.</h2>
-            {grammarLoading ? <p aria-busy="true">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법이 없어요. 다음 일정에 다시 만나요.' : '이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요. N5 과별 답안과는 별개예요.'}</p>}
+            <p className="manabi-eyebrow">02 / 문형</p><h2 id="review-grammar-title">문법도 한 번 더.</h2>
+            {grammarLoading ? <p aria-busy="true">복습 일정을 확인하고 있어요…</p> : grammarError ? <p role="alert">문법 일정을 불러오지 못했어요. <button type="button" className="btn btn--ghost btn--sm" onClick={() => refetchGrammar()}>다시 시도</button></p> : <p>{dueGrammarCount ? `다시 확인할 문법 ${dueGrammarCount}개가 있어요.` : grammarQueue?.total ? '지금 복습할 문법이 없어요. 다음 일정에 다시 만나요.' : `이야기 학습에서 연습한 문법의 복습 일정이 여기에 모여요.${!scope.lang || scope.lang === 'Japanese' ? ' N5 과별 답안과는 별개예요.' : ''}`}</p>}
             <Link href="/review/grammar" prefetch={false} className="manabi-link">{dueGrammarCount ? `문법 ${dueGrammarCount}개 →` : '문법 복습 확인 →'}</Link>
             <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">이야기로 연습 →</Link></div>
                   {confused.length >= CONFUSED_MIN && (
