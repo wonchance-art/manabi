@@ -23,7 +23,7 @@ export async function generateMetadata({ params }) {
   const published = await loadPublishedRegistry(LANGUAGE, registry);
   const chapter = published.resolve(data.chapter);
   const topicPart = chapter.topic ? ` — ${chapter.topic}` : '';
-  const title = `${chapter.title}${topicPart} | 영어 문법`;
+  const title = `${chapter.title}${topicPart} · 영어 문법`;
   const description = chapter.summary || '한국어 화자를 위한 영어 문법 레퍼런스';
   return { title, description, openGraph: withOgDefaults({ title, description }) };
 }

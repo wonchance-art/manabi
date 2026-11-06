@@ -21,7 +21,7 @@ export async function generateMetadata({ params }) {
   const key = levelOf((await params).level);
   if (!key) return {};
   // 몇 단어로 먼저 연 화면이라 검색에 싣지 않는다.
-  return { title: `${key} 단어 | ${NAME}`, robots: { index: false, follow: false } };
+  return { title: `${key} 단어 · ${NAME}`, robots: { index: false, follow: false } };
 }
 
 export default async function Page({ params }) {

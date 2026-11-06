@@ -4,10 +4,16 @@ import { publishedOrNull, publishedReadingWith, readingCatalog, readingSections 
 import { publicMetadata } from '@/lib/seo';
 
 // 교재 화면 이름(metadata) — 동적 갈래(쿼리가 붙은 page.jsx)와 표지 판(cover/[hint])이 같은 값을 쓴다.
+/** 교재 표지 검색 설명 — 「JLPT <레벨> 일본어 교재 — <부제>. …」 사이트 소개(SITE_DESCRIPTION)와 같은 말로 읽는 법을 잇는다. */
+export function bookDescription(level, subtitle) {
+  return `JLPT ${level} 일본어 교재 — ${subtitle}. 과마다 문장을 읽고, 모르는 말은 눌러서 뜻과 발음을 봐요.`;
+}
+
 export const BOOK_METADATA = Object.freeze({
-  'japanese-n5': publicMetadata('/books/japanese-n5', { title: '일본어 N5 · 작은 문장으로 시작하는 일본어' }),
-  'japanese-n4': publicMetadata('/books/japanese-n4', { title: '일본어 N4 · 문장을 이어, 내 이야기를 하는 일본어' }),
-  'japanese-n3': publicMetadata('/books/japanese-n3', { title: '일본어 N3 · 근거를 읽고, 내 생각을 전하는 일본어' }),
+  // 설명은 책마다(LAUNCH-META-004) — 없으면 사이트 기본 설명을 물려받아 세 권이 같은 문장으로 검색에 올랐다. 부제는 제목과 같은 문구.
+  'japanese-n5': publicMetadata('/books/japanese-n5', { title: '일본어 N5 · 작은 문장으로 시작하는 일본어', description: bookDescription('N5', '작은 문장으로 시작하는 일본어') }),
+  'japanese-n4': publicMetadata('/books/japanese-n4', { title: '일본어 N4 · 문장을 이어, 내 이야기를 하는 일본어', description: bookDescription('N4', '문장을 이어, 내 이야기를 하는 일본어') }),
+  'japanese-n3': publicMetadata('/books/japanese-n3', { title: '일본어 N3 · 근거를 읽고, 내 생각을 전하는 일본어', description: bookDescription('N3', '근거를 읽고, 내 생각을 전하는 일본어') }),
 });
 // 판 둘 — 세션 쿠키(이름만) 유무. 판정 · 고르기는 middleware(hasSupabaseSessionInJar), 이름은 내부 경로 /books/<책>/cover/<판> · /books/<책>/edition/<id>/<판>.
 export const COVER_HINTS = Object.freeze(['guest', 'member']);

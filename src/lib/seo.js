@@ -108,3 +108,14 @@ export const ROBOTS_DISALLOW = Object.freeze([
   '/world',
   '/writing',
 ]);
+
+/**
+ * 사이트 소개 한 줄(LAUNCH-META-004) — 루트 기본 설명 · 배움(/home) 설명 · 사이트 JSON-LD가 같은 문장을 쓴다.
+ * 예전 루트 기본값은 「일본어·영어·프랑스어·중국어 학습 도구 — …」였다(영어 · 프랑스어는 지금 교재 · 과정 밖). 자기 설명이 없는 화면(404 등)이 이 문장을 물려받는다.
+ */
+export const SITE_DESCRIPTION = '읽으면서 배우는 일본어 · 중국어 — 한국인 학습자를 위한 무료 학습장. 모르는 말은 눌러서 뜻과 발음을 보고, 담아 둔 말은 잊을 때쯤 다시 만나요.';
+
+/** 사이트 JSON-LD(WebSite) — 손님 배움 판에만 싣는다(검색 로봇이 보는 판). 운영 주체(Organization)는 운영자 정보가 정해진 뒤에 더한다. */
+export function websiteJsonLd() {
+  return { '@context': 'https://schema.org', '@type': 'WebSite', name: 'manabi', url: `${siteUrl()}/`, inLanguage: 'ko', description: SITE_DESCRIPTION };
+}

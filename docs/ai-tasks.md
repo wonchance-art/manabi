@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **LAUNCH-META-004 제목 구분자 · 브랜드 중복 · 책별 설명 · 사이트 JSON-LD · favicon.ico (2026-11-07 KST)** PR `claude/launch-meta-titles`(발매 점검 「개선」 · 오케스트레이터 순회 04:24):
+  화면 제목 15곳의 「 | 」→ 루트 틀과 같은 「 · 」(지역학 · 레벨 목록 · 옛 문법 장 · 영어/프랑스어 목록 · 복습 og) · 관리자 제목 4곳의 「| manabi」 제거(틀이 붙여 브랜드 두 번).
+  루트 기본 설명 = 배움 설명 = `SITE_DESCRIPTION`(옛 「일본어·영어·프랑스어·중국어 학습 도구」 문장 걷음) · 교재 세 권 책별 설명 · 손님 배움 판에 WebSite JSON-LD(운영 주체는 오너 정보 뒤) ·
+  `public/favicon.ico` 16/32/48(favicon.svg 렌더). 계약 seoMeta +6 · launchFirstScreen 설명 위치 갱신. 화면 배치 · 화면 문구 무변화(탭 제목 구분자만).
 - **LAUNCH-META-003 분석 전 자료는 검색 · 사이트 지도에서 뺀다 (2026-11-07 KST)** PR `claude/launch-meta-analyzed`(LAUNCH-META-002 #1712 정정, 화면 무변화):
   #1712는 「processed_json 있음」을 분석됨으로 쳤지만 운영 실측은 공개 123건 중 분석됨 5 · idle 118(문장 0 — #1711 서버 분석 대기)이었다. 판정을 뷰어 SSR과 같게
   (상태 completed · partial + 문장 1개 이상, `isAnalyzedMaterial`): 사이트 지도는 `processed_json->>status` in · `processed_json->sequence->0` not null(운영 SQL 동치 5건),
