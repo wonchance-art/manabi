@@ -28,8 +28,24 @@ const SC_STYLESHEET = Object.freeze({
   // 같은 바이트를 가리킬 next/font 선언(ScFontScope.jsx Noto_Sans_SC)의 인자 — 다르면 next 산출 이름이 달라진다(계약이 소스와 대조).
   nextFont: Object.freeze({ subsets: Object.freeze(['latin']), preload: true, adjustFontFallback: true }),
   publicDir: '_fonts/noto-sans-sc',
+  fileStem: 'noto-sans-sc',
   env: 'MANABI_SC_STYLESHEET',
 });
+
+// 대만 번체(Noto Sans TC) — 같은 길(VIEWER-FONT-SPLIT-001 1단계, 2026-11-07 KST). 가리키는 next/font 선언은 TcFontScope.jsx의
+// Noto_Sans_TC({ subsets: ['latin'], weight: ['400', '500', '700'], display: 'swap' }) — 번체 세그먼트(pdf · suggestions · chinese 등)가
+// 계속 싣으므로 같은 빌드에 글꼴 파일이 나온다. 뷰어처럼 번체를 가끔 그리는 화면이 이 시트를 잎에서 건다(ZhSlot · lang zh-TW).
+const TC_STYLESHEET = Object.freeze({
+  cssUrl: 'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap',
+  family: 'Noto Sans TC',
+  nextFont: Object.freeze({ subsets: Object.freeze(['latin']), preload: true, adjustFontFallback: true }),
+  publicDir: '_fonts/noto-sans-tc',
+  fileStem: 'noto-sans-tc',
+  env: 'MANABI_TC_STYLESHEET',
+});
+
+/** 독립 스타일시트 목록 — next.config env · 산출 대조가 이 순서로 돈다. */
+const FONT_STYLESHEETS = Object.freeze([SC_STYLESHEET, TC_STYLESHEET]);
 
 const hash16 = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex').slice(0, 16);
 
@@ -63,7 +79,7 @@ function scStylesheet(responses, spec = SC_STYLESHEET) {
   });
   if (!blocks.length) throw new Error(`@font-face가 없다: ${spec.cssUrl}`);
   const css = `/* ${spec.family} — scripts/fonts/sc-stylesheet.cjs가 글꼴 입력에서 만든 독립 스타일시트(SC-LINK-001). 글꼴은 next/font 산출 주소 그대로 */\n${blocks.join('\n')}\n`;
-  return { href: `/${spec.publicDir}/noto-sans-sc.${hash16(css)}.css`, css, fonts: [...new Set(urlMap.values())] };
+  return { href: `/${spec.publicDir}/${spec.fileStem}.${hash16(css)}.css`, css, fonts: [...new Set(urlMap.values())] };
 }
 
 /** public 아래에 CSS를 쓴다(이미 같은 이름이 있으면 건너뜀 — 이름이 내용 해시라 같은 파일이다). 글꼴은 next/font가 낸다. */
@@ -78,12 +94,14 @@ function writeScStylesheet(result, publicRoot) {
  * next.config `env`에 넣을 값 + public 산출. 글꼴 입력이 없는 실행(네트워크로 받는 `next dev`)은 비운다 —
  * 그때는 걸 스타일시트가 없다(부르는 쪽은 없으면 걸지 않는다).
  */
-function scStylesheetEnv(env = process.env, publicRoot = path.join(__dirname, '..', '..', 'public')) {
+function stylesheetEnv(spec, env = process.env, publicRoot = path.join(__dirname, '..', '..', 'public')) {
   const modulePath = env.NEXT_FONT_GOOGLE_MOCKED_RESPONSES;
   if (!modulePath) return {};
-  const result = scStylesheet(require(modulePath));
+  const result = scStylesheet(require(modulePath), spec);
   writeScStylesheet(result, publicRoot);
-  return { [SC_STYLESHEET.env]: result.href };
+  return { [spec.env]: result.href };
 }
+const scStylesheetEnv = (env, publicRoot) => stylesheetEnv(SC_STYLESHEET, env, publicRoot);
+const tcStylesheetEnv = (env, publicRoot) => stylesheetEnv(TC_STYLESHEET, env, publicRoot);
 
-module.exports = { SC_STYLESHEET, fontFaces, scStylesheet, writeScStylesheet, scStylesheetEnv };
+module.exports = { SC_STYLESHEET, TC_STYLESHEET, FONT_STYLESHEETS, fontFaces, scStylesheet, writeScStylesheet, stylesheetEnv, scStylesheetEnv, tcStylesheetEnv };

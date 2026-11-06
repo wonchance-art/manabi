@@ -13,7 +13,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
-const { SC_STYLESHEET, scStylesheet } = require('./sc-stylesheet.cjs');
+const { SC_STYLESHEET, FONT_STYLESHEETS, scStylesheet } = require('./sc-stylesheet.cjs');
 
 function walk(dir, pick, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -72,11 +72,11 @@ export function faceKeys(cssText, family) {
 }
 
 /** 문제 목록을 돌려준다(빈 배열 = 통과). */
-export function checkScStylesheet({ nextDir = '.next', publicDir = 'public', env = process.env } = {}) {
+export function checkScStylesheet({ nextDir = '.next', publicDir = 'public', env = process.env, spec = SC_STYLESHEET } = {}) {
   const modulePath = env.NEXT_FONT_GOOGLE_MOCKED_RESPONSES;
   if (!modulePath) return ['NEXT_FONT_GOOGLE_MOCKED_RESPONSES가 없다 — 빌드와 같은 글꼴 입력으로 실행한다'];
   const problems = [];
-  const expected = scStylesheet(require(modulePath));
+  const expected = scStylesheet(require(modulePath), spec);
   const cssFile = path.join(publicDir, ...expected.href.slice(1).split('/'));
   if (!fs.existsSync(cssFile)) problems.push(`① CSS가 public에 없다 — ${expected.href}`);
   else if (fs.readFileSync(cssFile, 'utf8') !== expected.css) problems.push(`① public CSS 본문이 지금 글꼴 입력과 다르다 — ${expected.href}`);
@@ -86,13 +86,13 @@ export function checkScStylesheet({ nextDir = '.next', publicDir = 'public', env
     if (!fs.existsSync(path.join(mediaDir, url.slice('/_next/static/media/'.length)))) problems.push(`② next/font 산출에 글꼴이 없다 — ${url}`);
   }
   const built = walk(path.join(nextDir, 'static', 'css'), (p) => p.endsWith('.css')).map((p) => fs.readFileSync(p, 'utf8')).join('\n');
-  const nextFont = faceKeys(built, SC_STYLESHEET.family);
-  const ours = faceKeys(expected.css, SC_STYLESHEET.family);
-  if (!nextFont.length) problems.push(`③ 빌드 CSS에 next/font '${SC_STYLESHEET.family}' @font-face가 없다 — 대조 기준이 없다`);
+  const nextFont = faceKeys(built, spec.family);
+  const ours = faceKeys(expected.css, spec.family);
+  if (!nextFont.length) problems.push(`③ 빌드 CSS에 next/font '${spec.family}' @font-face가 없다 — 대조 기준이 없다`);
   else if ([...new Set(nextFont)].join('\n') !== [...new Set(ours)].join('\n')) problems.push(`③ next/font와 굵기 · unicode-range가 다르다(next ${new Set(nextFont).size}쌍 · 독립 ${new Set(ours).size}쌍)`);
   else {
-    const builtUrls = faceUrls(built, SC_STYLESHEET.family);
-    const ourUrls = faceUrls(expected.css, SC_STYLESHEET.family);
+    const builtUrls = faceUrls(built, spec.family);
+    const ourUrls = faceUrls(expected.css, spec.family);
     const differ = [...ourUrls].filter(([key, urls]) => {
       const theirs = builtUrls.get(key);
       return !theirs || theirs.size !== 1 || urls.size !== 1 || [...theirs][0] !== [...urls][0];
@@ -102,12 +102,17 @@ export function checkScStylesheet({ nextDir = '.next', publicDir = 'public', env
   return problems;
 }
 
+/** 독립 스타일시트 전부(간체 · 번체 — FONT_STYLESHEETS) — 문제마다 family를 앞에 붙인다. */
+export function checkFontStylesheets(options = {}) {
+  return FONT_STYLESHEETS.flatMap((spec) => checkScStylesheet({ ...options, spec }).map((problem) => `[${spec.family}] ${problem}`));
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const problems = checkScStylesheet({ nextDir: process.argv[2] || '.next', publicDir: process.argv[3] || 'public' });
+  const problems = checkFontStylesheets({ nextDir: process.argv[2] || '.next', publicDir: process.argv[3] || 'public' });
   if (problems.length) {
-    console.error(`간체 독립 스타일시트 산출 대조 실패:\n- ${problems.join('\n- ')}`);
+    console.error(`중국어(간체 · 번체) 독립 스타일시트 산출 대조 실패:\n- ${problems.join('\n- ')}`);
     process.exitCode = 1;
   } else {
-    console.log('간체 독립 스타일시트 산출 대조 통과');
+    console.log(`중국어 독립 스타일시트 산출 대조 통과(${FONT_STYLESHEETS.map((spec) => spec.family).join(' · ')})`);
   }
 }

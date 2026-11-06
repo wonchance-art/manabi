@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { checkScStylesheet, faceKeys, normalizeRange } from '../../../scripts/fonts/check-sc-stylesheet.mjs';
+import { checkFontStylesheets, checkScStylesheet, faceKeys, normalizeRange } from '../../../scripts/fonts/check-sc-stylesheet.mjs';
 import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
 
 /**
@@ -18,7 +18,7 @@ import { sliceBetween } from '../../lib/__tests__/helpers/sliceBetween.js';
  */
 const ROOT = process.cwd();
 const require = createRequire(import.meta.url);
-const { SC_STYLESHEET, scStylesheet, writeScStylesheet, scStylesheetEnv } = require('../../../scripts/fonts/sc-stylesheet.cjs');
+const { SC_STYLESHEET, TC_STYLESHEET, FONT_STYLESHEETS, scStylesheet, writeScStylesheet, scStylesheetEnv, tcStylesheetEnv } = require('../../../scripts/fonts/sc-stylesheet.cjs');
 const { nextFontEmittedName } = require('../../../scripts/fonts/next-font-file-url.cjs');
 const VENDORED = path.join(ROOT, 'vendor/google-fonts/responses.cjs');
 const E2E_MOCK = path.join(ROOT, 'e2e/fixtures/google-fonts-mock.cjs');
@@ -161,5 +161,43 @@ describe('③ 배선', () => {
     const { href, css } = scStylesheet(require(VENDORED));
     expect(href.endsWith(`.${hash16(css)}.css`)).toBe(true); // immutable의 근거 — 같은 이름이면 같은 바이트
     expect(href.startsWith('/_fonts/')).toBe(true);
+  });
+});
+
+// VIEWER-FONT-SPLIT-001 1단계 — 대만 번체(Noto Sans TC)도 같은 길로 독립 시트를 만든다(간체 산출은 바이트 그대로).
+describe('④ 번체(Noto Sans TC) 독립 시트', () => {
+  const responses = require(VENDORED);
+  const tc = scStylesheet(responses, TC_STYLESHEET);
+  it('배포 사본: @font-face 324 · 글꼴 108 · 주소는 /_fonts/noto-sans-tc/noto-sans-tc.<본문 해시>.css', () => {
+    expect((tc.css.match(/@font-face/g) || []).length).toBe(324);
+    expect(tc.fonts).toHaveLength(108);
+    expect(tc.href).toBe(`/_fonts/noto-sans-tc/noto-sans-tc.${hash16(tc.css)}.css`);
+    for (const url of tc.fonts) expect(url).toMatch(/^\/_next\/static\/media\/[0-9a-f]+-s(\.p)?\.woff2$/);
+  });
+  it('가리키는 next/font 선언과 인자가 같다 — TcFontScope의 Noto_Sans_TC(subsets latin · 굵기 400/500/700 · swap)', () => {
+    const scope = read('src/components/fonts/TcFontScope.jsx');
+    expect(scope).toMatch(/Noto_Sans_TC\(\{\s*subsets: \['latin'\],\s*weight: \['400', '500', '700'\],\s*variable: '--font-noto-tc',\s*display: 'swap',\s*\}\)/);
+    expect(TC_STYLESHEET.cssUrl).toBe('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    expect(TC_STYLESHEET.nextFont).toEqual(SC_STYLESHEET.nextFont);
+  });
+  it('간체 산출은 그대로(이름 · 본문) — 일반화가 SC 주소를 바꾸지 않는다', () => {
+    const sc = scStylesheet(responses);
+    expect(sc.href).toMatch(/^\/_fonts\/noto-sans-sc\/noto-sans-sc\.[0-9a-f]{16}\.css$/);
+    expect(sc.css.startsWith('/* Noto Sans SC — ')).toBe(true);
+    expect(FONT_STYLESHEETS).toEqual([SC_STYLESHEET, TC_STYLESHEET]);
+  });
+  it('배선 — next.config env 둘 · 글꼴 입력 없으면 쓰지 않음 · 대조 스크립트는 둘 다 본다', () => {
+    const config = read('next.config.mjs');
+    expect(config).toContain('...scStylesheetEnv(),');
+    expect(config).toContain('...tcStylesheetEnv(),');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tc-link-env-'));
+    expect(tcStylesheetEnv({}, dir)).toEqual({});
+    const env = tcStylesheetEnv({ NEXT_FONT_GOOGLE_MOCKED_RESPONSES: E2E_MOCK }, dir);
+    expect(env[TC_STYLESHEET.env]).toMatch(/^\/_fonts\/noto-sans-tc\/noto-sans-tc\.[0-9a-f]{16}\.css$/);
+    expect(fs.existsSync(path.join(dir, ...env[TC_STYLESHEET.env].slice(1).split('/')))).toBe(true);
+    // 산출물이 없는 합성 경로면 두 family 모두 문제로 잡힌다(통과로 치지 않는다).
+    const problems = checkFontStylesheets({ nextDir: dir, publicDir: path.join(dir, 'none'), env: { NEXT_FONT_GOOGLE_MOCKED_RESPONSES: E2E_MOCK } });
+    expect(problems.some((p) => p.startsWith('[Noto Sans SC]'))).toBe(true);
+    expect(problems.some((p) => p.startsWith('[Noto Sans TC]'))).toBe(true);
   });
 });

@@ -57,6 +57,47 @@ describe('ScFontLink · ZhSlot', () => {
   });
 });
 
+// VIEWER-FONT-SPLIT-001 1단계 — 번체(zh-TW · zh-Hant-TW)를 그리는 잎은 TC 시트를 건다(index.css :lang 규칙과 같은 판정).
+describe('TcFontLink · ZhSlot 번체', () => {
+  const TC = '/_fonts/noto-sans-tc/noto-sans-tc.fedcba9876543210.css';
+  async function loadBoth(sc, tc) {
+    vi.resetModules();
+    vi.stubEnv('MANABI_SC_STYLESHEET', sc);
+    vi.stubEnv('MANABI_TC_STYLESHEET', tc);
+    return import('../fonts/ScFontLink');
+  }
+
+  it('isZhTwLang = index.css의 TC 규칙(:lang(zh-TW), :lang(zh-Hant-TW)) — 지역 없는 zh-Hant는 SC', async () => {
+    const { isZhTwLang } = await loadBoth(HREF, TC);
+    expect(['zh-TW', 'zh-tw', 'zh-Hant-TW', 'zh-TW-x'].map(isZhTwLang)).toEqual([true, true, true, true]);
+    expect(['zh', 'zh-CN', 'zh-Hant', 'zh-HK', 'zh-Hans-CN', 'ja', '', null].map(isZhTwLang)).toEqual([false, false, false, false, false, false, false, false]);
+    const css = fs.readFileSync(path.join(process.cwd(), 'src/index.css'), 'utf8');
+    expect(css).toContain(':lang(zh-TW), :lang(zh-Hant-TW) {');
+  });
+
+  it('zh-TW 잎은 TC 시트만, zh 잎은 SC 시트만 건다 · TC 범위 안 · 주소 없음이면 걸지 않는다', async () => {
+    const { ZhSlot, TcFontLink, TcFontScopeMarker, ScFontScopeMarker } = await loadBoth(HREF, TC);
+    const tw = renderToStaticMarkup(<ZhSlot lang="zh-Hant-TW"><span lang="zh-Hant-TW">體</span></ZhSlot>);
+    expect(tw).toContain(TC);
+    expect(tw).toContain('data-precedence="font-tc"');
+    expect(tw).not.toContain(HREF);
+    const cn = renderToStaticMarkup(<ZhSlot lang="zh-CN"><span>体</span></ZhSlot>);
+    expect(cn).toContain(HREF);
+    expect(cn).not.toContain(TC);
+    expect(renderToStaticMarkup(<TcFontScopeMarker><ZhSlot lang="zh-TW"><span>體</span></ZhSlot></TcFontScopeMarker>)).toBe('<span>體</span>');
+    // SC 범위 안이어도 번체 잎은 TC 시트를 건다(SC 범위가 TC를 주지 않는다).
+    expect(renderToStaticMarkup(<ScFontScopeMarker><ZhSlot lang="zh-TW"><span>體</span></ZhSlot></ScFontScopeMarker>)).toContain(TC);
+    expect(renderToStaticMarkup(<TcFontScopeMarker><TcFontLink /></TcFontScopeMarker>)).toBe('');
+    const noTc = await loadBoth(HREF, '');
+    expect(renderToStaticMarkup(<noTc.ZhSlot lang="zh-TW"><span>體</span></noTc.ZhSlot>)).toBe('<span>體</span>');
+  });
+
+  it('TcFontScope는 감싸개 안쪽에 TC 표식을 둔다(세그먼트 자리는 SegmentSlot 안 — HYDRATION-SLOT-001 유지)', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/components/fonts/TcFontScope.jsx'), 'utf8');
+    expect(src).toContain('<SegmentSlot><TcFontScopeMarker>{children}</TcFontScopeMarker></SegmentSlot>');
+  });
+});
+
 describe('학습 언어 힌트 쿠키', () => {
   it('③ 중국어가 학습 언어에 있을 때만 켠다', () => {
     expect(wantsScFont(['Japanese', 'Chinese'])).toBe(true);

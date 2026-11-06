@@ -1,5 +1,6 @@
 import { Noto_Sans_TC } from 'next/font/google';
 import SegmentSlot from '../SegmentSlot';
+import { TcFontScopeMarker } from './ScFontLink';
 
 // 대만 번체(zh-TW · zh-Hant-TW)를 그리는 화면에만 Noto Sans TC를 건다(FONT-TC-SCOPE-001, 2026-10-17 KST).
 // 루트에 두면 모든 페이지 head CSS에 TC @font-face 325개(gz 36KB, 렌더 차단)가 실렸다. 번체를 그리는 곳은
@@ -15,5 +16,6 @@ const notoTc = Noto_Sans_TC({
 
 export default function TcFontScope({ children }) {
   // 세그먼트 자리를 div 바로 안에 두지 않는다 — 하이드레이션 #418 간헐(HYDRATION-SLOT-001, src/components/SegmentSlot.jsx).
-  return <div className={notoTc.variable} style={{ display: 'contents' }}><SegmentSlot>{children}</SegmentSlot></div>;
+  // 범위 안 번체 잎(ZhSlot lang zh-TW)은 독립 스타일시트를 걸지 않는다 — @font-face 두 벌 방지(VIEWER-FONT-SPLIT-001, ScFontScope와 같은 원칙).
+  return <div className={notoTc.variable} style={{ display: 'contents' }}><SegmentSlot><TcFontScopeMarker>{children}</TcFontScopeMarker></SegmentSlot></div>;
 }
