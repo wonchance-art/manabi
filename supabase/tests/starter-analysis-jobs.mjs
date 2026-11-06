@@ -121,6 +121,30 @@ await check('⑤b 이어 돌리기(20261106230000) — 실패한 starter 작업�
   assert.equal((await rows(db, `select status from canonical_analysis_jobs where id = ${job.id}`))[0].status, 'running');
 });
 
+const RETRY = await fs.readFile(new URL('../migrations/20261107000000_retry_starter_material_134.sql', import.meta.url), 'utf8');
+await check('⑤c 134 다시 대기열(20261107000000) — attempts에서 134만 빼고 실패 수 -1 · 나머지 그대로, 다시 돌려도 · 완료면 무변경', async () => {
+  await db.exec(`insert into reading_materials(id,title,raw_text,processed_json,visibility,owner_id) values
+    (134,'en numbers','My phone number is 010-1234-5678.','${pj('idle', meta('English'))}','public','${admin}');
+    update canonical_analysis_jobs set material_ids = material_ids || 134::bigint, attempts = '{"134": 3, "60": 1}', chapters_failed = 1 where id = ${job.id}`);
+  const before = (await rows(db, `select chapters_done, llm_usage, status, failure_streak from canonical_analysis_jobs where id = ${job.id}`))[0];
+  await db.exec(RETRY);
+  const [r] = await rows(db, `select attempts, chapters_failed, chapters_done, llm_usage, status, failure_streak from canonical_analysis_jobs where id = ${job.id}`);
+  assert.deepEqual(r.attempts, { 60: 1 });
+  assert.equal(r.chapters_failed, 0);
+  assert.deepEqual({ chapters_done: r.chapters_done, llm_usage: r.llm_usage, status: r.status, failure_streak: r.failure_streak }, { ...before });
+  await db.exec(RETRY); // 134가 포기 상태가 아니면 아무것도 바꾸지 않는다
+  assert.equal((await rows(db, `select chapters_failed from canonical_analysis_jobs where id = ${job.id}`))[0].chapters_failed, 0);
+  await db.exec(`update canonical_analysis_jobs set attempts = '{"134": 3}', chapters_failed = 1 where id = ${job.id};
+    update reading_materials set processed_json = processed_json || '{"status":"completed"}' where id = 134`);
+  await db.exec(RETRY); // 이미 완료한 자료면 그대로
+  assert.deepEqual((await rows(db, `select attempts from canonical_analysis_jobs where id = ${job.id}`))[0].attempts, { 134: 3 });
+  await db.exec(`update reading_materials set processed_json = processed_json || '{"status":"idle"}' where id = 134;
+    update canonical_analysis_jobs set status = 'done' where id = ${job.id}`);
+  await db.exec(RETRY); // 끝난 작업은 건드리지 않는다
+  assert.deepEqual((await rows(db, `select attempts, status from canonical_analysis_jobs where id = ${job.id}`))[0], { attempts: { 134: 3 }, status: 'done' });
+  await db.exec(`update canonical_analysis_jobs set status = 'running' where id = ${job.id}`);
+});
+
 await check('⑥ 복원 SQL — starter 줄 삭제 · 제약 · 열 · 함수 되돌림(저장한 분석은 그대로)', async () => {
   await db.exec(ROLLBACK);
   const cols = (await rows(db, `select column_name from information_schema.columns where table_name = 'canonical_analysis_jobs' and column_name in ('material_ids','llm_usage')`)).length;
