@@ -108,6 +108,9 @@ function materialItem(material, lang) {
 
 const HSK_WORDS_ITEM = { key: 'hsk-words', href: '/chinese/vocab/h1', tone: 'progress',
   kicker: '중국어 · HSK', title: 'HSK 단어 목록', meta: '1급부터 ↗' };
+// 일본어 학습자에게는 같은 자리에 JLPT 단어 목록(발매 점검 #8 — 오너 승인 2026-11-06 KST). 영어 · 프랑스어는 단어 목록이 없어 카드 없음.
+const JLPT_WORDS_ITEM = { key: 'jlpt-words', href: '/japanese/vocab/n5', tone: 'progress',
+  kicker: '일본어 · JLPT', title: 'JLPT 단어 목록', meta: 'N5부터 ↗' };
 
 // 교재 판본(book)은 서버가 기다리지 않고 약속(bookPromise)으로 넘긴다(LCP-UNSUSPEND — 조정 승인 2026-10-17 KST).
 // 판본이 필요한 것은 이어 읽기 칸과 저장 불가 안내뿐이라, 그 둘만 안쪽 Suspense에서 받는다 — 맛보기 문단 · 로그인 칸 ·
@@ -200,8 +203,14 @@ export default function HomePage({ book = null, bookPromise, sessionHint }) {
   const continueDeckItems = [groupItem].filter(Boolean);
   // HSK 단어 — 이 기기에 남은 진도가 있으면 마지막 레벨로 이어 하기(붙은 뒤에 읽는다 — 서버 렌더와 첫 렌더는 「1급부터」로 같다).
   const [hskResume, setHskResume] = useState(null);
-  useEffect(() => { try { setHskResume(levelResumeCard(readLevelSnapshot(localStorage, 'chinese'))); } catch { /* 저장소 차단 — 1급부터 */ } }, []);
+  const [jlptResume, setJlptResume] = useState(null);
+  useEffect(() => {
+    try { setHskResume(levelResumeCard(readLevelSnapshot(localStorage, 'chinese'))); } catch { /* 저장소 차단 — 1급부터 */ }
+    try { setJlptResume(levelResumeCard(readLevelSnapshot(localStorage, 'japanese'), 'japanese')); } catch { /* 저장소 차단 — N5부터 */ }
+  }, []);
   const hskItem = hskResume ? { ...HSK_WORDS_ITEM, ...hskResume } : HSK_WORDS_ITEM;
+  const jlptItem = jlptResume ? { ...JLPT_WORDS_ITEM, ...jlptResume } : JLPT_WORDS_ITEM;
+  const wordListItem = lang === 'Chinese' ? hskItem : lang === 'Japanese' ? jlptItem : null;
 
   // 손님 배치 판정 — 아래 손님 화면과 같은 조건(B1).
   const guestLayout = !user && (!authLoading || sessionHint === false);
@@ -266,7 +275,8 @@ export default function HomePage({ book = null, bookPromise, sessionHint }) {
     </div>
     {storageNote}
     {continueDeckItems.length > 0 && <section className="learn-more" aria-label="이어서"><ContinueDeck items={continueDeckItems} /></section>}
-    {/* 임시 입구(오너 지시 2026-10-15 KST) — HSK 단어 목록이 내비에 자리를 잡을 때까지. 덱과 같은 카드 양식. */}
-    <section className="learn-more" aria-label="HSK 단어"><ContinueDeck items={[hskItem]} /></section>
+    {/* 임시 입구(오너 지시 2026-10-15 KST) — 단어 목록이 내비에 자리를 잡을 때까지. 덱과 같은 카드 양식.
+        고른 학습 언어에 맞춘다(발매 점검 #8): 중국어 HSK · 일본어 JLPT · 그 밖은 없음. */}
+    {wordListItem && <section className="learn-more" aria-label={lang === 'Chinese' ? 'HSK 단어' : 'JLPT 단어'}><ContinueDeck items={[wordListItem]} /></section>}
   </div>;
 }

@@ -108,7 +108,8 @@ export function signInMethods(user) {
 }
 
 /** 기록 칸 숫자 — 0 · 모름은 「–」(현황 칸의 0 무표기 선례), 그 밖은 천 단위 쉼표 + 단위. */
-export const countValue = (n, unit = '') => (Number.isFinite(n) && n > 0 ? `${n.toLocaleString('ko-KR')}${unit}` : '–');
+// 0은 「0개 · 0편」으로(발매 점검 #10 — 오너 승인 2026-11-06 KST, 예전 「–」). 「–」는 세지 못했을 때(오류 · 받기 전)만.
+export const countValue = (n, unit = '') => (!Number.isFinite(n) ? '–' : n > 0 ? `${n.toLocaleString('ko-KR')}${unit}` : `0${unit || '개'}`);
 
 /** 단어 복습 줄 — 이 기기의 세션 길이(단어장 복습 설정). null = 전부. */
 export const sessionLengthLabel = length => (length == null ? '한 번에 전부' : `한 번에 ${length}개`);
