@@ -145,6 +145,34 @@ await check('⑤c 134 다시 대기열(20261107000000) — attempts에서 134만
   await db.exec(`update canonical_analysis_jobs set status = 'running' where id = ${job.id}`);
 });
 
+const STALE = await fs.readFile(new URL('../migrations/20261107010000_reanalyze_stale_n5_seeds.sql', import.meta.url), 'utf8');
+await check('⑤d 옛 분석 시드(20261107010000) — 줄이 어긋난 공개 completed만 idle + 작업 끝에 붙임 · 맞는 자료 · 비공개 · 범위 밖은 그대로, 다시 돌려도 무변경', async () => {
+  const tokens = (lines) => {
+    const sequence = [], dictionary = {};
+    lines.forEach((words, i) => {
+      words.forEach((w, k) => { sequence.push(`id_${i}_${k}_1`); dictionary[`id_${i}_${k}_1`] = { text: w, pos: '명사' }; });
+      if (i < lines.length - 1) { sequence.push(`br_${i}_1`); dictionary[`br_${i}_1`] = { text: '\n', pos: '개행' }; }
+    });
+    return JSON.stringify({ status: 'completed', sequence, dictionary, metadata: { language: 'Japanese' } });
+  };
+  const oldJson = tokens([['私', 'は', '学生', 'です', '。'], ['これ', 'は', '本', 'です', '。']]);
+  await db.query(`insert into reading_materials(id,title,raw_text,processed_json,visibility,owner_id) values
+    (45,'stale','わたしは がくせいです。\n\nあなたは せんせいです。',$1,'public','${admin}'),
+    (46,'fresh','私は 学生です。\nこれは本です。',$1,'public','${admin}'),
+    (47,'stale private','わたしは がくせいです。',$1,'private','${admin}'),
+    (44,'stale out of range','わたしは がくせいです。',$1,'public','${admin}')`, [oldJson]);
+  const before = (await rows(db, `select material_ids, attempts, chapters_done, llm_usage, status from canonical_analysis_jobs where id = ${job.id}`))[0];
+  await db.exec(STALE);
+  const st = Object.fromEntries((await rows(db, `select id, processed_json->>'status' s from reading_materials where id in (44,45,46,47)`)).map(r => [r.id, r.s]));
+  assert.deepEqual(st, { 44: 'completed', 45: 'idle', 46: 'completed', 47: 'completed' });
+  assert.equal((await rows(db, `select processed_json->'sequence' = $1::jsonb->'sequence' same from reading_materials where id = 45`, [oldJson]))[0].same, true, 'tokens kept until reanalysis');
+  const after = (await rows(db, `select material_ids, attempts, chapters_done, llm_usage, status from canonical_analysis_jobs where id = ${job.id}`))[0];
+  assert.deepEqual(after.material_ids.map(Number), [...before.material_ids.map(Number), 45]);
+  assert.deepEqual({ ...after, material_ids: null }, { ...before, material_ids: null });
+  await db.exec(STALE); // 이미 idle — 다시 돌려도 무변경
+  assert.deepEqual((await rows(db, `select material_ids from canonical_analysis_jobs where id = ${job.id}`))[0].material_ids.map(Number), after.material_ids.map(Number));
+});
+
 await check('⑥ 복원 SQL — starter 줄 삭제 · 제약 · 열 · 함수 되돌림(저장한 분석은 그대로)', async () => {
   await db.exec(ROLLBACK);
   const cols = (await rows(db, `select column_name from information_schema.columns where table_name = 'canonical_analysis_jobs' and column_name in ('material_ids','llm_usage')`)).length;
