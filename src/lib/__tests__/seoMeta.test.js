@@ -28,7 +28,7 @@ vi.mock('@/lib/supabaseServer', async (importOriginal) => {
   return { ...actual, createSupabaseServerClient: async () => ({ from: () => chain }), createSupabasePublicClient: () => ({ from: () => chain }) };
 });
 
-import { DEFAULT_SITE_URL, INDEX_EXTERNAL_SUGGESTIONS, OG_DEFAULTS, OG_IMAGE, PRIVATE_ROBOTS, ROBOTS_DISALLOW, canonicalFor, publicMetadata, siteUrl, suggestionMetadata, withOgDefaults } from '@/lib/seo';
+import { DEFAULT_SITE_URL, INDEX_EXTERNAL_SUGGESTIONS, SITE_DESCRIPTION, websiteJsonLd, OG_DEFAULTS, OG_IMAGE, PRIVATE_ROBOTS, ROBOTS_DISALLOW, canonicalFor, publicMetadata, siteUrl, suggestionMetadata, withOgDefaults } from '@/lib/seo';
 import { legacyTextbookTarget } from '@/lib/bookNavigation';
 import { bookEntries, koreanDate, levelListEntries, materialEntries, studiesEntries } from '@/lib/sitemapEntries';
 import { ANALYZED_STATUSES, __setCuratorClient, curatedMaterialIds, curatorIds, isAnalyzedMaterial, isIndexableMaterial } from '@/lib/server/curatedMaterials';
@@ -387,6 +387,53 @@ describe('뷰어 자료 — 우리가 만든 공개 자료만 검색에 싣는�
     expect(await curatedMaterialIds()).toEqual([]);
     __setCuratorClient(fakeService({ profiles: { data: [{ id: 'admin-1' }], error: null }, reading_materials: { data: null, error: { code: '57014' } } }));
     await expect(curatedMaterialIds()).rejects.toThrow('57014');
+  });
+});
+
+// LAUNCH-META-004 — 제목 · 설명 · 사이트 표식(발매 점검 「개선」: 구분자 섞임 · 브랜드 중복 · 책 세 권이 같은 기본 설명).
+describe('제목 · 설명 · JSON-LD · favicon.ico', () => {
+  const titleText = (title) => (typeof title === 'string' ? title : title?.absolute || title?.default || '');
+
+  it('화면 제목은 「 | 」를 쓰지 않는다 — 구분자는 루트 틀(%s · manabi)의 「 · 」 하나', () => {
+    expect(rootLayout.metadata.title.template).toBe('%s · manabi');
+    const piped = pages.filter((page) => titleText(page.meta.title).includes(' | ')).map((page) => `${page.file}: ${titleText(page.meta.title)}`);
+    expect(piped).toEqual([]);
+  });
+
+  it('화면 제목에 브랜드를 직접 넣지 않는다(틀이 붙여 「… · manabi · manabi」가 된다)', () => {
+    const branded = pages.filter((page) => typeof page.meta.title === 'string' && /manabi/i.test(page.meta.title)).map((page) => `${page.file}: ${page.meta.title}`);
+    expect(branded).toEqual([]);
+  });
+
+  it('루트 기본 설명 = 배움 설명 = SITE_DESCRIPTION(옛 「영어·프랑스어 학습 도구」 문장 없음)', () => {
+    expect(rootLayout.metadata.description).toBe(SITE_DESCRIPTION);
+    expect(pages.find((page) => page.file.endsWith('/home/(guest)/page.jsx')).meta.description).toBe(SITE_DESCRIPTION);
+    const stale = pages.filter((page) => /영어·프랑스어·중국어 학습 도구/.test(page.meta.description || '')).map((page) => page.file);
+    expect(stale).toEqual([]);
+  });
+
+  it('교재 세 권은 책마다 다른 설명을 단다(기본 설명을 물려받지 않는다)', () => {
+    const covers = ['japanese-n5', 'japanese-n4', 'japanese-n3'].map((id) => pages.find((page) => page.file === `/src/app/(app)/books/${id}/page.jsx`).meta.description);
+    expect(new Set(covers).size).toBe(3);
+    for (const [i, level] of ['N5', 'N4', 'N3'].entries()) expect(covers[i]).toMatch(new RegExp(`^JLPT ${level} 일본어 교재 — `));
+    for (const description of covers) expect(description).not.toBe(SITE_DESCRIPTION);
+  });
+
+  it('사이트 JSON-LD(WebSite)는 손님 배움 판에만 · 정본 호스트 · 「<」는 이스케이프', () => {
+    expect(websiteJsonLd()).toEqual({ '@context': 'https://schema.org', '@type': 'WebSite', name: 'manabi', url: `${siteUrl()}/`, inLanguage: 'ko', description: SITE_DESCRIPTION });
+    const guest = fs.readFileSync(path.join(ROOT, 'src/app/(app)/home/(guest)/page.jsx'), 'utf8');
+    expect(guest).toContain('<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()).replace(/</g, \'\\\\u003c\') }} />');
+    const withLd = Object.keys(MODULES).filter((file) => fs.readFileSync(path.join(ROOT, file), 'utf8').includes('application/ld+json'));
+    expect(withLd).toEqual(['/src/app/(app)/home/(guest)/page.jsx']);
+  });
+
+  it('/favicon.ico — 16 · 32 · 48 ICO(favicon.svg를 그린 것, 바탕색 #994A5A)', () => {
+    const ico = fs.readFileSync(path.join(ROOT, 'public/favicon.ico'));
+    expect([...ico.subarray(0, 4)]).toEqual([0, 0, 1, 0]);
+    const count = ico.readUInt16LE(4);
+    const sizes = Array.from({ length: count }, (_, i) => ico[6 + i * 16] || 256).sort((a, b) => a - b);
+    expect(sizes).toEqual([16, 32, 48]);
+    expect(fs.readFileSync(path.join(ROOT, 'public/favicon.svg'), 'utf8')).toContain('fill="#994A5A"');
   });
 });
 

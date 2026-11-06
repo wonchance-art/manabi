@@ -3,7 +3,7 @@ import '../index.css';
 import Providers from './providers';
 import { INSTALL_CAPTURE_SCRIPT } from '@/lib/installPrompt';
 import { VOCAB_EARLY_SCRIPT } from '@/lib/vocabularyEarly';
-import { OG_DEFAULTS, siteUrl } from '@/lib/seo';
+import { OG_DEFAULTS, SITE_DESCRIPTION, siteUrl } from '@/lib/seo';
 
 // Inter는 미리 받지 않는다(FONT-PRELOAD-001): 앱 화면(.manabi-app)은 Noto Sans KR · Manrope가 먼저라 Inter 라틴 조각(47kB)이
 // 모든 페이지에서 미리 받아지고 쓰이지 않았다(Preview b8fc2b62 실측 2026-10-17 KST — 배움 · 산책 · 교재 · 뷰어 · 로그인 · 단어 목록 ·
@@ -63,7 +63,7 @@ export const metadata = {
     default: 'manabi — 언어마다, 나만의 한 권',
     template: '%s · manabi',
   },
-  description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, 잊을 때쯤 돌아오는 복습, 형태소 해부 읽기.',
+  description: SITE_DESCRIPTION,
   keywords: ['일본어 학습', '영어 학습', 'AI 언어', 'JLPT', '간격 반복', '단어장', '독해'],
   authors: [{ name: 'manabi' }],
   openGraph: {
