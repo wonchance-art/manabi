@@ -404,7 +404,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                         onClick={e => { e.stopPropagation(); savePattern(item); }}
                         disabled={savedSet.has(item.pattern)}
                         aria-label={savedSet.has(item.pattern) ? '단어장에 저장됨' : '문형을 단어장에 저장'}
-                        title={savedSet.has(item.pattern) ? '저장됨' : user ? '단어장에 저장 (FSRS 복습 시작)' : '로그인 필요'}
+                        title={savedSet.has(item.pattern) ? '저장됨' : user ? '단어장에 저장 (복습 시작)' : '로그인 필요'}
                       >
                         {savedSet.has(item.pattern) ? '✓' : '＋'}
                       </button>

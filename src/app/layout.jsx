@@ -61,13 +61,13 @@ export const metadata = {
     default: 'manabi — 언어마다, 나만의 한 권',
     template: '%s · manabi',
   },
-  description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, FSRS 복습, 형태소 해부 읽기.',
-  keywords: ['일본어 학습', '영어 학습', 'AI 언어', 'JLPT', 'FSRS', '간격 반복', '단어장', '독해'],
+  description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, 잊을 때쯤 돌아오는 복습, 형태소 해부 읽기.',
+  keywords: ['일본어 학습', '영어 학습', 'AI 언어', 'JLPT', '간격 반복', '단어장', '독해'],
   authors: [{ name: 'manabi' }],
   alternates: { canonical: '/' },
   openGraph: {
     title: 'manabi — 언어마다, 나만의 한 권',
-    description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, FSRS 복습, 형태소 해부 읽기.',
+    description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, 잊을 때쯤 돌아오는 복습, 형태소 해부 읽기.',
     url: SITE_URL,
     type: 'website',
     siteName: 'manabi',
@@ -76,7 +76,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'manabi — 언어마다, 나만의 한 권',
-    description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, FSRS 복습, 형태소 해부 읽기.',
+    description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, 잊을 때쯤 돌아오는 복습, 형태소 해부 읽기.',
   },
   robots: {
     index: true,
