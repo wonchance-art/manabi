@@ -3381,6 +3381,12 @@ a.viewer-badge:hover {
   font-size: 0.88rem;
 }
 
+.onboarding-modal__hint {
+  margin: -12px 0 20px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
 .onboarding-modal__body {
   padding: 28px;
   display: flex;
@@ -5499,21 +5505,19 @@ a.viewer-badge:hover {
 .auth-submit {
   width: 100%;
   padding: 12px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  /* 셸 주 단추와 같은 결(발매 점검 #12 — 오너 승인 2026-11-06 KST): 로즈 한 색 · 3px · 그림자 없음. 예전 그라데이션 · 빛 번짐은 걷었다. */
+  border-radius: 3px;
+  background: var(--primary);
   color: var(--on-fill);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  box-shadow: 0 4px 15px var(--primary-glow);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
+  transition: filter var(--transition-fast);
 }
 @media (hover: hover) {
   .auth-submit:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px var(--primary-glow);
-    filter: brightness(1.1);
+    filter: brightness(1.08);
   }
 }
 .auth-submit:active:not(:disabled) {
