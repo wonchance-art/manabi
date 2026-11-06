@@ -152,6 +152,10 @@ try {
     (SELECT contract_hash FROM fsrs_private.settings) = fsrs_private.contract_hash() pinned`);
   if (lib.n === 3) {
     const before = await fp();
+    // db push처럼 로그인 맥락 없이 적용한다(fixture가 세션에 남긴 sub를 비운다) — 11/6 운영 첫 적용이 capability 호출의
+    // login_required(42501)로 롤백된 실측: 로그인 사용자만 부르는 함수를 사전/사후 측정에서 부르면 안 된다.
+    await h.db.exec(`SELECT set_config('request.jwt.claim.sub', '', false), set_config('request.jwt.claims', '', false)`);
+    assert.equal((await h.one('SELECT auth.uid() uid')).uid, null);
     await h.db.exec(h.localize(migration));
     await check('운영 사슬 — 사후 검사 통과 · 지문 넷 그대로 · 게시값과 일치', async () => {
       const after = await fp();

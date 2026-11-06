@@ -6,10 +6,12 @@
 -- 범위: library_private.operations · operation_items · folder_operations의 정책 3개(ALL · authenticated · PERMISSIVE)의 USING · WITH CHECK만.
 --   명령 · 역할 · PERMISSIVE · 정책 수는 그대로다(ALTER POLICY는 USING / WITH CHECK만 바꾼다).
 --   학습 계약 지문 범위 밖: capability(learning_language_capabilities)의 표 목록은 public 9개뿐이고, core · manual · admission ·
---   activity 지문도 library_private 정책을 읽지 않는다 — 아래 사후 검사가 지문 넷 + capability 문자열이 바이트 같음을 확인한다.
+--   activity 지문도 library_private 정책을 읽지 않는다 — 아래 사후 검사가 지문 넷 + capability 함수 정의가 바이트 같음을 확인한다.
+--   (capability 함수는 로그인 사용자만 부른다 — 11/6 22:47 KST 첫 적용이 그 호출의 login_required로 전부 롤백됐다(운영 불변 확인).
+--    측정은 함수를 부르지 않고 카탈로그 정의로 한다. 계약 테스트는 로그인 맥락 없이 적용해 이 실패를 재현한다.)
 -- 적용 경로: main 병합 → supabase-migrations.yml(db push), 암묵 트랜잭션 하나(검사가 RAISE하면 전부 롤백).
 -- 사후 검사(같은 트랜잭션): ⑴ 세 정책에 맨 auth.uid() 0 ⑵ 감싼 호출을 되돌린 식 = 적용 전 식 ⑶ 명령 · 역할 · PERMISSIVE 불변
---   ⑷ 지문(core · manual · admission · activity _live)과 capability 결과가 적용 전과 같음.
+--   ⑷ 지문(core · manual · admission · activity _live)과 capability 함수 정의가 적용 전과 같음.
 -- 되돌리기(쓸 일 없음 — 결과가 같다): docs/sql/library-rls-initplan-20261106-rollback.sql(원래 식 owner_id = auth.uid()로 ALTER POLICY).
 
 SET LOCAL lock_timeout = '5s';
@@ -26,14 +28,22 @@ CREATE FUNCTION pg_temp.lri_measure() RETURNS TABLE (k text, v text) LANGUAGE pl
 DECLARE f record; val text;
 BEGIN
   FOR f IN SELECT * FROM (VALUES ('core', 'fsrs_private', 'contract_hash_live'), ('manual', 'fsrs_private', 'manual_contract_hash_live'),
-      ('admission', 'fsrs_private', 'admission_contract_hash_live'), ('activity', 'fsrs_private', 'activity_profile_hash_live'),
-      ('capability', 'public', 'learning_language_capabilities')) x(k, sch, fn) LOOP
+      ('admission', 'fsrs_private', 'admission_contract_hash_live'), ('activity', 'fsrs_private', 'activity_profile_hash_live')) x(k, sch, fn) LOOP
     IF EXISTS (SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
                WHERE n.nspname = f.sch AND p.proname = f.fn AND p.pronargs = 0) THEN
       EXECUTE format('SELECT %I.%I()::text', f.sch, f.fn) INTO val;
     ELSE val := NULL; END IF;
     k := f.k; v := val; RETURN NEXT;
   END LOOP;
+  -- capability 함수는 로그인 사용자만 부른다(actor 없으면 login_required 42501) — db push엔 로그인 맥락이 없어 11/6 첫 적용이
+  -- 여기서 롤백됐다. 부르지 않고 정의(본문 · ACL · 소유자 · 속성)를 카탈로그에서 잰다. 정책 지문 범위(public 9개 표)엔
+  -- library_private가 없고, core 지문이 이 함수 정의를 품으므로 core 불변 + 정의 불변이면 capability 결과도 같다.
+  k := 'capability';
+  SELECT md5(pg_catalog.pg_get_functiondef(p.oid)) || '|' || coalesce(p.proacl::text, '') || '|' || p.proowner::text
+           || '|' || p.provolatile::text || '|' || p.prosecdef::text || '|' || coalesce(p.proconfig::text, '')
+    INTO v FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+   WHERE n.nspname = 'public' AND p.proname = 'learning_language_capabilities' AND p.pronargs = 0;
+  RETURN NEXT;
 END $m$;
 INSERT INTO pg_temp.lri_pins SELECT * FROM pg_temp.lri_measure();
 
