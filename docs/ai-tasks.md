@@ -884,6 +884,11 @@
   비중국어 자료에서도 SC · TC를 쓰는 곳: 正 줄(ViewerGlyphColumn zh-Hant-TW) · 한자 창(ViewerHanjaPopover) · zh UI/해설 언어 · 중국어 본문 → 잎이 시트를 거는 방식(ZhSlot)으로 전환.
   **1단계** PR `claude/font-tc-sheet`(화면 · 동작 무변화): sc-stylesheet를 SC · TC 표로 일반화(`/_fonts/noto-sans-tc/…css` · env MANABI_TC_STYLESHEET, 간체 산출 바이트 그대로) ·
   TcFontLink · TcFontScopeMarker · ZhSlot zh-TW→TC · 대조 스크립트 둘 다. **2단계**(뷰어 전환 · 유휴 미리 받기 · SW)는 1단계 병합 뒤.
+- **SEC-HEADERS-001 최소 CSP(보고만) + COOP + 보안 헤더 계약 (2026-11-07 KST)** PR `claude/launch-headers`(발매 점검 「개선」 · 오케스트레이터 순회 04:24, 화면 무변화 · 새 env 없음):
+  본편(/embed 밖)에 `Content-Security-Policy-Report-Only: object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'` + report-uri · report-to(Reporting-Endpoints) →
+  `/api/csp-report`(언제나 204 · 분당 20/120 · 16KB) → 운영 오류 기록 `csp.<지시어>` 한 줄(지시어 · 막힌 출처 · 경로 틀만 — 전체 주소 · sample · IP 없음, ERROR-OBSERVE-001 RPC 재사용).
+  `Cross-Origin-Opener-Policy: same-origin-allow-popups`. 스크립트 지시어(nonce)는 정적/ISR 판을 깨서 넣지 않음(오너 결정 항목). 위반 0을 확인한 뒤 강제로 옮기는 것은 후속.
+  계약 securityHeaders +2(지시어 집합 = 정리기 · 강제 CSP 없음 · 임베드 미적용) · csp-report route 11.
 - **LAUNCH-META-003 분석 전 자료는 검색 · 사이트 지도에서 뺀다 (2026-11-07 KST)** PR `claude/launch-meta-analyzed`(LAUNCH-META-002 #1712 정정, 화면 무변화):
   #1712는 「processed_json 있음」을 분석됨으로 쳤지만 운영 실측은 공개 123건 중 분석됨 5 · idle 118(문장 0 — #1711 서버 분석 대기)이었다. 판정을 뷰어 SSR과 같게
   (상태 completed · partial + 문장 1개 이상, `isAnalyzedMaterial`): 사이트 지도는 `processed_json->>status` in · `processed_json->sequence->0` not null(운영 SQL 동치 5건),
