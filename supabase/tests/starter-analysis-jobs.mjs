@@ -1,5 +1,5 @@
 /** Isolated PostgreSQL verification; no network or live DB connection (STARTER-ANALYSIS-001 · 2026-11-06 KST).
- * 20261106190000_starter_analysis_jobs: 서버 분석 작업에 공개 시드(starter) 종류.
+ * 20261106210000_starter_analysis_jobs: 서버 분석 작업에 공개 시드(starter) 종류.
  * 증명: ① 작업 한 줄이 관리자 「일괄 분석」 패널과 같은 대상(공개 · idle/pending/saved · 원문 있음 · 수업 팀 · 정본 책 아님 · 일 · 영)을 id 차례로 고른다
  *       ② 저장 함수: starter 작업은 그 작업의 material_ids 안 · 관리자 소유 · 공개 자료만, 책 작업은 그대로 비공개 장만 · service role만
  *       ③ CHECK: starter = 책 key 비움 + material_ids 1~200, 책 = material_ids 없음 ④ 재실행은 두 번째 작업을 만들지 않는다
@@ -12,7 +12,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { PGlite } = require(process.env.PGLITE_MODULE || '@electric-sql/pglite');
 const BASE = await fs.readFile(new URL('../migrations/20261024120000_canonical_analysis_jobs.sql', import.meta.url), 'utf8');
-const MIGRATION = await fs.readFile(new URL('../migrations/20261106190000_starter_analysis_jobs.sql', import.meta.url), 'utf8');
+const MIGRATION = await fs.readFile(new URL('../migrations/20261106210000_starter_analysis_jobs.sql', import.meta.url), 'utf8');
 const ROLLBACK = await fs.readFile(new URL('../../docs/sql/starter-analysis-jobs-20261106-rollback.sql', import.meta.url), 'utf8');
 const admin = '10000000-0000-0000-0000-000000000001';
 const ATTEMPT = '20000000-0000-0000-0000-000000000001';

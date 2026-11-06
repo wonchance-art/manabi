@@ -1,4 +1,4 @@
--- 복원: supabase/migrations/20261106190000_starter_analysis_jobs.sql → starter 작업 줄을 지우고 표 제약 · 저장 함수를 20261024120000으로.
+-- 복원: supabase/migrations/20261106210000_starter_analysis_jobs.sql → starter 작업 줄을 지우고 표 제약 · 저장 함수를 20261024120000으로.
 -- 이미 저장한 시드 분석(reading_materials)은 그대로 남는다(되돌리지 않는다 — 다시 idle로 만들 이유가 없다). 필요할 때만 오너 확인 뒤 실행.
 BEGIN;
 DELETE FROM public.canonical_analysis_jobs WHERE kind = 'starter';
