@@ -68,7 +68,7 @@ export default function SuggestionReader({ id, from: requestedFrom, initial, ini
       </div>}
     </nav>
     {query.isPending ? <p aria-busy="true">읽을거리를 펼치고 있어요…</p> : query.isError ? <div className="suggestion-reader__state" role="alert"><h1 id="suggestion-title">{friendlyToastMessage(query.error, '자료를 불러오지 못했어요.')}</h1><p>저장된 주소를 다시 확인하거나 추천 목록으로 돌아가 주세요.</p>{query.error.status !== 404 && <button className="btn" onClick={() => query.refetch()}>다시 시도</button>}</div> : <>
-      <header className="suggestion-reader__heading"><p className="manabi-eyebrow">MANABI / READINGS</p>
+      <header className="suggestion-reader__heading"><p className="manabi-eyebrow">manabi 읽을거리</p>
         <div className="suggestion-reader__meta"><span>{langNameKo(s.language)}</span>{s.level && <span>{s.level}</span>}<span>{source.kind === 'digest' ? '뉴스 브리핑' : source.kind === 'video' ? (readable ? '영상 자막' : '추천 영상') : '기사 발췌'}</span></div>
         <h1 id="suggestion-title" lang={contentLang}>{s.title}</h1>
         <p className="suggestion-reader__byline">{s.channel_name}{license && <span>{license}</span>}{s.date && <span>자료 수집 {s.date.replaceAll('-', '.')}</span>}</p>

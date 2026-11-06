@@ -2,10 +2,11 @@
 
 import { useEffect } from 'react';
 import { reloadOnceForChunkError } from '@/lib/chunkReload';
+import { reportError } from '@/lib/reportError';
 import { retryRouteError } from '@/lib/chunkReload'; // 조각 오류의 「다시 시도」 = 문서 새로 받기
 
 export default function VocabError({ error, reset }) {
-  useEffect(() => { console.error('VocabError:', error); reloadOnceForChunkError(error); }, [error]);
+  useEffect(() => { reportError(error, { kind: 'boundary.vocab' }); reloadOnceForChunkError(error); }, [error]);
 
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>

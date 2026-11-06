@@ -5,11 +5,14 @@ import { AuthProvider } from '@/lib/AuthContext';
 import { ToastProvider } from '@/lib/ToastContext';
 import { useRouter } from 'next/navigation';
 import SpeechUnavailableNotice from '@/components/SpeechUnavailableNotice';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { installGlobalErrorHooks } from '@/lib/reportError';
 import { QUERY_CLIENT_DEFAULTS } from '@/lib/queryClientDefaults';
 
 export default function Providers({ children }) {
   const router = useRouter();
+  // 전역 오류(window error · unhandledrejection) 기록 — 한 번만 건다(ERROR-OBSERVE-001). 서버 렌더에서는 돌지 않는다.
+  useEffect(() => { installGlobalErrorHooks(); }, []);
   const [queryClient] = useState(
     () =>
       // 쓰기는 끊겨도 바로 시도한다 — 기기 보관함 · 실패 알림이 그 자리에서 돈다(queryClientDefaults.js).

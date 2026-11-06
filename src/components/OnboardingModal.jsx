@@ -12,10 +12,12 @@ export default function OnboardingModal() {
   const { user, profile, fetchProfile } = useAuth();
   const [displayName, setDisplayName] = useState(profile?.display_name || '');
   const [languages, setLanguages] = useState(['Japanese']);
-  const [levelJp, setLevelJp] = useState('N3 중급');
-  const [levelEn, setLevelEn] = useState('B1 중급');
-  const [levelFr, setLevelFr] = useState('B1 중급');
-  const [levelZh, setLevelZh] = useState('H3 중급');
+  // 기본 수준은 가장 낮은 단계(발매 점검 #2 — 오너 승인 2026-11-06 KST). 예전엔 N3 · B1 · H3 중급이 눌려 있어 처음 배우는 사람이
+  // 그대로 시작하면 중급으로 남았다. 자가 진단에서 뺀 프랑스어 A0 · 중국어 OT 다음 단계부터.
+  const [levelJp, setLevelJp] = useState(LEVELS.Japanese[0]);
+  const [levelEn, setLevelEn] = useState(LEVELS.English[0]);
+  const [levelFr, setLevelFr] = useState(LEVELS.French[1]);
+  const [levelZh, setLevelZh] = useState(LEVELS.Chinese[1]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const modalRef = useRef(null);
@@ -219,6 +221,8 @@ export default function OnboardingModal() {
               </div>
             </div>
           )}
+
+          <p className="onboarding-modal__hint">잘 모르겠으면 그대로 두세요. 오늘 학습에서 한 번 더 맞춰요.</p>
 
           {error && <p role="alert" style={{ color: 'var(--danger-text)', fontSize: '0.85rem' }}>{error}</p>}
 
