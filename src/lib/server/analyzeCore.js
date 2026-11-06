@@ -7,6 +7,7 @@ import { tokenizeJaLine } from '@/lib/server/tokenizeJa';
 import { tokenizeEnLine } from '@/lib/server/tokenizeEn';
 import { tokenizeZhLine } from '@/lib/server/tokenizeZh';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
+import { loadZhCuratedIndex, pickZhCuratedMeaning } from '@/lib/server/zhCuratedMeaning';
 import {
   collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, zhPosMarkKey,
   pickZhMeaning, needsZhMeaningPosRefresh, needsZhJaBackfill, buildZhPosWriteback, splitZhToken,
@@ -221,6 +222,18 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
     zhSenseStats.joinSuggested = joined.suggested;
   }
 
+  // 4.8. 중국어 빈 뜻 예방 — 공유 사전에 뜻이 없는 낱말이 하나라도 있을 때만 교재 표제어 색인을 연다(병음 대조 · 토큰에만).
+  // 색인을 못 열면 지금처럼 빈 뜻으로 간다.
+  let zhCurated = null;
+  let zhCuratedFills = 0;
+  if (language === 'Chinese' && assemblyLines.some(({ tokens }) => tokens.some((t) => /\p{Script=Han}/u.test(t.text || '')
+    && !(cache.get(t.sep_link || t.base_form)?.meanings || []).some((m) => m?.meaning)))) {
+    zhCurated = await loadZhCuratedIndex().catch((err) => {
+      console.warn('[api/analyze] curated zh index load failed:', err?.message);
+      return null;
+    });
+  }
+
   // 5. processed_json 호환 응답 조립
   // 불필요 furigana 필터: 히라가나·카타카나·기호만인 토큰은 reading 무시
   const isAllHiragana = s => /^[\u3040-\u309F\u30FC]+$/.test(s);
@@ -286,11 +299,17 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
       // 뜻도 문맥 품사를 따른다 — 짚힌 pos와 일치하는 뜻 우선, 없으면 첫 뜻(기존 동작).
       // 뜻 검수 켜짐: 검증된 후보 번호·문맥 뜻이 있으면 그것(토큰에만 — 사전 행에 쓰지 않는다).
       const zhSense = zhSenseOn ? resolveZhTokenSense(posPicks.get(zhPosMarkKey(lineIdx, t.text)), t) : null;
-      const meaning = language === 'Chinese'
+      const dictMeaning = language === 'Chinese'
         ? (zhSense?.meaning || pickZhMeaning(cached?.meanings, pos))
         : language === 'English'
           ? enResolved.meaning
           : (cached?.meanings?.[0]?.meaning || '');
+      // 공유 사전이 비었을 때만 교재 표제어(토큰 병음 대조) — 출처 표식 meaning_src: 'curated'.
+      const curatedMeaning = !dictMeaning && zhCurated
+        ? pickZhCuratedMeaning(zhCurated, { text: t.text, reading: t.furigana, pos })
+        : '';
+      if (curatedMeaning) zhCuratedFills++;
+      const meaning = dictMeaning || curatedMeaning;
       dictionary[tokenId] = {
         text: t.text,
         furigana: cleanFurigana(t.text, rawReading),
@@ -306,6 +325,7 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
         ...(posAll ? { pos_all: posAll } : {}),
         // 화면 표시용 내부 표식('ctx' 문맥 뜻 | 'doubt' 의심) — 「AI」 표로 그리지 않는다(오너 결정 10-07).
         ...(zhSense?.meaningCheck ? { meaningCheck: zhSense.meaningCheck } : {}),
+        ...(curatedMeaning ? { meaning_src: 'curated' } : {}),
       };
     });
     const lineResult = boundaryLineResult(boundaryState, lineIdx, sequence, dictionary);
@@ -355,6 +375,7 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
         fallbacks: enFallbacks,
       },
       ...(zhSenseStats ? { zhSense: zhSenseStats } : {}),
+      ...(zhCuratedFills ? { zhCuratedFills } : {}),
     },
   };
 }
