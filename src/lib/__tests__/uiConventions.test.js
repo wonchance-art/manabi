@@ -254,7 +254,8 @@ describe('⑤ 접근성 하한 — 줄어들면 잡는다', () => {
 
   it('44px 터치 타깃·:focus-visible·prefers-reduced-motion이 하한 이상', () => {
     // 하한 재고정 2026-11-04 KST 실측(505 / 159 / 47) — 옛 하한 120 / 36 / 12는 실측의 1/4이라 가드가 거의 안 걸렸다.
-    expect(count(/44px/g)).toBeGreaterThanOrEqual(505);
+    // 2026-11-06 KST 504: 어디에도 붙지 않던 죽은 규칙(.discover-feature-link)과 함께 44px 하나가 빠졌다 — 그려지던 단추가 아니다.
+    expect(count(/44px/g)).toBeGreaterThanOrEqual(504);
     expect(count(/focus-visible/g)).toBeGreaterThanOrEqual(159);
     expect(count(/prefers-reduced-motion/g)).toBeGreaterThanOrEqual(47);
   });
