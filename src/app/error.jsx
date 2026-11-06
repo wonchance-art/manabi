@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { reloadOnceForChunkError } from '@/lib/chunkReload';
+import { reportError } from '@/lib/reportError';
 import { retryRouteError } from '@/lib/chunkReload'; // 조각 오류의 「다시 시도」 = 문서 새로 받기
 import Link from 'next/link';
 // (app) 레이아웃 밖이라 셸 CSS가 따라오지 않는다 — Layout과 같은 순서로 직접 불러온다.
@@ -10,7 +11,7 @@ import '@/components/web/web-shell.css';
 
 export default function RouteError({ error, reset }) {
   useEffect(() => {
-    console.error('[route-error]', error);
+    reportError(error, { kind: 'boundary.root' }); // 콘솔 + 운영 오류 기록(ERROR-OBSERVE-001 — 오류 ID로 30일 추적)
     reloadOnceForChunkError(error); // 새 배포 뒤 옛 조각 404 → 한 번 새로 고침(PWA-SHELL-001 ⑧)
   }, [error]);
 
