@@ -28,7 +28,7 @@ vi.mock('@/lib/supabaseServer', async (importOriginal) => {
   return { ...actual, createSupabaseServerClient: async () => ({ from: () => chain }), createSupabasePublicClient: () => ({ from: () => chain }) };
 });
 
-import { DEFAULT_SITE_URL, OG_DEFAULTS, OG_IMAGE, PRIVATE_ROBOTS, ROBOTS_DISALLOW, canonicalFor, publicMetadata, siteUrl, withOgDefaults } from '@/lib/seo';
+import { DEFAULT_SITE_URL, INDEX_EXTERNAL_SUGGESTIONS, OG_DEFAULTS, OG_IMAGE, PRIVATE_ROBOTS, ROBOTS_DISALLOW, canonicalFor, publicMetadata, siteUrl, suggestionMetadata, withOgDefaults } from '@/lib/seo';
 import { legacyTextbookTarget } from '@/lib/bookNavigation';
 import { bookEntries, koreanDate, levelListEntries, studiesEntries } from '@/lib/sitemapEntries';
 import { STUDY_COUNTRIES } from '@/content/studies';
@@ -181,7 +181,7 @@ describe('모든 화면 분류 — 공개(자기 정본) · noindex · 리디렉
   it('공개 화면 표본 — 감사에 나온 주소들이 자기 정본을 단다', () => {
     const byConcrete = new Map(publicPages().map((page) => [page.concrete, page]));
     for (const concrete of ['/home', '/lessons', '/books/japanese-n5', '/discover', '/studies', '/studies/japan', '/studies/japan/jp-overview', '/privacy',
-      '/terms', '/help', '/credits', '/guide', '/japanese/vocab/n5', '/viewer/45', '/suggestions/45']) {
+      '/terms', '/help', '/credits', '/guide', '/japanese/vocab/n5', '/viewer/45']) {
       expect(byConcrete.has(concrete), concrete).toBe(true);
     }
     const doc = publicPages().find((page) => page.route === '/studies/[country]/[slug]');
@@ -361,5 +361,28 @@ describe('사이트 지도 — 실제 원천 · 공개 화면만 · 안정된 la
     expect(studies[0]).toEqual({ url: canonicalFor('/studies'), lastModified: STUDY_COUNTRIES.flatMap((c) => c.docs.map((d) => d.updated)).sort().at(-1) });
     const books = await bookEntries(async (bookId) => (bookId === 'japanese-n3' ? { published_at: '2026-11-01' } : null));
     expect(books).toEqual([{ url: canonicalFor('/books/japanese-n3'), lastModified: '2026-11-01' }]);
+  });
+});
+
+describe('추천 읽을거리(RSS 외부 기사) — 기본 noindex · 사이트 지도 제외 · 스위치 한 줄', () => {
+  it('기본값은 끔 — 네 판(서재 · home · discover · reading) 모두 noindex, 정본은 글 한 편', async () => {
+    expect(INDEX_EXTERNAL_SUGGESTIONS).toBe(false);
+    const files = pages.filter((page) => page.route.startsWith('/suggestions/[id]'));
+    expect(files.length).toBe(4);
+    for (const page of files) {
+      expect(isNoindex(page.meta.robots), page.file).toBe(true);
+      expect(page.meta.alternates.canonical).toBe(canonicalFor('/suggestions/45'));
+    }
+  });
+  it('스위치를 켜면 자기 정본 공개 화면(robots 없음)이 된다', () => {
+    const on = suggestionMetadata('45', { title: '추천 읽을거리' }, true);
+    expect(on.robots).toBeUndefined();
+    expect(on.alternates.canonical).toBe(canonicalFor('/suggestions/45'));
+    expect(on.openGraph.images[0].url).toBe(OG_IMAGE.url);
+  });
+  it('사이트 지도에 추천 읽을거리 주소가 없다', async () => {
+    const { default: sitemap } = await import('@/app/sitemap');
+    const urls = (await sitemap()).map((entry) => entry.url);
+    expect(urls.some((url) => url.includes('/suggestions/'))).toBe(false);
   });
 });

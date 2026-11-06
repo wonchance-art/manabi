@@ -63,6 +63,20 @@ export function publicMetadata(path, metadata = {}) {
   };
 }
 
+/**
+ * 추천 읽을거리(RSS로 모은 외부 기사) 색인 여부 — 기본 끔(오케스트레이터 기본값 2026-11-06 KST).
+ * 외부 저작물 본문을 우리 주소로 색인시키면 IP 정책(저작물 본문 복제 금지 — docs/policy-brand-content.md)과
+ * 중복 콘텐츠 위험이 겹친다. 오너가 허용하면 이 한 줄을 true로 — 그때는 자기 정본(publicMetadata)으로 바뀐다.
+ * 사이트 지도에는 어느 쪽이든 넣지 않는다(sitemapEntries.js — 넣을지는 별도 결정).
+ */
+export const INDEX_EXTERNAL_SUGGESTIONS = false;
+
+/** 추천 읽을거리 한 편의 메타 — 위 스위치를 따른다. noindex여도 정본 주소는 글 한 편(돌아갈 곳 판과 무관)으로 둔다. */
+export function suggestionMetadata(id, metadata = { title: '추천 읽을거리' }, indexed = INDEX_EXTERNAL_SUGGESTIONS) {
+  const meta = publicMetadata(`/suggestions/${encodeURIComponent(id)}`, metadata);
+  return indexed ? meta : { ...meta, robots: { index: false, follow: true } };
+}
+
 /** 개인 · 로그인 · 앱 전용 화면 — 검색 결과에 싣지 않는다. */
 export const PRIVATE_ROBOTS = Object.freeze({ index: false, follow: false });
 export const PRIVATE_METADATA = Object.freeze({ robots: PRIVATE_ROBOTS });
