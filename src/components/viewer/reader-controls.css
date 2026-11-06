@@ -457,10 +457,10 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 .viewer-layout .reader-card-actions .review-score-btn--easy {background:var(--grade-easy-bg);color:var(--grade-easy);}
 .viewer-layout .save-grade__sub,.viewer-layout .save-grade__key {opacity:1;color:var(--muted);}
 .viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn {border-color:var(--reader-line);color:var(--reader-ink);}
-.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--again {background:color-mix(in srgb,var(--danger) 13%,var(--reader-paper));color:var(--reader-ink);}
-.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--hard {background:color-mix(in srgb,var(--warning) 13%,var(--reader-paper));color:var(--reader-ink);}
-.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--good {background:var(--reader-selected);color:var(--reader-ink);}
-.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--easy {background:color-mix(in srgb,var(--reader-accent) 15%,var(--reader-paper));color:var(--reader-ink);}
+.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--again {background:color-mix(in srgb,var(--grade-again) 22%,var(--reader-paper));color:color-mix(in srgb,var(--grade-again) 40%,var(--reader-ink));}
+.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--hard {background:color-mix(in srgb,var(--grade-hard) 22%,var(--reader-paper));color:color-mix(in srgb,var(--grade-hard) 40%,var(--reader-ink));}
+.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--good {background:color-mix(in srgb,var(--grade-good) 22%,var(--reader-paper));color:color-mix(in srgb,var(--grade-good) 40%,var(--reader-ink));}
+.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--easy {background:color-mix(in srgb,var(--grade-easy) 22%,var(--reader-paper));color:color-mix(in srgb,var(--grade-easy) 40%,var(--reader-ink));}
 .viewer-layout[data-reader-theme="dark"] .save-grade__sub,.viewer-layout[data-reader-theme="dark"] .save-grade__key {color:var(--reader-muted);}
 /* 키 숫자는 이름 위 작은 회색 줄 — 왼쪽 위 절대 배치는 320 · 글자 150%에서 이름 글자에 겹쳤다(뷰어 점검 F2). */
 .viewer-layout .reader-card-actions .save-grade__key {position:static;display:block;margin:0 0 2px;font-size:.75em;font-weight:600;line-height:1.2;}

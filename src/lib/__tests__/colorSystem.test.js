@@ -235,4 +235,13 @@ describe('등급 네 칸 — 뷰어 단어 카드 = 단어장(복습실) 같은 
     expect(viewer).toContain('.viewer-layout .save-grade__sub,.viewer-layout .save-grade__key {opacity:1;color:var(--muted);}');
     expect(room).toContain('.manabi-review-room .save-grade__key { opacity:1; color:var(--muted); }');
   });
+  // 어두운 읽기면(오너 승인 2026-11-06 KST — 목업 NUqobZKrbeRyEb86jK3Ay4 ①): 같은 색상 계열의 어두운 판.
+  // 바탕 = 등급색 22%를 읽기면에, 글자 = 등급색 40%를 밝은 글자에 섞는다 — 교재 언어색(--reader-selected · --reader-accent)은 쓰지 않는다.
+  for (const g of ['again', 'hard', 'good', 'easy']) {
+    it(`어두운 테마 「${g}」도 --grade-${g} 계열(바탕 22% · 글자 40%)`, () => {
+      const sel = `.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--${g} {`;
+      const rule = sliceBetween(viewer, sel, '}').slice(sel.length);
+      expect(rule).toBe(`background:color-mix(in srgb,var(--grade-${g}) 22%,var(--reader-paper));color:color-mix(in srgb,var(--grade-${g}) 40%,var(--reader-ink));`);
+    });
+  }
 });

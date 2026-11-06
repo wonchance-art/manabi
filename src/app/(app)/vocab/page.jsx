@@ -6,8 +6,8 @@ import { prefetchReviewRoomFirstScreen, reviewRoomSession } from '@/lib/server/r
 
 export const metadata = {
   title: '복습',
-  description: '단어와 문법을 한곳에서 — FSRS 간격 반복으로 돌아온 것만 골라 복습해요.',
-  openGraph: { title: '복습 | manabi', description: '단어와 문법을 한곳에서 — FSRS 간격 반복으로 돌아온 것만 골라 복습해요.' },
+  description: '단어와 문법을 한곳에서 — 잊을 때쯤 돌아온 것만 골라 복습해요.',
+  openGraph: { title: '복습 | manabi', description: '단어와 문법을 한곳에서 — 잊을 때쯤 돌아온 것만 골라 복습해요.' },
 };
 // 계정마다 다른 숫자를 싣는다 — 늘 요청마다 그린다(공유 캐시 없음, 응답은 private no-store).
 export const dynamic = 'force-dynamic';
