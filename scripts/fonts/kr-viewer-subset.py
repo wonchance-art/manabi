@@ -25,7 +25,11 @@ SOURCE_URL = 'https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskr
 SOURCE_SHA256 = '194018e6b2b293a7964f037b25c0249ce1418bc9ab3c971060a03aa57861e252'
 SOURCE_VERSION = 'Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603'
 OUT_DIR = os.path.join(ROOT, 'src', 'components', 'fonts', 'kr-viewer')
-WOFF2 = 'noto-sans-kr-viewer.woff2'
+# 글꼴 파일은 public 아래 내용 해시 이름으로 — 뷰어 레이아웃이 그 주소를 미리 받는다(preload). 첫 그림 뒤에 도착하면 상단 막대의 한글이
+# 대체 글꼴 → 하위 집합으로 바뀌며 도구 묶음이 4px 밀렸다(운영 실측 CLS 0.0002, #1721 뒤). 이름이 내용이라 1년 immutable(next.config).
+PUBLIC_DIR = os.path.join(ROOT, 'public', 'fonts', 'kr-viewer')
+PUBLIC_HREF = '/fonts/kr-viewer'
+WOFF2_STEM = 'noto-sans-kr-viewer'
 # src/app/layout.jsx Noto_Sans_KR({ weight: ['400', '500', '700'] })와 같은 셋 — 계약이 대조한다.
 NEXT_FONT_WEIGHTS = ('400', '500', '700')
 CACHE = os.path.join(os.environ.get('MANABI_FONT_CACHE') or tempfile.gettempdir(), 'manabi-font-src')
@@ -77,7 +81,8 @@ def main():
     if font['name'].getDebugName(5) != SOURCE_VERSION:
         sys.exit(f'원본 판이 다르다: {font["name"].getDebugName(5)}')
     os.makedirs(OUT_DIR, exist_ok=True)
-    out = os.path.join(OUT_DIR, WOFF2)
+    os.makedirs(PUBLIC_DIR, exist_ok=True)
+    out = os.path.join(PUBLIC_DIR, f'{WOFF2_STEM}.tmp.woff2')
     options = subset.Options()
     options.flavor = 'woff2'
     options.layout_features = ['*']
@@ -87,6 +92,8 @@ def main():
     sub = subset.Subsetter(options=options)
     sub.populate(text=chars)
     sub.subset(font)
+    # 결정적 산출 — 저장 시각을 head.modified에 다시 쓰지 않는다(같은 입력이면 같은 바이트 · 같은 해시 이름).
+    font.recalcTimestamp = False
     subset.save_font(font, out, options)
 
     check = TTFont(out)
@@ -97,13 +104,22 @@ def main():
     if 'fvar' not in check:
         sys.exit('가변 wght 축이 빠졌다')
 
+    digest = sha256(out)
+    final = os.path.join(PUBLIC_DIR, f'{WOFF2_STEM}.{digest[:16]}.woff2')
+    for old in os.listdir(PUBLIC_DIR):
+        if old.startswith(WOFF2_STEM) and old.endswith('.woff2') and os.path.join(PUBLIC_DIR, old) not in (out, final):
+            os.remove(os.path.join(PUBLIC_DIR, old))
+    os.replace(out, final)
+    out = final
+    href = f'{PUBLIC_HREF}/{os.path.basename(final)}'
+
     codepoints = sorted(ord(c) for c in chars)
     meta = {
         'note': 'KR-VIEWER-SUBSET-001 — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다.',
         'chars': chars,
         'count': len(chars),
         'source': {'url': SOURCE_URL, 'sha256': SOURCE_SHA256, 'version': SOURCE_VERSION},
-        'woff2': {'file': WOFF2, 'sha256': sha256(out), 'bytes': os.path.getsize(out)},
+        'woff2': {'href': href, 'sha256': digest, 'bytes': os.path.getsize(out)},
         'unicodeRange': ranges(codepoints),
     }
     with open(os.path.join(OUT_DIR, 'subset.json'), 'w', encoding='utf8') as f:
@@ -113,7 +129,7 @@ def main():
     # next/font(가장 가까운 선언 굵기로 맞춤)와 글자 폭이 달라진다(화면 벽 실측 — 「이 글에서 아는 말 …」 줄이 몇 px 밀림).
     faces = ''.join(
         "@font-face{font-family:'Noto Sans KR';font-style:normal;"
-        f"font-weight:{w};font-display:swap;src:url(./{WOFF2}) format('woff2');unicode-range:{meta['unicodeRange']}}}\n"
+        f"font-weight:{w};font-display:swap;src:url({href}) format('woff2');unicode-range:{meta['unicodeRange']}}}\n"
         for w in NEXT_FONT_WEIGHTS
     )
     css = (
@@ -124,7 +140,7 @@ def main():
     )
     with open(os.path.join(OUT_DIR, 'krViewerSubset.css'), 'w', encoding='utf8') as f:
         f.write(css)
-    print(f'{len(chars)}자 · {meta["woff2"]["bytes"]} bytes → {os.path.relpath(out, ROOT)}')
+    print(f'{len(chars)}자 · {meta["woff2"]["bytes"]} bytes → {os.path.relpath(out, ROOT)} ({href})')
 
 
 if __name__ == '__main__':

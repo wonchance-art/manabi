@@ -146,6 +146,11 @@ const nextConfig = {
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
       {
+        // 뷰어 한글 하위 집합(KR-VIEWER-SUBSET-001) — 파일 이름이 내용 sha256 앞 16자(scripts/fonts/kr-viewer-subset.py)라 1년 immutable.
+        source: '/fonts/kr-viewer/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
         // /embed/* 전용 — 게더타운 등 임의 호스트의 iframe 안에 띄워야 하므로 프레이밍을 개방한다.
         // X-Frame-Options는 넣지 않고 CSP frame-ancestors * 만 둔다.
         // (위젯은 자체 로그인 뒤에만 실제 콘텐츠가 뜨는 자기완결 구조라, 임베드를 열어줘도 클릭재킹으로 얻을 이득이 없다.)

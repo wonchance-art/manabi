@@ -884,6 +884,9 @@
   Google 조각과 같은 표 구성(힌팅 없음 · 가변 wght)으로 묶은 woff2 50.9KB + 목록 JSON + CSS(굵기 400/500/700 — next/font와 같은 선언)를 뷰어 레이아웃에만 싣는다.
   목록 밖 글자는 원래 조각으로(unicode-range). 계약: 추출 ⊆ 목록 · sha · unicode-range = 목록 · 뷰어 전용. 벽 뷰어 4장면 × 2 픽셀 차 0 · 같은 글자 woff2 요청 10 → 1.
   보류 기록: ViewerPage 분할(a)은 #1673 · 디자인 작업 뒤 별도 리팩터링 과제(오케스트레이터 판정 — 효과 약 0.1s 대비 위험).
+  #1721 병합(45ab2eae) 뒤 운영 실측: woff2 19 → 12개 · 462 → 385KB, page 조각 6.43 → 6.27s. 그러나 CLS 0 → 0.0002 — 하위 집합이 첫 그림 뒤(약 5.5s)에 와
+  상단 막대 한글이 대체 → 실제 글꼴로 바뀌며 viewer-topbar__tools가 4px 밀림(하위 집합 차단 시 0). **후속 PR `claude/kr-subset-preload`**: woff2를 public/fonts/kr-viewer/
+  내용 해시 이름으로 · 뷰어 레이아웃 preload(as font) · 1년 immutable · SW 옮기기 · 결정적 산출(recalcTimestamp False, 윤곽선 408자 동일 확인). 운영 HTML 주입 시험 5/5 CLS 0.
 - **VIEWER-FONT-SPLIT-001 뷰어 첫 그림 — SC · TC 렌더 차단 CSS 걷기 (2026-11-07 KST)** 오케스트레이터 승인(G 우선순위 변경 · 화면 동일 성능):
   진단(운영 · iPhone 13 · 150ms/1.6Mbps · CPU 4배, 쿼리 없는 /viewer/45): TTFB 0.42–0.66s · HTML 16KB ~0.9s · 렌더 차단 CSS 18개 끝 2.75s → FCP 2.84–3.06s ·
   LCP(H1, SSR 본문) 3.20–3.43s · 하이드레이션 긴 작업 6.8–7.8s. CSS 18개 중 @font-face만 든 5개 gz 약 400KB, 그중 SC · TC 약 196KB를 `(app)/viewer/layout`이 늘 싣는다.
