@@ -184,7 +184,7 @@ body:has(.manabi-app){background-color:#f6f4ee}
 .discover-tile--news{--tc:var(--fr)}.discover-tile--classics{--tc:var(--ja)}.discover-tile--magazine{--tc:var(--zh)}
 a.discover-tile:hover{background:color-mix(in srgb,var(--ink) 4%,var(--sheet))}
 a.discover-tile:focus-visible{outline:3px solid var(--tc);outline-offset:3px}
-.discover-tile__head{display:flex;flex-direction:column;justify-content:space-between;height:124px;padding:20px 24px;background:var(--tc);color:#fff;flex:none}
+.discover-tile__head{display:flex;flex-direction:column;justify-content:space-between;height:124px;padding:20px 24px;background:var(--tc);color:var(--on-fill);flex:none}
 .discover-tile__kicker{font:700 12px/1.4 var(--font-noto-kr),sans-serif;letter-spacing:.02em;color:color-mix(in srgb,#fff 90%,transparent)}
 .discover-tile__big{font:700 32px/1 var(--font-serif-kr),serif;letter-spacing:-1px}
 .discover-tile__body{display:flex;flex-direction:column;gap:4px;padding:18px 24px 0;min-width:0}
@@ -196,7 +196,7 @@ a.discover-tile:focus-visible{outline:3px solid var(--tc);outline-offset:3px}
 .discover-tile__cover--blank{width:60px;height:84px;border-radius:1px 2px 2px 1px;background:color-mix(in srgb,var(--ink) 8%,var(--sheet))}
 .discover-tile__bottom{margin-top:auto;display:flex;align-items:center;gap:12px;padding:0 24px 22px}
 .discover-tile__spacer{flex:1}
-.discover-tile__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;background:var(--tc);color:#fff;flex:none}
+.discover-tile__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;background:var(--tc);color:var(--on-fill);flex:none}
 .discover-tile__pill i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:#fff;color:var(--tc)}
 div.discover-tile .discover-tile__title{color:var(--muted)}
 .discover-more{margin:0 0 40px}
@@ -225,7 +225,7 @@ div.discover-tile .discover-tile__title{color:var(--muted)}
 /* 읽은 자리(로그인 · 그 책을 연 적 있을 때만) — 위 오른쪽 가름끈 리본에 퍼센트, 다 읽으면 아래 오른쪽 둥근 ✓(둘은 함께 서지 않는다).
    둘 다 종이색 테두리 — 빨간 천 장정 위에서도 읽힌다. 크기는 표지 폭의 약 20%(Kindle 서재 선례 ~18%, 퍼센트가 읽히는 10px 하한). */
 .card-ribbon{position:absolute;z-index:2;top:-2px;right:7px;padding:0 1px 1.5px;background:var(--sheet);clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 4px),0 100%);filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
-.card-ribbon>span{display:block;min-width:26px;padding:6px 3px 8px;font-size:11px;line-height:11px;letter-spacing:-.2px;font-weight:700;text-align:center;color:#fff;background:linear-gradient(var(--primary-dark) 0 2px,var(--primary) 2px);clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 4px),0 100%)}
+.card-ribbon>span{display:block;min-width:26px;padding:6px 3px 8px;font-size:11px;line-height:11px;letter-spacing:-.2px;font-weight:700;text-align:center;color:var(--on-fill);background:linear-gradient(var(--primary-dark) 0 2px,var(--primary) 2px);clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 4px),0 100%)}
 .card-ribbon small{font-size:.7em;margin-left:.5px}
 .card-check{position:absolute;z-index:2;right:7px;bottom:7px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 2px var(--sheet),0 1px 3px rgba(0,0,0,.3)}
 .card-check svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}

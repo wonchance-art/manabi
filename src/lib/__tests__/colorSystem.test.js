@@ -245,3 +245,25 @@ describe('등급 네 칸 — 뷰어 단어 카드 = 단어장(복습실) 같은 
     });
   }
 });
+
+describe('칠한 면 위 글자 = --on-fill (2026-11-06 KST, 화면 무변화)', () => {
+  // 주 버튼 · 활성 칩 · 배지 · 리본 위 흰 글자를 직접 값(#fff · white) 대신 한 이름으로. 값은 그대로 #fff.
+  // 단어장 · 채점 단추(.vocab-row__check · .review-score-btn)는 데이터 세션 작업 중이라 이번에 손대지 않았다(그쪽 정리 때 같이).
+  const FILES = ['src/index.css', 'src/components/web/web-shell.css', 'src/components/learn/learn.css',
+    'src/components/levels/level-list.css', 'src/views/CourseMapPage.module.css'];
+  it(':root에 한 번, 값 #fff', () => {
+    const root = sliceBetween(read('src/index.css'), ':root {', '}');
+    expect(root).toMatch(/--on-fill: #fff;/);
+    expect(read('src/index.css').match(/--on-fill:/g)).toHaveLength(1);
+  });
+  it('이 파일들의 color 선언에 흰색 직접 값이 다시 생기지 않는다(예외 둘)', () => {
+    const hits = [];
+    for (const f of FILES) {
+      const css = read(f).replace(/\/\*[\s\S]*?\*\//g, '');
+      for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+        if (/(^|[;\s])color\s*:\s*(#fff|#ffffff|white)\b/i.test(m[2])) hits.push(`${f} ${m[1].trim()}`);
+      }
+    }
+    expect(hits.map(h => h.replace(/\s+/g, ' '))).toEqual(['src/index.css .vocab-row__check', 'src/index.css .review-score-btn']);
+  });
+});

@@ -180,7 +180,7 @@
 }
 
 .trackActive {
-  color: #fff;
+  color: var(--on-fill);
   background: var(--primary);
 }
 
@@ -212,7 +212,7 @@
 }
 
 .levelActive {
-  color: #fff;
+  color: var(--on-fill);
   background: var(--primary);
 }
 

@@ -65,6 +65,8 @@
   --danger-tint: color-mix(in srgb, var(--danger) 15%, transparent);
   /* 위험 글자 — 셸은 #A3352B(web-shell.css). 옛 판(셸 밖)은 표시 색 그대로. 테두리 · 점 · 꽉 찬 바탕은 --danger. */
   --danger-text: var(--danger);
+  /* 칠한 면(주 버튼 · 활성 칩 · 배지 · 리본) 위 글자 — 직접 쓰던 #fff · white를 한 이름으로(값 같음, 2026-11-06 KST). */
+  --on-fill: #fff;
 
   /* 모달 스크림 — 뒤 화면을 덮는 검정. 값이 흩어져 있던 것을 토큰으로 모은다(v2-K 잔여).
      검정이라 테마별 재정의가 없다(밝은 테마에서도 덮는 쪽은 검정이다).
@@ -400,7 +402,7 @@ button {
 }
 
 .gnb__link.active {
-  color: white;
+  color: var(--on-fill);
   background: var(--primary);
   box-shadow: 0 2px 12px color-mix(in srgb, var(--primary) 35%, transparent);
 }
@@ -529,7 +531,7 @@ button {
   justify-content: center;
   font-weight: 600;
   font-size: 0.875rem;
-  color: white;
+  color: var(--on-fill);
   transition: transform var(--transition-fast);
 }
 
@@ -565,7 +567,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   top: -100%;
   left: 16px;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-fill);
   padding: 8px 16px;
   border-radius: var(--radius-md);
   font-size: 0.85rem;
@@ -596,7 +598,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .offline-banner {
   position: relative;
   background: var(--warning);
-  color: #fff;
+  color: var(--on-fill);
   text-align: center;
   padding: 8px 16px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -705,7 +707,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* variants */
 .btn--primary {
   background: var(--primary);
-  color: #fff;
+  color: var(--on-fill);
   box-shadow: 0 4px 15px var(--primary-glow);
 }
 /* 호버 들림은 마우스 기기만(PWA-SHELL-001 ④) — 터치는 누른 뒤에도 :hover가 남아 단추가 들린 채 있었다(390 탭 실측 translateY(-1px) · brightness 1.1 잔류). */
@@ -724,7 +726,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .btn--danger {
   background: var(--danger);
-  color: #fff;
+  color: var(--on-fill);
 }
 @media (hover: hover) {
   .btn--danger:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
@@ -856,12 +858,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .tab-pills__item--primary {
   background: var(--primary);
-  color: #fff;
+  color: var(--on-fill);
 }
 
 .tab-pills__item--accent {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-fill);
 }
 
 /* ========= Card variants ========= */
@@ -1864,8 +1866,8 @@ body.is-review-chrome .page-container { padding-top: 8px; }
   transition: all var(--transition-fast);
 }
 
-.toggle-btn--primary { background: var(--primary); color: #fff; border-color: var(--primary); }
-.toggle-btn--accent  { background: var(--accent);  color: #fff; border-color: var(--accent); }
+.toggle-btn--primary { background: var(--primary); color: var(--on-fill); border-color: var(--primary); }
+.toggle-btn--accent  { background: var(--accent);  color: var(--on-fill); border-color: var(--accent); }
 
 .level-group {
   display: flex;
@@ -1886,7 +1888,7 @@ body.is-review-chrome .page-container { padding-top: 8px; }
 
 .level-btn--active {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-fill);
   border-color: var(--accent);
 }
 
@@ -2141,7 +2143,7 @@ a.viewer-badge:hover {
 
 .grammar-btn--danger {
   background: #e17055;
-  color: #fff;
+  color: var(--on-fill);
   box-shadow: 0 4px 15px var(--primary-glow);
 }
 
@@ -2507,7 +2509,7 @@ a.viewer-badge:hover {
 
 .analyzing-banner__refresh {
   background: var(--primary);
-  color: #fff;
+  color: var(--on-fill);
   border: none;
   padding: 4px 12px;
   border-radius: 4px;
@@ -3279,7 +3281,7 @@ a.viewer-badge:hover {
 .modal__header {
   padding: 20px 25px;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-fill);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -3354,7 +3356,7 @@ a.viewer-badge:hover {
 }
 
 .onboarding-modal__title {
-  color: #fff;
+  color: var(--on-fill);
   font-size: 1.2rem;
   font-weight: 700;
   margin-bottom: 6px;
@@ -3541,7 +3543,7 @@ a.viewer-badge:hover {
 .chip--active {
   background: var(--primary);
   border-color: var(--primary);
-  color: #fff;
+  color: var(--on-fill);
 }
 /* 함께 읽는 글 · 서재 도구의 정렬(NATIVE-FEEL-P1 ⓐ — 오너 「권장대로 진행」 2026-10-26 KST): 칩 줄에서 떼어 낸 자기 자리의
    글자 단추 꼴 선택 상자(테두리 · 바탕 없이 「최신순 ▾」). 데스크톱은 칩 글자 크기(0.82rem) 그대로, 터치 기기는 16px(index.css ④ — iOS 초점 확대). */
@@ -4103,7 +4105,7 @@ a.viewer-badge:hover {
   border: none;
   border-radius: var(--radius-md);
   background: var(--primary);
-  color: #fff;
+  color: var(--on-fill);
   font-weight: 600;
   font-size: 0.88rem;
   cursor: pointer;
@@ -4853,7 +4855,7 @@ a.viewer-badge:hover {
   height: 24px;
   border-radius: 50%;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-fill);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5485,7 +5487,7 @@ a.viewer-badge:hover {
   padding: 12px;
   border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: #fff;
+  color: var(--on-fill);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -6124,7 +6126,7 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 .guide-cta__btn {
   white-space: nowrap;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-fill);
   box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 30%, transparent);
   border-radius: var(--radius-md);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -6265,7 +6267,7 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
   position: absolute; top: -8px; left: 14px;
   font-size: 0.65rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.06em;
-  background: var(--primary); color: #fff;
+  background: var(--primary); color: var(--on-fill);
   padding: 2px 8px; border-radius: var(--radius-full);
 }
 .completion-next-card__flag {
@@ -6660,7 +6662,7 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
   font-size: 0.68rem; font-weight: 800; color: var(--text-muted);
 }
 .myplan-chip.is-done { background: rgba(74,138,92,0.14); border-color: rgba(74,138,92,0.4); color: var(--text-primary); }
-.myplan-chip.is-done .myplan-chip__n { background: #4A8A5C; color: #fff; }
+.myplan-chip.is-done .myplan-chip__n { background: #4A8A5C; color: var(--on-fill); }
 .myplan-chip.is-next { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
 .myplan-chip.is-next .myplan-chip__n { color: var(--primary-light); }
 
@@ -7452,7 +7454,7 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 }
 .fr-check__next {
   font-size: 0.86rem; font-weight: 700;
-  color: #fff;
+  color: var(--on-fill);
   background: var(--primary);
   border-radius: var(--radius-full);
   padding: 7px 16px;

@@ -73,7 +73,7 @@ a.learn-tile:hover{background:var(--learn-soft)}
 .learn-resume{--lw:color-mix(in srgb,var(--lc) 9%,var(--sheet))}
 .learn-resume__glyph{position:absolute;z-index:1;pointer-events:none;font:300 130px/1 var(--font-noto-jp),var(--font-noto-sc, 'Noto Sans SC'),sans-serif;right:-8px;top:-16px;color:color-mix(in srgb,#fff 17%,transparent)}
 .learn-resume__glyph[lang=zh]{font-family:var(--font-noto-sc, 'Noto Sans SC'),sans-serif}
-.learn-resume__head{display:flex;flex-direction:column;justify-content:space-between;height:124px;padding:20px 24px;background:var(--lc);color:#fff;flex:none}
+.learn-resume__head{display:flex;flex-direction:column;justify-content:space-between;height:124px;padding:20px 24px;background:var(--lc);color:var(--on-fill);flex:none}
 .learn-resume__kicker{font:700 12px/1.4 var(--font-noto-kr),sans-serif;letter-spacing:.02em;color:color-mix(in srgb,#fff 90%,transparent)}
 .learn-resume__num{font:700 40px/1 var(--font-serif-kr),serif;letter-spacing:-1px}
 .learn-resume__body{display:block;position:relative;padding:18px 24px 0;min-width:0}
@@ -84,7 +84,7 @@ a.learn-tile:hover{background:var(--learn-soft)}
 .learn-resume__bar{flex:1;min-width:40px;height:4px;border-radius:2px;position:relative;overflow:hidden;background:var(--lw)}
 .learn-resume__bar i{position:absolute;inset:0 auto 0 0;border-radius:2px;background:var(--lc)}
 .learn-resume__spacer{flex:1}
-.learn-resume__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;margin-left:6px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;background:var(--lc);color:#fff;flex:none}
+.learn-resume__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;margin-left:6px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;background:var(--lc);color:var(--on-fill);flex:none}
 .learn-resume__pill i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:#fff;color:var(--lc)}
 .learn-resume[role=status] .learn-resume__body{padding-top:24px}
 

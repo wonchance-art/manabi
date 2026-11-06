@@ -175,10 +175,10 @@ html:has(.lv-page){overscroll-behavior-y:none}
 .lv-ex__py+.lv-ex__tr{margin-top:2px}
 .lv-acts{display:flex;align-items:center;gap:10px;flex:none}
 .lv-fab{width:44px;height:44px;border-radius:50%;border:0;display:inline-grid;place-items:center;flex:none;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
-.lv-fab--save{background:var(--ja);color:#fff;box-shadow:0 2px 6px color-mix(in srgb,var(--ja) 28%,transparent)}
+.lv-fab--save{background:var(--ja);color:var(--on-fill);box-shadow:0 2px 6px color-mix(in srgb,var(--ja) 28%,transparent)}
 @media (hover:hover){.lv-fab--save:hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--ja) 34%,transparent)}}
 .lv-fab--save:active,.lv-fab--ex:active{transform:scale(.96)}
-.lv-fab--busy{background:var(--lv-busy);color:#fff;cursor:progress}
+.lv-fab--busy{background:var(--lv-busy);color:var(--on-fill);cursor:progress}
 .lv-fab--busy svg{animation:lv-spin 1s linear infinite}
 .lv-fab--have{background:var(--lv-have);color:var(--ja);cursor:default}
 .lv-fab--ex{background:var(--lv-chip);color:var(--ink)}
@@ -186,9 +186,9 @@ html:has(.lv-page){overscroll-behavior-y:none}
 .lv-fab--o,.lv-fab--x{width:48px;height:48px;background:var(--lv-card);color:var(--ink);border:1px solid var(--lv-line);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 10%,transparent)}
 .lv-fab--o:hover,.lv-fab--x:hover{background:var(--lv-chip);border-color:var(--lv-chip-hover)}
 .lv-fab--o:active,.lv-fab--x:active{transform:scale(.96)}
-.lv-fab--o[aria-pressed=true]{background:var(--lv-ok);border-color:var(--lv-ok);color:#fff}
-.lv-fab--x[aria-pressed=true]{background:var(--ja);border-color:var(--ja);color:#fff}
-.lv-fab--x.lv-fab--busy{background:var(--lv-busy);color:#fff}
+.lv-fab--o[aria-pressed=true]{background:var(--lv-ok);border-color:var(--lv-ok);color:var(--on-fill)}
+.lv-fab--x[aria-pressed=true]{background:var(--ja);border-color:var(--ja);color:var(--on-fill)}
+.lv-fab--x.lv-fab--busy{background:var(--lv-busy);color:var(--on-fill)}
 .lv-fab:disabled{cursor:progress;opacity:.6}
 /* 상태(디자인 검토 A안) — 아는 단어는 글자를 흐리게(버튼은 그대로 또렷), 공부 중은 왼쪽 로즈 줄. 점선은 「임시」로 읽혀 뺐다. */
 .lv-entry[data-known] :is(.lv-solo,.lv-entry__word,.lv-mean,.lv-ex,.lv-glyph){opacity:.55}
