@@ -3,6 +3,7 @@ import {requireUser} from '@/lib/server/auth';
 import {rateLimit} from '@/lib/server/rateLimit';
 import {callLLM} from '@/lib/server/llm';
 import {lookupInput,lookupSenses,parseLookupAnswer} from '@/lib/classroomLookup';
+import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 
 const json=(value,status=200)=>Response.json(value,{status,headers:{'Cache-Control':'private, no-store'}});
 export async function POST(request) {
@@ -13,6 +14,8 @@ export async function POST(request) {
   catch{return json({error:'언어와 500자 이내의 표현을 확인해 주세요.'},400);}
   const limit=rateLimit(`classroom-lookup:${auth.user.id}`,{limit:20,windowMs:60_000});
   if(!limit.ok)return json({error:'조회가 많아요. 잠시 뒤 다시 찾아 주세요.'},429);
+  const overDaily=await dailyQuotaGate('lookup',quotaSubject(request,auth.user.id)); // 하루 상한(AI-QUOTA-001)
+  if(overDaily)return overDaily;
   try{
     const db=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,{global:{headers:{Authorization:request.headers.get('authorization')}},auth:{persistSession:false}});
     const {data,error}=await db.from('morpheme_dictionary').select('reading,meanings,source').eq('language',input.language).eq('base_form',input.text).maybeSingle();

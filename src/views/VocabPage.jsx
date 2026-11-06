@@ -105,6 +105,13 @@ function useRoomMemo(frozen, factory, deps) {
 /** 질문 입장을 서버가 거절한 「이 카드는 지금 묻지 않는다」 사유(learningAdmission databaseError) — 실패가 아니라 건너뛸 카드다. */
 const ADMISSION_GONE_CODES = new Set(['fsrs_card_not_due', 'fsrs_card_excluded', 'fsrs_already_enrolled', 'fsrs_card_not_found']);
 
+
+// 빈 단어장 「교재에서 표현 고르기」의 갈 곳 — 보고 있는 언어의 교재 입구(발매 점검, 2026-11-06 KST). 예전엔 늘 일본어 N5 책이라
+// 중국어 · 영어 · 프랑스어 학습자가 일본어 교재로 갔다. 일본어(또는 언어 미정)는 그대로 N5 책.
+export function firstWordsHref(lang) {
+  return lang && lang !== 'Japanese' ? `/lessons?lang=${encodeURIComponent(lang)}` : '/books/japanese-n5';
+}
+
 export default function VocabPage({ reviewScope = NOT_EXPLICIT, firstScreen = null, serverUserId = null, sessionHint = null }) {
   const { user, loading } = useAuth();
   // 로그인 복원을 기다리는 동안 서버가 확인한 계정의 목록을 먼저 받기 시작한다(VOCAB-FIRST-NUMBERS-001 — 같은 키 · 같은 함수).
@@ -1685,7 +1692,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
               <ReviewScopeNotice empty scope={scope} count={session} countFor={countFor} remainingNew={roomRemainingNew} languages={[...languageCounts.keys()]} onChange={changeScope} materialTitles={materialTitles}
                 onPractice={hasPractice ? () => { if (!firstView) startPractice(practiceWords); } : null} onFillMeaning={() => { setMissingMeaningOnly(true); setTab('browse'); }}
                 fallback={!hasAnyWords ? '교재 예문의 ‘예문 담기’로 기억하고 싶은 문장을 골라 주세요.' : '지금 다시 볼 표현은 없어요. 다음 복습까지 새로운 문장을 만나 보세요.'} />
-              <Link href={isBookScope ? reviewScope.returnTo : hasAnyWords ? '/home' : '/books/japanese-n5'} className="btn btn--primary">{isBookScope ? '읽던 교재로 돌아가기 →' : hasAnyWords ? '오늘로 →' : '교재에서 표현 고르기 →'}</Link>
+              <Link href={isBookScope ? reviewScope.returnTo : hasAnyWords ? '/home' : firstWordsHref(scope.lang)} className="btn btn--primary">{isBookScope ? '읽던 교재로 돌아가기 →' : hasAnyWords ? '오늘로 →' : '교재에서 표현 고르기 →'}</Link>
             </>}
             {/* 멈춘 복습 이어 하기(§5-6) — 같은 화면이면 메모리의 줄, 새로고침 뒤면 세션 저장소의 기록(24시간). */}
             {(inMemoryResume || restorable) && <button type="button" className="review-room-resume" onClick={resumeRun}>

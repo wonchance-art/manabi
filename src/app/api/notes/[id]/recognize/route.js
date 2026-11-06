@@ -4,6 +4,7 @@ import {noteFromMaterial} from '@/lib/studyNotes';
 import {recognitionFingerprint,INK_RECOGNITION_CONSENT,INK_RECOGNITION_CONSENT_MESSAGE} from '@/lib/noteRecognition';
 import {rateLimit} from '@/lib/server/rateLimit';
 import {selectedInkBody,selectedInkImage,recognizeSelectedInk} from '@/lib/server/selectedInkRecognition';
+import { consumeDailyQuota, quotaSubject, DAILY_LIMIT_MESSAGE } from '@/lib/server/dailyQuota';
 
 export const maxDuration=60;
 
@@ -19,6 +20,7 @@ export async function POST(request,{params}) {
     if(fingerprint!==body.fingerprint)fail(409,'선택한 필기가 바뀌었어요. 다시 선택해 주세요.');
     const image=selectedInkImage(body.image);
     if(!rateLimit(`note-recognize:${user.id}`,{limit:6,windowMs:60_000}).ok)fail(429,'잠시 뒤 다시 인식해 주세요. 한 번에 몇 단어씩 선택하면 좋아요.');
+    if(!(await consumeDailyQuota({kind:'ink',subject:quotaSubject(request,user.id)})).ok)fail(429,DAILY_LIMIT_MESSAGE); // 하루 상한(AI-QUOTA-001)
     const expressions=await recognizeSelectedInk(image,note.language,request.signal);
     const latest=await readOwnNote(supabase,user.id,id);
     if(latest.processed_json.metadata.studyNote.revision!==body.revision)fail(409,'인식하는 동안 노트가 바뀌었어요. 최신 필기를 다시 선택해 주세요.');

@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/server/auth';
 import { callLLM, resolveTier, LLMError } from '@/lib/server/llm';
 import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
 import { isInternalAnalysisRequest } from '@/lib/server/internalAnalysisRequest';
+import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 
 // ── 프록시 잠금(비용 남용 방지) ──
 // 클라는 모델이 아니라 **티어**(light/standard)를 고른다 — 모델·폴백·Groq는 llm.js의 TIERS가 정한다(AA R1).
@@ -96,7 +97,8 @@ async function gate(request) {
       { status: 429 }
     );
   }
-  return null;
+  // 하루 상한 — callGemini가 error.message를 읽는 모양(nested), AI-QUOTA-001.
+  return dailyQuotaGate('gemini', quotaSubject(request, authUser.id), { shape: 'nested' });
 }
 
 export async function POST(request) {

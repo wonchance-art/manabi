@@ -7,6 +7,7 @@ import {fail,checkDb,reply,errorReply} from '@/lib/server/learningContext';
 import {selectedInkBody,selectedInkImage,recognizeSelectedInk} from '@/lib/server/selectedInkRecognition';
 import {rateLimit} from '@/lib/server/rateLimit';
 import {INK_RECOGNITION_CONSENT,INK_RECOGNITION_CONSENT_MESSAGE} from '@/lib/noteRecognition';
+import { consumeDailyQuota, quotaSubject, DAILY_LIMIT_MESSAGE } from '@/lib/server/dailyQuota';
 
 export const maxDuration=60;
 
@@ -32,6 +33,7 @@ export async function POST(request) {
     if(!/^[a-f0-9]{64}$/.test(body.fingerprint||''))fail(400,'선택한 필기를 다시 확인해 주세요.');
     const image=selectedInkImage(body.image);
     if(!rateLimit(`class-ink:${auth.user.id}`,{limit:6,windowMs:60_000}).ok)fail(429,'잠시 뒤 다시 인식해 주세요.');
+    if(!(await consumeDailyQuota({kind:'ink',subject:quotaSubject(request,auth.user.id)})).ok)fail(429,DAILY_LIMIT_MESSAGE); // 하루 상한(AI-QUOTA-001)
     const expressions=await recognizeSelectedInk(image,team.lang,request.signal,'class-ink-recognize');
     const latest=await teacherTeam(auth.supabase,auth.user,body);
     if(latest.lang!==team.lang)fail(409,'수업 언어가 바뀌었어요. 최신 수업에서 다시 선택해 주세요.');

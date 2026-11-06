@@ -51,6 +51,10 @@ export function isNetworkError(err) {
   return NETWORK_PATTERN.test(technical);
 }
 
+// 하루 상한(AI-QUOTA-001 — 서버 src/lib/server/dailyQuota.js가 429 + code daily_limit으로 돌려준다). 1~2분 기다려도 풀리지 않는다 —
+// 아래 「요청이 너무 많아요」(분당 제한)보다 먼저 본다.
+export const DAILY_LIMIT_MESSAGE = '오늘 쓸 수 있는 양을 다 썼어요. 내일 다시 시도해 주세요.';
+
 const PATTERNS = [
   // 서비스 설정(결제 · 크레딧) — 용량 패턴보다 먼저 본다: 같은 문구가 429 · RESOURCE_EXHAUSTED로 와도 「붐빔」이 아니다.
   { match: SERVICE_CONFIG_PATTERN, user: SERVICE_CONFIG_MESSAGE, cause: SERVICE_CONFIG_CAUSE },
@@ -67,6 +71,9 @@ const PATTERNS = [
     user: 'AI 서비스가 잠시 붐비고 있어요. 잠시 후 다시 시도해 주세요.',
     cause: 'AI 서비스가 붐비니 잠시 후 다시 시도해 주세요.',
     retry: true },
+  { match: /daily_limit|오늘 쓸 수 있는 양/,
+    user: DAILY_LIMIT_MESSAGE,
+    cause: '내일 다시 시도해 주세요.' },
   { match: /rate|too many|429|요청이 너무/i,
     user: '요청이 너무 많아요. 1~2분 기다린 뒤 다시 시도해 주세요.',
     cause: '요청이 많으니 1~2분 기다린 뒤 다시 시도해 주세요.',

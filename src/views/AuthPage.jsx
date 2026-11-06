@@ -55,6 +55,11 @@ function AuthForm() {
       setIsLogin(false);
       setIsForgot(false);
     }
+    // ?mode=signup — 가입으로 바로 여는 링크(발매 점검 #11). 예전엔 이 값을 읽지 않아 로그인으로 열렸다.
+    if (searchParams.get('mode') === 'signup') {
+      setIsLogin(false);
+      setIsForgot(false);
+    }
     // 도착 URL의 error·mode를 진입 시 1회만 반영한다 — 이후 URL 변화로 사용자가 고른 탭을 되돌리지 않는다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
