@@ -217,3 +217,22 @@ describe('교재 셸(reading-shell.css) — 셸 토큰을 다시 정하지 않�
     expect(body.match(/#(322e30|fffdf9|e9dfe0|e8dade|d9c8cc|f8f1f2|74696c)\b/gi)).toBeNull();
   });
 });
+
+describe('등급 네 칸 — 뷰어 단어 카드 = 단어장(복습실) 같은 토큰 (오너 「단어장이랑 일치시켜」 2026-11-06 KST)', () => {
+  // 뷰어가 읽기면 색(--reader-selected · --reader-accent = 교재 언어색)을 섞어 언어마다 알맞음 · 쉬움 색이 달랐다(일본어 로즈 · 중국어 초록).
+  const viewer = read('src/components/viewer/reader-controls.css');
+  const room = read('src/components/web/review-room.css');
+  for (const g of ['again', 'hard', 'good', 'easy']) {
+    it(`「${g}」 바탕 · 글자는 두 화면 모두 --grade-${g}-bg · --grade-${g}`, () => {
+      const want = `background:var(--grade-${g}-bg); color:var(--grade-${g});`.replace(/; /g, ';');
+      expect(sliceBetween(room, `.manabi-review-room .review-score-btn--${g} {`, '}').replace(/\s/g, '')).toContain(want);
+      expect(sliceBetween(viewer, `.viewer-layout .reader-card-actions .review-score-btn--${g} {`, '}').replace(/\s/g, '')).toContain(want);
+    });
+  }
+  it('칸 테두리 · 기본 글자 · 숫자 배지도 단어장과 같은 셸 토큰(모서리는 뷰어 모서리 척도 4px 그대로 — viewerMockupFollowup F3)', () => {
+    expect(sliceBetween(viewer, '.viewer-layout .reader-card-actions .review-score-btn {', '}')).toMatch(/border:1px solid var\(--rule\);color:var\(--ink\);background:var\(--sheet\)/);
+    expect(sliceBetween(room, '.manabi-review-room .review-score-btn {', '}')).toMatch(/border-radius:3px;[^}]*border:1px solid var\(--rule\); color:var\(--ink\); background:var\(--sheet\)/);
+    expect(viewer).toContain('.viewer-layout .save-grade__sub,.viewer-layout .save-grade__key {opacity:1;color:var(--muted);}');
+    expect(room).toContain('.manabi-review-room .save-grade__key { opacity:1; color:var(--muted); }');
+  });
+});

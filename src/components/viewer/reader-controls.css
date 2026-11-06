@@ -447,12 +447,21 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 @media (max-height:500px) { .reader-card-actions {padding:4px 12px;} .reader-card-actions .save-grade__sub {display:none;} }
 /* Compact four-grade footer: no second action row obscures the contextual meaning. */
 .viewer-layout .reader-card-actions .save-grade {grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
-.viewer-layout .reader-card-actions .review-score-btn {font-size:.8rem;padding:7px 2px;border:1px solid var(--reader-line);color:var(--reader-ink);}
-.viewer-layout .reader-card-actions .review-score-btn--again {background:color-mix(in srgb,var(--danger) 13%,var(--reader-paper));}
-.viewer-layout .reader-card-actions .review-score-btn--hard {background:color-mix(in srgb,var(--warning) 13%,var(--reader-paper));}
-.viewer-layout .reader-card-actions .review-score-btn--good {background:var(--reader-selected);}
-.viewer-layout .reader-card-actions .review-score-btn--easy {background:color-mix(in srgb,var(--reader-accent) 15%,var(--reader-paper));}
-.viewer-layout .save-grade__sub,.viewer-layout .save-grade__key {opacity:1;color:var(--reader-muted);}
+/* 등급 네 칸 = 단어장(복습실, review-room.css)과 같은 토큰 하나 — 오너 「일본어에서 뷰어 아래 네칸 색이 왜 다른가. 단어장이랑
+   일치시켜」(2026-11-06 KST). 예전에는 읽기면 색(--reader-selected · --reader-accent = 교재 언어색)을 섞어 언어마다 알맞음 · 쉬움 색이 달랐다.
+   종이 · 밝게 테마는 단어장과 같은 값. 어두운 읽기 테마는 아래에서 지금 값 그대로 둔다(단어장 색은 어두운 면에서 튀어 — 대안은 오너 확인 대기). */
+.viewer-layout .reader-card-actions .review-score-btn {font-size:.8rem;padding:7px 2px;border:1px solid var(--rule);color:var(--ink);background:var(--sheet);}
+.viewer-layout .reader-card-actions .review-score-btn--again {background:var(--grade-again-bg);color:var(--grade-again);}
+.viewer-layout .reader-card-actions .review-score-btn--hard {background:var(--grade-hard-bg);color:var(--grade-hard);}
+.viewer-layout .reader-card-actions .review-score-btn--good {background:var(--grade-good-bg);color:var(--grade-good);}
+.viewer-layout .reader-card-actions .review-score-btn--easy {background:var(--grade-easy-bg);color:var(--grade-easy);}
+.viewer-layout .save-grade__sub,.viewer-layout .save-grade__key {opacity:1;color:var(--muted);}
+.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn {border-color:var(--reader-line);color:var(--reader-ink);}
+.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--again {background:color-mix(in srgb,var(--danger) 13%,var(--reader-paper));color:var(--reader-ink);}
+.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--hard {background:color-mix(in srgb,var(--warning) 13%,var(--reader-paper));color:var(--reader-ink);}
+.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--good {background:var(--reader-selected);color:var(--reader-ink);}
+.viewer-layout[data-reader-theme="dark"] .reader-card-actions .review-score-btn--easy {background:color-mix(in srgb,var(--reader-accent) 15%,var(--reader-paper));color:var(--reader-ink);}
+.viewer-layout[data-reader-theme="dark"] .save-grade__sub,.viewer-layout[data-reader-theme="dark"] .save-grade__key {color:var(--reader-muted);}
 /* 키 숫자는 이름 위 작은 회색 줄 — 왼쪽 위 절대 배치는 320 · 글자 150%에서 이름 글자에 겹쳤다(뷰어 점검 F2). */
 .viewer-layout .reader-card-actions .save-grade__key {position:static;display:block;margin:0 0 2px;font-size:.75em;font-weight:600;line-height:1.2;}
 /* 키 줄이 생긴 만큼 위아래 여백을 줄여 버튼 높이를 44px 그대로 둔다 — 390 첫 화면 예산(뜻 줄 · 4등급이 스크롤 없이)을 지킨다. */
