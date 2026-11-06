@@ -234,10 +234,20 @@ describe('profiles 공개 범위 2단계 — 정책 · 열 권한 = 앱 사용',
       for (const m of src.matchAll(/from\('profiles'\)\s*\.select\(/gu)) {
         if (rel === 'src/views/AdminPage.jsx') continue;
         const chain = src.slice(m.index, m.index + 160);
+        // 검색에 싣는 자료 판정(LAUNCH-META-002)은 서버가 service_role로 관리자 id만 읽는다 — 그 모양 하나만 예외(아래 계약).
+        if (rel === 'src/lib/server/curatedMaterials.js' && chain.startsWith("from('profiles').select('id').eq('role', 'admin')")) continue;
         if (!/\)\s*\.eq\('id',/u.test(chain)) offenders.push(`${rel}: ${chain.split('\n')[0]}`);
       }
     }
     expect(offenders).toEqual([]);
+  });
+
+  it('관리자 id 읽기 예외는 서버 모듈 하나 · service_role 키 · id 열만이다(LAUNCH-META-002)', () => {
+    const src = files.find(([rel]) => rel === 'src/lib/server/curatedMaterials.js')?.[1] || '';
+    expect([...src.matchAll(/from\('profiles'\)/gu)]).toHaveLength(1);
+    expect(src).toContain("from('profiles').select('id').eq('role', 'admin')");
+    expect(src).toContain('process.env.SUPABASE_SERVICE_ROLE_KEY');
+    expect(src).not.toMatch(/ANON_KEY|PUBLISHABLE/u);
   });
 
   it('복원 SQL이 있다 — 두 정책을 같은 모양(public · USING true)으로 되살리고 표 권한 순서까지 되돌린다', () => {
