@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { LEVELS } from '../lib/constants';
@@ -18,6 +18,22 @@ export default function OnboardingModal() {
   const [levelZh, setLevelZh] = useState('H3 중급');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const modalRef = useRef(null);
+
+  // 접근성(발매 점검 #3, 2026-11-06 KST): 첫 화면을 덮는 필수 창이라 열리면 닉네임 칸으로 포커스를 옮기고,
+  // Tab이 가려진 배경 링크로 새지 않게 창 안에서 돈다(WordSheets · ConfirmModal과 같은 방식). 닫기는 없다(온보딩 필수).
+  useEffect(() => {
+    modalRef.current?.querySelector('input')?.focus({ preventScroll: true });
+    const onKey = (event) => {
+      if (event.key !== 'Tab' || !modalRef.current) return;
+      const nodes = [...modalRef.current.querySelectorAll('button:not(:disabled), [href], input, select, textarea')];
+      const first = nodes[0], last = nodes.at(-1), inside = modalRef.current.contains(document.activeElement);
+      if (event.shiftKey && (!inside || document.activeElement === first)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (!inside || document.activeElement === last)) { event.preventDefault(); first?.focus(); }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, []);
 
   function toggleLanguage(lang) {
     setLanguages(prev => {
@@ -64,17 +80,18 @@ export default function OnboardingModal() {
 
   return (
     <div className="onboarding-overlay">
-      <div className="onboarding-modal">
+      <div className="onboarding-modal" ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="onboarding-title" aria-describedby="onboarding-sub">
         <div className="onboarding-modal__header">
-          <h2 className="onboarding-modal__title">manabi에 오신 걸 환영해요!</h2>
-          <p className="onboarding-modal__sub">학습 시작 전에 몇 가지만 알려 주세요.</p>
+          <h2 className="onboarding-modal__title" id="onboarding-title">manabi에 오신 걸 환영해요!</h2>
+          <p className="onboarding-modal__sub" id="onboarding-sub">학습 시작 전에 몇 가지만 알려 주세요.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="onboarding-modal__body">
           {/* 닉네임 */}
           <div className="form-field">
-            <label className="form-label">닉네임</label>
+            <label className="form-label" htmlFor="onboarding-name">닉네임</label>
             <input
+              id="onboarding-name"
               type="text"
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
@@ -86,11 +103,12 @@ export default function OnboardingModal() {
 
           {/* 학습 언어 — 복수 선택 */}
           <div className="form-field">
-            <label className="form-label">학습 언어 <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(복수 선택 가능)</span></label>
-            <div className="toggle-group">
+            <label className="form-label" id="onboarding-lang-label">학습 언어 <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(복수 선택 가능)</span></label>
+            <div className="toggle-group" role="group" aria-labelledby="onboarding-lang-label">
               <button
                 type="button"
                 onClick={() => toggleLanguage('Japanese')}
+                aria-pressed={languages.includes('Japanese')}
                 className={`toggle-btn ${languages.includes('Japanese') ? 'toggle-btn--primary' : ''}`}
               >
                 일본어
@@ -98,6 +116,7 @@ export default function OnboardingModal() {
               <button
                 type="button"
                 onClick={() => toggleLanguage('English')}
+                aria-pressed={languages.includes('English')}
                 className={`toggle-btn ${languages.includes('English') ? 'toggle-btn--primary' : ''}`}
               >
                 영어
@@ -105,6 +124,7 @@ export default function OnboardingModal() {
               <button
                 type="button"
                 onClick={() => toggleLanguage('French')}
+                aria-pressed={languages.includes('French')}
                 className={`toggle-btn ${languages.includes('French') ? 'toggle-btn--primary' : ''}`}
               >
                 프랑스어
@@ -112,6 +132,7 @@ export default function OnboardingModal() {
               <button
                 type="button"
                 onClick={() => toggleLanguage('Chinese')}
+                aria-pressed={languages.includes('Chinese')}
                 className={`toggle-btn ${languages.includes('Chinese') ? 'toggle-btn--primary' : ''}`}
               >
                 중국어
@@ -122,13 +143,14 @@ export default function OnboardingModal() {
           {/* 일본어 레벨 */}
           {languages.includes('Japanese') && (
             <div className="form-field">
-              <label className="form-label">일본어 수준</label>
-              <div className="level-group">
+              <label className="form-label" id="onboarding-level-jp">일본어 수준</label>
+              <div className="level-group" role="group" aria-labelledby="onboarding-level-jp">
                 {LEVELS.Japanese.map(lvl => (
                   <button
                     key={lvl}
                     type="button"
                     onClick={() => setLevelJp(lvl)}
+                    aria-pressed={levelJp === lvl}
                     className={`level-btn ${levelJp === lvl ? 'level-btn--active' : ''}`}
                   >
                     {lvl}
@@ -141,13 +163,14 @@ export default function OnboardingModal() {
           {/* 영어 레벨 */}
           {languages.includes('English') && (
             <div className="form-field">
-              <label className="form-label">영어 수준</label>
-              <div className="level-group">
+              <label className="form-label" id="onboarding-level-en">영어 수준</label>
+              <div className="level-group" role="group" aria-labelledby="onboarding-level-en">
                 {LEVELS.English.map(lvl => (
                   <button
                     key={lvl}
                     type="button"
                     onClick={() => setLevelEn(lvl)}
+                    aria-pressed={levelEn === lvl}
                     className={`level-btn ${levelEn === lvl ? 'level-btn--active' : ''}`}
                   >
                     {lvl}
@@ -160,13 +183,14 @@ export default function OnboardingModal() {
           {/* 프랑스어 레벨 — A0(오리엔테이션)는 온보딩 자가 진단 대상에서 제외, A1부터 */}
           {languages.includes('French') && (
             <div className="form-field">
-              <label className="form-label">프랑스어 수준</label>
-              <div className="level-group">
+              <label className="form-label" id="onboarding-level-fr">프랑스어 수준</label>
+              <div className="level-group" role="group" aria-labelledby="onboarding-level-fr">
                 {LEVELS.French.slice(1).map(lvl => (
                   <button
                     key={lvl}
                     type="button"
                     onClick={() => setLevelFr(lvl)}
+                    aria-pressed={levelFr === lvl}
                     className={`level-btn ${levelFr === lvl ? 'level-btn--active' : ''}`}
                   >
                     {lvl}
@@ -179,13 +203,14 @@ export default function OnboardingModal() {
           {/* 중국어 레벨 — OT(오리엔테이션)는 온보딩 자가 진단 대상에서 제외, H1부터 */}
           {languages.includes('Chinese') && (
             <div className="form-field">
-              <label className="form-label">중국어 수준</label>
-              <div className="level-group">
+              <label className="form-label" id="onboarding-level-zh">중국어 수준</label>
+              <div className="level-group" role="group" aria-labelledby="onboarding-level-zh">
                 {LEVELS.Chinese.slice(1).map(lvl => (
                   <button
                     key={lvl}
                     type="button"
                     onClick={() => setLevelZh(lvl)}
+                    aria-pressed={levelZh === lvl}
                     className={`level-btn ${levelZh === lvl ? 'level-btn--active' : ''}`}
                   >
                     {lvl}
@@ -195,7 +220,7 @@ export default function OnboardingModal() {
             </div>
           )}
 
-          {error && <p style={{ color: 'var(--danger-text)', fontSize: '0.85rem' }}>{error}</p>}
+          {error && <p role="alert" style={{ color: 'var(--danger-text)', fontSize: '0.85rem' }}>{error}</p>}
 
           <Button type="submit" size="lg" disabled={saving} style={{ width: '100%', marginTop: '8px' }}>
             {saving ? '저장 중…' : '시작하기'}
