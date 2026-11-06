@@ -29,7 +29,8 @@ describe('service worker content-hash version', () => {
       const second = await updateServiceWorkerVersion(root);
       const secondBytes = await readFile(path.join(root, 'public', 'sw.js'));
 
-      expect(first.version).toMatch(/^anatomy-studio-v[0-9a-f]{16}$/);
+      // 옛 이름(anatomy-studio-v…) 줄도 새 접두(manabi-v)로 다시 쓴다(LAUNCH-META-001 SW 이름 — 옛 캐시는 sw.js 활성화가 옮겨 담고 지운다).
+      expect(first.version).toMatch(/^manabi-v[0-9a-f]{16}$/);
       expect(second).toMatchObject({ changed: false, contentHash: first.contentHash, version: first.version });
       expect(secondBytes).toEqual(firstBytes);
       expect(await computeContentHash(root)).toBe(first.contentHash);

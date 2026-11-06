@@ -162,7 +162,6 @@ describe('BRAND-APPLY-001 ⑤ 바꾸면 안 되는 내부 이름(데이터·캐�
     ['src/lib/offlineCache.js', "const DB_NAME = 'anatomy-offline-cache';"],
     ['src/lib/pdfCache.js', "const DB_NAME = 'anatomy-pdf-cache';"],
     ['src/lib/sharedStore.js', "const DB_NAME = 'anatomy-class-shared';"],
-    ['scripts/update-sw-version.mjs', "const CACHE_PREFIX = 'anatomy-studio-v';"],
     ['src/lib/reportError.js', 'window.__anatomyErrorHooked'],
     ['src/lib/content-sources.js', "'AnatomyStudio/1.0 (language-learning)'"],
     ['src/app/api/import/link/route.js', "'AnatomyStudio/1.0 (language-learning)'"],
@@ -181,8 +180,12 @@ describe('BRAND-APPLY-001 ⑤ 바꾸면 안 되는 내부 이름(데이터·캐�
     expect(io).not.toMatch(/download = `anatomy_/);
   });
 
-  it('sw.js CACHE_NAME 접두사 anatomy-studio-v 유지', () => {
-    expect(read('public/sw.js')).toMatch(/^const CACHE_NAME = 'anatomy-studio-v[0-9a-f]+';/m);
+  // 서비스 워커 캐시 이름은 manabi-v로 바꿨다(LAUNCH-META-001 SW 이름, 오너 「버그 먼저」 2026-11-06 KST). 연속성은 이름이 아니라
+  // 활성화 때의 옮겨 담기가 지킨다 — 옛 접두(anatomy-studio-v) 캐시의 뷰어 문서를 새 캐시로 옮긴 뒤 지운다(scripts/service-worker-cache-rename.test.js).
+  it('sw.js CACHE_NAME 접두사 manabi-v · 옛 접두는 옮겨 담기 목록에 남는다', () => {
+    const sw = read('public/sw.js');
+    expect(sw).toMatch(/^const CACHE_NAME = 'manabi-v[0-9a-f]+';/m);
+    expect(sw).toContain("const CACHE_PREFIXES = ['manabi-v', 'anatomy-studio-v'];");
   });
 });
 
