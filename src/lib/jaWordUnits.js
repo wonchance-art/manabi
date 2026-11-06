@@ -1,3 +1,4 @@
+import { isJaNaAdjective } from './jaNaAdjectives.js';
 // 일본어 학습 단위(어절) 묶기 — 정본. 듣기 자막(listenSubtitles)과 읽기 화면(jaReaderChunks)이 같은 규칙을 쓴다.
 // 듣기 자막 안에 있던 것을 그대로 옮겨 공용으로 올렸다(JA-UNITS-001, 오너 확정 C2 2026-11-05 KST) — 새 규칙을 따로 만들지 않는다.
 
@@ -88,7 +89,7 @@ export function groupTokensToUnits(tokens, { copulaAfterNoun = true } = {}) {
       meaning: t?.meaning || '',
       tokens: [t],
       // でし+た처럼 조동사로 시작한 술어, な형용사 어간(静か — 분석이 na_stem을 남긴 자료)도 뒤 활용을 받는다.
-      _verbal: VERBAL_POS.has(pos) || pos === '조동사' || !!t?.na_stem,
+      _verbal: VERBAL_POS.has(pos) || pos === '조동사' || isJaNaAdjective(t), // 표식 없는 지난 자료도 240어 목록으로
       _mergeable: true,       // 내용어·접두사로 시작 → 뒤 어미/조동사를 받을 수 있음
       _pendingPrefix: pendingPrefix,
     };

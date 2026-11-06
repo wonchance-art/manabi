@@ -199,6 +199,7 @@ import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
 import { isWordToken, opensWordCard, wordStateOf, wordStateExtraClass } from '../lib/wordState';
 import { buildReaderChunks, chunkCardToken, chunkPatternEntry } from '../lib/jaReaderChunks';
+import { isJaNaAdjective, jaNaNounUseAt } from '../lib/jaNaAdjectives';
 import { TTS_RATES, ttsOptsFor, pronHiddenFor, nextTtsRate } from '../lib/readingSheet';
 import { getBook } from '../lib/bookMeta';
 import ViewerGlyphColumn from '../components/viewer/ViewerGlyphColumn';
@@ -2910,6 +2911,10 @@ export default function ViewerPage({ seed } = {}) {
   // 토큰 데이터(text·base_form·furigana·분할)는 한 바이트도 안 바뀐다 — 렌더만(R4a 무충돌).
   const headText = selectedToken && selectedLexKey && selectedLexKey !== selectedToken.text ? selectedLexKey : selectedToken?.text;
   const headIsBase = !!selectedToken && headText !== selectedToken.text;
+  // な형용사 카드(오너 승인 2026-11-06 KST): 표제어 静か + 작은 「な」, 품사 「な형용사」 — 새 분석 표식 또는 240어 목록(지난 자료 보정).
+  // 덩어리(静か+でした)는 형용 활용이 확정이고, 홑 토큰은 바로 뒤가 を · が · は · の 같은 조사면 명사 쓰임이라 그대로 둔다.
+  const jaNaHead = materialLang === 'Japanese' && !!selectedToken && isJaNaAdjective({ ...selectedToken, base_form: headText })
+    && (!!selectedToken.__chunk || !jaNaNounUseAt(material?.processed_json?.sequence, material?.processed_json?.dictionary, selectedToken.id));
   // 로그아웃이면 사전 행이 없다(RLS) — 토큰 독음이 기본형 읽기일 때만 표제어 읽기로 쓴다(GUEST-HEAD-READING-001 · splitRuby와 같은 판정).
   // 로그인은 사전 행 읽기만(조회 중 토큰 독음 → 사전 읽기로 바뀌는 깜빡임 없음). 「기본형」 라벨(headFallback)은 그대로.
   const guestHeadReading = headIsBase && !user && !authLoading ? baseFormReading(selectedToken.text, selectedToken.furigana, headText) : null;
@@ -3678,7 +3683,7 @@ export default function ViewerPage({ seed } = {}) {
       {cardSentence && <p className="reader-card-sentence" data-tight={glyphStep >= 1 || undefined} lang={contentLangTag} key={`sentence:${selectedToken.id||selectedToken.text}`}>{cardSentence.before}{cardSentence.term && <mark className="reader-card-sentence__term">{cardSentence.term}</mark>}{cardSentence.after}</p>}
       <div className="word-detail-card__actions">
         <div className="word-detail-card__meta">
-          <span className="reader-card-tag"><TokenPosLabel token={selectedToken} /></span>
+          <span className="reader-card-tag"><TokenPosLabel token={selectedToken} naAdjective={jaNaHead} /></span>
           {/* 기본형은 표제어가 보여 준다(R R2) — 「품사 · 기본형」이 겸류 구분자와 같은 모양이라
               품사 오염으로 읽히던 중의성 소멸. 사전 읽기가 없어 표제어가 폴백일 때만 라벨 텍스트. */}
           <ViewerLabelSlot locale={uiLocale} text={vt('기본형')}>{headFallback && <span className="word-detail-card__base">기본형</span>}</ViewerLabelSlot>
@@ -3775,6 +3780,7 @@ export default function ViewerPage({ seed } = {}) {
                       return hunCells ? column(i, ruby, cells.map((cell, j) => <HunCell key={j} cell={cell} />)) : ruby;
                     })
                   : [...headText].map((ch, j) => charSpan(ch, `p:${j}`, null, j)).map((glyph, j) => hunCells ? column(`p:${j}`, glyph, <HunCell cell={hunAt(j)} />) : glyph))}
+                {jaNaHead && <span className="word-fit__na">な</span>}
               </span>
             </div>
             {/* 자형 열(正 · 日) — 표제어 오른쪽(안 1) 또는 글자 칸에 맞춘 표(안 2). 수업 모드 판서에는 없다(설계서 Q3). */}

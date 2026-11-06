@@ -1096,3 +1096,6 @@ html[data-viewer-hold] .viewer-workspace-boundary {visibility:hidden;}
 /* 고른 덩어리: 조각마다 테두리 대신 한 바탕으로 이어 칠한다(줄을 넘어가도 조각마다 칠해져 이어 보인다). */
 .viewer-layout .reader-area .word-token--chunk-selected .word-frame {display:none;}
 .viewer-layout .reader-area .word-token--chunk-selected > .surface {background:var(--reader-selected);}
+
+/* な형용사 표제어 뒤 작은 「な」(오너 승인 2026-11-06 KST) — 표제어 글자 칸 밖, 읽기 · 발음 칸에 들지 않는다. */
+.word-fit__na {font-size:.5em;font-weight:500;color:var(--reader-muted);margin-left:.06em;}

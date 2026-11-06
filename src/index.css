@@ -8158,3 +8158,6 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 
 /* 팀 사본 담기 CTA(v2-AB R2) — 비로그인 학생의 카드 액션 줄 자리 */
 .save-grade__guest { padding: 10px 12px; border-radius: var(--radius-md); background: var(--primary-glow); border: 1px solid var(--primary); }
+
+/* な형용사 표제어 뒤 작은 「な」(단어장 · 복습 카드 — 오너 승인 2026-11-06 KST) */
+.na-tail { font-size: .55em; font-weight: 500; color: var(--text-muted); margin-left: .06em; }
