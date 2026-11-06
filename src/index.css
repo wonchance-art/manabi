@@ -67,6 +67,13 @@
   --danger-text: var(--danger);
   /* 칠한 면(주 버튼 · 활성 칩 · 배지 · 리본) 위 글자 — 직접 쓰던 #fff · white를 한 이름으로(값 같음, 2026-11-06 KST). */
   --on-fill: #fff;
+  /* 옅은 초록 칠 · 테두리의 바탕 — 옛 --accent 값 그대로(#4A8A5C). 글자 · 면 --accent(#3A6D49)와 별개다.
+     흩어져 있던 rgba(74,138,92,a)를 이 이름 + color-mix(… a%, transparent)로 모은다(값 같음, 2026-11-07 KST). */
+  --accent-wash: #4a8a5c;
+  /* 프랑스어 교재 상자 팔레트(.fr-callout · .fr-parallel · .fr-vrow) — 뜻 구분(파랑) · 어원(초록) · 팁(보라) 상자 이름 그대로. 값 그대로 이름만. */
+  --fr-vsen: #4dabf7;
+  --fr-etym: #51a85c;
+  --fr-tip: #9775fa;
 
   /* 모달 스크림 — 뒤 화면을 덮는 검정. 값이 흩어져 있던 것을 토큰으로 모은다(v2-K 잔여).
      검정이라 테마별 재정의가 없다(밝은 테마에서도 덮는 쪽은 검정이다).
@@ -1066,8 +1073,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   position: absolute;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
+  border: 2px solid color-mix(in srgb, var(--on-fill) 30%, transparent);
+  border-top-color: var(--on-fill);
   border-radius: 50%;
   animation: btnSpin 0.6s linear infinite;
 }
@@ -4944,7 +4951,7 @@ a.viewer-badge:hover {
 }
 .reading-test__result-item--correct {
   border-color: var(--accent);
-  background: rgba(74,138,92,0.06);
+  background: color-mix(in srgb, var(--accent-wash) 6%, transparent);
 }
 .reading-test__result-item--wrong {
   border-color: var(--danger);
@@ -5606,7 +5613,7 @@ a.viewer-badge:hover {
    종류별 색은 불투명한 바탕 위에 얹는다(M09 실측 2026-10-13). .toast-container는 body 직속이라 밝은 셸(.manabi-app)
    밖의 루트 토큰을 받는데, 예전처럼 배경이 반투명이면 밝은 본문이 비쳐 루트의 밝은 --text-primary가 그 위에서 거의 안 보였다.
    글자(--text-primary)와 바탕(--bg-elevated)을 같은 토큰 범위에서 받으면 어느 화면 위에서도 대비가 유지된다. */
-.toast--success { border-color: rgba(74, 138, 92, 0.35);  background: linear-gradient(rgba(74, 138, 92, 0.1), rgba(74, 138, 92, 0.1)), var(--sheet, var(--bg-elevated)); }
+.toast--success { border-color: color-mix(in srgb, var(--accent-wash) 35%, transparent);  background: linear-gradient(color-mix(in srgb, var(--accent-wash) 10%, transparent), color-mix(in srgb, var(--accent-wash) 10%, transparent)), var(--sheet, var(--bg-elevated)); }
 .toast--error   { border-color: rgba(255, 107, 107, 0.35); background: linear-gradient(rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.1)), var(--sheet, var(--bg-elevated)); }
 .toast--warning { border-color: rgba(255, 217, 61, 0.35);  background: linear-gradient(rgba(255, 217, 61, 0.08), rgba(255, 217, 61, 0.08)), var(--sheet, var(--bg-elevated)); }
 .toast--info    { border-color: var(--border-hover);        background: linear-gradient(var(--primary-glow), var(--primary-glow)), var(--sheet, var(--bg-elevated)); }
@@ -5769,10 +5776,10 @@ a.viewer-badge:hover {
 .source-toggle--on {
   background: var(--accent-glow);
   color: var(--accent-text);
-  border-color: rgba(74, 138, 92, 0.3);
+  border-color: color-mix(in srgb, var(--accent-wash) 30%, transparent);
 }
 .source-toggle--on:hover {
-  background: rgba(74, 138, 92, 0.3);
+  background: color-mix(in srgb, var(--accent-wash) 30%, transparent);
 }
 .source-toggle--off {
   background: var(--bg-elevated);
@@ -5841,9 +5848,9 @@ a.viewer-badge:hover {
 .btn--accent {
   background: var(--accent-glow);
   color: var(--accent-text);
-  border: 1px solid rgba(74,138,92,0.4);
+  border: 1px solid color-mix(in srgb, var(--accent-wash) 40%, transparent);
 }
-.btn--accent:hover { background: rgba(74,138,92,0.3); }
+.btn--accent:hover { background: color-mix(in srgb, var(--accent-wash) 30%, transparent); }
 
 /* ========= Materials 완료 배지 ========= */
 .badge--completed {
@@ -5879,7 +5886,7 @@ a.viewer-badge:hover {
   text-align: center;
 }
 .review-card__highlight--hint {
-  background: rgba(74,138,92,0.2);
+  background: color-mix(in srgb, var(--accent-wash) 20%, transparent);
   color: var(--accent-text);
   border-radius: 2px;
   padding: 0 2px;
@@ -6525,12 +6532,12 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 .fr-callout__body { font-size: 0.86rem; line-height: 1.7; color: var(--text-secondary); word-break: keep-all; }
 .fr-callout--pitfall { border-color: var(--warning); background: var(--warning-tint); }
 .fr-callout--pitfall .fr-callout__label { color: var(--warning-on-tint); }
-.fr-callout--vsen { border-color: #4DABF7; background: rgba(77,171,247,0.1); }
-.fr-callout--vsen .fr-callout__label { color: #4DABF7; }
-.fr-callout--etym { border-color: #51A85C; background: rgba(81,168,92,0.1); }
-.fr-callout--etym .fr-callout__label { color: #51A85C; }
-.fr-callout--tip { border-color: #9775FA; background: rgba(151,117,250,0.1); }
-.fr-callout--tip .fr-callout__label { color: #9775FA; }
+.fr-callout--vsen { border-color: var(--fr-vsen); background: color-mix(in srgb, var(--fr-vsen) 10%, transparent); }
+.fr-callout--vsen .fr-callout__label { color: var(--fr-vsen); }
+.fr-callout--etym { border-color: var(--fr-etym); background: color-mix(in srgb, var(--fr-etym) 10%, transparent); }
+.fr-callout--etym .fr-callout__label { color: var(--fr-etym); }
+.fr-callout--tip { border-color: var(--fr-tip); background: color-mix(in srgb, var(--fr-tip) 10%, transparent); }
+.fr-callout--tip .fr-callout__label { color: var(--fr-tip); }
 /* v2 셸(늘 밝은 화면) 안에서는 같은 보라를 글자 기준까지 짙게 — #9775FA는 옅은 보라 바탕 위 3:1(화면 벽 WALL-003). */
 .manabi-app .fr-callout--tip .fr-callout__label { color: #6B4FD1; }
 
@@ -6539,14 +6546,14 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
   margin: 12px 0 4px;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
-  border-left: 3px solid #4DABF7;
-  background: rgba(77,171,247,0.08);
+  border-left: 3px solid var(--fr-vsen);
+  background: color-mix(in srgb, var(--fr-vsen) 8%, transparent);
 }
 .fr-parallel__label {
   display: block;
   font-size: 0.74rem; font-weight: 800;
   letter-spacing: 0.02em; margin-bottom: 8px;
-  color: #4DABF7;
+  color: var(--fr-vsen);
 }
 .fr-parallel__rows { display: flex; flex-direction: column; gap: 10px; }
 .fr-parallel__row {
@@ -6568,9 +6575,9 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 }
 .fr-parallel__line--en .fr-parallel__tag { background: rgba(134,142,150,0.18); color: var(--text-muted); }
 .fr-parallel__line--en .fr-parallel__txt { color: var(--text-secondary); }
-.fr-parallel__line--fr .fr-parallel__tag { background: rgba(77,171,247,0.2); color: #4DABF7; }
+.fr-parallel__line--fr .fr-parallel__tag { background: color-mix(in srgb, var(--fr-vsen) 20%, transparent); color: var(--fr-vsen); }
 .fr-parallel__line--fr .fr-parallel__txt { color: var(--text-primary); font-weight: 600; }
-.fr-parallel__txt strong { color: #4DABF7; font-weight: 800; }
+.fr-parallel__txt strong { color: var(--fr-vsen); font-weight: 800; }
 .fr-parallel__ko { font-size: 0.78rem; color: var(--text-muted); margin-left: 32px; }
 .fr-parallel__note {
   font-size: 0.82rem; line-height: 1.6; color: var(--text-secondary);
@@ -6679,8 +6686,8 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
   border-radius: 99px; background: var(--bg-card);
   font-size: 0.68rem; font-weight: 800; color: var(--text-muted);
 }
-.myplan-chip.is-done { background: rgba(74,138,92,0.14); border-color: rgba(74,138,92,0.4); color: var(--text-primary); }
-.myplan-chip.is-done .myplan-chip__n { background: #4A8A5C; color: var(--on-fill); }
+.myplan-chip.is-done { background: color-mix(in srgb, var(--accent-wash) 14%, transparent); border-color: color-mix(in srgb, var(--accent-wash) 40%, transparent); color: var(--text-primary); }
+.myplan-chip.is-done .myplan-chip__n { background: var(--accent-wash); color: var(--on-fill); }
 .myplan-chip.is-next { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
 .myplan-chip.is-next .myplan-chip__n { color: var(--primary-light); }
 
@@ -6759,7 +6766,7 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 }
 .fr-vrow--quiz { cursor: pointer; }
 .fr-vrow--quiz:hover { background: var(--bg-secondary); }
-.fr-vrow.is-checked { background: rgba(74, 138, 92, 0.06); }
+.fr-vrow.is-checked { background: color-mix(in srgb, var(--accent-wash) 6%, transparent); }
 
 /* 현장 체크박스 — 단어를 담지 않고 아는/모르는 표시 */
 .fr-vrow__check {
@@ -6772,7 +6779,7 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 }
 .fr-vrow__check input {
   width: 18px; height: 18px;
-  accent-color: #4A8A5C;
+  accent-color: var(--accent-wash);
   cursor: pointer;
 }
 
@@ -6810,7 +6817,7 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 }
 .fr-vrow__en { font-size: 0.78rem; color: var(--text-muted); }
 .fr-vrow__etym {
-  font-size: 0.78rem; color: #51A85C;
+  font-size: 0.78rem; color: var(--fr-etym);
   line-height: 1.55; margin-top: 4px;
 }
 .fr-vrow__ex {
@@ -7463,7 +7470,7 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
   border-radius: var(--radius-sm);
   border-left: 3px solid;
 }
-.fr-check__verdict.is-pass { border-color: var(--accent); background: rgba(74,138,92,0.1); }
+.fr-check__verdict.is-pass { border-color: var(--accent); background: color-mix(in srgb, var(--accent-wash) 10%, transparent); }
 .fr-check__verdict.is-fail { border-color: var(--warning); background: var(--warning-tint); }
 .fr-check__verdict .fr-check__result { margin-top: 0; padding-top: 0; border-top: none; }
 .fr-check__verdict-actions {

@@ -267,3 +267,23 @@ describe('칠한 면 위 글자 = --on-fill (2026-11-06 KST, 화면 무변화)',
     expect(hits.map(h => h.replace(/\s+/g, ' '))).toEqual(['src/index.css .vocab-row__check', 'src/index.css .review-score-btn']);
   });
 });
+
+describe('옅은 초록 칠 · 프랑스어 상자 팔레트 이름 (2026-11-07 KST, 화면 무변화)', () => {
+  // rgba(74,138,92,a)(옛 --accent 값 #4A8A5C의 옅은 칠 · 테두리)와 프랑스어 교재 상자 세 색을 이름 + color-mix(… a%, transparent)로.
+  // color-mix로 투명과 섞은 값 = 같은 rgb · 알파 a라 화면은 같다(화면 벽 픽셀 비교).
+  const css = () => read('src/index.css');
+  const decls = () => css().replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter(l => !l.trim().startsWith('--')).join('\n');
+  it(':root에 값 그대로 한 번씩', () => {
+    const root = sliceBetween(css(), ':root {', '}');
+    for (const [k, v] of [['--accent-wash', '#4a8a5c'], ['--fr-vsen', '#4dabf7'], ['--fr-etym', '#51a85c'], ['--fr-tip', '#9775fa']]) {
+      expect(root).toContain(`${k}: ${v};`);
+      expect(css().match(new RegExp(`${k}:`, 'g'))).toHaveLength(1);
+    }
+  });
+  it('선언에 옛 직접 값이 다시 생기지 않는다(단어장 메모 초록 하나는 데이터 세션 몫)', () => {
+    expect(decls()).not.toMatch(/rgba\(\s*74,\s*138,\s*92,/);
+    expect(decls()).not.toMatch(/#4a8a5c|#4dabf7|#9775fa|rgba\(\s*77,\s*171,\s*247|rgba\(\s*151,\s*117,\s*250|rgba\(\s*81,\s*168,\s*92/i);
+    expect(decls().match(/#51a85c/gi)).toHaveLength(1);
+    expect(decls()).toMatch(/\.vocab-row__note \{[^}]*#51A85C/);
+  });
+});
