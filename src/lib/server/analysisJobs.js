@@ -17,6 +17,8 @@ import { publishBooksOf } from './publishBooks';
 import { POST as analyzeRoute } from '@/app/api/analyze/route';
 import { POST as koreanRoute } from '@/app/api/analyze/korean/route';
 import { POST as geminiRoute } from '@/app/api/gemini/route';
+import { consumeDailyQuota } from './dailyQuota';
+import { getLLMStats } from './llm';
 
 /** 한 장 시도 상한 · 연달아 실패 멈춤 — 관리자 화면 일괄 분석(FAILURE_STOP 3)과 같은 기준. */
 export const CHAPTER_ATTEMPTS = 3;
@@ -28,7 +30,7 @@ export const CHAPTER_TIMEOUT_MS = 170_000;
 export const LEASE_MS = 300_000;
 /** 끊긴 사슬로 보는 기준 — 도는 작업인데 임대가 없고 이만큼 조용하면 관리자 화면이 tick을 다시 깨운다. */
 export const STALL_MS = 60_000;
-export const JOB_COLUMNS = 'id, owner_id, kind, book_keys, status, current_key, chapters_done, chapters_failed, attempts, failure_streak, last_error, lease_until, created_at, updated_at';
+export const JOB_COLUMNS = 'id, owner_id, kind, book_keys, material_ids, status, current_key, chapters_done, chapters_failed, attempts, failure_streak, last_error, llm_usage, lease_until, created_at, updated_at';
 const KEY_PATH = 'processed_json->metadata->book->>key';
 const ORDER_PATH = 'processed_json->metadata->book->>order';
 
@@ -48,6 +50,68 @@ export async function inProcessTransport(url, init) {
   if (!route) throw new Error(`서버 분석이 부를 수 없는 경로예요: ${path}`);
   return route(internalAnalysisRequest(path, init));
 }
+
+// ── 공개 시드(starter) 작업(STARTER-ANALYSIS-001, 2026-11-06 KST) ──
+// 책 작업과 같은 tick · 임대 · 장별 시도(3) · 연달아 실패 멈춤(3) · 같은 분석 경로(analyzeChapter)를 쓰고, 다른 것은 셋뿐이다:
+//   ① 대상 = 작업 줄의 material_ids(시작할 때 고른 공개 시드 id, 그 차례대로) — 책 게시(prepare) 없음
+//   ② 하루 상한 회계 — 자료마다 분석 요청 수만큼 작업 관리자의 'analyze' 하루 상한(AI-QUOTA-001)을 먼저 쓴다. 닿으면 실패가 아니라
+//      「내일 이어서」 — 작업은 그대로 돌고 다음 날 예약 실행이 잇는다(사용자가 브라우저로 분석할 때와 같은 회계)
+//   ③ llm_usage — 이 작업 동안 쓴 LLM 호출 · 토큰을 모델별로 더한다(인스턴스 집계 getLLMStats의 전후 차 — 같은 인스턴스의 다른 요청이
+//      섞일 수 있어 근사값이다. 정본은 Vercel 로그의 [llm] 줄).
+/** 분석 요청 수 추정 — analyzeText의 요청당 글자 예산(일 800 · 영 2000 · 중 400 · 한 1600)으로 나눈 올림, 최소 1. */
+const REQUEST_BUDGET = Object.freeze({ Japanese: 800, English: 2000, Chinese: 400, Korean: 1600 });
+export function analysisRequestUnits(rawText, language) {
+  const chars = String(rawText || '').length;
+  return Math.max(1, Math.ceil(chars / (REQUEST_BUDGET[language] || 2000)));
+}
+
+/** 인스턴스 LLM 집계 두 스냅샷의 차 → { 모델: {calls, ok, in, out, thinking} }(호출이 있었던 모델만). 창이 새로 열렸으면 뒤 스냅샷 그대로. */
+export function usageDelta(before, after) {
+  const out = {};
+  const keys = ['calls', 'ok', 'in', 'out', 'thinking'];
+  for (const [tier, models] of Object.entries(after?.tiers || {})) {
+    for (const [model, b] of Object.entries(models || {})) {
+      const a = before?.tiers?.[tier]?.[model] || {};
+      const reset = (Number(b.calls) || 0) < (Number(a.calls) || 0);
+      const d = Object.fromEntries(keys.map((k) => [k, (Number(b[k]) || 0) - (reset ? 0 : (Number(a[k]) || 0))]));
+      if (d.calls <= 0) continue;
+      const cur = out[model] || Object.fromEntries(keys.map((k) => [k, 0]));
+      out[model] = Object.fromEntries(keys.map((k) => [k, cur[k] + d[k]]));
+    }
+  }
+  return out;
+}
+
+/** 작업 llm_usage에 차를 더한다 → { calls, in, out, thinking, byModel }. */
+export function mergeUsage(usage, delta) {
+  const byModel = { ...(usage?.byModel || {}) };
+  for (const [model, d] of Object.entries(delta || {})) {
+    const cur = byModel[model] || { calls: 0, ok: 0, in: 0, out: 0, thinking: 0 };
+    byModel[model] = Object.fromEntries(Object.keys(cur).map((k) => [k, cur[k] + (Number(d[k]) || 0)]));
+  }
+  const sum = (k) => Object.values(byModel).reduce((acc, m) => acc + (Number(m[k]) || 0), 0);
+  return { calls: sum('calls'), in: sum('in'), out: sum('out'), thinking: sum('thinking'), byModel };
+}
+
+/** starter 작업의 자료 행 — 작업 관리자 소유 · 공개 · material_ids 안. order = material_ids 안의 자리. */
+async function starterRows(supabase, job) {
+  const ids = (job.material_ids || []).map(Number);
+  if (!ids.length) return [];
+  const { data, error } = await supabase.from('reading_materials')
+    .select('id, status:processed_json->>status, language:processed_json->metadata->>language, raw_text')
+    .eq('owner_id', job.owner_id).eq('visibility', 'public').in('id', ids);
+  if (error) throw error;
+  const order = new Map(ids.map((id, i) => [id, i]));
+  return (data || []).map((row) => ({ ...row, order: order.get(Number(row.id)) ?? ids.length }));
+}
+
+/** starter 작업의 다음 자료 — 분석 전이고 시도 상한 전인 것 중 material_ids 차례가 가장 앞선 것. → {key: null, chapter} | null */
+async function nextStarter(supabase, job, listStarter) {
+  const chapter = pickChapter(await listStarter(supabase, job), job.attempts);
+  return chapter ? { key: null, chapter } : null;
+}
+
+export const STARTER_DAILY_LIMIT_NOTE = '오늘 분석 상한에 닿아 내일 예약 실행에서 이어서 해요.';
 
 /** 장 고르기 — 분석 전이고 시도 상한 전인 장 중 장 순서가 가장 앞선 것. chapters: [{id, order, status}] */
 export function pickChapter(chapters, attempts = {}) {
@@ -162,6 +226,7 @@ async function nextChapter(supabase, job, books, prepared, { prepare, listChapte
 export async function runAnalysisTick({
   supabase = serviceClient(), now = () => Date.now(), getBooks = publishBooksOf, analyze = analyzeChapter,
   prepare = prepareCanonicalBook, listChapters = chapterRows, publishable = literatureBookPublishable,
+  listStarter = starterRows, consumeQuota = consumeDailyQuota, llmStats = getLLMStats,
 } = {}) {
   if (!supabase) return { processed: 0, more: false };
   const claimed = await claimJob(supabase, now());
@@ -172,7 +237,9 @@ export async function runAnalysisTick({
   let books;
   try {
     // 이 작업의 책만 — 문학책은 그 책들 원문만 읽는다(BUILD-OOM-001). 모르는 key는 빠지고 nextChapter가 「찾지 못함」으로 넘긴다.
-    try { books = getBooks(claimed.kind, claimed.book_keys); } catch { books = null; }
+    const starter = claimed.kind === 'starter';
+    if (starter) books = [];
+    else { try { books = getBooks(claimed.kind, claimed.book_keys); } catch { books = null; } }
     if (!books) {
       await updateJob(supabase, claimed.id, { status: 'failed', last_error: '정본 책 목록을 만들지 못했어요. 리포의 원본 기록을 확인해 주세요.' });
       return { jobId: claimed.id, processed, more: true };
@@ -180,11 +247,22 @@ export async function runAnalysisTick({
     while (now() - started < TICK_START_BUDGET_MS) {
       const job = await readJob(supabase, claimed.id);
       if (job.status !== 'running') return { jobId: job.id, processed, more: true };
-      const next = await nextChapter(supabase, job, books, prepared, { prepare, listChapters, publishable });
+      const next = starter
+        ? await nextStarter(supabase, job, listStarter)
+        : await nextChapter(supabase, job, books, prepared, { prepare, listChapters, publishable });
       if (!next) {
         await updateJob(supabase, job.id, { status: 'done', current_key: null });
         return { jobId: job.id, processed, more: true };
       }
+      if (starter) {
+        // 하루 상한 회계(AI-QUOTA-001) — 닿으면 실패로 세지 않고 오늘은 여기까지(작업은 도는 채로, 다음 날 예약 실행이 잇는다).
+        const quota = await consumeQuota({ kind: 'analyze', subject: `u:${job.owner_id}`, units: analysisRequestUnits(next.chapter.raw_text, next.chapter.language) });
+        if (!quota.ok) {
+          await updateJob(supabase, job.id, { last_error: STARTER_DAILY_LIMIT_NOTE });
+          return { jobId: job.id, processed, more: false };
+        }
+      }
+      const statsBefore = starter ? llmStats() : null;
       let outcome;
       try {
         await analyze(supabase, job, next.chapter.id);
@@ -195,6 +273,7 @@ export async function runAnalysisTick({
       processed += 1;
       const fresh = await readJob(supabase, job.id);
       const patch = jobAfterChapter(fresh, next.chapter.id, outcome);
+      if (starter) patch.llm_usage = mergeUsage(fresh.llm_usage, usageDelta(statsBefore, llmStats()));
       // 멈춤 · 실패로 바뀐 작업은 상태를 되돌리지 않는다(진행 수만 남긴다).
       if (fresh.status !== 'running') delete patch.status;
       await updateJob(supabase, job.id, patch);
