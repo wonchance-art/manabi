@@ -85,7 +85,8 @@ describe('오류 화면', () => {
       // `error?.message || ''`(판정용 빈 문자열 대체)만 허용한다.
       expect(src, file).not.toMatch(/error\??\.message\s*\|\|(?!\s*(''|""))/);
       expect(src, file).not.toMatch(/:\s*error\??\.message\b/);
-      expect(src, file).toMatch(/console\.error\(/);
+      // 원문은 콘솔로 — 직접 console.error 또는 reportError(콘솔 + 운영 오류 기록, ERROR-OBSERVE-001 · errorObserve.test.js).
+      expect(src, file).toMatch(/console\.error\(|reportError\(error\b/);
     }
   });
 

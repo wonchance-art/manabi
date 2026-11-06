@@ -2,11 +2,12 @@
 
 import { useEffect } from 'react';
 import { reloadOnceForChunkError } from '@/lib/chunkReload';
+import { reportError } from '@/lib/reportError';
 import { retryRouteError } from '@/lib/chunkReload'; // 조각 오류의 「다시 시도」 = 문서 새로 받기
 
 // PDF 라우트 전용 에러 바운더리 — 원문·스택은 콘솔에만 남기고 화면에는 정해진 안내만 낸다(WALL-001).
 export default function PdfError({ error, reset }) {
-  useEffect(() => { console.error('PdfError:', error); reloadOnceForChunkError(error); }, [error]);
+  useEffect(() => { reportError(error, { kind: 'boundary.pdf' }); reloadOnceForChunkError(error); }, [error]);
 
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
