@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import { friendlyToastMessage, isServiceConfigError } from '../errorMessage';
+import { TTS_TEXT_HEADER, encodeTtsText, ttsHash } from '../ttsRequest';
 
 vi.mock('react', () => ({ useCallback: fn => fn, useEffect: () => {}, useState: () => [false, vi.fn()] }));
 
@@ -123,7 +124,9 @@ describe('③ 서버 음성 「서비스 설정」 실패 기억', () => {
 });
 
 describe('GEMINI-FREE-001 (a) — /api/tts 상류 무료 한도 차단기', () => {
-  const ttsReq = (text) => new Request(`http://x/api/tts?lang=Japanese&text=${encodeURIComponent(text)}`, { headers: { 'x-forwarded-for': '203.0.113.9' } });
+  // 요청 모양은 TTS-URL-001(문장은 주소 밖 — 해시 주소 + x-tts-text 헤더)을 따른다.
+  const ttsReq = (text) => new Request(`http://x/api/tts?h=${ttsHash('Japanese', text)}&lang=Japanese`,
+    { headers: { 'x-forwarded-for': '203.0.113.9', [TTS_TEXT_HEADER]: encodeTtsText(text) } });
   beforeEach(() => { vi.stubEnv('GEMINI_API_KEY', 'k'); vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', ''); });
   afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 

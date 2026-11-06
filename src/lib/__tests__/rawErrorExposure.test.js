@@ -160,7 +160,7 @@ describe('WALL-STATES-001 ⑴ 매핑 함수 — 모르는 오류는 원문 대�
     '한 번에 1~50과로 나눠 주세요.',
     '원본이 변경됐어요. 최신 원본에서 구간을 다시 골라 주세요.',
     'PDF 쪽수를 확인해 주세요.',
-    '선택한 필기를 Gemini로 보내는 인식을 눌러 주세요.',
+    '필기 인식 안내가 바뀌었어요. 새로고침한 뒤 다시 인식해 주세요.',
   ])('우리 API·화면의 한국어 안내 %j는 그대로 보인다', (message) => {
     expect(friendlyToastMessage(new Error(message))).toBe(message);
   });

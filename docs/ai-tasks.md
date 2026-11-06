@@ -878,6 +878,25 @@
 
 ## Claude (claude/*)
 ### doing
+- **PRIVACY-FIX 묶음 (2026-11-06 KST) — 개인정보 버그 셋, 각각 PR 하나** `claude/wip/privacy-fixes`(오케스트레이션 발주 · 백엔드 · 데이터 자율 / 문구 정정은 버그 수정으로 승인):
+  - **INK-CONSENT-001 필기 인식 동의 안내 = 실제 처리자 순서** — 노트 · 수업판 동의 문구가 「Google Gemini로」였지만 서버(selectedInkRecognition →
+    callLLM standard, groq:false)는 Claude 키가 있으면 Anthropic Claude 먼저, 실패하면 Gemini. 처리자 목록 `INK_RECOGNITION_PROVIDERS`(noteRecognition.js) 한 곳 →
+    안내 「AI(Anthropic Claude, 안 되면 Google Gemini)」 · 동의 값 `selected-ink-to-anthropic-then-gemini`(옛 화면의 「Gemini만」 동의는 400 · 새로고침 안내) ·
+    수업판 출처 표시 「AI · 필기에서 확인」. 같은 `<strong>` 자리, 요소 추가 없음. 계약 `inkRecognitionProviders.test.js` — 세 키를 둔 실제 서버 경로의 바깥 요청 순서 =
+    목록(Groq 0회). 남은 것: 개인정보 처리방침 §4 표(Anthropic · Google 행)에 「선택한 필기 이미지」가 없다 — 처리방침 문구는 별도 결정.
+  - **TTS-URL-001 서버 음성 요청에서 문장을 주소 밖으로** — `GET /api/tts?h=<sha256(lang|voice|정규화 문장)>&lang=…` + 헤더 `x-tts-text`(UTF-8 base64url, 160자 · 헤더 640자 상한).
+    정본 `src/lib/ttsRequest.js`(동기 순수 SHA-256 — 단어 탭 동기 경로 · iOS 탭 안 발화 그대로, node:crypto 대조). 서버는 `?text=` 400 · 해시 불일치 400(제공자 0회) — h에 캐시되는
+    소리는 언제나 h를 만든 문장의 것. **CDN 근거**: Vercel 캐시 키 = 메서드 · URL · 호스트 · 배포(+ `Vary`가 지목한 요청 헤더, Accept · Accept-Encoding 기본 포함) —
+    [Cache keys](https://vercel.com/docs/caching/cdn-cache/purge#cache-keys) · [Vary header](https://vercel.com/docs/caching/cdn-cache#vary-header). 그래서 `x-tts-text`를 Vary에 넣지 않으면
+    같은 문장 = 같은 주소 = 적중(지금과 같음), 넣으면 헤더 값마다 갈린다. 400은 Vercel이 캐시하지 않는 상태([Cacheable response criteria](https://vercel.com/docs/caching/cdn-cache#cacheable-response-criteria):
+    200 · 404 · 410 · 3xx만). Cache-Control은 그대로(CDN-Cache-Control 없음 — 원래도 없었다). 계약 `ttsUrlPrivacy.test.js`. 미확인: 배포 뒤 `x-vercel-cache` HIT 실측(같은 문장 두 번).
+  - **WORLD-IP-RETENTION-001 월드 접속 IP 보관 상한 N = 24시간** — `20261106220000_world_sessions_ip_retention.sql`: 마지막 하트비트 24시간 초과 행의 ip만 NULL
+    (`world_sessions_purge_stale_ip()`, 실행권 없음)을 `claim_world_session_v2`가 입장마다 먼저 부르고 적용 순간 한 번. 행 · 토큰 · 임대 동작 · 실행권 · 지문 넷 + capability 불변(사후 검사).
+    지문 범위 밖(fixture에 world 없음 — post-observation 42P01 SKIP). 복원 `docs/sql/world-sessions-ip-retention-rollback.sql`(지운 ip는 되돌리지 않음). PGlite `world-sessions-ip-retention.mjs` 11검사 · ci.yml 연결.
+    처리방침 문구용: 「월드 접속 IP는 접속이 끊긴 뒤 24시간이 지나면 다음 월드 입장 때 지운다(정상 퇴장은 바로)」 — pg_cron이 없어 아무도 입장하지 않으면 그때까지 남는다
+    (엄격한 상한이 필요하면 기존 Vercel 일일 cron에 청소 호출을 더하는 후속). 기능상 필요한 기간은 임대 60초뿐.
+  확인: vitest 939/940 파일 · 11,108/11,109(실패 1 = `libraryPrefetchWait.test.js` getClaims — 공유 node_modules의 supabase-js 2.114(lock 2.100) 탓, 이 변경과 무관한 파일) ·
+  eslint 0 · post-observation-migrations PASS(관측 뒤 36개) · migrationFingerprintRepin · data-api-grants 통과. next build는 디스크 여유 부족으로 생략.
 - **LAUNCH-META-001 검색 메타 묶음 + 서비스 워커 캐시 이름 (2026-11-06 ~ 11-07 KST)** `claude/wip/launch-meta` → PR `claude/launch-meta`(오케스트레이터 발주 · 출시 감사 2026-11-06 운영 실측, 화면 무변화):
   ① 정본: 루트 `canonical: '/'` 상속 제거 → 공개 화면마다 자기 정본 + og:url(= 정본) + 공통 og(그림 · manabi · ko_KR · website). 정본 호스트는 `src/lib/seo.js` `siteUrl()` 한 곳
   (NEXT_PUBLIC_SITE_URL 그대로, 없으면 https://manabi.co.kr) — **www · apex는 오너 결정 대기**(운영은 apex → www 308인데 정본은 apex: 결정 시 운영 값 또는 `DEFAULT_SITE_URL` 한 줄).

@@ -5,7 +5,7 @@ vi.mock('@/lib/server/llm',()=>({callLLM:mocks.llm}));
 vi.mock('@/lib/server/rateLimit',()=>({rateLimit:mocks.limit}));
 import {POST} from '../../app/api/notes/[id]/recognize/route';
 import {newStudyNote,noteMaterialRow} from '../studyNotes';
-import {recognitionFingerprint} from '../noteRecognition';
+import {recognitionFingerprint,INK_RECOGNITION_CONSENT} from '../noteRecognition';
 const owner='11111111-1111-4111-8111-111111111111',revision='22222222-2222-4222-8222-222222222222';
 const context={params:Promise.resolve({id:'55'})};
 const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
@@ -16,13 +16,14 @@ beforeEach(async()=>{
  vi.clearAllMocks();calls=[];
  const note=newStudyNote(crypto.randomUUID(),'p');note.board.pages[0].elements=[{id:'a',type:'freedraw',x:0,y:0,width:20,height:20,points:[[0,0],[20,20]]}];
  row={id:55,...noteMaterialRow(owner,'Private title must not be transmitted',note,revision)};
- body={consent:'selected-ink-to-gemini',revision,pageId:'p',elementIds:['a'],fingerprint:await recognitionFingerprint(note.board.pages[0],['a']),image:png};
+ body={consent:INK_RECOGNITION_CONSENT,revision,pageId:'p',elementIds:['a'],fingerprint:await recognitionFingerprint(note.board.pages[0],['a']),image:png};
  mocks.auth.mockResolvedValue({user:{id:owner},supabase:db([row,row])});mocks.limit.mockReturnValue({ok:true});mocks.llm.mockResolvedValue({text:JSON.stringify({expressions:[{original:'はし',choices:[{text:'箸',meaning:'젓가락'}]}]})});
 });
 describe('private selected handwriting API',()=>{
  it('requires login, explicit recognition action, and private ownership before contacting Gemini',async()=>{
   mocks.auth.mockResolvedValueOnce({error:'로그인 필요',status:401});expect((await POST(req(),context)).status).toBe(401);
   expect((await POST(req({...body,consent:undefined}),context)).status).toBe(400);
+  expect((await POST(req({...body,consent:'selected-ink-to-gemini'}),context)).status).toBe(400);
   mocks.auth.mockResolvedValueOnce({user:{id:owner},supabase:db([{...row,owner_id:'someone-else'}])});expect((await POST(req(),context)).status).toBe(404);
   expect(mocks.llm).not.toHaveBeenCalled();
  });

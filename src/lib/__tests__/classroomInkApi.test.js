@@ -4,10 +4,11 @@ vi.mock('@/lib/supabaseServer',()=>({requireUser:mocks.auth}));
 vi.mock('@/lib/server/llm',()=>({callLLM:mocks.llm}));
 vi.mock('@/lib/server/rateLimit',()=>({rateLimit:mocks.limit}));
 import {POST} from '../../app/api/classroom/recognize/route';
+import {INK_RECOGNITION_CONSENT} from '../noteRecognition';
 const owner='11111111-1111-4111-8111-111111111111';
 const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
 const root={id:1,owner_id:owner,processed_json:{metadata:{team:{key:'team-a',root:true,lang:'Japanese',name:'private class',pwHash:'private hash'}}}};
-const body={rootId:'1',teamKey:'team-a',consent:'selected-ink-to-gemini',fingerprint:'a'.repeat(64),image:png};
+const body={rootId:'1',teamKey:'team-a',consent:INK_RECOGNITION_CONSENT,fingerprint:'a'.repeat(64),image:png};
 const request=(patch={})=>new Request('http://localhost/api/classroom/recognize',{method:'POST',body:JSON.stringify({...body,...patch})});
 let calls;
 function db(rows=[root,root]){return {from(table){const filters=[];calls.push({table,filters});const q={select(){return q;},eq(...args){filters.push(args);return q;},maybeSingle(){return Promise.resolve({data:rows.shift()});}};return q;}};}
@@ -22,7 +23,7 @@ describe('teacher selected handwriting API',()=>{
     expect(mocks.llm).not.toHaveBeenCalled();
   });
   it('requires consent and bounded local PNG/fingerprint; never fetches external image URLs',async()=>{
-    for(const patch of [{consent:null},{rootId:'bad'},{fingerprint:'old'},{image:'https://example.com/private.png'}]){
+    for(const patch of [{consent:null},{consent:'selected-ink-to-gemini'},{rootId:'bad'},{fingerprint:'old'},{image:'https://example.com/private.png'}]){
       mocks.auth.mockResolvedValueOnce({user:{id:owner},supabase:db()});expect((await POST(request(patch))).status).toBe(400);
     }
     expect((await POST(request({image:'x'.repeat(2100000)}))).status).toBe(413);
