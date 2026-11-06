@@ -333,6 +333,6 @@ describe('첫 그림 뒤 시트 — 뷰어(Noto Sans SC · TC)', () => {
   });
 
   it('SW는 배포를 넘길 때 /_fonts 시트도 옮긴다(받아 둔 뷰어 문서 HTML에 주소가 없다)', () => {
-    expect(read('public/sw.js')).toContain('const FONT_ASSET = /^\\/(?:_next\\/static\\/media|_fonts)\\//;');
+    expect(read('public/sw.js')).toContain('const FONT_ASSET = /^\\/(?:_next\\/static\\/media|_fonts|fonts\\/kr-viewer)\\//;');
   });
 });

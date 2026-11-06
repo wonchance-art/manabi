@@ -26,9 +26,11 @@ describe('뷰어 한글 하위 집합 — 목록 · 산출물 · 배선', () => 
     expect(outside, `목록 밖 글자 ${outside.join('')} — ${REGEN}`).toEqual([]);
   });
 
-  it('woff2는 목록과 함께 만든 그 파일이다(sha256 · 크기) · 50KB대로 작다', () => {
-    const buf = fs.readFileSync(path.join(DIR, meta.woff2.file));
+  it('woff2는 목록과 함께 만든 그 파일이다(sha256 · 크기 · 이름 = 내용 해시 앞 16자) · 50KB대로 작다', () => {
+    expect(meta.woff2.href).toBe(`/fonts/kr-viewer/noto-sans-kr-viewer.${meta.woff2.sha256.slice(0, 16)}.woff2`);
+    const buf = fs.readFileSync(path.join(ROOT, 'public', meta.woff2.href));
     expect(crypto.createHash('sha256').update(buf).digest('hex'), REGEN).toBe(meta.woff2.sha256);
+    expect(fs.readdirSync(path.join(ROOT, 'public/fonts/kr-viewer')).filter((f) => f.endsWith('.woff2')), '옛 판이 남지 않는다').toEqual([path.basename(meta.woff2.href)]);
     expect(buf.length).toBe(meta.woff2.bytes);
     expect(buf.subarray(0, 4).toString('latin1')).toBe('wOF2');
     expect(buf.length).toBeLessThan(80 * 1024);
@@ -43,7 +45,7 @@ describe('뷰어 한글 하위 집합 — 목록 · 산출물 · 배선', () => 
     }
     expect(meta.count).toBe([...meta.chars].length);
     expect(css).toContain("@font-face{font-family:'Noto Sans KR';font-style:normal;font-weight:400;font-display:swap;");
-    expect(css).toContain(`src:url(./${meta.woff2.file}) format('woff2')`);
+    expect(css).toContain(`src:url(${meta.woff2.href}) format('woff2')`);
     const root = fs.readFileSync(path.join(ROOT, 'src/app/layout.jsx'), 'utf8');
     expect(root).toMatch(/Noto_Sans_KR\(\{[\s\S]*?weight: \['400', '500', '700'\][\s\S]*?\}\)/); // 같은 family · 굵기를 묶음이 덮는다
   });
@@ -54,8 +56,18 @@ describe('뷰어 한글 하위 집합 — 목록 · 산출물 · 배선', () => 
     const script = fs.readFileSync(path.join(ROOT, 'scripts/fonts/kr-viewer-subset.py'), 'utf8');
     expect(script).toContain(`SOURCE_SHA256 = '${meta.source.sha256}'`);
     expect(script).toContain("options.drop_tables += ['GDEF', 'prep']"); // Google 조각과 같은 표 구성(힌팅 없음)
+    expect(script).toContain('font.recalcTimestamp = False'); // 결정적 산출 — 같은 입력이면 같은 해시 이름
     expect(fs.readdirSync(DIR).filter((f) => /\.(ttf|otf)$/i.test(f))).toEqual([]);
     expect(fs.existsSync(path.join(DIR, 'OFL.txt'))).toBe(true);
+  });
+
+  it('뷰어 레이아웃이 첫 그림 전에 미리 받는다(늦게 오면 상단 막대가 밀린다 — CLS) · 1년 immutable · SW가 배포 사이에 옮긴다', async () => {
+    const layout = fs.readFileSync(path.join(ROOT, 'src/app/(app)/viewer/layout.jsx'), 'utf8');
+    expect(layout).toContain("preload(krViewerSubset.woff2.href, { as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' });");
+    const { default: config } = await import('../../../../next.config.mjs');
+    const rule = (await config.headers()).find((r) => r.source === '/fonts/kr-viewer/:path*');
+    expect(rule?.headers).toEqual([{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }]);
+    expect(fs.readFileSync(path.join(ROOT, 'public/sw.js'), 'utf8')).toMatch(/const FONT_ASSET = [^\n]*fonts\\\/kr-viewer/);
   });
 
   it('뷰어 세그먼트에만 싣는다(다른 화면은 지금처럼 원래 조각)', () => {

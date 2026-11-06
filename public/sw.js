@@ -77,9 +77,9 @@ self.addEventListener('install', (event) => {
 // 본문(자료 · 단어장)은 CacheStorage가 아니라 IndexedDB(anatomy-offline-cache — 이름 유지)라 이 일과 무관하다.
 const CACHE_PREFIXES = ['manabi-v', 'anatomy-studio-v'];
 const ownCache = (name) => CACHE_PREFIXES.some((prefix) => name.startsWith(prefix));
-// 중국어 독립 글꼴 시트(/_fonts/… — 이름이 본문 해시라 바뀌지 않는다)도 함께 옮긴다(VIEWER-FONT-SPLIT-001 — 뷰어가 첫 그림 뒤에 붙이는 시트라
+// 중국어 독립 글꼴 시트(/_fonts/…) · 뷰어 한글 하위 집합(/fonts/kr-viewer/… — 둘 다 이름이 내용 해시라 바뀌지 않는다)도 함께 옮긴다(VIEWER-FONT-SPLIT-001 — 뷰어가 첫 그림 뒤에 붙이는 시트라
 // 받아 둔 뷰어 문서의 HTML에 주소가 없다. 옮기지 않으면 배포 뒤 첫 오프라인에서 중국어가 시스템 글꼴로 떨어진다).
-const FONT_ASSET = /^\/(?:_next\/static\/media|_fonts)\//;
+const FONT_ASSET = /^\/(?:_next\/static\/media|_fonts|fonts\/kr-viewer)\//;
 
 async function carryOver(current, oldName) {
   const old = await caches.open(oldName);
