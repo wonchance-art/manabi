@@ -34,7 +34,7 @@
 ## 스키마 (마이그레이션 `20260712000300_world_multiplayer.sql`)
 
 - `world_sessions.ip text` — IP 단위 검사 재료(계정 단위 임대 로직은 기존 그대로).
-  - **보관 상한(`20261106190000`, WORLD-IP-RETENTION-001)**: 마지막 하트비트가 **24시간** 넘은 행의 ip 는 NULL 로 지운다 —
+  - **보관 상한(`20261106220000`, WORLD-IP-RETENTION-001)**: 마지막 하트비트가 **24시간** 넘은 행의 ip 는 NULL 로 지운다 —
     `world_sessions_purge_stale_ip()`(실행권 없음)를 `claim_world_session_v2` 가 입장마다 먼저 부르고, 적용 순간 한 번 돌렸다.
     pg_cron 이 없어 아무도 입장하지 않으면 다음 입장까지 남는다. 정상 퇴장(release)은 행째 지운다.
 - `claim_world_session_v2(p_ip text DEFAULT NULL) RETURNS jsonb` (SECURITY DEFINER, `search_path=''`):

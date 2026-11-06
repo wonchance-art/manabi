@@ -890,7 +890,7 @@
     [Cache keys](https://vercel.com/docs/caching/cdn-cache/purge#cache-keys) · [Vary header](https://vercel.com/docs/caching/cdn-cache#vary-header). 그래서 `x-tts-text`를 Vary에 넣지 않으면
     같은 문장 = 같은 주소 = 적중(지금과 같음), 넣으면 헤더 값마다 갈린다. 400은 Vercel이 캐시하지 않는 상태([Cacheable response criteria](https://vercel.com/docs/caching/cdn-cache#cacheable-response-criteria):
     200 · 404 · 410 · 3xx만). Cache-Control은 그대로(CDN-Cache-Control 없음 — 원래도 없었다). 계약 `ttsUrlPrivacy.test.js`. 미확인: 배포 뒤 `x-vercel-cache` HIT 실측(같은 문장 두 번).
-  - **WORLD-IP-RETENTION-001 월드 접속 IP 보관 상한 N = 24시간** — `20261106190000_world_sessions_ip_retention.sql`: 마지막 하트비트 24시간 초과 행의 ip만 NULL
+  - **WORLD-IP-RETENTION-001 월드 접속 IP 보관 상한 N = 24시간** — `20261106220000_world_sessions_ip_retention.sql`: 마지막 하트비트 24시간 초과 행의 ip만 NULL
     (`world_sessions_purge_stale_ip()`, 실행권 없음)을 `claim_world_session_v2`가 입장마다 먼저 부르고 적용 순간 한 번. 행 · 토큰 · 임대 동작 · 실행권 · 지문 넷 + capability 불변(사후 검사).
     지문 범위 밖(fixture에 world 없음 — post-observation 42P01 SKIP). 복원 `docs/sql/world-sessions-ip-retention-rollback.sql`(지운 ip는 되돌리지 않음). PGlite `world-sessions-ip-retention.mjs` 11검사 · ci.yml 연결.
     처리방침 문구용: 「월드 접속 IP는 접속이 끊긴 뒤 24시간이 지나면 다음 월드 입장 때 지운다(정상 퇴장은 바로)」 — pg_cron이 없어 아무도 입장하지 않으면 그때까지 남는다
