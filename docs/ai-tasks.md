@@ -1001,6 +1001,10 @@
     재실행 거절 · 복원 `docs/sql/library-rls-initplan-20261106-rollback.sql`. 계약 `supabase/tests/library-rls-initplan.mjs`(CI).
     보류(오케스트레이터 동의): reading_materials 중복 PERMISSIVE — capability 지문 범위라 재게시가 필요하고 이득은 측정 불가(37MB · 캐시 99.99%).
     → **다음 capability 지문 재게시 작업 때 동봉**(SELECT 3개 · UPDATE 1개 — 「Enable Read for All」 · anyone_read_public · owner_read_private · owner_update_material).
+    ⑧ #1696 운영 첫 적용 실패 → 같은 파일 고침(11/6 22:5x KST): Supabase Migrations run 42228273850이 사전 측정의 capability 호출에서
+    login_required(42501)로 멈춤 — 함수가 로그인 사용자만 부르는데 db push엔 로그인 맥락이 없다. 암묵 트랜잭션 전체 롤백(운영 정책 3개 원래 식 ·
+    이력 미기록 · 지문 넷 그대로 확인). 고침: capability는 부르지 않고 카탈로그 정의(본문 md5 · ACL · 소유자 · 속성)를 잰다(core 지문이 정의를 품는다).
+    계약은 fixture가 세션에 남긴 sub를 비우고 적용 — 고치기 전 파일로 운영과 같은 42501을 재현, 고친 뒤 6/6 · 이주 사슬 테스트 15개 통과.
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
