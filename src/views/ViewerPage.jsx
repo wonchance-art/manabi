@@ -2915,6 +2915,8 @@ export default function ViewerPage({ seed } = {}) {
   // 덩어리(静か+でした)는 형용 활용이 확정이고, 홑 토큰은 바로 뒤가 を · が · は · の 같은 조사면 명사 쓰임이라 그대로 둔다.
   const jaNaHead = materialLang === 'Japanese' && !!selectedToken && isJaNaAdjective({ ...selectedToken, base_form: headText })
     && (!!selectedToken.__chunk || !jaNaNounUseAt(material?.processed_json?.sequence, material?.processed_json?.dictionary, selectedToken.id));
+  // する동사(오너 승인 2026-11-06 KST): 명사 + する 덩어리 — 표제어 勉強 + 작은 「する」, 품사 「する동사」(저장 키 勉強 그대로).
+  const jaSahenHead = materialLang === 'Japanese' && !!selectedToken?.__chunk?.sahen;
   // 로그아웃이면 사전 행이 없다(RLS) — 토큰 독음이 기본형 읽기일 때만 표제어 읽기로 쓴다(GUEST-HEAD-READING-001 · splitRuby와 같은 판정).
   // 로그인은 사전 행 읽기만(조회 중 토큰 독음 → 사전 읽기로 바뀌는 깜빡임 없음). 「기본형」 라벨(headFallback)은 그대로.
   const guestHeadReading = headIsBase && !user && !authLoading ? baseFormReading(selectedToken.text, selectedToken.furigana, headText) : null;
@@ -3683,7 +3685,7 @@ export default function ViewerPage({ seed } = {}) {
       {cardSentence && <p className="reader-card-sentence" data-tight={glyphStep >= 1 || undefined} lang={contentLangTag} key={`sentence:${selectedToken.id||selectedToken.text}`}>{cardSentence.before}{cardSentence.term && <mark className="reader-card-sentence__term">{cardSentence.term}</mark>}{cardSentence.after}</p>}
       <div className="word-detail-card__actions">
         <div className="word-detail-card__meta">
-          <span className="reader-card-tag"><TokenPosLabel token={selectedToken} naAdjective={jaNaHead} /></span>
+          <span className="reader-card-tag"><TokenPosLabel token={selectedToken} naAdjective={jaNaHead} sahen={jaSahenHead} /></span>
           {/* 기본형은 표제어가 보여 준다(R R2) — 「품사 · 기본형」이 겸류 구분자와 같은 모양이라
               품사 오염으로 읽히던 중의성 소멸. 사전 읽기가 없어 표제어가 폴백일 때만 라벨 텍스트. */}
           <ViewerLabelSlot locale={uiLocale} text={vt('기본형')}>{headFallback && <span className="word-detail-card__base">기본형</span>}</ViewerLabelSlot>
@@ -3780,7 +3782,7 @@ export default function ViewerPage({ seed } = {}) {
                       return hunCells ? column(i, ruby, cells.map((cell, j) => <HunCell key={j} cell={cell} />)) : ruby;
                     })
                   : [...headText].map((ch, j) => charSpan(ch, `p:${j}`, null, j)).map((glyph, j) => hunCells ? column(`p:${j}`, glyph, <HunCell cell={hunAt(j)} />) : glyph))}
-                {jaNaHead && <span className="word-fit__na">な</span>}
+                {jaNaHead && <span className="word-fit__na">な</span>}{jaSahenHead && <span className="word-fit__na">する</span>}
               </span>
             </div>
             {/* 자형 열(正 · 日) — 표제어 오른쪽(안 1) 또는 글자 칸에 맞춘 표(안 2). 수업 모드 판서에는 없다(설계서 Q3). */}

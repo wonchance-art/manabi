@@ -63,6 +63,9 @@ export const JA_SET_EXPRESSIONS = Object.freeze([
   { bases: ['か', 'も', 'しれる'], lemma: 'かもしれない', gloss: '~일지도 모른다' },
 ]);
 
+// サ변 명사(する동사 어간) — 한자 · 가타카나가 든 명사만. 히라가나 명사 + する(しま+した 같은 분석 오류 · びっくりする)는 묶지 않는다.
+const SAHEN_NOUN = /[\p{Script=Han}\p{Script=Katakana}]/u;
+
 function matchExpression(tokens, i) {
   for (const e of JA_SET_EXPRESSIONS) {
     if (e.bases.every((b, k) => (tokens[i + k]?.base_form || tokens[i + k]?.text) === b)) return e;
@@ -143,6 +146,15 @@ export function groupTokensToUnits(tokens, { copulaAfterNoun = true } = {}) {
 
     // 3) 내용어 — 새 단위 시작(단, 補助動詞·접두사 대기는 앞 단위에 병합)
     if (CONTENT_POS.has(pos)) {
+      // する동사(오너 승인 2026-11-06 KST): 한자 · 가타카나 명사 바로 뒤 する(し · さ · せ …)는 한 단위 — 勉強+します.
+      // 기본형은 명사 그대로(저장 키 勉強 — 단어장 행이 갈라지지 않는다). 문맥만으로 판정해 지난 자료도 같다.
+      if (pos === '동사' && t?.base_form === 'する' && cur && cur._mergeable && !cur._verbal && !cur._pendingPrefix
+          && cur.tokens[cur.tokens.length - 1]?.pos === '명사' && SAHEN_NOUN.test(String(cur.tokens[cur.tokens.length - 1]?.text ?? ''))) {
+        attach(t);
+        cur._verbal = true;
+        cur.sahen = true;
+        continue;
+      }
       // 補助動詞(히라가나 いる·ある …)가 用言 뒤면 붙임(食べて+いる)
       if (pos === '동사' && cur && cur._mergeable && cur._verbal &&
           isHiraganaOnly(surface) && AUX_VERB_BASES.has(t?.base_form)) {

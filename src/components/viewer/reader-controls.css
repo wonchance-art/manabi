@@ -1097,5 +1097,5 @@ html[data-viewer-hold] .viewer-workspace-boundary {visibility:hidden;}
 .viewer-layout .reader-area .word-token--chunk-selected .word-frame {display:none;}
 .viewer-layout .reader-area .word-token--chunk-selected > .surface {background:var(--reader-selected);}
 
-/* な형용사 표제어 뒤 작은 「な」(오너 승인 2026-11-06 KST) — 표제어 글자 칸 밖, 읽기 · 발음 칸에 들지 않는다. */
+/* 표제어 뒤 작은 「な」(な형용사) · 「する」(する동사) — 오너 승인 2026-11-06 KST. 표제어 글자 칸 밖, 읽기 · 발음 칸에 들지 않는다. */
 .word-fit__na {font-size:.5em;font-weight:500;color:var(--reader-muted);margin-left:.06em;}

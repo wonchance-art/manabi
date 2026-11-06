@@ -148,3 +148,51 @@ describe('묶음 정본은 하나 — 듣기 자막과 공용', () => {
     expect(viewer.match(/!noWordSave/g)?.length).toBeGreaterThanOrEqual(4);
   });
 });
+
+describe('する동사 — 한자 · 가타카나 명사 + する는 한 덩어리, 저장 키는 명사(오너 승인 2026-11-06 KST)', () => {
+  const chunksOf = async (line) => {
+    const toks = await tokenizeJaLine(line);
+    const seq = toks.map((_, i) => `id_0_${i}`), dict = Object.fromEntries(toks.map((t, i) => [`id_0_${i}`, t]));
+    return { toks, dict, chunks: buildReaderChunks(seq, dict) };
+  };
+  it('勉強します · 説明してくれました = 한 덩어리 · 기본형 = 명사 · する동사 표식', async () => {
+    for (const [line, noun, surface] of [['毎日日本語を勉強します。', '勉強', '勉強します'], ['先生が説明してくれました。', '説明', '説明してくれました']]) {
+      const { toks, dict, chunks } = await chunksOf(line);
+      const at = toks.findIndex((t) => t.text === noun);
+      const c = chunks.get(`id_0_${at}`);
+      expect(c).toMatchObject({ kind: 'word', surface, base: noun, sahen: true });
+      expect(chunks.get(`id_0_${at + 1}`)).toBe(c); // し를 눌러도 같은 덩어리
+      const { token } = chunkCardToken(dict, c);
+      const row = buildVocabRow({ userId: 'u', surface: token.text, base: token.base_form, language: 'Japanese' });
+      expect(row.word_text).toBe(noun); // 저장 키 = 명사 그대로
+    }
+  });
+  it('굳은 문형은 따로 — 掃除し | なければならない', async () => {
+    const { toks, chunks } = await chunksOf('部屋を掃除しなければならない。');
+    const at = toks.findIndex((t) => t.text === '掃除');
+    expect(chunks.get(`id_0_${at}`)).toMatchObject({ kind: 'word', surface: '掃除し', base: '掃除', sahen: true });
+    expect(chunks.get(`id_0_${at + 2}`)?.kind).toBe('pattern');
+  });
+  it('명사 쓰임(勉強が好き) · に를 사이에 둔 する(楽しみにしています)는 묶지 않는다', async () => {
+    const a = await chunksOf('勉強が好きです。');
+    expect(a.chunks.get(`id_0_${a.toks.findIndex((t) => t.text === '勉強')}`)).toBeUndefined();
+    const b = await chunksOf('旅行を楽しみにしています。');
+    const units = groupTokensToUnits(b.toks, { copulaAfterNoun: false }).map((u) => u.surface);
+    expect(units).toContain('楽しみ');
+    expect(units).toContain('しています');
+  });
+  it('히라가나 명사 + する는 묶지 않는다(분석 오류 しま+した · びっくりする)', () => {
+    const units = groupTokensToUnits([
+      { text: 'しま', base_form: 'しま', pos: '명사' }, { text: 'し', base_form: 'する', pos: '동사' }, { text: 'た', base_form: 'た', pos: '조동사' },
+    ], { copulaAfterNoun: false });
+    expect(units.map((u) => u.surface)).toEqual(['しま', 'した']);
+    expect(units.some((u) => u.sahen)).toBe(false);
+  });
+  it('카드 배선 — 작은 「する」와 품사 「する동사」는 する동사 덩어리에만', () => {
+    const viewer = fs.readFileSync(new URL('../../views/ViewerPage.jsx', import.meta.url), 'utf8');
+    expect(viewer).toContain("const jaSahenHead = materialLang === 'Japanese' && !!selectedToken?.__chunk?.sahen;");
+    expect(viewer).toContain('{jaSahenHead && <span className="word-fit__na">する</span>}');
+    const label = fs.readFileSync(new URL('../../views/TokenPosLabel.jsx', import.meta.url), 'utf8');
+    expect(label).toContain("if (sahen) return displayPos('する동사');");
+  });
+});
