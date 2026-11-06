@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/supabaseServer';
 import TextbookEditor from '@/components/admin/TextbookEditor';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: '교재 편집 | manabi', robots: { index: false, follow: false } };
+export const metadata = { title: '교재 편집', robots: { index: false, follow: false } };
 
 export default async function Page({ searchParams }) {
   const auth = await requireAdmin();

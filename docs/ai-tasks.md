@@ -884,6 +884,10 @@
   비중국어 자료에서도 SC · TC를 쓰는 곳: 正 줄(ViewerGlyphColumn zh-Hant-TW) · 한자 창(ViewerHanjaPopover) · zh UI/해설 언어 · 중국어 본문 → 잎이 시트를 거는 방식(ZhSlot)으로 전환.
   **1단계** PR `claude/font-tc-sheet`(화면 · 동작 무변화): sc-stylesheet를 SC · TC 표로 일반화(`/_fonts/noto-sans-tc/…css` · env MANABI_TC_STYLESHEET, 간체 산출 바이트 그대로) ·
   TcFontLink · TcFontScopeMarker · ZhSlot zh-TW→TC · 대조 스크립트 둘 다. **2단계**(뷰어 전환 · 유휴 미리 받기 · SW)는 1단계 병합 뒤.
+- **LAUNCH-META-004 제목 구분자 · 브랜드 중복 · 책별 설명 · 사이트 JSON-LD · favicon.ico (2026-11-07 KST)** PR `claude/launch-meta-titles`(발매 점검 「개선」 · 오케스트레이터 순회 04:24):
+  화면 제목 15곳의 「 | 」→ 루트 틀과 같은 「 · 」(지역학 · 레벨 목록 · 옛 문법 장 · 영어/프랑스어 목록 · 복습 og) · 관리자 제목 4곳의 「| manabi」 제거(틀이 붙여 브랜드 두 번).
+  루트 기본 설명 = 배움 설명 = `SITE_DESCRIPTION`(옛 「일본어·영어·프랑스어·중국어 학습 도구」 문장 걷음) · 교재 세 권 책별 설명 · 손님 배움 판에 WebSite JSON-LD(운영 주체는 오너 정보 뒤) ·
+  `public/favicon.ico` 16/32/48(favicon.svg 렌더). 계약 seoMeta +6 · launchFirstScreen 설명 위치 갱신. 화면 배치 · 화면 문구 무변화(탭 제목 구분자만).
 - **SEC-HEADERS-001 최소 CSP(보고만) + COOP + 보안 헤더 계약 (2026-11-07 KST)** PR `claude/launch-headers`(발매 점검 「개선」 · 오케스트레이터 순회 04:24, 화면 무변화 · 새 env 없음):
   본편(/embed 밖)에 `Content-Security-Policy-Report-Only: object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'` + report-uri · report-to(Reporting-Endpoints) →
   `/api/csp-report`(언제나 204 · 분당 20/120 · 16KB) → 운영 오류 기록 `csp.<지시어>` 한 줄(지시어 · 막힌 출처 · 경로 틀만 — 전체 주소 · sample · IP 없음, ERROR-OBSERVE-001 RPC 재사용).
@@ -1114,6 +1118,11 @@
     174 · 176 — 「010-1234-5678」 · 「—」)이 같은 이유로 실패 예정이었음. 고침 = 그 글자 묶음을 기호 토큰으로 남김(뜻 조회 · 단어 카드 대상 아님),
     단어 · 문장부호 · 숫자 토큰은 그대로 · 계약(고치기 전 10 실패 → 16 통과). 마이그레이션은 작업의 attempts에서 134만 빼고 실패 수 -1.
     기록만: 비공개 영어 자료 15 · 16 · 17(completed)도 $ % ’ — 를 잃은 채 저장돼 있음 — 다시 분석하면 채워짐(자동 보정은 하지 않음).
+    #1715 병합(c6677ce2) · 운영 확인(20261107000000 · attempts {} · 실패 0 · 배포 READY). 후속 감사(읽기 전용): 일 · 중 토크나이저는 운영 원문의
+    특수 문자 전부를 문맥 7종으로 넣은 503줄에서 글자를 버리지 않음. completed 전체 완료 판정(SQL) → 공개 N5 문법 시드 45~49가 모든 줄 불일치 —
+    20260509 · 20260511 N5 재설계가 raw_text만 히라가나로 바꾸고 분석은 옛 문장(私は学生です。…) 그대로, 6개월째 뷰어가 옛 문장을 보여 줌.
+    STALE-SEED-001(이번 PR, 20261107010000): 그 다섯만 status idle + starter 작업 끝에 붙임(토큰은 다음 저장 때 바뀜 · 학습 기록 영향 0 — 단어장 ·
+    문맥 · 교정 0행). 11/8 02:45 실행이 함께 분석. 그동안(약 22시간) 다섯은 분석 전 공개 자료라 사이트 지도에서 빠짐(#1713 판정). 비공개 215(QA) · 15 · 16은 기록만.
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인

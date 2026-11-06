@@ -12,7 +12,7 @@ export async function generateMetadata({ params }) {
   const country = getStudyCountry(countryId);
   if (!country) return { title: '지역학', robots: null }; // 없는 주소 — 쪽의 notFound()가 noindex 한 줄을 단다(루트 index와 겹치지 않게)
   return publicMetadata(`/studies/${country.id}`, {
-    title: `${country.nameKo} | 지역학`,
+    title: `${country.nameKo} · 지역학`,
     description: country.intro,
   });
 }

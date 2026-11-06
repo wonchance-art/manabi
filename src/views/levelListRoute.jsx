@@ -18,7 +18,7 @@ export function levelListRoute(lang, kind, View) {
       const { level } = await params;
       const key = String(level || '').toUpperCase();
       if (!conf.levels.includes(key) || !levelKinds(lang, key).includes(kind)) return {};
-      const title = `${levelLabel(key)} ${KIND_LABEL[kind]} | ${conf.name}`;
+      const title = `${levelLabel(key)} ${KIND_LABEL[kind]} · ${conf.name}`;
       const description = kind === 'hanzi'
         ? `${conf.name} ${levelLabel(key)} 한자 — 글자만 보고 읽어 보고, 모르는 글자는 바로 체크`
         : lang === 'chinese' && kind === 'vocab'

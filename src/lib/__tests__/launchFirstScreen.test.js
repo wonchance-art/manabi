@@ -17,7 +17,9 @@ describe('#1 손님 첫 화면 소개 띠', () => {
     expect(home.match(/className="learn-intro"/g)).toHaveLength(1);
   });
   it('홈 설명(메타)도 같은 한 줄', () => {
-    expect(read('src/components/learn/HomeVariant.jsx')).toContain("읽으면서 배우는 일본어 · 중국어 — 한국인 학습자를 위한 무료 학습장");
+    // 문장은 사이트 소개 한 곳(lib/seo SITE_DESCRIPTION — 루트 기본 설명 · JSON-LD와 같은 값, LAUNCH-META-004)에 있고 홈이 그것을 쓴다.
+    expect(read('src/lib/seo.js')).toContain("export const SITE_DESCRIPTION = '읽으면서 배우는 일본어 · 중국어 — 한국인 학습자를 위한 무료 학습장");
+    expect(read('src/components/learn/HomeVariant.jsx')).toContain("publicMetadata('/home', { title: '배움', description: SITE_DESCRIPTION })");
   });
   it('주 단추는 셸 토큰 · 3px · 44px', () => {
     const css = read('src/components/learn/learn.css');
