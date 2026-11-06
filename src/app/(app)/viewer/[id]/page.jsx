@@ -5,6 +5,7 @@ import { viewerSsrGuardScript, viewerSsrRow } from '@/lib/viewerSsr';
 import ViewerLoading from '@/components/viewer/ViewerLoading';
 import ViewerPage from '@/views/ViewerPage';
 import { PRIVATE_ROBOTS, publicMetadata } from '@/lib/seo';
+import { curatorIds, isIndexableMaterial } from '@/lib/server/curatedMaterials';
 
 // 제목 조회가 느려도 페이지를 막지 않는다 — 넘으면 기본 제목(VIEWER-META-TIMEOUT-001).
 // 전에는 운영 주소 · 키를 박아 두어 e2e도 운영 DB로 나갔고, 그쪽이 느려지자 /viewer 서버 렌더가 30초 넘게 멈췄다(2026-10-15 KST CI).
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }) {
     let missing = Boolean(seed) && !seed.row;
     const data = seed ? seed.row : await (await createSupabaseServerClient())
       .from('reading_materials')
-      .select('title')
+      .select('title, visibility, owner_id')
       .eq('id', id)
       .abortSignal(AbortSignal.timeout(VIEWER_META_TIMEOUT_MS))
       .single()
@@ -33,11 +34,15 @@ export async function generateMetadata({ params }) {
     if (missing) return { title: '자료 뷰어', description: 'AI 언어 해부 학습', robots: PRIVATE_ROBOTS };
     const title = data?.title ? `${data.title}` : '자료 뷰어';
     const description = data?.title ? `AI가 분석한 "${data.title}" 학습 자료` : 'AI 언어 해부 학습';
-    return publicMetadata(`/viewer/${encodeURIComponent(id)}`, {
+    const meta = publicMetadata(`/viewer/${encodeURIComponent(id)}`, {
       title,
       description,
       openGraph: { title, description },
     });
+    // 우리가 만든 공개 자료만 검색에 싣는다(LAUNCH-META-002) — 다른 계정이 공개로 돌린 자료 · 비공개 자료는 화면 그대로, 검색에서만 뺀다.
+    // 정본은 둔다(같은 자료의 다른 주소를 한 곳으로 묶는 신호는 색인 여부와 따로다). 관리자 목록을 모르면 빼지 않는다(curatedMaterials).
+    if (data && !isIndexableMaterial(data, await curatorIds())) return { ...meta, robots: { index: false, follow: true } };
+    return meta;
   } catch {
     return { title: '자료 뷰어' };
   }

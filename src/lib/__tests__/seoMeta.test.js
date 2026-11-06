@@ -30,7 +30,8 @@ vi.mock('@/lib/supabaseServer', async (importOriginal) => {
 
 import { DEFAULT_SITE_URL, INDEX_EXTERNAL_SUGGESTIONS, OG_DEFAULTS, OG_IMAGE, PRIVATE_ROBOTS, ROBOTS_DISALLOW, canonicalFor, publicMetadata, siteUrl, suggestionMetadata, withOgDefaults } from '@/lib/seo';
 import { legacyTextbookTarget } from '@/lib/bookNavigation';
-import { bookEntries, koreanDate, levelListEntries, studiesEntries } from '@/lib/sitemapEntries';
+import { bookEntries, koreanDate, levelListEntries, materialEntries, studiesEntries } from '@/lib/sitemapEntries';
+import { __setCuratorClient, curatedMaterialIds, curatorIds, isIndexableMaterial } from '@/lib/server/curatedMaterials';
 import { STUDY_COUNTRIES } from '@/content/studies';
 import robots from '@/app/robots';
 import * as rootLayout from '@/app/layout';
@@ -265,6 +266,101 @@ describe('뷰어 — 없는 자료는 화면 그대로, 검색에서만 뺀다',
 
   it('기기 사본(local:)은 noindex', async () => {
     expect((await meta('local:1')).robots).toEqual(PRIVATE_ROBOTS);
+  });
+});
+
+// 서비스 키 클라이언트 흉내 — 표마다 돌려줄 결과와, 받은 거르기 조건을 남긴다.
+function fakeService(tables) {
+  const calls = [];
+  return {
+    calls,
+    from(table) {
+      const call = { table, filters: [] };
+      calls.push(call);
+      const result = () => (typeof tables[table] === 'function' ? tables[table](call) : tables[table]);
+      const chain = {
+        select: (cols) => { call.select = cols; return chain; },
+        eq: (...a) => { call.filters.push(['eq', ...a]); return chain; },
+        in: (...a) => { call.filters.push(['in', a[0], [...a[1]]]); return chain; },
+        not: (...a) => { call.filters.push(['not', ...a]); return chain; },
+        order: () => chain,
+        abortSignal: () => Promise.resolve(result()),
+      };
+      return chain;
+    },
+  };
+}
+
+describe('뷰어 자료 — 우리가 만든 공개 자료만 검색에 싣는다(LAUNCH-META-002)', () => {
+  let generateMetadata;
+  beforeAll(async () => { ({ generateMetadata } = await import('@/app/(app)/viewer/[id]/page')); });
+  beforeEach(() => { viewer.seed = undefined; viewer.query = { data: null, error: null }; __setCuratorClient(undefined); });
+  const meta = (id) => generateMetadata({ params: Promise.resolve({ id }) });
+  const curators = () => fakeService({ profiles: { data: [{ id: 'admin-1' }], error: null } });
+
+  it('판정 — 관리자 소유 공개만 싣고, 남의 공개 · 비공개는 뺀다 · 관리자 목록을 모르면 공개 여부만 본다', () => {
+    const ids = new Set(['admin-1']);
+    expect(isIndexableMaterial({ visibility: 'public', owner_id: 'admin-1' }, ids)).toBe(true);
+    expect(isIndexableMaterial({ visibility: 'public', owner_id: 'user-2' }, ids)).toBe(false);
+    expect(isIndexableMaterial({ visibility: 'public', owner_id: null }, ids)).toBe(false);
+    expect(isIndexableMaterial({ visibility: 'private', owner_id: 'admin-1' }, ids)).toBe(false);
+    expect(isIndexableMaterial({ visibility: 'public', owner_id: 'user-2' }, null)).toBe(true);
+    expect(isIndexableMaterial({ visibility: 'private', owner_id: 'user-2' }, null)).toBe(false);
+  });
+
+  it('남이 공개로 돌린 자료 = noindex, follow · 정본 · 제목은 그대로', async () => {
+    __setCuratorClient(curators());
+    viewer.seed = { id: '77', row: { id: 77, title: '私の日記', visibility: 'public', owner_id: 'user-2' }, account: null, servedAt: 0 };
+    const m = await meta('77');
+    expect(m.robots).toEqual({ index: false, follow: true });
+    expect(m.title).toBe('私の日記');
+    expect(m.alternates.canonical).toBe(canonicalFor('/viewer/77'));
+  });
+
+  it('관리자 소유 공개 자료 = robots 없음(색인) — 제목 조회 경로도 공개 · 소유자 칸을 함께 읽는다', async () => {
+    __setCuratorClient(curators());
+    viewer.seed = { id: '45', row: { id: 45, title: '駅前', visibility: 'public', owner_id: 'admin-1' }, account: null, servedAt: 0 };
+    expect((await meta('45')).robots).toBeUndefined();
+    viewer.seed = null;
+    viewer.query = { data: { title: '日記', visibility: 'public', owner_id: 'user-2' }, error: null };
+    expect((await meta('46')).robots).toEqual({ index: false, follow: true });
+    const page = fs.readFileSync(path.join(ROOT, 'src/app/(app)/viewer/[id]/page.jsx'), 'utf8');
+    expect(page).toContain(".select('title, visibility, owner_id')");
+  });
+
+  it('관리자 목록 조회 실패 · 키 없음 = 빼지 않는다(잠깐의 장애로 공개 자료를 빼지 않게)', async () => {
+    __setCuratorClient(fakeService({ profiles: { data: null, error: { code: '57014' } } }));
+    viewer.seed = { id: '77', row: { id: 77, title: '日記', visibility: 'public', owner_id: 'user-2' }, account: null, servedAt: 0 };
+    expect((await meta('77')).robots).toBeUndefined();
+    __setCuratorClient(null);
+    expect(await curatorIds()).toBeNull();
+    expect((await meta('77')).robots).toBeUndefined();
+  });
+
+  it('관리자 목록은 10분 기억한다(뷰어 메타마다 조회를 늘리지 않게)', async () => {
+    const service = curators();
+    __setCuratorClient(service);
+    await curatorIds(1_000);
+    await curatorIds(1_000 + 9 * 60_000);
+    expect(service.calls.length).toBe(1);
+    await curatorIds(1_000 + 11 * 60_000);
+    expect(service.calls.length).toBe(2);
+  });
+
+  it('사이트 지도 — 관리자 소유 · 공개 · 분석된 자료만, lastmod 없음 · 키 없으면 빈 목록 · 조회 실패는 던진다(직전 판 유지)', async () => {
+    const service = fakeService({
+      profiles: { data: [{ id: 'admin-1' }, { id: 'admin-2' }], error: null },
+      reading_materials: { data: [{ id: 3 }, { id: 45 }], error: null },
+    });
+    __setCuratorClient(service);
+    expect(await materialEntries()).toEqual([{ url: canonicalFor('/viewer/3') }, { url: canonicalFor('/viewer/45') }]);
+    const list = service.calls.find((c) => c.table === 'reading_materials');
+    expect(list.select).toBe('id');
+    expect(list.filters).toEqual([['eq', 'visibility', 'public'], ['in', 'owner_id', ['admin-1', 'admin-2']], ['not', 'processed_json', 'is', null]]);
+    __setCuratorClient(null);
+    expect(await curatedMaterialIds()).toEqual([]);
+    __setCuratorClient(fakeService({ profiles: { data: [{ id: 'admin-1' }], error: null }, reading_materials: { data: null, error: { code: '57014' } } }));
+    await expect(curatedMaterialIds()).rejects.toThrow('57014');
   });
 });
 

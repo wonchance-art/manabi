@@ -3,6 +3,7 @@ import { STUDY_COUNTRIES } from '@/content/studies';
 import { OPEN_LEVEL_LIST } from '@/lib/bookNavigation';
 import { LEVEL_LIST_LANGS, levelKinds } from '@/lib/levelList';
 import { canonicalFor } from '@/lib/seo';
+import { curatedMaterialIds } from '@/lib/server/curatedMaterials';
 import { publishedOrNull } from '@/lib/server/publishedBook';
 import { BOOKS } from '@/lib/textbook/contract';
 import { readEditionStamp, readRelease } from '@/lib/textbook/server';
@@ -51,3 +52,8 @@ export async function bookEntries(stampOf = (bookId) => publishedOrNull((db) => 
   return stamps.filter(([, stamp]) => stamp).map(([bookId, stamp]) => entry(`/books/${bookId}`, stamp.published_at || undefined));
 }
 
+
+/** 뷰어 자료 — 우리가 만든 공개 자료만(lib/server/curatedMaterials · LAUNCH-META-002). 자료 표에 갱신 시각 칸이 없어 lastmod는 뺀다(생성일은 다시 분석해도 그대로라 「바뀜」 신호가 못 된다). */
+export async function materialEntries(listIds = curatedMaterialIds) {
+  return (await listIds()).map((id) => entry(`/viewer/${encodeURIComponent(id)}`));
+}
