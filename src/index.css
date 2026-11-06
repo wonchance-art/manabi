@@ -2139,10 +2139,6 @@ a.viewer-badge:hover {
   transition: all var(--transition-fast);
 }
 
-.grammar-btn--active {
-  background: var(--primary);
-  color: #fff;
-}
 .grammar-btn--danger {
   background: #e17055;
   color: #fff;
@@ -2508,10 +2504,6 @@ a.viewer-badge:hover {
   background: rgba(255, 118, 117, 0.1);
 }
 
-.analyzing-banner--warn {
-  color: #fdcb6e;
-  background: rgba(253, 203, 110, 0.1);
-}
 
 .analyzing-banner__refresh {
   background: var(--primary);
@@ -3298,13 +3290,6 @@ a.viewer-badge:hover {
   font-size: 1.2rem;
 }
 
-.modal__close {
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
 
 .modal__body {
   padding: 25px;
@@ -3489,18 +3474,6 @@ a.viewer-badge:hover {
   gap: 10px;
 }
 
-.gnb__streak {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(255, 146, 43, 0.15);
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  color: #ff922b;
-  font-size: 0.85rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
 
 /* ── sub-br: hide on mobile ── */
 
@@ -3855,9 +3828,6 @@ a.viewer-badge:hover {
     display: none;
   }
 
-  .gnb__streak {
-    display: none;
-  }
 
   /* Review score buttons — bigger touch targets */
   .review-score-grid {
@@ -6363,19 +6333,6 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 .weekly-report__label {
   font-size: 0.72rem; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.04em;
-}
-.weekly-report__diff {
-  font-size: 0.7rem; font-weight: 600;
-  margin-top: 2px;
-  padding: 1px 6px; border-radius: var(--radius-full);
-}
-.weekly-report__diff--up {
-  color: var(--accent-text);
-  background: rgba(74,138,92,0.12);
-}
-.weekly-report__diff--down {
-  color: var(--danger-text);
-  background: rgba(255,107,107,0.1);
 }
 
 /* ========= French Reference (강의 프랑스어 탭 + /french/grammar·vocab) ========= */
