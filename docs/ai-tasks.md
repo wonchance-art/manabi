@@ -995,6 +995,13 @@
     **운영 적용 — 중국어 빈 칸 14 → 2(분석 실패 줄만, 재분석 대상)**. 制服은 2차 판단 정정(문맥 制服对手 = 제압하다). 기록 `zh-meaning-fill-20261106-r3.sql` ·
     복원 `…-r3-rollback.sql`(PGlite 적용 · 재실행 거절 · 무관 칸 무변경 · 복원 확인).
     QA 잔여물(오너 계정 こもれび 뜻 꼬리 「· 검수 수정 09/27」 · m09-qa-026 3행, 복습 대기열에 섞임) — 삭제 · 사용자 값 수정이라 오너 결정 대기.
+    ⑦ 이번 PR — 서재 원장 RLS initplan(정합 감사 · 어드바이저 점검 11/6 21:5x KST 뒤 오케스트레이터 판정, 오너 11/4 백엔드 자율 RLS 포함):
+    library_private 정책 3개의 맨 auth.uid() → (select auth.uid()). 학습 계약 지문 범위 밖(capability 표 목록 public 9개). 마이그레이션 사후 검사
+    (되돌린 식 = 원래 식 · 모양 불변 · 지문 넷 + capability 불변) · 접근 행렬 동일(소유자 · 남 · anon × 읽기 · 쓰기 · 고치기 · 지우기) ·
+    재실행 거절 · 복원 `docs/sql/library-rls-initplan-20261106-rollback.sql`. 계약 `supabase/tests/library-rls-initplan.mjs`(CI).
+    보류(오케스트레이터 동의): reading_materials 중복 PERMISSIVE — capability 지문 범위라 재게시가 필요하고 이득은 측정 불가(37MB · 캐시 99.99%).
+    → **다음 capability 지문 재게시 작업 때 동봉**(SELECT 3개 · UPDATE 1개 — 「Enable Read for All」 · anyone_read_public · owner_read_private · owner_update_material).
+    감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
     작성기 메모만)**, 영어 · 일본어 자료 렌더를 같은 데이터로 로컬 실제 빌드에서 확인. 기록 `docs/sql/material-language-fill-20261106.sql` · 복원 `…-rollback.sql`(PGlite 확인).
