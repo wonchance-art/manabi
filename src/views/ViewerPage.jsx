@@ -4653,6 +4653,11 @@ export default function ViewerPage({ seed } = {}) {
                 <strong>{vt("원문 수정")}</strong>
                 <span>{vt("텍스트를 고치면 바뀐 줄만 분석해요")}</span>
               </button>}
+              {/* 작성기 학습본(오너 승인 2026-11-06 KST, 목업 NjLshHiUy6zi66YfEofQ1d ①) — 「원문 수정」 자리 · 모양 그대로, 원본의 작성기 수정 화면으로 가는 링크만. */}
+              {composerOf(material)?.role === 'study' && composerOf(material)?.parentId && <Link className="reanalyze-panel__item" href={`/materials/${encodeURIComponent(composerOf(material).parentId)}/edit?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`} onClick={() => setReanalyzePanel(null)}>
+                <strong>{vt("원본에서 수정 ↗")}</strong>
+                <span>{vt("직접 쓴 원본 글을 고쳐요 · 고친 글로 공부하면 새 학습으로 이어져요")}</span>
+              </Link>}
               {canonicalLiteratureLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")} · {vt("단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요")}</p>}
               {artBookLocked && <p className="reader-metadata">{vt("정본 책이라 원문은 고칠 수 없어요")} · {vt("단어 뜻·발음 교정과 다시 분석은 그대로 쓸 수 있어요")}</p>}
             </div>
