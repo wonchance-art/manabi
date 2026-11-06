@@ -878,8 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **LAUNCH-META-003 분석 전 자료는 검색 · 사이트 지도에서 뺀다 (2026-11-07 KST)** PR `claude/launch-meta-analyzed`(LAUNCH-META-002 #1712 정정, 화면 무변화):
+  #1712는 「processed_json 있음」을 분석됨으로 쳤지만 운영 실측은 공개 123건 중 분석됨 5 · idle 118(문장 0 — #1711 서버 분석 대기)이었다. 판정을 뷰어 SSR과 같게
+  (상태 completed · partial + 문장 1개 이상, `isAnalyzedMaterial`): 사이트 지도는 `processed_json->>status` in · `processed_json->sequence->0` not null(운영 SQL 동치 5건),
+  뷰어 메타는 분석 전이면 noindex, follow(제목 조회는 `analysis_status:processed_json->>status` 함께). 분석이 끝나면 다음 사이트 지도 판(1시간)에 저절로 실린다.
 - **LAUNCH-META-002 우리 공개 뷰어 자료만 색인 (2026-11-07 KST)** PR `claude/launch-meta-curated`(LAUNCH-META-001 후속 · 오너 기본값 「우리 공개 자료만 색인」, 화면 무변화):
-  사이트 지도에 관리자 소유 · 공개 · 분석된 뷰어 자료(운영 123건 — 공개 전부가 관리자 소유)를 싣고, 다른 계정이 공개로 돌린 자료 · 비공개는 noindex, follow(정본 · 화면 그대로).
+  사이트 지도에 관리자 소유 · 공개 뷰어 자료(운영 123건 — 공개 전부가 관리자 소유. 「분석됨」 판정은 003에서 정정)를 싣고, 다른 계정이 공개로 돌린 자료 · 비공개는 noindex, follow(정본 · 화면 그대로).
   관리자 id는 service_role 서버 조회(10분 기억) — 모르면 빼지 않는다 · 사이트 지도는 조회 실패 시 던져 직전 판 유지. 계약 seoMeta +6 · profilesPrivacy 예외 한 곳(모양 고정).
   LAUNCH-META-001은 #1707로 병합(61d7680e).
 - **PRIVACY-FIX 묶음 (2026-11-06 KST) — 개인정보 버그 셋, 각각 PR 하나** `claude/wip/privacy-fixes`(오케스트레이션 발주 · 백엔드 · 데이터 자율 / 문구 정정은 버그 수정으로 승인):
