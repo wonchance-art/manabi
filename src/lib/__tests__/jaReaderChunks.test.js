@@ -60,14 +60,14 @@ describe('덩어리 경계', () => {
   });
 });
 
-describe('な형용사 어간(na_stem) — 새 분석부터 静かでした 한 덩어리 · 지난 자료는 그대로', () => {
+describe('な형용사 어간 — 새 분석은 na_stem, 지난 자료는 240어 목록으로 静かでした 한 덩어리(오너 승인 2026-11-06 KST ③)', () => {
   it('분석기가 な형용사 어간에만 표식을 남긴다(품사 · 기본형은 그대로)', async () => {
     const shizuka = (await tokenizeJaLine('図書館はとても静かでした。')).find((t) => t.text === '静か');
     expect(shizuka).toMatchObject({ base_form: '静か', pos: '명사', na_stem: true });
     const gakusei = (await tokenizeJaLine('私は学生でした。')).find((t) => t.text === '学生');
     expect(gakusei.na_stem).toBeUndefined();
   });
-  it('표식이 있으면 静かでした = 한 덩어리 · 저장 키 静か, 없으면(지난 자료 · 명사) 지금처럼 静か | でした', async () => {
+  it('표식이 있으면 静かでした = 한 덩어리 · 저장 키 静か, 표식 없는 지난 자료도 목록 단어면 같은 덩어리, 목록 밖 명사는 学生 | でした', async () => {
     const toks = await tokenizeJaLine('図書館はとても静かでした。');
     const sequence = toks.map((_, i) => `id_0_${i}`);
     const withStem = Object.fromEntries(toks.map((t, i) => [`id_0_${i}`, t]));
@@ -76,9 +76,9 @@ describe('な형용사 어간(na_stem) — 새 분석부터 静かでした 한 
     const fresh = buildReaderChunks(sequence, withStem).get(`id_0_${at}`);
     expect(fresh).toMatchObject({ kind: 'word', surface: '静かでした', base: '静か' });
     expect(fresh.ref?.pattern).toBe('〜でした');
-    const old = buildReaderChunks(sequence, legacy);
-    expect(old.get(`id_0_${at}`)).toBeUndefined();
-    expect(old.get(`id_0_${at + 1}`)?.surface).toBe('でした');
+    const old = buildReaderChunks(sequence, legacy).get(`id_0_${at}`);
+    expect(old).toMatchObject({ kind: 'word', surface: '静かでした', base: '静か' });
+    expect(legacy[`id_0_${at}`].na_stem).toBeUndefined(); // 데이터는 그대로 — 화면에서만 보정
     const nouns = await tokenizeJaLine('私は学生でした。');
     const nSeq = nouns.map((_, i) => `id_0_${i}`), nDict = Object.fromEntries(nouns.map((t, i) => [`id_0_${i}`, t]));
     expect(buildReaderChunks(nSeq, nDict).get(`id_0_${nouns.findIndex((t) => t.text === '学生')}`)).toBeUndefined();

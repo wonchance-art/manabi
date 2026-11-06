@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
+import { isJaNaAdjective, jaDisplayPos } from '../lib/jaNaAdjectives';
 import ConfirmModal from '../components/ConfirmModal';
 import { hasUnsavedEdits, useDiscardGuard } from '../lib/useDiscardGuard';
 import { detectLang, displayWord } from '../lib/constants';
@@ -49,8 +50,8 @@ const VocabRow = memo(function VocabRow({ v, learning, due, selected, selectMode
       )}
 
       {/* 1행: 품사 · 듣기 · 단어 · 뜻 · 우측 / 2행: 발음 · 예문 */}
-      {v.pos
-        ? <span className="vocab-row__pos" title={v.pos}>{v.pos}</span>
+      {jaDisplayPos(v)
+        ? <span className="vocab-row__pos" title={jaDisplayPos(v)}>{jaDisplayPos(v)}</span>
         : <span className="vocab-row__pos vocab-row__pos--empty" aria-hidden="true" />}
 
       {ttsSupported && v.language !== 'Korean' ? (
@@ -66,7 +67,7 @@ const VocabRow = memo(function VocabRow({ v, learning, due, selected, selectMode
           aria-label={`${v.word_text} — ${v.meaning}${selectMode ? (selected ? ' (선택됨)' : ' (선택 안 됨)') : ' 상세 열기'}`}
           aria-pressed={selectMode ? selected : undefined}
         >
-          {displayWord(v.word_text, v.pos)}
+          {displayWord(v.word_text, v.pos)}{v.language === 'Japanese' && isJaNaAdjective({ word_text: v.word_text, pos: v.pos }) && <span className="na-tail">な</span>}
         </button>
       </h3>
       {v.furigana && <span className="vocab-row__reading" lang={lc}>{v.furigana}</span>}

@@ -4,6 +4,7 @@
 // 카드(FsrsReviewSession) · 처음 보는 표현 · 집중 연습이 같은 앞뒤 규격을 쓴다: 앞면 = 글자만(읽기 · 뜻 없음),
 // 뒷면 = 뜻 + 읽기 + 소리. 판정(종류 · 발음 판정 대상 · 읽기 줄 · 문구)은 reviewCard.js가 진다.
 import { useEffect, useRef, useState } from 'react';
+import { isJaNaAdjective } from '../../lib/jaNaAdjectives';
 import VocabularyContexts from '../learning/VocabularyContexts';
 import { detectLang, displayWord } from '../../lib/constants';
 import { EXPRESSION_KIND_LABELS, expressionKind, readingLine, revealTrigger } from '../../lib/reviewCard';
@@ -72,7 +73,7 @@ export function ReviewHeadword({ word, revealed = false, id }) {
   const line = revealed ? readingLine(word) : { kind: 'none' };
   const text = displayWord(word.word_text, word.pos);
   return <h2 id={id} className="review-card__word" lang={langTag(word)}>
-    {line.kind === 'ruby' ? <ruby>{text}<rt>{line.text}</rt></ruby> : text}
+    {line.kind === 'ruby' ? <ruby>{text}<rt>{line.text}</rt></ruby> : text}{word.language === 'Japanese' && isJaNaAdjective({ word_text: word.word_text, pos: word.pos }) && <span className="na-tail">な</span>}
   </h2>;
 }
 

@@ -45,7 +45,7 @@ describe('단어 카드 R2 — 표제어·순서·액션 (ViewerPage)', () => {
     const meta = sliceBetween(card, '<div className="word-detail-card__meta">', '</div>');
     expect(meta).not.toContain('` · ${selectedLexKey}`');
     expect(meta).toContain('{headFallback && <span className="word-detail-card__base">기본형</span>}');
-    expect(meta).toContain('<TokenPosLabel token={selectedToken} />');
+    expect(meta).toContain('<TokenPosLabel token={selectedToken} naAdjective={jaNaHead} />');
     expect(meta).toContain('word-detail-card__level');
   });
 
