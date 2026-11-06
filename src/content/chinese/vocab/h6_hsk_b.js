@@ -21,7 +21,7 @@ const themes = {
         { zh: "捧", pinyin: "pěng", ko: "받쳐 들다, 받들다", pos: "동사", ex: { zh: "她双手捧着一束鲜花。", pinyin: "Tā shuāngshǒu pěngzhe yí shù xiānhuā.", ko: "그녀는 두 손으로 꽃다발을 받쳐 들었어요." } },
         { zh: "指令", pinyin: "zhǐlìng", ko: "지령, 명령", pos: "명사", ex: { zh: "士兵们服从上级的指令。", pinyin: "Shìbīngmen fúcóng shàngjí de zhǐlìng.", ko: "병사들은 상관의 명령에 복종해요." } },
         { zh: "贵族", pinyin: "guìzú", ko: "귀족", pos: "명사", ex: { zh: "他出身于一个贵族家庭。", pinyin: "Tā chūshēn yú yí ge guìzú jiātíng.", ko: "그는 귀족 가문 출신이에요." } },
-        { zh: "制服", pinyin: "zhìfú", ko: "제압하다, 굴복시키다", pos: "명사", ex: { zh: "警察迅速制服了嫌疑人。", pinyin: "Jǐngchá xùnsù zhìfúle xiányírén.", ko: "경찰이 신속하게 용의자를 제압했어요." } },
+        { zh: "制服", pinyin: "zhìfú", ko: "제압하다, 굴복시키다; 제복, 유니폼", pos: "동사", ex: { zh: "警察迅速制服了嫌疑人。", pinyin: "Jǐngchá xùnsù zhìfúle xiányírén.", ko: "경찰이 신속하게 용의자를 제압했어요." } },
         { zh: "勉强", pinyin: "miǎnqiǎng", ko: "억지로 하다, 마지못해", pos: "동사", ex: { zh: "他勉强答应了我的请求。", pinyin: "Tā miǎnqiǎng dāyingle wǒ de qǐngqiú.", ko: "그는 마지못해 나의 부탁을 들어주었어요." } },
         { zh: "案例", pinyin: "ànlì", ko: "사례, 케이스", pos: "명사", ex: { zh: "这是一个典型的案例。", pinyin: "Zhè shì yí ge diǎnxíng de ànlì.", ko: "이것은 전형적인 사례예요." } },
         { zh: "毁灭", pinyin: "huǐmiè", ko: "파멸시키다, 훼멸하다", pos: "동사", ex: { zh: "战争几乎毁灭了整座城市。", pinyin: "Zhànzhēng jīhū huǐmièle zhěng zuò chéngshì.", ko: "전쟁은 도시 전체를 거의 파괴했어요." } },
