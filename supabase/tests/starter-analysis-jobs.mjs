@@ -3,7 +3,7 @@
  * 증명: ① 작업 한 줄이 관리자 「일괄 분석」 패널과 같은 대상(공개 · idle/pending/saved · 원문 있음 · 수업 팀 · 정본 책 아님 · 일 · 영)을 id 차례로 고른다
  *       ② 저장 함수: starter 작업은 그 작업의 material_ids 안 · 관리자 소유 · 공개 자료만, 책 작업은 그대로 비공개 장만 · service role만
  *       ③ CHECK: starter = 책 key 비움 + material_ids 1~200, 책 = material_ids 없음 ④ 재실행은 두 번째 작업을 만들지 않는다
- *       ⑤ 관리자에게 도는 작업이 있으면 만들지 않는다 ⑥ 복원 SQL
+ *       ⑤ 관리자에게 도는 작업이 있으면 만들지 않는다 ⑤b 이어 돌리기(20261106230000) ⑥ 복원 SQL
  *   node supabase/tests/starter-analysis-jobs.mjs
  */
 import assert from 'node:assert/strict';
@@ -108,6 +108,17 @@ await check('⑤ 관리자에게 도는 작업이 있으면 만들지 않는다'
   await db2.exec(MIGRATION);
   assert.equal((await rows(db2, `select count(*)::int n from canonical_analysis_jobs where kind = 'starter'`))[0].n, 0);
   await db2.close();
+});
+
+const RESUME = await fs.readFile(new URL('../migrations/20261106230000_resume_starter_job.sql', import.meta.url), 'utf8');
+await check('⑤b 이어 돌리기(20261106230000) — 실패한 starter 작업만 running · streak 0 · 시도 수 · 진행 그대로, 다시 돌려도 무변경', async () => {
+  await db.exec(`update canonical_analysis_jobs set status = 'failed', failure_streak = 3, chapters_done = 79, chapters_failed = 1,
+    attempts = '{"134": 3}', last_error = '연달아 3장을 분석하지 못해 멈췄어요' where id = ${job.id}`);
+  await db.exec(RESUME);
+  const [r] = await rows(db, `select status, failure_streak, last_error, attempts, chapters_done, chapters_failed from canonical_analysis_jobs where id = ${job.id}`);
+  assert.deepEqual({ ...r }, { status: 'running', failure_streak: 0, last_error: null, attempts: { 134: 3 }, chapters_done: 79, chapters_failed: 1 });
+  await db.exec(RESUME); // 실패한 작업이 없으면 아무것도 바꾸지 않는다
+  assert.equal((await rows(db, `select status from canonical_analysis_jobs where id = ${job.id}`))[0].status, 'running');
 });
 
 await check('⑥ 복원 SQL — starter 줄 삭제 · 제약 · 열 · 함수 되돌림(저장한 분석은 그대로)', async () => {

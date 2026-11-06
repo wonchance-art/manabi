@@ -51,11 +51,12 @@ describe('장 고르기 · 시도 수 · 끊긴 사슬', () => {
     expect(pickChapter(chapters, { 2: CHAPTER_ATTEMPTS })).toEqual({ id: 3, order: '3', status: 'pending' });
     expect(pickChapter([{ id: 1, order: '1', status: 'completed' }])).toBeNull();
   });
-  it('성공은 끝난 장 +1 · 연달아 실패 0, 실패는 그 장 시도 +1 — 세 번째면 건너뛴 장 +1, 연달아 세 장이면 작업 실패', () => {
+  it('성공은 끝난 장 +1 · 연달아 실패 0, 실패는 그 장 시도 +1 — 세 번째면 건너뛴 장 +1 · 연달아 +1, 포기한 장이 연달아 셋이면 작업 실패', () => {
     expect(jobAfterChapter({ ...JOB, failure_streak: 2 }, 5, { ok: true })).toEqual({ chapters_done: 1, failure_streak: 0 });
-    expect(jobAfterChapter(JOB, 5, { ok: false, error: new Error('quota') })).toEqual({ attempts: { 5: 1 }, chapters_failed: 0, failure_streak: 1, last_error: 'quota' });
-    expect(jobAfterChapter({ ...JOB, attempts: { 5: 2 } }, 5, { ok: false, error: new Error('x') })).toMatchObject({ attempts: { 5: 3 }, chapters_failed: 1 });
-    const stop = jobAfterChapter({ ...JOB, failure_streak: FAILURE_STOP - 1 }, 5, { ok: false, error: new Error('quota') });
+    // 재시도 중인 실패는 「연달아」로 세지 않는다(한 자료의 재시도 3회가 작업을 멈추던 것 — STARTER-ANALYSIS-001 운영 실측).
+    expect(jobAfterChapter(JOB, 5, { ok: false, error: new Error('quota') })).toEqual({ attempts: { 5: 1 }, chapters_failed: 0, failure_streak: 0, last_error: 'quota' });
+    expect(jobAfterChapter({ ...JOB, attempts: { 5: 2 } }, 5, { ok: false, error: new Error('x') })).toMatchObject({ attempts: { 5: 3 }, chapters_failed: 1, failure_streak: 1 });
+    const stop = jobAfterChapter({ ...JOB, failure_streak: FAILURE_STOP - 1, attempts: { 5: CHAPTER_ATTEMPTS - 1 } }, 5, { ok: false, error: new Error('quota') });
     expect(stop).toMatchObject({ status: 'failed', failure_streak: FAILURE_STOP });
     expect(stop.last_error).toBe(`연달아 ${FAILURE_STOP}장을 분석하지 못해 멈췄어요 — quota`);
   });
@@ -116,9 +117,19 @@ describe('tick — 임대 · 책 차례 · 예산 · 멈춤 · 실패', () => {
     const map = { 'aozora-a': [1, 2, 3, 4, 5].map((id) => ({ id, order: String(id), status: 'pending' })) };
     const analyze = vi.fn(async () => { throw new Error('할당량'); });
     await runAnalysisTick({ supabase, now: clock(1), getBooks: () => BOOKS, publishable: () => true, analyze, prepare, listChapters: chaptersOf(map) });
-    expect(analyze).toHaveBeenCalledTimes(FAILURE_STOP);
-    expect(table[0]).toMatchObject({ status: 'failed', failure_streak: FAILURE_STOP, chapters_done: 0 });
+    expect(analyze).toHaveBeenCalledTimes(FAILURE_STOP * CHAPTER_ATTEMPTS); // 서로 다른 장 셋을 각각 세 번씩
+    expect(table[0]).toMatchObject({ status: 'failed', failure_streak: FAILURE_STOP, chapters_done: 0, chapters_failed: FAILURE_STOP });
     expect(table[0].last_error).toContain('할당량');
+  });
+  it('한 장만 망가지면 그 장만 건너뛰고 끝까지 간다(STARTER-ANALYSIS-001 운영 실측 — 자료 134)', async () => {
+    const { supabase, table } = fakeJobs([JOB]);
+    const done = new Set();
+    const map = { 'aozora-a': [1, 2, 3, 4].map((id) => ({ id, order: String(id), status: 'pending' })) };
+    const listChapters = async (client, owner, key) => (await chaptersOf(map)(client, owner, key)).map((c) => ({ ...c, status: done.has(c.id) ? 'completed' : c.status }));
+    const analyze = vi.fn(async (_, __, id) => { if (id === 2) throw new Error('새 분석을 완료하지 못했어요.'); done.add(id); });
+    await runAnalysisTick({ supabase, now: clock(1), getBooks: () => BOOKS, publishable: () => true, analyze, prepare, listChapters });
+    expect([...done].sort()).toEqual([1, 3, 4]);
+    expect(table[0]).toMatchObject({ status: 'done', chapters_done: 3, chapters_failed: 1, failure_streak: 0 });
   });
   it('게시할 수 없는 책은 이유를 남기고 다음 책으로', async () => {
     const { supabase, table } = fakeJobs([JOB]);
@@ -246,14 +257,14 @@ describe('STARTER-ANALYSIS-001 — 공개 시드(starter) 작업', () => {
     expect(table[0]).toMatchObject({ status: 'running', failure_streak: 0, chapters_failed: 0, last_error: STARTER_DAILY_LIMIT_NOTE, lease_until: null });
   });
 
-  it('연달아 세 편 실패면 패널과 같은 규칙으로 작업 실패', async () => {
+  it('서로 다른 세 편이 연달아 포기되면 작업 실패(재시도는 세지 않음)', async () => {
     const { supabase, table } = fakeJobs([STARTER]);
     const out = await runAnalysisTick({
       supabase, now: clock(), analyze: vi.fn(async () => { throw new Error('LLM unavailable'); }),
       listStarter: rowsOf(new Set()), llmStats: statsSeq(), consumeQuota: vi.fn(async () => ({ ok: true })),
     });
-    expect(out.processed).toBe(FAILURE_STOP);
-    expect(table[0]).toMatchObject({ status: 'failed', failure_streak: FAILURE_STOP });
+    expect(out.processed).toBe(FAILURE_STOP * CHAPTER_ATTEMPTS);
+    expect(table[0]).toMatchObject({ status: 'failed', failure_streak: FAILURE_STOP, chapters_failed: FAILURE_STOP });
   });
 
   it('요청 수 추정 · 집계 차(창이 새로 열리면 뒤 스냅샷) · 합치기', () => {
