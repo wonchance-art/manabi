@@ -23,7 +23,7 @@ export async function generateMetadata({ params }) {
     let missing = Boolean(seed) && !seed.row;
     const data = seed ? seed.row : await (await createSupabaseServerClient())
       .from('reading_materials')
-      .select('title, visibility, owner_id')
+      .select('title, visibility, owner_id, analysis_status:processed_json->>status')
       .eq('id', id)
       .abortSignal(AbortSignal.timeout(VIEWER_META_TIMEOUT_MS))
       .single()
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }) {
       description,
       openGraph: { title, description },
     });
-    // 우리가 만든 공개 자료만 검색에 싣는다(LAUNCH-META-002) — 다른 계정이 공개로 돌린 자료 · 비공개 자료는 화면 그대로, 검색에서만 뺀다.
+    // 우리가 만든 공개 · 분석된 자료만 검색에 싣는다(LAUNCH-META-002 · 003) — 다른 계정이 공개로 돌린 자료 · 비공개 · 분석 전 자료는 화면 그대로, 검색에서만 뺀다.
     // 정본은 둔다(같은 자료의 다른 주소를 한 곳으로 묶는 신호는 색인 여부와 따로다). 관리자 목록을 모르면 빼지 않는다(curatedMaterials).
     if (data && !isIndexableMaterial(data, await curatorIds())) return { ...meta, robots: { index: false, follow: true } };
     return meta;

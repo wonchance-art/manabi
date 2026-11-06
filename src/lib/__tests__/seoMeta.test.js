@@ -31,7 +31,7 @@ vi.mock('@/lib/supabaseServer', async (importOriginal) => {
 import { DEFAULT_SITE_URL, INDEX_EXTERNAL_SUGGESTIONS, OG_DEFAULTS, OG_IMAGE, PRIVATE_ROBOTS, ROBOTS_DISALLOW, canonicalFor, publicMetadata, siteUrl, suggestionMetadata, withOgDefaults } from '@/lib/seo';
 import { legacyTextbookTarget } from '@/lib/bookNavigation';
 import { bookEntries, koreanDate, levelListEntries, materialEntries, studiesEntries } from '@/lib/sitemapEntries';
-import { __setCuratorClient, curatedMaterialIds, curatorIds, isIndexableMaterial } from '@/lib/server/curatedMaterials';
+import { ANALYZED_STATUSES, __setCuratorClient, curatedMaterialIds, curatorIds, isAnalyzedMaterial, isIndexableMaterial } from '@/lib/server/curatedMaterials';
 import { STUDY_COUNTRIES } from '@/content/studies';
 import robots from '@/app/robots';
 import * as rootLayout from '@/app/layout';
@@ -325,7 +325,7 @@ describe('뷰어 자료 — 우리가 만든 공개 자료만 검색에 싣는�
     viewer.query = { data: { title: '日記', visibility: 'public', owner_id: 'user-2' }, error: null };
     expect((await meta('46')).robots).toEqual({ index: false, follow: true });
     const page = fs.readFileSync(path.join(ROOT, 'src/app/(app)/viewer/[id]/page.jsx'), 'utf8');
-    expect(page).toContain(".select('title, visibility, owner_id')");
+    expect(page).toContain(".select('title, visibility, owner_id, analysis_status:processed_json->>status')");
   });
 
   it('관리자 목록 조회 실패 · 키 없음 = 빼지 않는다(잠깐의 장애로 공개 자료를 빼지 않게)', async () => {
@@ -335,6 +335,31 @@ describe('뷰어 자료 — 우리가 만든 공개 자료만 검색에 싣는�
     __setCuratorClient(null);
     expect(await curatorIds()).toBeNull();
     expect((await meta('77')).robots).toBeUndefined();
+  });
+
+  it('분석 전(idle · 문장 0) 자료는 관리자 소유 공개여도 뺀다 — 뷰어 SSR과 같은 상태 판정(LAUNCH-META-003)', async () => {
+    // 운영 실측 2026-11-07 KST: 공개 123건 중 분석됨 5 · idle 118 — processed_json은 모두 있어 「있음」만으로는 가를 수 없었다.
+    const ssr = fs.readFileSync(path.join(ROOT, 'src/lib/viewerSsr.js'), 'utf8');
+    expect(ssr).toContain(`new Set([${ANALYZED_STATUSES.map((v) => `'${v}'`).join(', ')}])`);
+    const ids = new Set(['admin-1']);
+    const base = { visibility: 'public', owner_id: 'admin-1' };
+    expect(isAnalyzedMaterial({ ...base, processed_json: { status: 'idle', sequence: [] } })).toBe(false);
+    expect(isAnalyzedMaterial({ ...base, processed_json: { status: 'completed', sequence: [] } })).toBe(false);
+    expect(isAnalyzedMaterial({ ...base, processed_json: { status: 'partial', sequence: [{}] } })).toBe(true);
+    expect(isAnalyzedMaterial({ ...base, analysis_status: 'idle' })).toBe(false);
+    expect(isAnalyzedMaterial({ ...base, analysis_status: 'completed' })).toBe(true);
+    expect(isAnalyzedMaterial(base)).toBeNull();
+    expect(isIndexableMaterial({ ...base, processed_json: { status: 'idle', sequence: [] } }, ids)).toBe(false);
+    expect(isIndexableMaterial({ ...base, processed_json: { status: 'idle', sequence: [] } }, null)).toBe(false);
+    expect(isIndexableMaterial({ ...base, processed_json: { status: 'completed', sequence: [{}] } }, ids)).toBe(true);
+    __setCuratorClient(curators());
+    viewer.seed = { id: '50', row: { id: 50, title: 'Cafe', ...base, processed_json: { status: 'idle', sequence: [] } }, account: null, servedAt: 0 };
+    expect((await meta('50')).robots).toEqual({ index: false, follow: true });
+    viewer.seed = null;
+    viewer.query = { data: { title: 'Cafe', ...base, analysis_status: 'idle' }, error: null };
+    expect((await meta('50')).robots).toEqual({ index: false, follow: true });
+    viewer.query = { data: { title: 'Cafe', ...base, analysis_status: 'completed' }, error: null };
+    expect((await meta('50')).robots).toBeUndefined();
   });
 
   it('관리자 목록은 10분 기억한다(뷰어 메타마다 조회를 늘리지 않게)', async () => {
@@ -356,7 +381,8 @@ describe('뷰어 자료 — 우리가 만든 공개 자료만 검색에 싣는�
     expect(await materialEntries()).toEqual([{ url: canonicalFor('/viewer/3') }, { url: canonicalFor('/viewer/45') }]);
     const list = service.calls.find((c) => c.table === 'reading_materials');
     expect(list.select).toBe('id');
-    expect(list.filters).toEqual([['eq', 'visibility', 'public'], ['in', 'owner_id', ['admin-1', 'admin-2']], ['not', 'processed_json', 'is', null]]);
+    expect(list.filters).toEqual([['eq', 'visibility', 'public'], ['in', 'owner_id', ['admin-1', 'admin-2']],
+      ['in', 'processed_json->>status', ['completed', 'partial']], ['not', 'processed_json->sequence->0', 'is', null]]);
     __setCuratorClient(null);
     expect(await curatedMaterialIds()).toEqual([]);
     __setCuratorClient(fakeService({ profiles: { data: [{ id: 'admin-1' }], error: null }, reading_materials: { data: null, error: { code: '57014' } } }));
