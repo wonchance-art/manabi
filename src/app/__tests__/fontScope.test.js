@@ -27,7 +27,9 @@ const walk = (dir, out = []) => {
 
 const SCOPE = 'src/components/fonts/TcFontScope.jsx';
 // TC를 거는 세그먼트 — 번체를 그리는 보이는 화면.
-const TC_SEGMENTS = ['src/app/(app)/viewer', 'src/app/(app)/pdf', 'src/app/(app)/suggestions', 'src/app/(app)/chinese'];
+const TC_SEGMENTS = ['src/app/(app)/pdf', 'src/app/(app)/suggestions', 'src/app/(app)/chinese'];
+// 첫 그림 뒤에 SC · TC 독립 시트를 붙이는 세그먼트(VIEWER-FONT-SPLIT-001 2단계 — DeferredZhFontSheets). 근거는 아래 「첫 그림 뒤 시트」 계약.
+const ZH_DEFERRED_SEGMENTS = ['src/app/(app)/viewer'];
 // 번체를 그리는 화면 부품 — 이것을 여는 라우트는 TC 세그먼트 안에 있어야 한다.
 const TC_SCREENS = ['@/views/ViewerPage', '@/views/PdfViewerPage', '@/components/materials/SuggestionReader', '@/views/levelListRoute', '@/views/LevelListPage'];
 // 범위 밖으로 둔 라우트 — 이유와 함께. 여기서는 CSS 폴백(③)으로 시스템 TC · KR 글꼴에 떨어진다.
@@ -63,7 +65,7 @@ describe('번체 글꼴 범위 — Noto Sans TC', () => {
     const routes = files.filter(f => rel(f).startsWith('src/app/') && /\/(page|layout)\.jsx$/.test(f));
     const hits = routes.filter(f => TC_SCREENS.some(m => fs.readFileSync(f, 'utf8').includes(`from '${m}'`))).map(rel);
     expect(hits.length).toBeGreaterThanOrEqual(4); // viewer · pdf · suggestions · chinese 레벨(공허 통과 방지)
-    const outside = hits.filter(f => !TC_SEGMENTS.some(seg => f.startsWith(`${seg}/`)) && !Object.keys(OUTSIDE).some(o => f.startsWith(`${o}/`)));
+    const outside = hits.filter(f => ![...TC_SEGMENTS, ...ZH_DEFERRED_SEGMENTS].some(seg => f.startsWith(`${seg}/`)) && !Object.keys(OUTSIDE).some(o => f.startsWith(`${o}/`)));
     expect(outside, '번체 화면이 TC 범위 밖 라우트에서 열린다 — TC_SEGMENTS에 넣거나 OUTSIDE에 이유를 적는다').toEqual([]);
   });
 
@@ -97,7 +99,7 @@ describe('번체 글꼴 범위 — Noto Sans TC', () => {
  */
 const SC_SCOPE = 'src/components/fonts/ScFontScope.jsx';
 const SC_SEGMENTS = [
-  'lessons', 'materials', 'notes', 'class', 'chinese', 'viewer', 'pdf', 'suggestions', 'study', 'vocab',
+  'lessons', 'materials', 'notes', 'class', 'chinese', 'pdf', 'suggestions', 'study', 'vocab',
   'review', 'writing', 'quick', 'progress', 'world', 'conversation', 'admin/legacy-textbooks',
 ].map(s => `src/app/(app)/${s}`);
 // 잎이 독립 스타일시트를 직접 거는 세그먼트(SC-LINK-001 2단계 — next/font SC를 싣지 않는다). 나머지는 다음 단계에서 옮긴다.
@@ -192,7 +194,7 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
     const { reach, zhCapable } = scGraph();
     const routes = files.map(rel).filter(f => f.startsWith('src/app/') && /\/(page|layout|loading|error|not-found|template|default)\.jsx?$|Client\.jsx$/.test(f));
     // 링크 세그먼트는 범위 대신 잎이 스타일시트를 건다 — 아래 「링크 세그먼트 … ZhSlot」 계약이 그 잎을 지킨다.
-    const inside = (f) => [...SC_SEGMENTS, ...SC_LINK_SEGMENTS].some(seg => f.startsWith(`${seg}/`));
+    const inside = (f) => [...SC_SEGMENTS, ...SC_LINK_SEGMENTS, ...ZH_DEFERRED_SEGMENTS].some(seg => f.startsWith(`${seg}/`));
     // 공허 통과 방지: 신호는 알려진 중국어 부품을 잡고, 범위 안 라우트는 실제로 그것들에 닿는다.
     for (const known of ['src/views/ViewerPage.jsx', 'src/views/QuickPage.jsx', 'src/components/levels/HanziBoard.jsx', 'src/components/books/BookCover.jsx']) {
       expect(zhCapable(known), known).toBe(true);
@@ -298,5 +300,39 @@ describe('간체 글꼴 범위 — Noto Sans SC', () => {
     expect(out.css).toMatch(/@font-face\s*\{\s*font-family:\s*'Noto Sans SC';/);
     expect(out.css).toMatch(/--font-noto-sc:\s*'Noto Sans SC',\s*'Noto Sans SC Fallback'/);
     expect(out.css).not.toMatch(/__Noto_Sans_SC/);
+  });
+});
+
+// VIEWER-FONT-SPLIT-001 2단계 — 뷰어는 SC · TC를 렌더 차단으로 싣지 않고 첫 그림 뒤에 붙인다.
+// 전제: 뷰어의 첫 서버 그림에는 중국어 글자가 없다 — ① 중국어 자료는 서버 본문에서 빠지고 ② 학습자 UI · 해설 언어가 ko가 아니면 안내 스크립트가
+// 서버 본문을 감춘다 ③ 正 줄 · 한자 창 · 번체/간체 칩 · 예문은 단어를 누른 뒤에 그린다(서버 본문은 단어 카드를 열지 않은 상태).
+describe('첫 그림 뒤 시트 — 뷰어(Noto Sans SC · TC)', () => {
+  const layout = read('src/app/(app)/viewer/layout.jsx');
+  const code = layout.replace(/(^|[^:'"`])\/\/[^\n]*/g, '$1');
+
+  it('뷰어 레이아웃은 Sc/TcFontScope를 싣지 않고 DeferredZhFontSheets를 둔다(라틴 미리 받기는 그대로)', () => {
+    expect(code).not.toMatch(/ScFontScope|TcFontScope|Noto_Sans_(SC|TC)/);
+    expect(code).toContain("import DeferredZhFontSheets from '@/components/fonts/DeferredZhFontSheets';");
+    expect(code).toContain('<DeferredZhFontSheets />');
+    expect(code).toContain('preloadNotoSansLatin();');
+    expect(ZH_DEFERRED_SEGMENTS.every((seg) => !TC_SEGMENTS.includes(seg) && !SC_SEGMENTS.includes(seg))).toBe(true);
+  });
+
+  it('부품은 두 독립 시트를 낮은 우선순위로 미리 받고(렌더 차단 없음) 하이드레이션 뒤에 붙인다', () => {
+    const src = read('src/components/fonts/DeferredZhFontSheets.jsx');
+    expect(src).toContain("export const DEFERRED_ZH_SHEETS = Object.freeze([SC_STYLESHEET_HREF, TC_STYLESHEET_HREF].filter(Boolean));");
+    expect(src).toContain("preload(href, { as: 'style', fetchPriority: 'low' })");
+    expect(src).toContain('useEffect(() => { attachZhFontSheets(); }, []);');
+    expect(src).not.toMatch(/precedence=/); // React precedence 링크는 렌더를 막는다(SC-LINK-001) — 여기서는 쓰지 않는다
+  });
+
+  it('전제 ① ② — 뷰어 서버 본문은 중국어 자료 · ko가 아닌 UI/해설 언어에서 그리지 않는다', () => {
+    const ssr = read('src/lib/viewerSsr.js');
+    expect(ssr).toContain("if (json?.metadata?.language === 'Chinese') return null;");
+    expect(ssr).toContain("((lang.uiLocale && lang.uiLocale !== 'ko') || (lang.explanationLocale && lang.explanationLocale !== 'ko'))) return 'locale';");
+  });
+
+  it('SW는 배포를 넘길 때 /_fonts 시트도 옮긴다(받아 둔 뷰어 문서 HTML에 주소가 없다)', () => {
+    expect(read('public/sw.js')).toContain('const FONT_ASSET = /^\\/(?:_next\\/static\\/media|_fonts)\\//;');
   });
 });

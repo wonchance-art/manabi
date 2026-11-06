@@ -883,7 +883,11 @@
   LCP(H1, SSR 본문) 3.20–3.43s · 하이드레이션 긴 작업 6.8–7.8s. CSS 18개 중 @font-face만 든 5개 gz 약 400KB, 그중 SC · TC 약 196KB를 `(app)/viewer/layout`이 늘 싣는다.
   비중국어 자료에서도 SC · TC를 쓰는 곳: 正 줄(ViewerGlyphColumn zh-Hant-TW) · 한자 창(ViewerHanjaPopover) · zh UI/해설 언어 · 중국어 본문 → 잎이 시트를 거는 방식(ZhSlot)으로 전환.
   **1단계** PR `claude/font-tc-sheet`(화면 · 동작 무변화): sc-stylesheet를 SC · TC 표로 일반화(`/_fonts/noto-sans-tc/…css` · env MANABI_TC_STYLESHEET, 간체 산출 바이트 그대로) ·
-  TcFontLink · TcFontScopeMarker · ZhSlot zh-TW→TC · 대조 스크립트 둘 다. **2단계**(뷰어 전환 · 유휴 미리 받기 · SW)는 1단계 병합 뒤.
+  TcFontLink · TcFontScopeMarker · ZhSlot zh-TW→TC · 대조 스크립트 둘 다. 1단계 #1718 병합(fa8eda5d · 운영 SC 주소 불변 확인).
+  **2단계** PR `claude/viewer-font-split`(화면 동일): `(app)/viewer/layout`에서 Sc/TcFontScope를 빼고 `DeferredZhFontSheets`(두 시트 preload 낮은 우선순위 →
+  하이드레이션 직후 붙이기). 전제(첫 서버 그림에 중국어 없음 — 중국어 자료 SSR 제외 · ko 아닌 UI/해설 언어는 안내 스크립트가 감춤 · 正 줄/한자 창/칩/예문은 탭 뒤) 계약.
+  SW가 /_fonts 시트를 배포 사이에 옮긴다. ViewerPage · 단어 카드 무변경(디자인 세션 正·日 묶음과 겹침 없음). wall 빌드(실제 글꼴) 뷰어 4장면 × 390/1280 픽셀 차 0 ·
+  뷰어 경로 CSS 18 → 16개(gz 약 466 → 282KB, SC · TC @font-face 0). 운영 FCP/LCP 전후 실측은 병합 뒤.
 - **LAUNCH-META-004 제목 구분자 · 브랜드 중복 · 책별 설명 · 사이트 JSON-LD · favicon.ico (2026-11-07 KST)** PR `claude/launch-meta-titles`(발매 점검 「개선」 · 오케스트레이터 순회 04:24):
   화면 제목 15곳의 「 | 」→ 루트 틀과 같은 「 · 」(지역학 · 레벨 목록 · 옛 문법 장 · 영어/프랑스어 목록 · 복습 og) · 관리자 제목 4곳의 「| manabi」 제거(틀이 붙여 브랜드 두 번).
   루트 기본 설명 = 배움 설명 = `SITE_DESCRIPTION`(옛 「일본어·영어·프랑스어·중국어 학습 도구」 문장 걷음) · 교재 세 권 책별 설명 · 손님 배움 판에 WebSite JSON-LD(운영 주체는 오너 정보 뒤) ·
