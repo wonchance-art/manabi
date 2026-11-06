@@ -15,6 +15,7 @@ E2E 테스트는 저장소 루트에서 실행한다. 테스트가 `next start`�
 
 ```sh
 NEXT_PUBLIC_SUPABASE_URL=https://e2e.supabase.co \
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=e2e-anon-key \
 NEXT_PUBLIC_SUPABASE_ANON_KEY=e2e-anon-key \
 NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3100 \
 npm run build

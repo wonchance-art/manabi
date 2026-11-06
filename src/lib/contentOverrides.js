@@ -6,13 +6,17 @@
  * 렌더 시 원본 위에 얕게 병합한다.
  *
  * 설계 원칙:
- *  - 서버 전용 — anon key로 Supabase REST를 직접 fetch (서버 컴포넌트/route handler에서 호출).
+ *  - 서버 전용 — 공개 키(publishable · legacy anon)로 Supabase REST를 직접 fetch (서버 컴포넌트/route handler에서 호출).
+ *    키는 `apikey` 헤더에만 싣는다 — 새 publishable 키는 JWT가 아니라 `Authorization: Bearer`로 보내면 JWT로 해석돼
+ *    거절될 수 있다(SUPA-KEYS-001). 로그인 토큰이 없는 요청이라 Authorization은 비우고, 게이트웨이가 키의 역할(anon)로 처리한다.
  *  - 모든 실패는 조용히 null/빈 Map 반환 — 빌드·프리뷰에서 DB가 불통이어도 페이지는 원본으로 렌더.
  *  - slug·level·order는 항상 base 값 강제 — 진도·이전/다음 링크·목차 연동이 깨지지 않게.
  */
 
+import { supabasePublicKey } from './supabaseKeys';
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_KEY = supabasePublicKey();
 
 // ISR 참여 — route-level revalidate와 함께 캐시. revalidatePath 시 함께 무효화된다.
 const REVALIDATE = 60;
@@ -29,10 +33,7 @@ async function restGet(pathAndQuery) {
   if (!overridesReady()) return null;
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${pathAndQuery}`, {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
+      headers: { apikey: SUPABASE_KEY },
       next: { revalidate: REVALIDATE },
     });
     if (!res.ok) return null;

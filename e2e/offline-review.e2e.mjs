@@ -1,7 +1,7 @@
 // 오프라인 복습(F9) · 채점당 호출(F5) — 무거운 합성 계정(e2e/fixtures/heavy-account.mjs) 위의 격리 production 서버. 실계정 · 운영 DB 무관.
 // 오너 승인 2026-10-25 KST 「권장대로」(로그인 감사 ㉡). 켜는 법(리포 루트):
 //   node e2e/fixtures/heavy-account.mjs <backendPort>
-//   E2E_HEAVY_BACKEND=http://127.0.0.1:<backendPort> SUPABASE_SERVICE_ROLE_KEY=e2e-heavy-service-role \
+//   E2E_HEAVY_BACKEND=http://127.0.0.1:<backendPort> SUPABASE_SECRET_KEY=e2e-heavy-service-role SUPABASE_SERVICE_ROLE_KEY=e2e-heavy-service-role \
 //     NODE_OPTIONS="--import=$PWD/e2e/server-fetch-mock.mjs" npx next start --port <appPort>      (e2e 빌드)
 //   QA_BASE=http://127.0.0.1:<appPort> E2E_HEAVY_BACKEND=http://127.0.0.1:<backendPort> node --test e2e/offline-review.e2e.mjs
 // E2E_HEAVY_BACKEND가 없으면 건너뛴다(기본 e2e 무영향). OFFREV_BASELINE=1 — 이전 빌드 측정: 관찰만 적고 단언하지 않는다.
@@ -45,7 +45,7 @@ function session() {
 const heavy = async (path, init) => fetch(new URL(path, BACKEND), init);
 const backendLog = async () => (await heavy('/__heavy/log')).json();
 const clearLog = () => heavy('/__heavy/clear-log');
-const serviceRows = async (table, query) => (await heavy(`/rest/v1/${table}?${query}`, { headers: { apikey: HEAVY_SERVICE_KEY, authorization: `Bearer ${HEAVY_SERVICE_KEY}` } })).json();
+const serviceRows = async (table, query) => (await heavy(`/rest/v1/${table}?${query}`, { headers: { apikey: HEAVY_SERVICE_KEY } })).json();
 
 async function openReview() {
   const context = await browser.newContext({ baseURL: BASE, viewport: { width: 390, height: 844 }, locale: 'ko-KR', serviceWorkers: 'block', reducedMotion: 'reduce' });
@@ -185,7 +185,7 @@ test('끊긴 채 이어 복습 — 이미 입장한 카드는 열리고 채점�
         if (row) {
           off.phone = { id: row.id, word, base: row.last_reviewed_at, last_reviewed_at: new Date(gradedAt - 400).toISOString(), interval: 77,
             next_review_at: new Date(gradedAt + 77 * 86400000).toISOString() };
-          await heavy(`/rest/v1/user_vocabulary?id=eq.${row.id}`, { method: 'PATCH', headers: { apikey: HEAVY_SERVICE_KEY, authorization: `Bearer ${HEAVY_SERVICE_KEY}`,
+          await heavy(`/rest/v1/user_vocabulary?id=eq.${row.id}`, { method: 'PATCH', headers: { apikey: HEAVY_SERVICE_KEY,
             'content-type': 'application/json' }, body: JSON.stringify({ last_reviewed_at: off.phone.last_reviewed_at, interval: 77, next_review_at: off.phone.next_review_at }) });
         }
       }
@@ -274,7 +274,7 @@ test('다른 기기가 방금 복습한 카드 — 연결된 채로는 입장했
     assert.ok(resume?.cardIds?.length > resume.index + 3, `세션 줄을 읽을 수 있어야 한다: ${JSON.stringify(resume)?.slice(0, 200)}`);
     const targetId = resume.cardIds[resume.index + 2];
     const phoneAt = new Date().toISOString(), due = new Date(Date.now() + 3 * 86400000).toISOString();
-    await heavy(`/rest/v1/user_vocabulary?id=eq.${targetId}`, { method: 'PATCH', headers: { apikey: HEAVY_SERVICE_KEY, authorization: `Bearer ${HEAVY_SERVICE_KEY}`,
+    await heavy(`/rest/v1/user_vocabulary?id=eq.${targetId}`, { method: 'PATCH', headers: { apikey: HEAVY_SERVICE_KEY,
       'content-type': 'application/json' }, body: JSON.stringify({ last_reviewed_at: phoneAt, next_review_at: due, interval: 3 }) });
     gone.target = targetId;
     await clearLog();

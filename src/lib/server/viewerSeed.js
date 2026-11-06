@@ -39,12 +39,20 @@ export async function loadViewerSeed(id, { rscRequest = false, sessionCookie = f
       if (!session?.user?.id || !session.supabase) return null;
       client = session.supabase; account = session.user.id;
     } else client = publicClient();
-    const { data, error } = await client.from('reading_materials').select('*').eq('id', key)
-      .abortSignal(AbortSignal.timeout(timeoutMs)).maybeSingle();
+    // 로그인 계정은 이 자료의 읽던 곳을 본문 조회와 나란히 본다(VIEWER-MEMBER-SSR-001 — 같은 계정 토큰 · RLS 그대로 · 자기 행만).
+    // resume = 읽던 곳이 있음(last_token_idx > 0 — 뷰어가 그 쪽으로 넘긴다) · false = 없음(처음 여는 글) · undefined = 모름(오류 · 시간 초과).
+    // 서버 그림(1쪽)은 false일 때만 쓴다 — 읽던 곳이 있으면 1쪽 → N쪽으로 바뀌는 그림을 늘리지 않게(lib/viewerSsr viewerSsrRow).
+    const progress = account ? client.from('reading_progress').select('last_token_idx').eq('user_id', account).eq('material_id', key)
+      .abortSignal(AbortSignal.timeout(timeoutMs)).maybeSingle()
+      .then(({ data: row, error: failed }) => (failed ? undefined : Number(row?.last_token_idx) > 0), () => undefined) : undefined;
+    const [{ data, error }, resume] = await Promise.all([client.from('reading_materials').select('*').eq('id', key)
+      .abortSignal(AbortSignal.timeout(timeoutMs)).maybeSingle(), progress]);
     if (error) return null;
     // 그 id의 행만 싣는다 — 다른 모양(부분 행 · 다른 id)이면 브라우저가 지금처럼 받는다.
     if (data && String(data.id) !== key) return null;
     // 키 순서는 계약이다 — id가 첫 키(브라우저가 받은 화면 조각에서 `"seed":{"id":"<id>",`로 실어 온 문서를 알아본다 · viewerSeedAdopted).
+    // 손님 seed는 지금과 같은 모양(resume 없음) — 손님 첫 HTML이 바이트 그대로다.
+    if (account) return { id: key, row: data ?? null, account, servedAt: now(), resume };
     return { id: key, row: data ?? null, account, servedAt: now() };
   } catch {
     return null;

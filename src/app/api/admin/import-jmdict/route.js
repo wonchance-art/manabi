@@ -8,6 +8,8 @@
 // - 공통 단어(common: true)만 취하는 옵션
 
 import { createClient } from '@supabase/supabase-js';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
+import { supabaseSecretKey } from '@/lib/server/supabaseKeys';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // 5분
@@ -47,16 +49,16 @@ async function requireAdmin(request) {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
+    supabasePublicKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user } } = await supabase.auth.getUser(token);
   if (!user) return null;
 
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: profile } = await admin
     .from('profiles').select('role').eq('id', user.id).single();
@@ -84,8 +86,8 @@ export async function POST(request) {
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 
   // 1. 변환 (JMdict 엔트리 → morpheme_dictionary row)

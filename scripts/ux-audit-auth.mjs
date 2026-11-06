@@ -33,7 +33,7 @@ const stamp = kstStamp();
 const out = opt('--out') || join('.ux-audit', stamp.slice(0, 10), 'auth');
 const only = (opt('--only') || SCREENS.join(',')).split(',').filter(name => SCREENS.includes(name));
 const { width, height } = AUTH_VIEWPORT;
-const E2E_PUBLIC = { NEXT_PUBLIC_SUPABASE_URL: 'https://e2e.supabase.co', NEXT_PUBLIC_SUPABASE_ANON_KEY: 'e2e-anon-key' };
+const E2E_PUBLIC = { NEXT_PUBLIC_SUPABASE_URL: 'https://e2e.supabase.co', NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'e2e-anon-key', NEXT_PUBLIC_SUPABASE_ANON_KEY: 'e2e-anon-key' };
 
 // 합성 백엔드가 읽는 환경 — import 전에 정한다.
 process.env.COMPOSER_BASE_URL = baseURL;

@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { supabaseSecretKey } from './supabaseKeys.js';
 
 export const RELAY_REPO = 'wonchance-art/manabi';
 export const RELAY_AGENTS = Object.freeze(['claude', 'codex']);
@@ -75,11 +76,12 @@ export function identifyRelayAgent(request, env = process.env) {
 
 export function createRelaySupabase(env = process.env) {
   const url = env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = supabaseSecretKey(env);
   if (!url || !serviceKey) {
     throw new RelayHttpError(503, 'relay_storage_unavailable', 'AI Relay storage is not configured.');
   }
   return createClient(url, serviceKey, {
+    db: { retry: false },
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 }

@@ -2,7 +2,13 @@
 // 지금은 본문이 JS를 다 받고 실행한 뒤(모바일 CPU×4 하이드레이션 뒤)에야 붙어 첫 그림이 「자료 불러오는 중…」이었다.
 //
 // 그리는 범위: **손님**(세션 쿠키 없음 — seed.account null)의 **분석이 끝난 공개 자료**, 주소에 returnTo 말고 다른 질의가 없을 때.
-// 로그인 계정은 지금 그대로(계정 복원 · 저장 단어 · 읽던 쪽 · 소유자 도구가 첫 그림 뒤에 바뀐다). 대화 · 작성기 원본 · 학습 노트 · 책 장도 지금 그대로.
+// 대화 · 작성기 원본 · 학습 노트 · 책 장은 지금 그대로.
+// 로그인 계정(VIEWER-MEMBER-SSR-001, 오너 ㉠ 「처음부터 자리 잡기」 2026-11-04 KST): **남의 공개 자료를 처음 여는 것**도 같은 서버 그림이다 —
+// 「처음」 = 그 계정의 읽던 곳이 없다(seed.resume === false: reading_progress.last_token_idx > 0인 행이 없음 — 서버가 그 계정 토큰으로 본 값).
+// 내 자료(소유자 도구 · 제목 편집이 붙는다) · 읽던 곳이 있음(뷰어가 그 쪽으로 넘긴다) · 모름(조회 실패) · 수업에서 연 글(returnTo /class/ —
+// 수업 사본 안내가 본문 위에 붙는다)은 지금 그대로(브라우저가 그린다). 서재 담김 여부는 가르지 않는다 — 버튼 글만 제자리에서 바뀐다.
+// 서버 그림은 계정 확인 전(authLoading) 그림이다: 계정 줄(서재에 담기 · 신고 · 단어 현황)은 자리만 잡아 그리고(아는 것 0 — 공개 행 · 계정 id뿐),
+// 계정이 확인되면 같은 자리에 채운다(본문이 밀리지 않는다).
 //
 // 서버는 기기 설정(localStorage)을 모른다 — 서버 그림은 늘 기본 설정이다. 첫 그림 전에 도는 작은 스크립트(viewerSsrGuardScript,
 // 쪽이 본문 앞에 싣는다)가 이 기기에서 서버 그림이 그대로 맞는지 본다. 하나라도 어긋나면(읽기 설정 · 화면 언어가 기본이 아님 · 끊김 ·
@@ -26,10 +32,13 @@ const SSR_STATUSES = new Set(['completed', 'partial']);
  */
 export function viewerSsrRow(seed, id, query = null) {
   const row = seed?.row;
-  if (!row || row.visibility !== 'public' || seed.id !== String(id) || seed.account !== null) return null;
+  if (!row || row.visibility !== 'public' || seed.id !== String(id)) return null;
+  const member = viewerSeedAccount(seed);
+  if (seed.account !== null && !(member && seed.resume === false && row.owner_id !== member)) return null;
   if (!Number.isFinite(seed.servedAt)) return null;
   const keys = query ? [...(typeof query.keys === 'function' ? query.keys() : Object.keys(query))] : [];
   if (keys.some((key) => key !== 'returnTo')) return null;
+  if (member && String(queryValue(query, 'returnTo') || '').startsWith('/class/')) return null;
   const json = row.processed_json;
   if (!SSR_STATUSES.has(json?.status || row.status) || !Array.isArray(json?.sequence) || !json.sequence.length) return null;
   if (conversationOf(row) || composerOf(row) || isStudyNote(row) || getBook(json?.metadata)) return null;
@@ -37,6 +46,44 @@ export function viewerSsrRow(seed, id, query = null) {
   // (390 실측: 첫 낱말 폭 132 → 117px · 40 → 34쪽). 그 칸을 첫 그림 전에 재는 길은 뷰어 요소의 인라인 스타일이라 따로 설계한다.
   if (json?.metadata?.language === 'Chinese') return null;
   return row;
+}
+
+/** 서버가 세션 쿠키 계정으로 읽은 seed의 계정 id — 손님 · 모름이면 null. 서버 · 하이드레이션이 같은 props를 본다. */
+export function viewerSeedAccount(seed) {
+  return typeof seed?.account === 'string' && seed.account !== '' ? seed.account : null;
+}
+const queryValue = (query, key) => (typeof query?.get === 'function' ? query.get(key) : query?.[key]);
+
+/** 위쪽 단어 현황 줄 ✕(이 자료 · 이 기기의 이 계정) 저장 키 — 뷰어와 첫 그림 전 읽기(viewerBadgesPreRead)가 같은 키를 쓴다. */
+export const viewerBadgesKey = (account, id) => `viewer-badges-dismissed:${account ?? 'guest'}:${id}`;
+
+/**
+ * 닫아 둔 단어 현황 줄의 이번 방문 판정(오너 결정 ① 2026-11-04 KST 「전부 권장대로」 — 본문 밀림 0).
+ * closedAt = 닫을 때의 복습 가능 수(null = 닫은 적 없음), due = 지금 이 자료의 복습 가능 수.
+ * - hidden: 닫아 둔 자료는 이번 방문 내내 닫힌 채다(복습 수가 늘어도 줄을 끼워 넣지 않는다 — 자리가 없어 본문이 밀린다).
+ * - reopenNext: 닫은 뒤 복습 수가 늘었다 → 저장 키를 지워, 다음 열람 때 첫 그림 전 읽기가 자리를 잡고 줄을 다시 보인다.
+ */
+export function viewerBadgesVisit(closedAt, due) {
+  const closed = closedAt !== null && closedAt !== undefined;
+  return { hidden: closed, reopenNext: closed && Number(due) > Number(closedAt) };
+}
+
+/**
+ * 단어 현황 줄을 닫아 둔 자료인가 — 첫 그림 전에 이 기기 값을 읽어 <html data-viewer-badges-dismissed>를 붙인다(VIEWER-MEMBER-SSR-001 ④).
+ * 붙으면 CSS가 비워 둔 한 줄 자리(.viewer-badges--pending)를 그리지 않는다 — 자리를 잡았다가 거두며 본문이 올라가는 일 0.
+ * 뷰어가 같은 키를 읽어 상태로 옮기면 뗀다(releaseViewerBadgesPreRead). 인라인 스크립트로 싣는다(toString — 바깥 이름 · 새 문법 없음).
+ */
+export function viewerBadgesPreRead(w, o) {
+  try {
+    if (w.localStorage.getItem(o.key) !== null) w.document.documentElement.setAttribute('data-viewer-badges-dismissed', '');
+  } catch (e) { /* 저장소를 못 읽으면 자리를 잡는다(뷰어도 닫은 적 없음으로 본다) */ }
+}
+export function viewerBadgesPreReadScript({ account, id }) {
+  const json = JSON.stringify({ key: viewerBadgesKey(account, id) }).replace(/</g, '\\u003c');
+  return `(${viewerBadgesPreRead})(window,${json});`;
+}
+export function releaseViewerBadgesPreRead(doc = globalThis.document) {
+  doc?.documentElement?.removeAttribute?.('data-viewer-badges-dismissed');
 }
 
 /**

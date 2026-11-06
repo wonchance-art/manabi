@@ -64,9 +64,31 @@ export function buildHeavyAccount({ now = Date.now(), words = 3000, materials = 
       processed_json: { status: 'completed', metadata: { language: lang, level: lang === 'Japanese' ? 'N4' : 'H2' }, sequence, dictionary, failed_indices: [] },
     });
   }
+  // 측정 전용(VIEWER-MEMBER-SSR-001, HEAVY_EXTRA_PUBLIC=1일 때만): 일본어 자료 10편을 줄 번호를 이어 붙인 긴 글 —
+  // 60000 남의 공개(처음 여는 글 — 로그인 서버 그림) · 60001 내 비공개 · 60002 남의 공개 + 내 읽던 곳(깊은 토큰) · 60003 내 공개. 기본 e2e는 그대로다.
+  const extraProgress = [];
+  if (process.env.HEAVY_EXTRA_PUBLIC === '1') {
+    const parts = tables.reading_materials.filter(m => m.processed_json.metadata.language === 'Japanese').slice(0, 10);
+    const sequence = [], dictionary = {}, raws = [];
+    let line = 0;
+    for (const m of parts) {
+      const { sequence: seq, dictionary: dict } = m.processed_json;
+      const maxLine = Math.max(...seq.map(k => Number(k.split('_')[1])));
+      for (const k of seq) { const [p, l, t] = k.split('_'); const nk = `${p}_${Number(l) + line}_${t}`; sequence.push(nk); dictionary[nk] = dict[k]; }
+      const br = `br_${line + maxLine}_99`; sequence.push(br); dictionary[br] = { text: '\n', base_form: '\n', furigana: '', pos: '개행', meaning: '' };
+      line += maxLine + 1; raws.push(m.raw_text);
+    }
+    const base = { ...parts[0], raw_text: raws.join('\n'), processed_json: { ...parts[0].processed_json, sequence, dictionary } };
+    const other = '00000000-0000-4000-8000-000000000999';
+    tables.reading_materials.push({ ...base, id: 60000, owner_id: other, visibility: 'public', title: '공개 일본어 읽기 자료' });
+    tables.reading_materials.push({ ...base, id: 60001, owner_id: HEAVY_UID, visibility: 'private', title: '내 비공개 일본어 읽기 자료' });
+    tables.reading_materials.push({ ...base, id: 60002, owner_id: other, visibility: 'public', title: '공개 일본어 읽기 자료 (읽던 곳)' });
+    tables.reading_materials.push({ ...base, id: 60003, owner_id: HEAVY_UID, visibility: 'public', title: '내 공개 일본어 읽기 자료' });
+    extraProgress.push({ user_id: HEAVY_UID, material_id: 60002, last_token_idx: Math.floor(sequence.length * 0.7), is_completed: false, updated_at: iso(now - 600000) });
+  }
   tables.reading_progress = tables.reading_materials.slice(0, 60).map((m, i) => ({
     user_id: HEAVY_UID, material_id: m.id, last_token_idx: 5 + i, is_completed: i % 3 === 0, updated_at: iso(now - i * 3600000),
-  }));
+  })).concat(extraProgress);
 
   // ── 저장 단어 3,000 — 옛 일정 칸(interval=안정도 · ease_factor=난이도 · repetitions=망각 수, src/lib/fsrs.js). 약 1/5이 오늘 만기. ──
   tables.user_vocabulary = [];
@@ -308,6 +330,8 @@ export function createHeavyBackend({ latencyMs = 0, browserLatencyMs = 0, snapsh
     return { ...full, rows: full.rows.filter(row => wanted.has(row.id)), registry: full.registry.filter(entry => wanted.has(entry.cardId)) };
   };
   const rpcs = {
+    // 서재 담기 버튼의 정본 대상(뷰어 계정 줄 측정 — VIEWER-MEMBER-SSR-001). 자료 · 판본 그대로 돌려준다(묶음 · 별칭 없음).
+    library_canonical_target: body => ({ target_kind: body?.p_kind, target_id: String(body?.p_id ?? '') }),
     fsrs_vocabulary_snapshot: () => fsrsSnapshot(),
     fsrs_vocabulary_snapshot_cards: snapshotCards,
     fsrs_vocabulary_snapshot_light: body => (typeof body?.p_summary !== 'boolean' ? { __rpcError: { code: '22023', message: 'invalid_fsrs_request' } }

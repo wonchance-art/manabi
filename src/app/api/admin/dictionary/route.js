@@ -5,6 +5,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { normalizeAdminMeanings } from '@/lib/server/adminDictionaryMeanings';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
+import { supabaseSecretKey } from '@/lib/server/supabaseKeys';
 
 export const runtime = 'nodejs';
 
@@ -14,16 +16,16 @@ async function requireAdmin(request) {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const sa = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
+    supabasePublicKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user } } = await sa.auth.getUser(token);
   if (!user) return null;
 
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: profile } = await admin
     .from('profiles').select('role').eq('id', user.id).single();
@@ -33,8 +35,8 @@ async function requireAdmin(request) {
 function serverSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 }
 

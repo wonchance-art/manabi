@@ -17,6 +17,7 @@ import { publishBooksOf } from './publishBooks';
 import { POST as analyzeRoute } from '@/app/api/analyze/route';
 import { POST as koreanRoute } from '@/app/api/analyze/korean/route';
 import { POST as geminiRoute } from '@/app/api/gemini/route';
+import { supabaseSecretKey } from './supabaseKeys';
 
 /** 한 장 시도 상한 · 연달아 실패 멈춤 — 관리자 화면 일괄 분석(FAILURE_STOP 3)과 같은 기준. */
 export const CHAPTER_ATTEMPTS = 3;
@@ -34,9 +35,9 @@ const ORDER_PATH = 'processed_json->metadata->book->>order';
 
 /** 서버 쓰기 클라이언트 — 키가 없으면 null(라우트가 503으로 닫는다). */
 export function serviceClient() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = supabaseSecretKey();
   if (!key || !process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, key, { auth: { persistSession: false } });
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, key, { db: { retry: false }, auth: { persistSession: false } });
 }
 
 const ROUTES = Object.freeze({ '/api/analyze': analyzeRoute, '/api/analyze/korean': koreanRoute, '/api/gemini': geminiRoute });

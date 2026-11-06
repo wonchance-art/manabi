@@ -12,6 +12,7 @@ import { createClient } from '@supabase/supabase-js';
 import { buildPromotedEntry } from '@/lib/server/promoteDictCorrection';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 import { requireUser, isAdminUser } from '@/lib/server/auth';
+import { supabaseSecretKey } from '@/lib/server/supabaseKeys';
 
 export const runtime = 'nodejs';
 export const maxDuration = 15;
@@ -72,8 +73,8 @@ export async function POST(request) {
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 
   try {

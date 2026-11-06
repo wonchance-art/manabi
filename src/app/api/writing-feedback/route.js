@@ -4,6 +4,7 @@ import { buildFeedbackPrompt, validateFeedback, FEEDBACK_SCHEMA, WRITING_LEVELS 
 import { attachTagLinks } from '@/lib/writingTagLink';
 import { callLLM } from '@/lib/server/llm';
 import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 /**
  * 작문 AI 첨삭 — standard 티어의 3단 폴백(flash → flash-lite → Groq, llm.js)이되,
@@ -59,8 +60,8 @@ export async function POST(request) {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const authClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
+    supabasePublicKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {

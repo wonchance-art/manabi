@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 export const metadata = { title: '학습 지표' };
 export const dynamic = 'force-dynamic';
@@ -43,8 +44,9 @@ export default async function Page({ searchParams }) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabasePublicKey(),
     {
+      db: { retry: false },
       cookies: {
         getAll() { return cookieStore.getAll(); },
         setAll() {},

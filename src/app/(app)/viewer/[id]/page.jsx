@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { readViewerSeed, viewerSeedWithin } from '@/lib/server/viewerSeed';
-import { viewerSsrGuardScript, viewerSsrRow } from '@/lib/viewerSsr';
+import { viewerBadgesPreReadScript, viewerSeedAccount, viewerSsrGuardScript, viewerSsrRow } from '@/lib/viewerSsr';
 import ViewerLoading from '@/components/viewer/ViewerLoading';
 import ViewerPage from '@/views/ViewerPage';
 
@@ -42,15 +42,19 @@ export default function Page({ params, searchParams }) {
   return <Suspense fallback={<ViewerLoading />}><SeededViewerPage params={params} searchParams={searchParams} /></Suspense>;
 }
 
-// 손님의 분석된 공개 자료면 본문까지 서버가 그린다(VIEWER-SSR-001, lib/viewerSsr). 본문 앞의 스크립트가 첫 그림 전에 이 기기 설정이
-// 서버 그림(기본 설정)과 맞는지 보고, 어긋나면 본문을 감추고 불러오기 그림을 보인다(뷰어가 설정을 다 읽은 뒤 뗀다).
+// 손님의 분석된 공개 자료 · 로그인 계정이 처음 여는 남의 공개 자료면 본문까지 서버가 그린다(VIEWER-SSR-001 · VIEWER-MEMBER-SSR-001, lib/viewerSsr).
+// 본문 앞의 스크립트가 첫 그림 전에 이 기기 설정이 서버 그림(기본 설정)과 맞는지 보고, 어긋나면 본문을 감추고 불러오기 그림을 보인다(뷰어가 설정을 다 읽은 뒤 뗀다).
+// 세션 쿠키 계정이면 그보다 먼저 이 자료의 단어 현황 줄을 닫아 두었는지 읽는다(닫았으면 자리를 잡지 않는다 — 서버 그림이 아니어도 같다).
 async function SeededViewerPage({ params, searchParams }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const seed = await viewerSeedWithin(id);
   const ssr = viewerSsrRow(seed, id, query);
+  const account = viewerSeedAccount(seed);
   return (
     <>
-      {ssr && <script dangerouslySetInnerHTML={{ __html: viewerSsrGuardScript({ language: ssr.processed_json?.metadata?.language || 'Japanese', servedAt: seed.servedAt }) }} />}
+      {/* 한 요소에 싣는다 — 손님(계정 없음)이면 지금과 같은 글 · 같은 화면 조각(바이트 그대로). 닫은 줄 읽기가 먼저(쪽 높이 맞추기 전). */}
+      {(account || ssr) && <script dangerouslySetInnerHTML={{ __html: (account ? viewerBadgesPreReadScript({ account, id: seed.id }) : '')
+        + (ssr ? viewerSsrGuardScript({ language: ssr.processed_json?.metadata?.language || 'Japanese', servedAt: seed.servedAt }) : '') }} />}
       {ssr && <div className="viewer-ssr-hold"><ViewerLoading /></div>}
       <ViewerPage seed={seed ?? undefined} />
     </>

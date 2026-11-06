@@ -2,6 +2,8 @@
 // Supabase auth.admin.deleteUser는 service_role 필요
 
 import { createClient } from '@supabase/supabase-js';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
+import { supabaseSecretKey } from '@/lib/server/supabaseKeys';
 
 export const runtime = 'nodejs';
 
@@ -13,8 +15,8 @@ export async function POST(request) {
   // 1. 세션 검증
   const anonClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
+    supabasePublicKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user }, error: userErr } = await anonClient.auth.getUser(token);
   if (userErr || !user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,8 +26,8 @@ export async function POST(request) {
   // (단, public 자료는 owner_id FK가 profiles이므로 profile 삭제 시 CASCADE됨)
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 
   try {

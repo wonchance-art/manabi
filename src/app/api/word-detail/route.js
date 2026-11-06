@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { requireUser } from '@/lib/server/auth';
+import { supabaseSecretKey } from '@/lib/server/supabaseKeys';
 
 export const runtime = 'nodejs';
 
@@ -8,8 +9,8 @@ const MAX_DETAIL_LEN = 4000; // detail_text 길이 캡 — 공유 사전 쓰기 
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 }
 

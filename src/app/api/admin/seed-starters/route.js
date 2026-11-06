@@ -1,11 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { STARTER_MATERIALS } from '../../../../lib/starter-content.js';
 import { requireAdmin, SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
+import { supabaseSecretKey } from '@/lib/server/supabaseKeys';
 
 export async function POST(request) {
   // 관리자 판별과 시드 쓰기는 service-role로만 — anon 키로 떨어지면 profiles 조회가 anon으로 돌아
   // 프로필 공개 범위 2단계(PROFILES-PRIVACY-001 ②) 뒤 관리자도 403이 된다. 키가 없으면 닫힌 채 503.
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!supabaseSecretKey()) {
     return Response.json({ error: SERVICE_KEY_MISSING_MESSAGE }, { status: 503 });
   }
   const auth = await requireAdmin(request);
@@ -14,8 +15,8 @@ export async function POST(request) {
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } },
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } },
   );
 
   // 이미 존재하는 스타터 자료 확인 (title 기준)

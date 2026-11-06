@@ -578,13 +578,24 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 .manabi-app .viewer-layout .viewer-title-edit {border:0;background:transparent;border-radius:4px;font-size:.75rem;color:var(--reader-muted);padding:8px;min-height:44px;flex:none;}
 .manabi-app .viewer-layout .library-save-control {margin:0;gap:12px;}
 .manabi-app .viewer-layout .library-save-control>button {border:0;background:transparent;border-radius:0;padding:0;font-size:.75rem;color:var(--reader-muted);min-height:44px;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--reader-line);}
-.manabi-app .viewer-layout .viewer-badges {gap:8px 18px;margin:8px 0 0;}
+/* 계정 줄(VIEWER-MEMBER-SSR-001 ㉠ 「처음부터 자리 잡기」, 오너 2026-11-04 KST) — ① 서재에 담기 · 신고 한 줄(버튼 높이 44px 그대로).
+   계정 확인 전 · 담김 상태를 받기 전의 담기 버튼은 흐리게(누름은 기다렸다가 한다 — LibrarySaveButton data-pending).
+   ② 단어 현황은 한 줄 28px — 받기 전 빈 막대(--pending)와 채운 줄이 같은 높이라 채워져도 본문이 밀리지 않는다. 넘치면 끝이 「…」.
+   닫아 둔 자료는 첫 그림 전 표지(html[data-viewer-badges-dismissed])가 빈 막대를 그리지 않는다(lib/viewerSsr viewerBadgesPreRead). */
+.manabi-app .viewer-layout .viewer-member-actions {display:flex;align-items:center;flex-wrap:wrap;gap:0 12px;min-height:44px;}
+.manabi-app .viewer-layout .library-save-control>button[data-pending] {opacity:.5;}
+.manabi-app .viewer-layout .viewer-badges {gap:8px 18px;margin:8px 0 0;flex-wrap:nowrap;min-height:28px;}
+.manabi-app .viewer-layout .viewer-badges__line {flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:.6875rem;font-weight:600;line-height:1.7;color:var(--reader-muted);}
+.manabi-app .viewer-layout .viewer-badges__line .viewer-badge {display:inline;}
+.manabi-app .viewer-layout .viewer-badges__skeleton {display:block;width:62%;height:12px;border-radius:999px;background:color-mix(in srgb,var(--reader-ink) 9%,transparent);}
+html[data-viewer-badges-dismissed] .viewer-badges--pending {display:none;}
 .manabi-app .viewer-layout .viewer-badge {border:0;border-radius:0;padding:0;background:none;color:var(--reader-muted);box-shadow:none;font-size:.6875rem;animation:none;}
 .manabi-app .viewer-layout .viewer-badge--due {color:var(--reader-accent);}
 /* 통계 줄 한 덩어리(AD-R2) — 「아는 단어 · 새 단어 · N개 수집 → 단어장」. 블록이라 가운뎃점 앞뒤 공백이 살고,
    좁은 화면에서는 덩어리 안에서 줄을 바꾼다. 수집 링크는 무채색 밑줄(크롬 강조색은 복습 하나). 세로 여백은 누름 영역만
    넓히고 줄 높이는 바꾸지 않는다(인라인 패딩). */
 .manabi-app .viewer-layout .viewer-stats {display:block;line-height:1.7;}
+.manabi-app .viewer-layout .viewer-badges__line .viewer-stats {display:inline;}
 .manabi-app .viewer-layout .viewer-stats__vocab {color:inherit;padding-block:10px;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--reader-line);}
 .manabi-app .viewer-layout .viewer-stats__vocab:hover {color:var(--reader-ink);text-decoration-color:currentColor;}
 .manabi-app .viewer-layout .reader-area {padding-block:clamp(18px,3cqi,32px);padding-inline:0;border:0;border-radius:0;background:var(--reader-paper);}

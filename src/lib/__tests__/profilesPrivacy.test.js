@@ -42,10 +42,10 @@ describe('profiles 공개 범위 2단계 선행 — 서버 관리자 판별 · �
   it('서버 코드는 anon 키 클라이언트로 profiles를 읽지 않는다(2단계 뒤 anon은 0행)', () => {
     const offenders = [];
     for (const [rel, src] of server) {
-      if (/SUPABASE_SERVICE_ROLE_KEY\s*\|\|\s*process\.env\.NEXT_PUBLIC_SUPABASE_ANON_KEY/u.test(src)) offenders.push(`${rel}: service-role → anon 폴백`);
+      if (/supabaseSecretKey\(\)\s*\|\|\s*supabasePublicKey\(\)/u.test(src)) offenders.push(`${rel}: service-role → anon 폴백`);
       if (/anonClient\(\)\s*\.from\(\s*'profiles'/u.test(src)) offenders.push(`${rel}: anonClient().from('profiles')`);
       for (const [, name, args] of src.matchAll(/const\s+(\w+)\s*=\s*createClient\(([\s\S]*?)\);/gu)) {
-        if (!/NEXT_PUBLIC_SUPABASE_ANON_KEY/u.test(args) || /SERVICE_ROLE/u.test(args)) continue;
+        if (!/supabasePublicKey\(\)/u.test(args) || /supabaseSecretKey/u.test(args)) continue;
         if (new RegExp(`\\b${name}\\s*\\.from\\(\\s*'profiles'`, 'u').test(src)) offenders.push(`${rel}: ${name}(anon).from('profiles')`);
       }
     }
@@ -61,22 +61,23 @@ describe('profiles 공개 범위 2단계 선행 — 서버 관리자 판별 · �
     const seed = src('src/app/api/admin/seed-starters/route.js');
     expect(seed).toMatch(/import \{[^}]*\brequireAdmin\b[^}]*\} from '@\/lib\/server\/auth'/u);
     expect(seed).not.toMatch(/from\('profiles'\)/u);
-    expect(seed).not.toMatch(/NEXT_PUBLIC_SUPABASE_ANON_KEY/u);
-    expect(seed).toMatch(/if \(!process\.env\.SUPABASE_SERVICE_ROLE_KEY\) \{\s*return Response\.json\([^)]*\{ status: 503 \}\);/u);
-    expect(seed.indexOf('SUPABASE_SERVICE_ROLE_KEY)')).toBeLessThan(seed.indexOf('requireAdmin(request)'));
+    expect(seed).not.toMatch(/NEXT_PUBLIC_SUPABASE_ANON_KEY|supabasePublicKey/u);
+    expect(seed).toMatch(/if \(!supabaseSecretKey\(\)\) \{\s*return Response\.json\([^)]*\{ status: 503 \}\);/u);
+    expect(seed.indexOf('if (!supabaseSecretKey())')).toBeLessThan(seed.indexOf('requireAdmin(request)'));
     // backfill-ipa도 키가 없으면 판별 · 쓰기 전에 닫힌 채 503 — 두 라우트가 같은 안내(SERVICE_KEY_MISSING_MESSAGE)
-    const closed = /if \(!process\.env\.SUPABASE_SERVICE_ROLE_KEY\) \{\s*return Response\.json\(\{ error: SERVICE_KEY_MISSING_MESSAGE \}, \{ status: 503 \}\);/u;
+    const closed = /if \(!supabaseSecretKey\(\)\) \{\s*return Response\.json\(\{ error: SERVICE_KEY_MISSING_MESSAGE \}, \{ status: 503 \}\);/u;
     expect(ipa).toMatch(closed);
     expect(seed).toMatch(closed);
-    expect(ipa.indexOf('SUPABASE_SERVICE_ROLE_KEY)')).toBeLessThan(ipa.indexOf('requireUser(request)'));
+    expect(ipa.indexOf('if (!supabaseSecretKey())')).toBeLessThan(ipa.indexOf('requireUser(request)'));
   });
 
   it('service-role 키가 없으면 backfill-ipa는 cron · 관리자 요청 모두 503(seed-starters와 같은 안내)', async () => {
     const { SERVICE_KEY_MISSING_MESSAGE } = await import('../server/auth.js');
     expect(SERVICE_KEY_MISSING_MESSAGE).toBe('서버 설정이 끝나지 않아 지금은 실행할 수 없어요.');
-    const saved = { key: process.env.SUPABASE_SERVICE_ROLE_KEY, cron: process.env.CRON_SECRET };
+    const saved = { key: process.env.SUPABASE_SERVICE_ROLE_KEY, secret: process.env.SUPABASE_SECRET_KEY, cron: process.env.CRON_SECRET };
     try {
       delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+      delete process.env.SUPABASE_SECRET_KEY; // 새 이름(SUPA-KEYS-001)도 비워야 「키 없음」이다
       process.env.CRON_SECRET = 'cron-test';
       const { GET } = await import('../../app/api/cron/backfill-ipa/route.js');
       for (const authorization of ['Bearer cron-test', 'Bearer user-token', null]) {
@@ -86,6 +87,7 @@ describe('profiles 공개 범위 2단계 선행 — 서버 관리자 판별 · �
       }
     } finally {
       if (saved.key === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY; else process.env.SUPABASE_SERVICE_ROLE_KEY = saved.key;
+      if (saved.secret === undefined) delete process.env.SUPABASE_SECRET_KEY; else process.env.SUPABASE_SECRET_KEY = saved.secret;
       if (saved.cron === undefined) delete process.env.CRON_SECRET; else process.env.CRON_SECRET = saved.cron;
     }
   });

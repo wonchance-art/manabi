@@ -4,12 +4,13 @@ import { withoutServerSignOut } from '@/lib/authCookieGuard';
 import { EMAIL_OTP_TYPES, confirmDestination } from '@/lib/authConfirm';
 import { recordExplicitProfileLogin } from '@/lib/learningActivity';
 import { UUID } from '@/lib/learningSources';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 // 메일 링크(token_hash) 확인 — /auth/callback(PKCE code 교환)과 달리 링크를 요청한 브라우저의
 // code_verifier 쿠키가 필요 없어, PC에서 가입하고 휴대폰 메일에서 열어도 인증·재설정이 끝난다.
 // Supabase 메일 템플릿이 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=<종류> 를 가리킬 때 쓰인다.
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_KEY = supabasePublicKey();
 export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
@@ -26,6 +27,7 @@ export async function GET(request) {
   if (tokenHash && EMAIL_OTP_TYPES.has(type)) {
     try {
       const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
+        db: { retry: false },
         cookies: {
           getAll() {
             return request.cookies.getAll();

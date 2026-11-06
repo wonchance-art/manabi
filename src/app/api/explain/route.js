@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { buildTokenExplainPrompt, parseTokenExplain, sanitizeTokenExplain } from '@/lib/server/explainToken';
 import { callLLM } from '@/lib/server/llm';
 import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 /**
  * 오답 해설 "왜?" — 오답 직후(인코딩 최강 순간) 왜 정답이 맞고 학습자의 선택이
@@ -54,8 +55,8 @@ export async function POST(request) {
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const authClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
+    supabasePublicKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {
@@ -109,8 +110,8 @@ export async function POST(request) {
         try {
           const rlsClient = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            { auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${token}` } } }
+            supabasePublicKey(),
+            { db: { retry: false }, auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${token}` } } }
           );
           rlsClient.from('token_corrections').insert({
             material_id: materialId,

@@ -8,9 +8,10 @@ import { combineChunks, createServerClient, stringFromBase64URL } from '@supabas
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { authCookieRemovals, invalidSessionError, withoutServerSignOut } from './authCookieGuard';
+import { supabasePublicKey } from './supabaseKeys';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_KEY = supabasePublicKey();
 
 /**
  * 쿠키 세션이 붙은 Supabase 서버 클라이언트를 만든다.
@@ -19,6 +20,7 @@ const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_KEY, {
+    db: { retry: false },
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -44,7 +46,7 @@ export async function createSupabaseServerClient() {
  * 세션이 없으니 RLS는 anon 기준이다(공개 행만).
  */
 export function createSupabasePublicClient() {
-  return createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+  return createClient(SUPABASE_URL, SUPABASE_KEY, { db: { retry: false }, auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 }
 
 /**
@@ -144,7 +146,7 @@ export async function requireUserClaims({ now = Date.now() } = {}) {
   const session = await cookieAccessToken().catch(() => null);
   if (!session || session.exp * 1000 - now < PREFETCH_TOKEN_MARGIN_SEC * 1000) return denied;
   const supabase = await createSupabaseServerClient();
-  // 만료 · 형식 오류는 getClaims가 오류를 돌려주지 않고 던진다(supabase-js validateExp) — 던짐도 같은 「로그인 필요」.
+  // 만료 · 서명 불일치는 getClaims가 { error }로 돌려준다(auth-js 2.107부터 만료도 AuthInvalidJwtError) — 그 밖의 던짐도 같은 「로그인 필요」.
   const { data, error } = await supabase.auth.getClaims(session.token).catch((thrown) => ({ data: null, error: thrown }));
   const id = data?.claims?.sub;
   if (error || !id) return denied;

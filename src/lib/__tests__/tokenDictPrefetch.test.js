@@ -175,6 +175,6 @@ describe('동작 조건 — 로그인(RLS) · 한국어 아님 · 분석 완료'
     expect(sql).toContain('UNIQUE (base_form, language)');
     const src = fs.readFileSync(path.join(process.cwd(), 'src/lib/tokenDictPrefetch.js'), 'utf8');
     expect(src).not.toMatch(/\.(insert|update|upsert|delete|rpc)\(/);
-    expect(src).not.toMatch(/service_role|SERVICE_ROLE/);
+    expect(src).not.toMatch(/service_role|SERVICE_ROLE|SUPABASE_SECRET|supabaseSecretKey/);
   });
 });

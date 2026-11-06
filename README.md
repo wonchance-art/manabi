@@ -34,8 +34,10 @@ npm run dev
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=   # 새 키(sb_publishable_…) — 없으면 아래 legacy anon 키
+NEXT_PUBLIC_SUPABASE_ANON_KEY=          # legacy(이전 기간 폴백, SUPA-KEYS-001)
+SUPABASE_SECRET_KEY=                    # 새 키(sb_secret_…) — 없으면 아래 legacy service_role 키
+SUPABASE_SERVICE_ROLE_KEY=              # legacy(이전 기간 폴백)
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 GEMINI_API_KEY=
 GROQ_API_KEY=   # 선택 (폴백용)

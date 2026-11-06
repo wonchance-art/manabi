@@ -2,10 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import { kstDateString } from '../growthStats';
 import { SUGGESTION_FIELDS, SUGGESTION_ID, canReadSuggestion, suggestionSource } from '../suggestionReading';
 import { ONDEMAND_SOURCE, isOnDemandSuggestion } from '../suggestionSources';
+import { supabasePublicKey } from '../supabaseKeys';
 
 export function suggestionClient() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false, autoRefreshToken: false } });
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, supabasePublicKey(),
+    { db: { retry: false }, auth: { persistSession: false, autoRefreshToken: false } });
 }
 
 // A global suggestion may never point visitors at somebody else's private import.

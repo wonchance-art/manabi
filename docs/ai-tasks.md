@@ -1580,6 +1580,37 @@
   왼쪽 끝 2px 막대(띠 높이 = .surface::before 계산값) + 위 12px 점, 끝 = 마지막 토큰 오른쪽 끝 막대 + 아래 점. 강조색 · 흰 테두리 · 그림자 없음,
   타깃 가로 28px(띠 + 위아래 14px). 화면 가장자리에서 타깃을 안으로 민 만큼 막대를 반대로(--grip-bar-x) — 막대는 토큰 끝에 그대로. 조정 동작 그대로.
   계약 tokenRangeSelect(gripPlacement · CSS 모양).
+- **VIEWER-MEMBER-SSR-001 로그인 첫 열기 서버 그림 · 계정 줄 처음부터 자리 잡기 (2026-11-04 KST, 오너 「㉠ 권장대로」 — [목업](https://claude.ai/artifact/NooshvXtWbg2ZJ2q3kG4kj) ㉠)**:
+  범위 = 로그인 계정이 **남의 공개 자료를 처음 여는 것**도 손님과 같은 서버 그림(VIEWER-SSR-001 조건 그대로 — 분석 끝남 · 비중국어 · 대화/작성/노트/책 장 아님 · 질의 returnTo뿐).
+  「처음」 = 그 계정의 읽던 곳 없음: viewerSeed가 **같은 세션 토큰**(서비스 키 없음 · RLS 자기 행)으로 reading_progress.last_token_idx를 본문 조회와 나란히 읽어
+  seed.resume(> 0 있음 · 없음/0 false · 오류/시간 초과 모름). 서버 그림은 false일 때만 — 내 자료(소유자 도구) · 읽던 곳 있음(그 쪽으로 넘김) · 모름 ·
+  returnTo /class/(수업 사본 안내가 본문 위)는 지금처럼(B). 서재 담김 여부는 가르지 않음(버튼 글만 제자리에서 바뀜). 손님 seed · 판정 · 첫 HTML 그대로
+  (base ↔ 이번 빌드 /viewer/60000 손님 문서 해시 · 빌드 id 정규화 뒤 바이트 같음). 회원 응답은 동적 화면 Cache-Control: private, no-store 그대로(공유 캐시 없음),
+  서버 그림 안 계정 값 = seed의 계정 id · resume 참거짓뿐(수 · 진도 없음 — 계정 줄은 자리만 그린다).
+  계정 줄 ① 서재에 담기 · 신고 한 줄(.viewer-member-actions), 확인 전에도 제자리 — 담기는 흐리게(data-pending), 그동안 누름은 기다렸다 같은 계정으로 확인되면 한 번
+  (lib/pendingPress: 이미 담겼으면 빼지 않음 · 휴지통이면 복원 · 다른 계정이면 버림. 신고는 확인 뒤 창). ② 복습 가능 · 아는 말 · 새 단어 · 수집 한 줄 28px
+  「55개 복습 가능 · 아는 말 37% · 새 단어 324 · 187개 수집 · 이 자료 표현 복습」(넘치면 「…」 · ✕ 줄 끝), 단어 자료가 다 오기 전 같은 높이 빈 막대(커버리지 줄이
+  반드시 서는 자료 — FIT_MIN_TYPES는 자료만으로 정해짐), 다 오면 한 번에 채움(빈 목록 「아는 말 0%」 먼저 표시하던 것도 걷힘). ③ ✕로 닫아 둔 자료는 본문 앞 인라인
+  스크립트가 같은 키(viewerBadgesKey)를 읽어 <html data-viewer-badges-dismissed> → 빈 막대 없음, 뷰어는 layout effect로 읽고 뗀다. 확인 전 손님 띠 없음.
+  로컬 e2e 빌드 Pixel 5 390 · 1280 · CPU×4(다른 세션 e2e 동시 — 절대값 잡음 큼) A/B 교차 5회: 제목+본문 보임 base(B) 1414 → 1290 ms(390) · 1348 → 1276 ms(1280),
+  본문 밀림 base 390 52 px(두 줄 배지가 붙으며) → 0, 1280 0 → 0. 이번 빌드 3회: 계정 줄 채움 2.6 ~ 3.4 s · 담기 버튼 확인 2.9 ~ 3.6 s(서버 그림 하이드레이션이 무거워
+  계정 확인이 B보다 약 0.2 ~ 0.5 s 늦다), 본문 위치 변화 0 · 본문 CLS 0(남은 0.0002는 셸 머리). 닫아 둔 뒤 복습 수가 늘어 줄이 다시 서는 경우(기존 규칙)만 자리가
+  없어 36 px 밀림 — 오너 확인 필요. 밝게 · 어둡게 등 기본이 아닌 설정은 첫 그림 전 판정이 지금처럼 본문을 감춘다(손님과 같음).
+  계약 viewerMemberSsr(신규) · viewerChrome · coverageBadge · metricRegistry · viewerMinimal · viewerSeed 갱신(문구 · 키 · seed 모양). 측정 전용 합성 자료 HEAVY_EXTRA_PUBLIC.
+  오너 결정 ①(11/4 KST 「전부 권장대로」 — [구현 대조](https://claude.ai/artifact/NPqHcPTYrso9smmcu3gKwy)): 닫아 둔 줄은 이번 방문 내내 닫힌 채(복습 수가 늘어도 끼워 넣지 않음 — 밀림 0),
+  늘었으면 저장 키를 지워 다음 열람 때 자리를 잡고 다시 보인다(`viewerBadgesVisit` · 계약 viewerMemberSsr ③-2).
+- **SUPA-KEYS-001 Supabase 새 API 키 이전 기간 (2026-11-04 KST, 오너 「전부 권장대로, 병합해.」 — 새 환경 변수 범위 승인)**: 공개 키 `supabasePublicKey()`
+  (NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY → 옛 NEXT_PUBLIC_SUPABASE_ANON_KEY) · 서버 전용 `supabaseSecretKey()`(SUPABASE_SECRET_KEY → 옛 SUPABASE_SERVICE_ROLE_KEY)로
+  앱 직접 읽기 41파일 교체 — 옛 이름만 있으면 동작 동일. contentOverrides 원시 REST는 apikey 헤더만(운영 실측: publishable · anon 둘 다 apikey만으로 200).
+  계약 supabaseKeys.test.js(직접 읽기 0 · 비밀 키는 서버 경로만 · 'use client' 그래프에서 닿지 않음). DB 쪽 옛 키 의존 0(운영 읽기 전용: pg_net · pg_cron ·
+  웹훅 · HTTP 호출 함수 없음, Vault 0행). 남은 일: 오너가 Vercel Production · Preview에 새 두 이름 입력(값 열람 없음) → Preview 실계정 검수 → 옛 이름 제거 ·
+  옛 키 비활성은 안정 뒤 오너 별도 확인.
+- **SUPA-SSR-0127 @supabase/ssr 0.9 → 0.12.7 (2026-11-04 KST, 오케스트레이터 조율 — 통계 세션에서 이관, 키 이전과 같은 Preview 검수)**: supabase-js ^2.114.0(피어 요구).
+  쿠키 형식 · 기본값 · 청크 · 저장 키 불변(0.9 쿠키를 0.12.7로 읽기 · 교환 · 로그아웃 교차 실측 + 계약 supabaseSsrCookieContract.test.js). 2.102부터 postgrest GET 자동 재시도 →
+  앱이 만드는 클라이언트 전부(브라우저 · 서버 · 미들웨어 · 라우트 52곳)에 `db: { retry: false }` — 판 올림 전처럼 실패를 바로 받아 폴백(실측: 끊긴 조회 하나 기본 7,059 ms ·
+  retry:false 1 ms, 서버 기본값으로 둔 첫 CI는 e2e가 테스트마다 +4–5초로 30분 제한 초과). 계약 supabaseNoRetry.test.js(모든 호출 · 조건부 두 갈래) · supabaseClientRetry.test.js.
+  재시도를 켜는 것은 별도 결정.
+  getClaims 만료 = { error }(2.107) 대응 테스트 갱신.
 - **PERF-SNAPSHOT-KNOWN-001 단어장 snapshot 아는 단어 판정 (2026-11-04 KST, 백엔드 자율 범위)**: 운영 실측(읽기 전용) — 가장 큰 학습자
   (단어 1,664)에서 fsrs_vocabulary_snapshot ≈ 350 ms · _light ≈ 290–330 ms, 그중 ≈ 210 ms가 아는 단어 LEFT JOIN k2(언어 하나로 merge join →
   정규화 비교를 짝마다 Join Filter, 376,144행 제거). 세 본문(snapshot · _light · _cards)의 같은 한 군데만 행 키 CTE vv + EXISTS로(같은 운영 데이터

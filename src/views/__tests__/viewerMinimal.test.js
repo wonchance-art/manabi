@@ -100,7 +100,8 @@ describe('③ 안내문은 첫 자료에만, 데스크톱은 빈 패널이 대�
     expect(src()).toContain('{isDone && user && savedCount === 0 && !conversation && ('); // 대화(채팅 껍데기)에는 안내문 없음
     expect((src().match(/className="reader-hint"/g) || []).length).toBe(1);
     // 게스트 배너가 같은 말을 하니 게스트에겐 두 번 말하지 않는다(배너는 ViewerGuestBanner — 미분석이면 원문 안내)
-    expect(src()).toContain('{!user && <ViewerGuestBanner vt={vt} signInHref={signInHref} pending={isPending} />}');
+    // 개정(VIEWER-MEMBER-SSR-001): 서버가 세션 쿠키 계정으로 읽은 문서는 계정 확인 전(memberPending)에도 손님 띠를 그리지 않는다(확인 뒤 빠지며 본문이 올라갔다).
+    expect(src()).toContain('{!user && !memberPending && <ViewerGuestBanner vt={vt} signInHref={signInHref} pending={isPending} />}');
     expect(read('src/components/viewer/ViewerGuestBanner.jsx')).toContain("analyzed: '단어를 눌러 뜻을 확인할 수 있어요.'");
   });
 

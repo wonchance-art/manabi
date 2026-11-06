@@ -3,6 +3,7 @@ import { buildParagraphPrompt, validateParagraph, verifyParagraph, PARAGRAPH_SCH
 import { assembleStudyMaterials, deriveArc } from '@/lib/studyMaterials';
 import { callLLM } from '@/lib/server/llm';
 import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
+import { supabasePublicKey } from '@/lib/supabaseKeys';
 
 /**
  * 오늘의 문단 생성 — 공부 모드의 재료(새 문법·새 어휘·복습 문법·복습 어휘)를
@@ -122,8 +123,8 @@ export async function POST(request) {
   }
   const token = authHeader.replace(/^Bearer\s+/i, '');
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const authClient = createClient(url, anonKey, { auth: { persistSession: false } });
+  const anonKey = supabasePublicKey();
+  const authClient = createClient(url, anonKey, { db: { retry: false }, auth: { persistSession: false } });
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {
     return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해 주세요.' } }, { status: 401 });
@@ -146,6 +147,7 @@ export async function POST(request) {
 
   // RLS 조회·저장용 사용자 토큰 클라이언트 (모든 요청에 Authorization 헤더 부착)
   const userClient = createClient(url, anonKey, {
+    db: { retry: false },
     global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false },
   });

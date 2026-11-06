@@ -180,7 +180,7 @@ describe('사슬 · 라우트 계약', () => {
   it('관리자 API는 쿠키 세션 관리자만 · 작업 줄은 사용자 세션으로 쓴다(service role 없음)', () => {
     const src = read('src/app/api/admin/analysis-jobs/route.js');
     expect(src).toContain("import { requireAdmin } from '@/lib/supabaseServer';");
-    expect(src).not.toMatch(/SERVICE_ROLE|serviceClient/);
+    expect(src).not.toMatch(/SERVICE_ROLE|SUPABASE_SECRET|supabaseSecretKey|serviceClient/);
   });
   it('서버 저장은 작업 확인 저장 함수로만(뷰어 저장과 같은 인자)', () => {
     const src = read('src/lib/server/analysisJobs.js');

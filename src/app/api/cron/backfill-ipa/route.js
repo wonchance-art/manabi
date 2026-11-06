@@ -1,13 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 import { callGemini, parseGeminiJSON } from '../../../../lib/gemini.js';
 import { requireUser, isAdminUser, SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
+import { supabaseSecretKey } from '@/lib/server/supabaseKeys';
 
 export const maxDuration = 60;
 
 export async function GET(request) {
   // 관리자 판별(isAdminUser)과 보충 쓰기는 service-role로만 — 키가 없으면 판별이 예외로 꺼져 관리자도 401이 되고
   // cron 경로는 쓰기 클라이언트를 만들지 못한다. seed-starters와 같이 닫힌 채 503(같은 안내)으로 돌려준다.
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!supabaseSecretKey()) {
     return Response.json({ error: SERVICE_KEY_MISSING_MESSAGE }, { status: 503 });
   }
   // 인증: CRON_SECRET (Vercel cron) OR 관리자 세션 (대시보드 수동 실행)
@@ -29,8 +30,8 @@ export async function GET(request) {
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } },
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } },
   );
 
   // 1. furigana NULL 또는 빈 문자열인 영어 단어 수집 (배치당 최대 200)

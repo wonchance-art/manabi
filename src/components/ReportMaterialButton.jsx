@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import Button from './Button';
 import { failureMessage } from '../lib/errorMessage';
+import { queuedPressStep } from '../lib/pendingPress';
 
 const REASONS = [
   { value: 'inappropriate', label: '부적절한 콘텐츠' },
@@ -12,8 +13,11 @@ const REASONS = [
   { value: 'other',         label: '기타' },
 ];
 
-export default function ReportMaterialButton({ materialId, userId, toast }) {
+// pendingAccount = 계정 확인 전 서버가 읽은 계정(뷰어 서버 그림 · VIEWER-MEMBER-SSR-001) — 버튼은 제자리에 그리고, 그동안 누르면
+// 같은 계정으로 확인된 뒤 창을 연다(lib/pendingPress — 다른 계정이면 버린다).
+export default function ReportMaterialButton({ materialId, userId, toast, pendingAccount = null }) {
   const [open, setOpen] = useState(false);
+  const [queued, setQueued] = useState(null); // 누를 때 기다린 표지(계정 확인 전) — 확인되면 창을 연다
   const [reason, setReason] = useState('inappropriate');
   const [details, setDetails] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -22,6 +26,11 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
   const titleId = useId();
 
   submittingRef.current = submitting;
+
+  useEffect(() => {
+    const step = queuedPressStep({ queued, account: userId });
+    if (step === 'run') { setQueued(null); setOpen(true); } else if (step === 'drop') setQueued(null);
+  }, [queued, userId]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -82,13 +91,14 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
     }
   }
 
-  if (!userId) return null;
+  if (!userId && !pendingAccount) return null;
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => (userId ? setOpen(true) : setQueued(pendingAccount))}
+        aria-busy={queued ? true : undefined}
         style={{
           background: 'transparent', border: 'none',
           color: 'var(--text-muted)', fontSize: '0.78rem',

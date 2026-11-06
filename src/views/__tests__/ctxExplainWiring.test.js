@@ -58,6 +58,7 @@ describe('서버 배선(/api/explain token 분기)', () => {
     const branch = route.match(/if \(body\?\.token\) \{[\s\S]*?\n  \}/)?.[0] || '';
     expect(branch).toContain('Authorization: `Bearer ${token}`');
     expect(branch).not.toContain('SERVICE_ROLE');
+    expect(branch).not.toMatch(/SUPABASE_SECRET|supabaseSecretKey/);
   });
 });
 

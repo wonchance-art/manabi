@@ -4,6 +4,8 @@
 // 회원가입이 개방돼 있어 "로그인 유저 = 인터넷 아무나"라는 전제로 admin 게이트를 서버에서 강제.
 
 import { createClient } from '@supabase/supabase-js';
+import { supabasePublicKey } from '../supabaseKeys';
+import { supabaseSecretKey } from './supabaseKeys';
 
 // service-role 키가 없는 배포(Preview 등)에서 관리자 · cron 라우트가 닫힌 채 돌려주는 안내 — 두 라우트가 같은 문구를 쓴다.
 export const SERVICE_KEY_MISSING_MESSAGE = '서버 설정이 끝나지 않아 지금은 실행할 수 없어요.';
@@ -11,8 +13,8 @@ export const SERVICE_KEY_MISSING_MESSAGE = '서버 설정이 끝나지 않아 �
 function anonClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
+    supabasePublicKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
 }
 
@@ -32,8 +34,8 @@ export async function isAdminUser(userId) {
   if (!userId) return false;
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false } }
+    supabaseSecretKey(),
+    { db: { retry: false }, auth: { persistSession: false } }
   );
   const { data: profile } = await admin
     .from('profiles').select('role').eq('id', userId).single();
