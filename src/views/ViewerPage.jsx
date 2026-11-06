@@ -4090,7 +4090,8 @@ export default function ViewerPage({ seed } = {}) {
         // 저장(복습 전) = 등급 대신 한 줄 「✓ 담은 표현에 있음 · 다음 복습 날짜 [이 문맥 추가] ☐ 아는 단어」(이름 통일 REV-SCOPE §6-1 ⑧).
         const savedRow = !selectedExcluded && isWordSaved && !saveAnim && !inlineReviewMutation.isPending && !isTokenInlineDue(savedWords, selectedToken, materialLang);
         if (!savedRow) return <div className="save-grade__header">
-          <p className="save-grade__guide">{vt("얼마나 알겠어요?")}</p>
+          {/* 저장 전 단어엔 네 칸이 곧 저장이라는 걸 한 줄로(발매 점검 #4 — 오너 승인 2026-11-06 KST). 담은 단어(복습 차례)는 그대로. */}
+          <p className="save-grade__guide">{vt("얼마나 알겠어요?")}{!isWordSaved && <span className="save-grade__hint"> · {vt("고르면 단어장에 저장돼요")}</span>}</p>
           {knownToggle}
         </div>;
         return (
