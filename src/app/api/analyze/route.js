@@ -7,6 +7,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
+import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 import { readRequestBoundaries } from '@/lib/server/analyzeBoundaries';
 import { isInternalAnalysisRequest } from '@/lib/server/internalAnalysisRequest';
 // 분석 핵심은 analyzeCore로 꺼냈다(v2-Z Z-R1 ① — 대화 턴 경로와 함께 쓴다). 이 라우트는 인증·한도·입력 검증만 맡는다.
@@ -46,7 +47,8 @@ async function gate(request) {
       { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
     );
   }
-  return null;
+  // 하루 상한 — DB 카운터라 인스턴스가 여럿이어도 하나로 센다(AI-QUOTA-001). 요청 1건 = 1.
+  return dailyQuotaGate('analyze', quotaSubject(request, user.id));
 }
 
 export async function POST(request) {

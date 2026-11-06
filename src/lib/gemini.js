@@ -49,6 +49,7 @@ async function callGeminiOnce(prompt, signal, { tier = GEMINI_TIER, model, purpo
   if (!response.ok) {
     const err = new Error(resData?.error?.message || `API 요청 실패 (HTTP ${response.status})`);
     err.status = response.status;
+    if (resData?.code || resData?.error?.code) err.code = resData.code || resData.error.code; // daily_limit 등(AI-QUOTA-001)
     throw err;
   }
   const text = resData.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -60,6 +61,8 @@ function isCapacityError(err) {
   const msg = (err?.message || '').toLowerCase();
   // 결제 · 크레딧(「서비스 설정」)은 기다려도 풀리지 않는다 — 429로 와도 재시도하지 않는다(GEMINI-402-GUARD).
   if (isServiceConfigError(err?.status, msg)) return false;
+  // 하루 상한(AI-QUOTA-001)은 429로 오지만 붐빔이 아니다 — 재시도하지 않는다.
+  if (err?.code === 'daily_limit') return false;
   return (
     msg.includes('high demand') ||
     msg.includes('overloaded') ||

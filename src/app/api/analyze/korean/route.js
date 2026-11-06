@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 import { analyzeKoreanLines, KoreanAnalysisError, validateKoreanRequest } from '@/lib/server/koreanAnalysis';
 import { isInternalAnalysisRequest } from '@/lib/server/internalAnalysisRequest';
+import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -24,7 +25,8 @@ async function gate(request) {
   if (!rl.ok) return Response.json({ error: 'rate_limited' }, {
     status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) },
   });
-  return null;
+  // 하루 상한 — 일 · 중 · 영 분석과 같은 'analyze' 묶음(새 경로로 하루 상한을 우회하지 않는다, AI-QUOTA-001).
+  return dailyQuotaGate('analyze', quotaSubject(request, user.id));
 }
 
 export async function POST(request) {
