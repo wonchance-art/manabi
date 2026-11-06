@@ -878,6 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **KR-VIEWER-SUBSET-001 뷰어 UI 한글을 한 파일로 (2026-11-07 KST)** PR `claude/kr-viewer-subset`(오케스트레이터 승인 (b) · 화면 동일 성능):
+  우선순위 실측(운영 /viewer/50): 글꼴(VeryHigh) 약 460KB가 2.5–7s 동안 스크립트(Low)와 대역을 나눠 하이드레이션이 늦었다 — 첫 화면 한글 90자가 KR 조각 10개(157KB)에 흩어짐.
+  뷰어 · 셸 UI 문자열의 한글 408자(scripts/fonts/kr-viewer-chars.mjs — 정본)를 같은 판 원본(NotoSansKR[wght] 2.004, sha256 고정 · 저장소 밖 캐시)에서
+  Google 조각과 같은 표 구성(힌팅 없음 · 가변 wght)으로 묶은 woff2 50.9KB + 목록 JSON + CSS(굵기 400/500/700 — next/font와 같은 선언)를 뷰어 레이아웃에만 싣는다.
+  목록 밖 글자는 원래 조각으로(unicode-range). 계약: 추출 ⊆ 목록 · sha · unicode-range = 목록 · 뷰어 전용. 벽 뷰어 4장면 × 2 픽셀 차 0 · 같은 글자 woff2 요청 10 → 1.
+  보류 기록: ViewerPage 분할(a)은 #1673 · 디자인 작업 뒤 별도 리팩터링 과제(오케스트레이터 판정 — 효과 약 0.1s 대비 위험).
 - **VIEWER-FONT-SPLIT-001 뷰어 첫 그림 — SC · TC 렌더 차단 CSS 걷기 (2026-11-07 KST)** 오케스트레이터 승인(G 우선순위 변경 · 화면 동일 성능):
   진단(운영 · iPhone 13 · 150ms/1.6Mbps · CPU 4배, 쿼리 없는 /viewer/45): TTFB 0.42–0.66s · HTML 16KB ~0.9s · 렌더 차단 CSS 18개 끝 2.75s → FCP 2.84–3.06s ·
   LCP(H1, SSR 본문) 3.20–3.43s · 하이드레이션 긴 작업 6.8–7.8s. CSS 18개 중 @font-face만 든 5개 gz 약 400KB, 그중 SC · TC 약 196KB를 `(app)/viewer/layout`이 늘 싣는다.
