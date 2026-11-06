@@ -674,7 +674,7 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     await page.waitForFunction(
       () => [...document.querySelectorAll('.fr-vrow')].some((row) => (
         row.textContent.includes('la famille')
-        && row.querySelector('button[title="단어장에 저장 (FSRS 복습 시작)"]')
+        && row.querySelector('button[title="단어장에 저장 (복습 시작)"]')
       )),
       undefined,
       { timeout: config.timeout },

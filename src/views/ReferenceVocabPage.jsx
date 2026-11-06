@@ -542,7 +542,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                       onClick={e => { e.stopPropagation(); saveWord(w); }}
                       disabled={saved}
                       aria-label={saved ? '단어장에 저장됨' : '단어장에 저장'}
-                      title={saved ? '저장됨' : user ? '단어장에 저장 (FSRS 복습 시작)' : '로그인 필요'}
+                      title={saved ? '저장됨' : user ? '단어장에 저장 (복습 시작)' : '로그인 필요'}
                     >
                       {saved ? '✓' : '＋'}
                     </button>

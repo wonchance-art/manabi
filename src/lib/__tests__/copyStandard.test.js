@@ -232,3 +232,28 @@ describe('문구 린트 — 화면에 영어 라벨을 두지 않는다(copy-sta
     }
   });
 });
+
+describe('문구 린트 — 화면에 내부 일정 알고리즘 이름(FSRS · SRS)을 두지 않는다 (오너 승인 2026-11-06 KST)', () => {
+  // 학습자에게는 「잊을 때쯤 돌아오는 복습」 「복습 시작」으로 말한다. 사이트 메타 · 단어장 메타 · 저장 단추 툴팁에서 걷었다.
+  // 코드 이름(calculateVocabFSRS · FSRS_LOADING_CAP_MS 등)은 문자열이 아니므로 잡지 않는다. 관리자 화면은 운영자용이라 유지(오너 결정).
+  const ALLOW = new Set(['views/AdminPage.jsx']);
+  // 문자열 리터럴(따옴표 · 백틱)과 JSX 텍스트(>…<) 안의 FSRS · SRS만 본다.
+  const PIECE = /(['"`])(?:(?!\1)[^\\\n]|\\.)*?\b(?:FSRS|SRS)\b(?:(?!\1)[^\\\n]|\\.)*?\1|>[^<>{}\n]*\b(?:FSRS|SRS)\b[^<>{}\n]*</g;
+  it('src/app · src/components · src/views의 화면 글에 FSRS · SRS가 없다', () => {
+    const hits = [];
+    for (const dir of SCREEN_DIRS) for (const file of walk(join(ROOT, dir))) {
+      const rel = relative(ROOT, file);
+      if (ALLOW.has(rel)) continue;
+      stripComments(readFileSync(file, 'utf8')).split('\n').forEach((line, i) => {
+        for (const m of line.match(PIECE) || []) hits.push(`${rel}:${i + 1} ${m}`);
+      });
+    }
+    expect(hits).toEqual([]);
+  });
+  it('규칙이 문자열 · JSX 글은 잡고 코드 이름은 잡지 않는다', () => {
+    expect("title='단어장에 저장 (FSRS 복습 시작)'".match(PIECE)).not.toBeNull();
+    expect('<p>SRS 복습</p>'.match(PIECE)).not.toBeNull();
+    expect('const s = calculateVocabFSRS(rating);'.match(PIECE)).toBeNull();
+    expect("import { FSRS_LOADING_CAP_MS } from '../lib/useFsrsReview';".match(PIECE)).toBeNull();
+  });
+});
