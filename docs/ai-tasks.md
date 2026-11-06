@@ -1011,6 +1011,13 @@
     (운영 43행 · 2명). delete_account_learning_records가 FSRS 3표 뒤 공개 아닌 자료를 지우고, account_storage_objects(service_role 전용)로
     라우트가 저장소 파일(운영 23개 · `<uid>/` 경로)을 먼저 지운다. 공개 자료는 SET NULL로 보존. 계약 account-delete-owned-content.mjs(CI) —
     고치기 전 23514 재현 · 적용 뒤 삭제 완료 · 다른 계정 · 휴지통 보호 그대로 · 복원. **오너 승인 목록**: 지난 삭제가 남긴 주인 없는 비공개 자료 10행(2~3월).
+    #1699 병합(b56dac5f). AI-QUOTA-001(이번 PR): 비싼 AI 경로의 사용자별 하루 상한을 DB 카운터로(usage_private.ai_daily_usage +
+    consume_ai_daily_quota, service_role 전용 · 학습일 KST 04시). 상한 정본 src/lib/server/dailyQuota.js — 근거는 운영 실측(분석 요청 하루
+    최대 12 → 300 · 첨삭 2 → 60 · 문단 18 → 150 · 설명 1000 · 음성 IP당 5000 등, 종류별 배수 표기). 분당 제한 뒤에 세고, 셀 수 없으면 막지
+    않는다(fail-open). 상한 응답 429 + X-Daily-Limit + code daily_limit — 클라 재시도 · 붐빔 재시도가 다시 던지지 않고 분석은 기존
+    「이어서 분석」 실패 길. 새 화면 요소 없음(문구 하나를 errorMessage 정본에). TTS는 로그인 필수화 없이 IP 해시 · 넘으면 브라우저 음성.
+    ③ 시드 분석: 비용 추정 보고(요청 ~118 · 사전에 없는 말 일 306 · 영 409 · 호출 ≤ ~330) — 서버 분석 작업은 책 전용이라 관리자
+    「일괄 분석」 패널(BULK-ANALYZE-001)을 시드 소유 계정이 눌러야 한다(**오너 필요**). 중국어 시드 신설은 보류(종합 보고 때 오너에게).
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
