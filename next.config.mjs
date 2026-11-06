@@ -101,7 +101,9 @@ const nextConfig = {
     const baseSecurity = [
       { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+      // 마이크는 같은 출처만 연다(MIC-POLICY-001, 2026-11-06 KST): microphone=()는 브라우저가 권한 창도 띄우지 않고 막아 대화 모드의 말하기
+      // (ConversationThread — getUserMedia · SpeechRecognition)와 월드 음성(lib/world/voice.js)이 조용히 실패했다. 카메라 · 위치는 계속 막는다.
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=(), interest-cohort=()' },
       {
         key: 'Strict-Transport-Security',
         value: 'max-age=63072000; includeSubDomains; preload',
