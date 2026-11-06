@@ -999,7 +999,8 @@
     library_private 정책 3개의 맨 auth.uid() → (select auth.uid()). 학습 계약 지문 범위 밖(capability 표 목록 public 9개). 마이그레이션 사후 검사
     (되돌린 식 = 원래 식 · 모양 불변 · 지문 넷 + capability 불변) · 접근 행렬 동일(소유자 · 남 · anon × 읽기 · 쓰기 · 고치기 · 지우기) ·
     재실행 거절 · 복원 `docs/sql/library-rls-initplan-20261106-rollback.sql`. 계약 `supabase/tests/library-rls-initplan.mjs`(CI).
-    보류: reading_materials 중복 PERMISSIVE — capability 지문 범위라 재게시가 필요하고 이득은 측정 불가(37MB · 캐시 99.99%).
+    보류(오케스트레이터 동의): reading_materials 중복 PERMISSIVE — capability 지문 범위라 재게시가 필요하고 이득은 측정 불가(37MB · 캐시 99.99%).
+    → **다음 capability 지문 재게시 작업 때 동봉**(SELECT 3개 · UPDATE 1개 — 「Enable Read for All」 · anyone_read_public · owner_read_private · owner_update_material).
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
