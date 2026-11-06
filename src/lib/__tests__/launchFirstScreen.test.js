@@ -35,3 +35,15 @@ describe('#12 로그인 주 단추 — 셸 평면 단추', () => {
     expect(rule).not.toMatch(/gradient|box-shadow/);
   });
 });
+
+describe('#8 · #10 · #13 홈 · 내 정보 (발매 점검, 오너 승인 2026-11-06 KST)', () => {
+  it('오늘 목표 — 받기 전만 「–」, 0이면 0%', () => {
+    expect(read('src/components/learn/LearnTiles.jsx')).toContain("const value = pct == null ? '–' : `${pct}%`;");
+  });
+  it('내 데이터 내보내기 — 「파일로 받기」', () => {
+    const src = read('src/components/AccountSettings.jsx');
+    expect(src).toContain("value={exportMsg || '파일로 받기'}");
+    expect(src).not.toContain("'JSON 파일'");
+  });
+});
+

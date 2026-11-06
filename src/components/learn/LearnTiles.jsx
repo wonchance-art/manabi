@@ -44,8 +44,9 @@ export function StatTile({ value, label, href, onClick, title, ariaLabel, classN
  */
 export function TodayGoalTile({ vocab, projections, profile, className, empty = false, onOpen }) {
   const pct = empty ? null : todayGoalPct({ vocab, projections, profile });
-  // 0은 크게 쓰지 않는다(0 무표기 — 연속 · 이번 주 칸의 「–」 선례, 목업 신규 사용자 「– / 오늘 목표」).
-  const value = pct ? `${pct}%` : '–';
+  // 처음 온 사람에게도 실제 값(0%)을 쓴다(발매 점검 #10 — 오너 승인 2026-11-06 KST, 예전 0 무표기 「–」). 하루 목표(복습 · 담기 5)는
+  // 기본값이 있어 「정하기 전」이 아니라 0%가 맞다. 「–」는 받기 전(empty)만.
+  const value = pct == null ? '–' : `${pct}%`;
   return onOpen
     ? <StatTile className={className} value={value} label="오늘 목표" onClick={onOpen} />
     : <StatTile className={className} value={value} label="오늘 목표" href="/progress?goal=edit" />;

@@ -5,7 +5,7 @@
  *
  *   계정
  *   ┌ 비밀번호 바꾸기                        › ┐  → 시트(현재 비밀번호 확인 — AUTH-GUIDE-001 H)
- *   └ 내 데이터 내보내기             JSON 파일 ↓ ┘  → 바로 내려받기(표 7개 정본 완전 조회) — 다음 화면이 아니라 파일이라 ↓
+ *   └ 내 데이터 내보내기            파일로 받기 ↓ ┘  → 바로 내려받기(표 7개 정본 완전 조회) — 다음 화면이 아니라 파일이라 ↓
  *   [              로그아웃              ]          → AuthContext 관문(AUTH-ROUTER-REFRESH-001). 값이 빠진 줄처럼 보여 따로 한 칸
  *   …
  *   계정 삭제                                     ← 맨 아래 따로. 확인창 「계정을 영구 삭제할까요?」 + 「삭제」 입력
@@ -160,7 +160,7 @@ export default function AccountSettings({ user, toast, signOut }) {
     <>
       <ProfileGroup title="계정">
         <ProfileRow label={`비밀번호 ${pwAction}`} dialog onClick={() => setPwMode(true)} ariaLabel={`비밀번호 ${pwAction}`} />
-        <ProfileRow label="내 데이터 내보내기" value={exportMsg || 'JSON 파일'} onClick={handleExportMyData} busy={!!exportMsg} icon="download"
+        <ProfileRow label="내 데이터 내보내기" value={exportMsg || '파일로 받기'} onClick={handleExportMyData} busy={!!exportMsg} icon="download"
           ariaLabel={exportMsg ? `내 데이터 내보내기, ${exportMsg}` : '내 데이터 내보내기, JSON 파일'} />
       </ProfileGroup>
       <button type="button" className="pf-solo" onClick={() => signOut() /* 서버 렌더 버리기는 AuthContext 관문(AUTH-ROUTER-REFRESH-001) */}>

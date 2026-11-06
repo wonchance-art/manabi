@@ -159,11 +159,11 @@ describe('표시 재료 — 순수 계산', () => {
     expect(learnLanguages(null)).toEqual(['Japanese']);
   });
 
-  it('연속 — 「12일 / 연속 · 쉼 2」, 기록 없음 「– / 연속」, 설명은 title · aria에 같은 문구, 방패 기호 없음', () => {
+  it('연속 — 「12일 / 연속 · 쉼 2」, 기록 없음 「0일 / 연속」(발매 점검 #10), 설명은 title · aria에 같은 문구, 방패 기호 없음', () => {
     expect(streakView({ streak_count: 12, streak_freeze_count: 2 })).toMatchObject({ value: '12일', label: '연속 · 쉼 2', title: STREAK_HINT });
     expect(streakView({ streak_count: 12, streak_freeze_count: 2 }).aria).toBe(`12일 연속 · 쉼 2 — ${STREAK_HINT}`);
     expect(streakView({ streak_count: 3, streak_freeze_count: 0 })).toMatchObject({ value: '3일', label: '연속' });
-    expect(streakView({})).toMatchObject({ value: '–', label: '연속' });
+    expect(streakView({})).toMatchObject({ value: '0일', label: '연속' });
     expect(STREAK_HINT).toBe('쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요');
     for (const f of ['src/components/learn/LearnTiles.jsx', 'src/views/ProfileStats.jsx', 'src/lib/learnDashboard.js', 'src/views/CourseMapPage.jsx']) {
       expect(read(f), f).not.toContain('🛡');
@@ -172,7 +172,7 @@ describe('표시 재료 — 순수 계산', () => {
   });
 
   // STATS-MAP-001: streak_count는 다음 활동 때에야 1로 돌아간다 — 며칠 쉰 뒤에도 예전 연속이 보이던 것을 화면에서 걸러 낸다.
-  it('연속은 마지막 활동일로 살아 있는지 본다 — 끊겼으면 「–」, 하루 빈 날은 쉼이 있을 때만 이어진다', () => {
+  it('연속은 마지막 활동일로 살아 있는지 본다 — 끊겼으면 「0일」, 하루 빈 날은 쉼이 있을 때만 이어진다', () => {
     const now = Date.parse('2026-11-05T12:00:00Z'); // 활동일(UTC) 11-05
     const p = (last, rest = 0) => ({ streak_count: 12, streak_freeze_count: rest, last_streak_date: last });
     expect(liveStreakCount(p('2026-11-05'), now)).toBe(12); // 오늘 했다
@@ -181,7 +181,7 @@ describe('표시 재료 — 순수 계산', () => {
     expect(liveStreakCount(p('2026-11-03', 0), now)).toBe(0); // 쉼 없이 하루 빔 → 끊김
     expect(liveStreakCount(p('2026-11-01', 2), now)).toBe(0); // 쉼은 하루만 메운다(replayActivityDays와 같은 규칙)
     expect(liveStreakCount({ streak_count: 4 }, now)).toBe(4); // 마지막 날을 모르면 저장값 그대로
-    expect(streakView(p('2026-11-01'), now)).toMatchObject({ value: '–', label: '연속' });
+    expect(streakView(p('2026-11-01'), now)).toMatchObject({ value: '0일', label: '연속' });
     expect(streakView(p('2026-11-04', 2), now)).toMatchObject({ value: '12일', label: '연속 · 쉼 2' });
   });
 

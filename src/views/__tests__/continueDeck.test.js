@@ -98,12 +98,14 @@ describe('홈 알림 덱 계약', () => {
     expect(read('src/components/materials/MaterialEntry.jsx')).toContain('<Link href="/conversation/new">');
   });
 
-  it('HSK 단어 임시 입구는 덱과 같은 카드 양식으로 배움 맨 아래에 있다(오너 지시 2026-10-15 KST)', () => {
+  it('단어 목록 임시 입구는 덱과 같은 카드 양식으로 배움 맨 아래에 있다(오너 지시 2026-10-15 KST) — 학습 언어에 맞춘다(발매 점검 #8, 2026-11-06 KST)', () => {
     const home = read('src/views/HomePage.jsx');
     expect(home).toContain("href: '/chinese/vocab/h1'");
-    expect(home).toContain('<ContinueDeck items={[hskItem]} />');
+    expect(home).toContain("href: '/japanese/vocab/n5'");
+    expect(home).toContain("const wordListItem = lang === 'Chinese' ? hskItem : lang === 'Japanese' ? jlptItem : null;");
+    expect(home).toContain('<ContinueDeck items={[wordListItem]} />');
     // 맨 아래 — 이어서 덱보다 뒤에 온다.
-    expect(home.indexOf('<ContinueDeck items={[hskItem]} />')).toBeGreaterThan(home.indexOf('<ContinueDeck items={continueDeckItems} />'));
+    expect(home.indexOf('<ContinueDeck items={[wordListItem]} />')).toBeGreaterThan(home.indexOf('<ContinueDeck items={continueDeckItems} />'));
   });
 
   it('예보의 침묵 계약은 유지된다 — 흐려질 단어가 0이면 항목 자체가 없다', () => {

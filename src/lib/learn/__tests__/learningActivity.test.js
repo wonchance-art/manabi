@@ -134,7 +134,7 @@ describe('코스 지도 연속 — 정본 셈(대시보드 「연속」과 같�
     const profile = profileOf(6, '2026-11-04');
     const m = getLearningMotivation('user-1', { storage, now, profile, activity });
     expect(m.streakCount).toBe(0);
-    expect(streakView(profile, now.getTime()).value).toBe('–');
+    expect(streakView(profile, now.getTime()).value).toBe('0일'); // 발매 점검 #10 — 0은 「0일」(예전 「–」)
     // 정본 없이는(예전 셈) 6이 그대로 보였다
     expect(getLearningMotivation('user-1', { storage, now, remoteStreak: 6, remoteLastStreakDate: '2026-11-04' }).streakCount).toBe(6);
   });
