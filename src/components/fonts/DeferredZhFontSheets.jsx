@@ -2,6 +2,8 @@
 import { useEffect } from 'react';
 import { preload } from 'react-dom';
 import { SC_STYLESHEET_HREF, TC_STYLESHEET_HREF } from './ScFontLink';
+// 변수 · 크기 보정 대체 글꼴(next/font 범위가 주던 것과 같은 값) — 웹폰트 시트가 붙기 전에도 스택이 같다.
+import './zhFontVars.css';
 
 // 중국어(간체 · 번체) 글꼴을 첫 그림 뒤에 거는 세그먼트용(VIEWER-FONT-SPLIT-001 2단계, 2026-11-07 KST).
 //
@@ -11,8 +13,8 @@ import { SC_STYLESHEET_HREF, TC_STYLESHEET_HREF } from './ScFontLink';
 // 번체/간체 칩 · 예문 · zh UI/해설 언어는 하이드레이션 뒤에 그린다(서버 본문은 손님 · 기본 설정에서만 — zh UI는 안내 스크립트가 감춘다).
 // 그래서 두 시트를 렌더 차단 없이 미리 받아 두고(preload · 낮은 우선순위) 하이드레이션 직후에 붙인다. 중국어를 그리는 때에는
 // 이미 붙어 있고, 글자 조각(woff2)은 지금처럼 그 글자가 처음 나올 때 받는다(next/font 때와 같은 font-display: swap).
-// 글꼴 이름은 독립 시트의 family('Noto Sans SC' · 'Noto Sans TC')이고, CSS는 var(--font-noto-sc, 'Noto Sans SC') 폴백으로 그 이름을 쓴다
-// (fontScope.test.js ③ · ④ — 변수 없이도 웹폰트).
+// 변수 --font-noto-sc · --font-noto-tc와 크기 보정 대체 글꼴은 zhFontVars.css가 next/font와 같은 값으로 준다(e2e viewer-language-settings —
+// zh UI 뷰어가 「웹폰트, … Fallback」 스택 전체를 받는다). 웹폰트 이름은 독립 시트의 family 그대로다.
 export const DEFERRED_ZH_SHEETS = Object.freeze([SC_STYLESHEET_HREF, TC_STYLESHEET_HREF].filter(Boolean));
 const MARK = 'data-manabi-zh-font';
 
