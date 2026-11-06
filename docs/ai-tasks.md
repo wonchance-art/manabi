@@ -882,6 +882,11 @@
   화면 제목 15곳의 「 | 」→ 루트 틀과 같은 「 · 」(지역학 · 레벨 목록 · 옛 문법 장 · 영어/프랑스어 목록 · 복습 og) · 관리자 제목 4곳의 「| manabi」 제거(틀이 붙여 브랜드 두 번).
   루트 기본 설명 = 배움 설명 = `SITE_DESCRIPTION`(옛 「일본어·영어·프랑스어·중국어 학습 도구」 문장 걷음) · 교재 세 권 책별 설명 · 손님 배움 판에 WebSite JSON-LD(운영 주체는 오너 정보 뒤) ·
   `public/favicon.ico` 16/32/48(favicon.svg 렌더). 계약 seoMeta +6 · launchFirstScreen 설명 위치 갱신. 화면 배치 · 화면 문구 무변화(탭 제목 구분자만).
+- **SEC-HEADERS-001 최소 CSP(보고만) + COOP + 보안 헤더 계약 (2026-11-07 KST)** PR `claude/launch-headers`(발매 점검 「개선」 · 오케스트레이터 순회 04:24, 화면 무변화 · 새 env 없음):
+  본편(/embed 밖)에 `Content-Security-Policy-Report-Only: object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'` + report-uri · report-to(Reporting-Endpoints) →
+  `/api/csp-report`(언제나 204 · 분당 20/120 · 16KB) → 운영 오류 기록 `csp.<지시어>` 한 줄(지시어 · 막힌 출처 · 경로 틀만 — 전체 주소 · sample · IP 없음, ERROR-OBSERVE-001 RPC 재사용).
+  `Cross-Origin-Opener-Policy: same-origin-allow-popups`. 스크립트 지시어(nonce)는 정적/ISR 판을 깨서 넣지 않음(오너 결정 항목). 위반 0을 확인한 뒤 강제로 옮기는 것은 후속.
+  계약 securityHeaders +2(지시어 집합 = 정리기 · 강제 CSP 없음 · 임베드 미적용) · csp-report route 11.
 - **LAUNCH-META-003 분석 전 자료는 검색 · 사이트 지도에서 뺀다 (2026-11-07 KST)** PR `claude/launch-meta-analyzed`(LAUNCH-META-002 #1712 정정, 화면 무변화):
   #1712는 「processed_json 있음」을 분석됨으로 쳤지만 운영 실측은 공개 123건 중 분석됨 5 · idle 118(문장 0 — #1711 서버 분석 대기)이었다. 판정을 뷰어 SSR과 같게
   (상태 completed · partial + 문장 1개 이상, `isAnalyzedMaterial`): 사이트 지도는 `processed_json->>status` in · `processed_json->sequence->0` not null(운영 SQL 동치 5건),
@@ -1101,6 +1106,12 @@
     (claude-haiku-5-5 109 · claude-sonnet-5-5 24, Gemini 0) · 토큰 입력 121,065 · 출력 59,020 · 하루 상한 analyze 82/300.
     원인: 한 자료의 재시도 3회가 「연달아 3장 실패」로 세짐(공통 코드 버그) → 이번 PR에서 포기한 장 단위로 고치고 작업을 이어 돌림(20261106230000).
     134의 분석 완료 판정 실패 원인은 별도 조사(LLM 오류 0 — 내용 결정적).
+    #1714 병합(8ee69bfe) · 운영 확인(작업 running · streak 0 · attempts {134:3}). EN-TOKEN-COVER-001(이번 PR, 20261107000000): 134 원인 =
+    영어 토크나이저가 숫자 사이 「-」 · 「—」 · $ % ’ & _ · 다른 문자를 버림 → 줄 검사(영어는 글자 없는 틈 허용)는 통과, 완료 판정(토큰을 이으면
+    공백 빼고 원문과 같아야)은 매번 실패. 사전 점검(LLM 없이, 운영 토크나이저 · 같은 판정): 남은 38편 전부 영어, 그중 6편(134 · 140 · 142 · 145 ·
+    174 · 176 — 「010-1234-5678」 · 「—」)이 같은 이유로 실패 예정이었음. 고침 = 그 글자 묶음을 기호 토큰으로 남김(뜻 조회 · 단어 카드 대상 아님),
+    단어 · 문장부호 · 숫자 토큰은 그대로 · 계약(고치기 전 10 실패 → 16 통과). 마이그레이션은 작업의 attempts에서 134만 빼고 실패 수 -1.
+    기록만: 비공개 영어 자료 15 · 16 · 17(completed)도 $ % ’ — 를 잃은 채 저장돼 있음 — 다시 분석하면 채워짐(자동 보정은 하지 않음).
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인

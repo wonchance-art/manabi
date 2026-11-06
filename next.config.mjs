@@ -110,6 +110,19 @@ const nextConfig = {
       },
     ];
 
+    // 최소 CSP — 먼저 보고만(Report-Only, SEC-HEADERS-001 · 2026-11-07 KST 발매 점검 「개선」). 스크립트를 건드리지 않는 네 지시어만:
+    // 플러그인 객체 금지 · <base> 바꿔치기 금지 · 같은 출처만 프레이밍(X-Frame-Options SAMEORIGIN과 같은 뜻) · 폼은 같은 출처로만.
+    // 엄격한 script-src(nonce)는 정적/ISR 판을 깨므로 넣지 않는다(오너 결정 항목). 보고는 /api/csp-report → 운영 오류 기록(csp.*)으로 모은다 —
+    // 위반이 없는 것을 확인한 뒤 강제(Content-Security-Policy)로 옮긴다.
+    const cspReportOnly = [
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'self'",
+      "form-action 'self'",
+      'report-uri /api/csp-report',
+      'report-to csp',
+    ].join('; ');
+
     return [
       {
         // /embed/* 는 제외한 전역 catch-all — Next.js source는 정규식 그룹을 지원한다.
@@ -118,6 +131,10 @@ const nextConfig = {
         headers: [
           ...baseSecurity,
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          // 다른 출처 창이 이 창을 window.opener로 붙잡지 못하게 — 우리가 연 팝업(새 탭 열기 등)과의 연결은 그대로 둔다(allow-popups).
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+          { key: 'Reporting-Endpoints', value: 'csp="/api/csp-report"' },
+          { key: 'Content-Security-Policy-Report-Only', value: cspReportOnly },
         ],
       },
       {

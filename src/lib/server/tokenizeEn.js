@@ -71,12 +71,16 @@ export function tokenizeEnLine(line) {
   // 프랑스어 자료가 이 토크나이저를 공용하는데, ASCII만 매칭하면 café→caf처럼 악상에서
   // 단어가 끊겨 뜻 조회·만남 대조(rfc-vocab-encounter §4.7)가 전부 빗나간다.
   const LATIN = "A-Za-zÀ-ÖØ-öø-ÿŒœŸ";
-  const PATTERN = new RegExp(`([${LATIN}][${LATIN}'\\-]*[${LATIN}]?|[${LATIN}]|[.,!?;:"'()\\[\\]]|\\d+)`, 'g');
+  // 마지막 갈래 = 위 어디에도 걸리지 않는 공백 아닌 글자 묶음(— $ % ’ _ 숫자 사이 - · 다른 문자) → 기호 토큰.
+  // 버리면 토큰을 이은 값이 원문과 달라 완료 판정(completeAnalysis)이 매번 실패한다 — 공개 시드 134
+  // 「010-1234-5678」이 서버 작업에서 3회 재시도 후 포기된 실측(2026-11-07 KST). 토큰을 이으면 공백만 빼고 원문과 같다.
+  const PATTERN = new RegExp(`([${LATIN}][${LATIN}'\\-]*[${LATIN}]?|[${LATIN}]|[.,!?;:"'()\\[\\]]|\\d+|[^\\s${LATIN}\\d.,!?;:"'()\\[\\]]+)`, 'g');
+  const WORD_OR_NUMBER = new RegExp(`^[${LATIN}\\d]`);
   const tokens = [];
   let match;
   while ((match = PATTERN.exec(line)) !== null) {
     const surface = match[0];
-    const isPunct = /^[.,!?;:"'()\[\]]$/.test(surface);
+    const isPunct = !WORD_OR_NUMBER.test(surface);
     const isNumber = /^\d+$/.test(surface);
 
     tokens.push({
