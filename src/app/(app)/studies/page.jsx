@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { STUDY_COUNTRIES } from '@/content/studies';
+import { publicMetadata } from '@/lib/seo';
 
-export const metadata = {
+export const metadata = publicMetadata('/studies', {
   title: '지역학',
   description: '언어 너머의 나라 이해 — 지리·역사·경제·사회·문화 레퍼런스',
-};
+});
 
 // 지역학 인덱스 — 나라 목록. 1기: 문서가 있는 나라만 노출(빈 껍데기 카드 금지).
 export default function Page() {

@@ -3,11 +3,12 @@ import Link from 'next/link';
 // 셸로 감싸 기기 밝은/어두운 모드와 상관없이 종이 바탕 · 먹 글자(COLOR-SYS-001 단계 3, 오너 「전부 권장대로」 2026-11-05 KST).
 import '@/components/books/reading-shell.css';
 import '@/components/web/web-shell.css';
+import { publicMetadata } from '@/lib/seo';
 
-export const metadata = {
+export const metadata = publicMetadata('/terms', {
   title: '이용약관',
   description: 'manabi 서비스 이용약관',
-};
+});
 
 export default function TermsPage() {
   return (

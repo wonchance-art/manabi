@@ -61,6 +61,7 @@ export function immediateSpeechVoice(voices, language, wantedURI) {
 // 서버를 부르지 않고 바로 브라우저 음성을 쓴다 — 단어를 누를 때마다 실패 왕복(운영 실측 0.55~2.4초)을 기다리던 것(GEMINI-402-GUARD).
 // 이미 받아 둔 소리(serverAudioCache)는 그대로 재생한다. 다른 실패(일시 502 등)는 기억하지 않는다(지금처럼 다음 탭에 다시 시도).
 export const SERVER_TTS_SKIP_MS = 10 * 60 * 1000;
+export const SERVER_TTS_SKIP_CODES = new Set(['service_config', 'tts_unavailable', 'daily_limit']);
 const SERVER_TTS_SKIP_KEY = 'tts_server_skip_until';
 let serverSkipUntil = 0;
 export function serverTtsSkipped(now = Date.now()) {
@@ -146,7 +147,9 @@ async function playServerTTS(text, language, playbackRate = 1, generation) {
     const res = await window.fetch(url, { headers: request.headers });
     if (!res.ok) {
       const body = typeof res.json === 'function' ? await res.json().catch(() => null) : null;
-      if (body?.code === 'service_config') rememberServerTtsFailure();
+      // 기다려도 곧 풀리지 않는 실패만 기억한다: 결제 · 크레딧(service_config) · 상류 무료 한도/권한(tts_unavailable,
+      // GEMINI-FREE-001) · 하루 상한(daily_limit, AI-QUOTA-001). 일시 502는 그대로 다음 탭에 다시 시도.
+      if (SERVER_TTS_SKIP_CODES.has(body?.code)) rememberServerTtsFailure();
       throw new Error('tts ' + res.status);
     }
     const blob = await res.blob();

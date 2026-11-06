@@ -7,9 +7,9 @@ import { fileURLToPath } from 'node:url';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_REPO_ROOT = resolve(SCRIPT_DIR, '..');
-const CACHE_PREFIX = 'anatomy-studio-v';
+const CACHE_PREFIX = 'manabi-v';
 const CACHE_LINE = /^const CACHE_NAME = ['"`][^'"`]+['"`];/m;
-const CACHE_PLACEHOLDER = "const CACHE_NAME = 'anatomy-studio-vCONTENT_HASH';";
+const CACHE_PLACEHOLDER = "const CACHE_NAME = 'manabi-vCONTENT_HASH';";
 const CONTENT_INPUTS = ['package.json', 'package-lock.json', 'next.config.mjs', 'src', 'public'];
 
 function normalizedRelative(repoRoot, filePath) {

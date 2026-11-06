@@ -69,8 +69,9 @@ describe('알림 · 함께한 날 · 로그인 방법 · 기록 칸', () => {
     expect(signInMethods({ app_metadata: { providers: ['email'] } })).toBe('이메일');
     expect(signInMethods({ app_metadata: { provider: 'google' } })).toBe('Google');
   });
-  it('기록 칸 — 0 · 모름은 「–」, 그 밖은 쉼표 + 단위 · 세션 길이', () => {
-    expect(countValue(0)).toBe('–');
+  it('기록 칸 — 0은 「0개 · 0편」(발매 점검 #10), 모름은 「–」, 그 밖은 쉼표 + 단위 · 세션 길이', () => {
+    expect(countValue(0)).toBe('0개');
+    expect(countValue(0, '편')).toBe('0편');
     expect(countValue(null, '편')).toBe('–');
     expect(countValue(1248)).toBe('1,248');
     expect(countValue(7, '편')).toBe('7편');

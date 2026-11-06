@@ -1,6 +1,7 @@
 import ReferenceVocabPage from '@/views/ReferenceVocabPage';
 import { REF_LANGS } from '@/content/refLangs';
 import { countBunkei } from '@/content/english';
+import { withOgDefaults } from '@/lib/seo';
 
 const ref = REF_LANGS.English;
 
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }) {
   if (!vocab) return { title: '영어 어휘' };
   const title = `${vocab.title} | 영어 어휘`;
   const description = vocab.desc || '한국어 화자를 위한 영어 레벨별 어휘 레퍼런스';
-  return { title, description, openGraph: { title, description } };
+  return { title, description, openGraph: withOgDefaults({ title, description }) };
 }
 
 export default async function Page({ params }) {

@@ -106,8 +106,53 @@ describe('③ 서버 음성 「서비스 설정」 실패 기억', () => {
   });
 
   it('/api/tts는 결제 실패에만 code service_config를 단다(상태 502 · 문구 그대로)', () => {
-    const route = sliceBetween(read('src/app/api/tts/route.js'), 'if (!res.ok) {', '}\n');
-    expect(route).toContain("return Response.json({ error: 'tts upstream failed', ...(isServiceConfigError(res.status, errBody) ? { code: 'service_config' } : {}) }, { status: 502 });");
+    const route = sliceBetween(read('src/app/api/tts/route.js'), 'if (!res.ok) {', 'const data = await res.json();');
+    expect(route).toContain("if (isServiceConfigError(res.status, errBody)) return Response.json({ error: 'tts upstream failed', code: 'service_config' }, { status: 502 });");
+    expect(route).toContain("return Response.json({ error: 'tts upstream failed' }, { status: 502 });");
+  });
+
+  it.each(['tts_unavailable', 'daily_limit'])('표식 %s(상류 무료 한도 · 하루 상한)도 10분 기억한다 — GEMINI-FREE-001 · AI-QUOTA-001', async (code) => {
+    fetchAudio = vi.fn(async () => ({ ok: false, status: code === 'daily_limit' ? 429 : 503, json: async () => ({ error: 'x', code }) }));
+    const tts = mod.useTTS();
+    tts.speak('駅', 'Japanese'); await drain();
+    tts.speak('猫', 'Japanese'); await drain();
+    expect(fetchAudio).toHaveBeenCalledTimes(1);
+    expect(mod.serverTtsSkipped()).toBe(true);
+    expect(utterances.map(u => u.text)).toEqual(['駅', '猫']);
+  });
+});
+
+describe('GEMINI-FREE-001 (a) — /api/tts 상류 무료 한도 차단기', () => {
+  const ttsReq = (text) => new Request(`http://x/api/tts?lang=Japanese&text=${encodeURIComponent(text)}`, { headers: { 'x-forwarded-for': '203.0.113.9' } });
+  beforeEach(() => { vi.stubEnv('GEMINI_API_KEY', 'k'); vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', ''); });
+  afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+
+  it.each([429, 403])('상류 %s → 503 tts_unavailable, 이후 10분은 상류를 부르지 않는다', async (status) => {
+    const upstream = vi.fn(async () => ({ ok: false, status, text: async () => JSON.stringify({ error: { status: 'RESOURCE_EXHAUSTED', message: 'quota' } }) }));
+    vi.stubGlobal('fetch', upstream);
+    vi.resetModules();
+    const route = await import('../../app/api/tts/route.js');
+    let res = await route.GET(ttsReq('駅'));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({ code: 'tts_unavailable' });
+    res = await route.GET(ttsReq('猫'));
+    expect(res.status).toBe(503);
+    expect(upstream).toHaveBeenCalledTimes(1); // 차단 중엔 상류를 부르지 않는다
+    expect(route.TTS_UPSTREAM_COOLDOWN_MS).toBe(10 * 60 * 1000);
+  });
+
+  it('일시 502(상류 500)는 표식 없이 그대로 · 결제 실패는 service_config 그대로', async () => {
+    const upstream = vi.fn(async () => ({ ok: false, status: 500, text: async () => 'oops' }));
+    vi.stubGlobal('fetch', upstream);
+    vi.resetModules();
+    const route = await import('../../app/api/tts/route.js');
+    let res = await route.GET(ttsReq('駅'));
+    expect(res.status).toBe(502);
+    expect((await res.json()).code).toBeUndefined();
+    upstream.mockImplementation(async () => ({ ok: false, status: 402, text: async () => 'prepayment credits are depleted' }));
+    res = await route.GET(ttsReq('猫'));
+    expect(await res.json()).toMatchObject({ code: 'service_config' });
+    expect(upstream).toHaveBeenCalledTimes(2);
   });
 });
 

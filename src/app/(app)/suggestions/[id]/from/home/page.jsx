@@ -1,4 +1,5 @@
 import SuggestionStaticPage from '@/components/materials/SuggestionStaticPage';
+import { suggestionMetadata } from '@/lib/seo';
 
 // 추천 읽을거리 한 편 · 돌아갈 곳 「home」 판(GUEST-STATIC-001 6단계) — middleware가 /suggestions/<id>?from=home를 여기로 넘긴다(주소창은 그대로).
 // 주기 · 내용은 ../../page.jsx와 같고 「← 돌아가기」 링크만 다르다. 돌아갈 곳마다 고정 폴더다 — [from] 하나로 받으면 표 밖 값의 notFound()가
@@ -7,7 +8,11 @@ import SuggestionStaticPage from '@/components/materials/SuggestionStaticPage';
 export const revalidate = 300;
 export const dynamicParams = true;
 export function generateStaticParams() { return []; }
-export const metadata = { title: '추천 읽을거리' };
+// 외부 기사라 기본 noindex(seo.js INDEX_EXTERNAL_SUGGESTIONS) · 정본 주소는 돌아갈 곳(?from=) 판과 상관없이 글 한 편의 주소다(LAUNCH-META-001) — params만 읽는다(쿠키 · 헤더 · 질의 없음, 판은 그대로 ISR).
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  return suggestionMetadata(id);
+}
 
 export default async function Page({ params }) {
   const { id } = await params;

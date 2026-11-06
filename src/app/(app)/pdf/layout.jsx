@@ -1,6 +1,10 @@
 import TcFontScope from '@/components/fonts/TcFontScope';
 import ScFontScope from '@/components/fonts/ScFontScope';
 import { preloadNotoSansLatin } from '@/components/fonts/fontHints';
+import { PRIVATE_METADATA } from '@/lib/seo';
+
+// 계정 · 학습 기록 화면 — 검색에 싣지 않는다(LAUNCH-META-001 · robots.txt도 막는다).
+export const metadata = PRIVATE_METADATA;
 
 // 대만 번체를 그리는 화면 — Noto Sans TC는 이 세그먼트에서만 싣는다(src/components/fonts/TcFontScope.jsx).
 // 간체 중국어도 그린다 — Noto Sans SC도 여기서 싣는다(src/components/fonts/ScFontScope.jsx).

@@ -29,11 +29,11 @@ export const learnLangLabel = lang => LANG_NAME_KO[lang] || lang;
 
 export const STREAK_HINT = '쉼: 7일 연속할 때마다 1개(최대 2개). 하루 빠지면 자동으로 써서 연속이 이어져요';
 
-/** 연속 칸 — 「12일 / 연속 · 쉼 2」, 기록이 없거나 끊겼으면 「– / 연속」. 방패 같은 그림 기호는 쓰지 않는다(오너 B안). */
+/** 연속 칸 — 「12일 / 연속 · 쉼 2」, 기록이 없거나 끊겼으면 「0일 / 연속」(발매 점검 #10 — 오너 승인 2026-11-06 KST, 예전 「–」). 방패 같은 그림 기호는 쓰지 않는다(오너 B안). */
 export function streakView(profile, now = Date.now()) {
   const streak = liveStreakCount(profile, now);
   const rest = Number(profile?.streak_freeze_count) || 0;
-  const value = streak > 0 ? `${streak}일` : '–';
+  const value = `${Math.max(0, streak)}일`;
   const label = streak > 0 && rest > 0 ? `연속 · 쉼 ${rest}` : '연속';
   const said = streak > 0 ? `${streak}일 연속${rest > 0 ? ` · 쉼 ${rest}` : ''}` : '연속 기록 없음';
   return { value, label, aria: `${said} — ${STREAK_HINT}`, title: STREAK_HINT };

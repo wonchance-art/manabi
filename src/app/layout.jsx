@@ -3,6 +3,7 @@ import '../index.css';
 import Providers from './providers';
 import { INSTALL_CAPTURE_SCRIPT } from '@/lib/installPrompt';
 import { VOCAB_EARLY_SCRIPT } from '@/lib/vocabularyEarly';
+import { OG_DEFAULTS, siteUrl } from '@/lib/seo';
 
 // Inter는 미리 받지 않는다(FONT-PRELOAD-001): 앱 화면(.manabi-app)은 Noto Sans KR · Manrope가 먼저라 Inter 라틴 조각(47kB)이
 // 모든 페이지에서 미리 받아지고 쓰이지 않았다(Preview b8fc2b62 실측 2026-10-17 KST — 배움 · 산책 · 교재 · 뷰어 · 로그인 · 단어 목록 ·
@@ -53,10 +54,11 @@ const notoSans = Noto_Sans({
   preload: false,
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
+// 정본 주소는 lib/seo 한 곳(LAUNCH-META-001). 루트는 정본(canonical)을 두지 않는다 — 예전 `canonical: '/'`가 모든 화면에 물려
+// 지역학 문서 · 약관 · 뷰어 자료까지 「정본 = 첫 화면」이라고 알렸다(운영 감사 2026-11-06 KST). 공개 화면은 각자 publicMetadata로 자기 주소를 단다.
+// og · twitter 제목 · 설명도 고정하지 않는다 — 고정하면 화면 제목 대신 사이트 기본 제목이 공유 카드에 남았다. Next가 화면의 title · description을 물려준다.
 export const metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: new URL(siteUrl()),
   title: {
     default: 'manabi — 언어마다, 나만의 한 권',
     template: '%s · manabi',
@@ -64,19 +66,13 @@ export const metadata = {
   description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, 잊을 때쯤 돌아오는 복습, 형태소 해부 읽기.',
   keywords: ['일본어 학습', '영어 학습', 'AI 언어', 'JLPT', '간격 반복', '단어장', '독해'],
   authors: [{ name: 'manabi' }],
-  alternates: { canonical: '/' },
   openGraph: {
-    title: 'manabi — 언어마다, 나만의 한 권',
-    description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, 잊을 때쯤 돌아오는 복습, 형태소 해부 읽기.',
-    url: SITE_URL,
-    type: 'website',
-    siteName: 'manabi',
-    locale: 'ko_KR',
+    type: OG_DEFAULTS.type,
+    siteName: OG_DEFAULTS.siteName,
+    locale: OG_DEFAULTS.locale,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'manabi — 언어마다, 나만의 한 권',
-    description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, 잊을 때쯤 돌아오는 복습, 형태소 해부 읽기.',
   },
   robots: {
     index: true,

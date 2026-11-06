@@ -19,6 +19,16 @@ const TTS_MODEL = 'models/gemini-3.1-flash-tts-preview'; // 2.5-preview-tts 승�
 const LANG_NAMES = { Korean: 'Korean', Japanese: 'Japanese', English: 'English', French: 'French', Chinese: 'Chinese' };
 
 // IP별 레이트 리밋 (비로그인 공개 레퍼런스에서도 쓰므로 IP 기준, 캐시 미스만 도달)
+// 상류(Gemini TTS) 무료 한도 차단기(GEMINI-FREE-001 (a) — 유료 결제 취소 2026-11-06 KST). TTS는 Gemini만 쓰는 경로라
+// 429(무료 한도) · 403(권한 · 모델 제공 안 됨)이 오면 이 인스턴스에서 잠시 상류를 부르지 않고 바로 「건너뛰기」 표식을 돌려준다 —
+// useTTS가 표식을 보고 10분간 서버를 건너뛰어 브라우저 음성으로 바로 간다(누를 때마다 실패 왕복을 기다리지 않는다). 화면 변화 없음.
+export const TTS_UPSTREAM_COOLDOWN_MS = 10 * 60 * 1000;
+export const TTS_UNAVAILABLE_CODE = 'tts_unavailable';
+let upstreamOpenUntil = 0;
+/** 테스트 전용 — 차단기를 비운다. */
+export function __resetTtsUpstreamForTest() { upstreamOpenUntil = 0; }
+const unavailable = () => Response.json({ error: 'tts upstream unavailable', code: TTS_UNAVAILABLE_CODE }, { status: 503 });
+
 const rateLimitMap = new Map();
 const RATE_LIMIT = 60; // 분당(IP별)
 const WINDOW_MS = 60 * 1000;
@@ -109,6 +119,8 @@ export async function GET(request) {
   }
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  // 상류 한도 차단 중이면 부르지도 세지도 않는다(GEMINI-FREE-001).
+  if (upstreamOpenUntil > Date.now()) return unavailable();
   if (isRateLimited(ip) || isInstanceBudgetExceeded()) {
     return Response.json({ error: 'rate limited' }, { status: 429 });
   }
@@ -153,7 +165,13 @@ export async function GET(request) {
       console.error('[tts]', res.status, errBody.slice(0, 200));
       // 「서비스 설정」(결제 · 크레딧) 실패는 표식을 단다 — 클라(useTTS)가 한동안 서버를 건너뛰고 바로 브라우저 음성을 쓴다.
       // 상태(502)와 오류 문구는 그대로(GEMINI-402-GUARD).
-      return Response.json({ error: 'tts upstream failed', ...(isServiceConfigError(res.status, errBody) ? { code: 'service_config' } : {}) }, { status: 502 });
+      if (isServiceConfigError(res.status, errBody)) return Response.json({ error: 'tts upstream failed', code: 'service_config' }, { status: 502 });
+      // 무료 등급 한도(429) · 권한/모델 제공 안 됨(403) — 기다려도 곧 풀리지 않는다. 차단기를 열고 건너뛰기 표식(GEMINI-FREE-001).
+      if (res.status === 429 || res.status === 403) {
+        upstreamOpenUntil = Date.now() + TTS_UPSTREAM_COOLDOWN_MS;
+        return unavailable();
+      }
+      return Response.json({ error: 'tts upstream failed' }, { status: 502 });
     }
 
     const data = await res.json();
