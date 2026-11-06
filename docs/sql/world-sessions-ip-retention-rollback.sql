@@ -1,4 +1,4 @@
--- WORLD-IP-RETENTION-001 복원(쓸 일이 생기면) — 20261106160000_world_sessions_ip_retention.sql을 되돌린다.
+-- WORLD-IP-RETENTION-001 복원(쓸 일이 생기면) — 20261106190000_world_sessions_ip_retention.sql을 되돌린다.
 --   claim_world_session_v2(text)를 20260712000400 본문 그대로로 되돌리고(청소 호출 제거), 청소 함수를 지운다.
 --   지운 오래된 ip는 되돌리지 않는다(어떤 기능도 읽지 않는 값 — 이 변경의 목적). 행 · 임대 상태는 그 파일이 바꾸지 않았다.
 --   실행권은 CREATE OR REPLACE가 지킨다(authenticated만). 검증: supabase/tests/world-sessions-ip-retention.mjs가 적용 → 복원 → 재적용을 본다.

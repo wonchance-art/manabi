@@ -10,7 +10,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { PGlite } = require(process.env.PGLITE_MODULE || '@electric-sql/pglite');
 const read = (path) => fs.readFile(new URL(path, import.meta.url), 'utf8');
-const MIGRATION = '../migrations/20261106160000_world_sessions_ip_retention.sql';
+const MIGRATION = '../migrations/20261106190000_world_sessions_ip_retention.sql';
 const ROLLBACK = '../../docs/sql/world-sessions-ip-retention-rollback.sql';
 const BASE = ['../migrations/20260710000100_world_sessions.sql', '../migrations/20260712000300_world_multiplayer.sql', '../migrations/20260712000400_world_open_all_users.sql'];
 const U = (n) => `30000000-0000-4000-8000-00000000000${n}`;
