@@ -878,6 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **VIEWER-FONT-SPLIT-001 뷰어 첫 그림 — SC · TC 렌더 차단 CSS 걷기 (2026-11-07 KST)** 오케스트레이터 승인(G 우선순위 변경 · 화면 동일 성능):
+  진단(운영 · iPhone 13 · 150ms/1.6Mbps · CPU 4배, 쿼리 없는 /viewer/45): TTFB 0.42–0.66s · HTML 16KB ~0.9s · 렌더 차단 CSS 18개 끝 2.75s → FCP 2.84–3.06s ·
+  LCP(H1, SSR 본문) 3.20–3.43s · 하이드레이션 긴 작업 6.8–7.8s. CSS 18개 중 @font-face만 든 5개 gz 약 400KB, 그중 SC · TC 약 196KB를 `(app)/viewer/layout`이 늘 싣는다.
+  비중국어 자료에서도 SC · TC를 쓰는 곳: 正 줄(ViewerGlyphColumn zh-Hant-TW) · 한자 창(ViewerHanjaPopover) · zh UI/해설 언어 · 중국어 본문 → 잎이 시트를 거는 방식(ZhSlot)으로 전환.
+  **1단계** PR `claude/font-tc-sheet`(화면 · 동작 무변화): sc-stylesheet를 SC · TC 표로 일반화(`/_fonts/noto-sans-tc/…css` · env MANABI_TC_STYLESHEET, 간체 산출 바이트 그대로) ·
+  TcFontLink · TcFontScopeMarker · ZhSlot zh-TW→TC · 대조 스크립트 둘 다. **2단계**(뷰어 전환 · 유휴 미리 받기 · SW)는 1단계 병합 뒤.
 - **LAUNCH-META-003 분석 전 자료는 검색 · 사이트 지도에서 뺀다 (2026-11-07 KST)** PR `claude/launch-meta-analyzed`(LAUNCH-META-002 #1712 정정, 화면 무변화):
   #1712는 「processed_json 있음」을 분석됨으로 쳤지만 운영 실측은 공개 123건 중 분석됨 5 · idle 118(문장 0 — #1711 서버 분석 대기)이었다. 판정을 뷰어 SSR과 같게
   (상태 completed · partial + 문장 1개 이상, `isAnalyzedMaterial`): 사이트 지도는 `processed_json->>status` in · `processed_json->sequence->0` not null(운영 SQL 동치 5건),

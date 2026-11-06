@@ -7,7 +7,7 @@ import { buildReleaseVersion } from './src/lib/releaseVersion.js';
 const { fontHintEnv } = createRequire(import.meta.url)('./scripts/fonts/next-font-file-url.cjs');
 // 간체 중국어 독립 스타일시트(SC-LINK-001 1단계) — 같은 글꼴 입력에서 public/_fonts/noto-sans-sc/에 CSS를 쓰고(글꼴은 next/font 산출 주소 그대로 — 리뷰 B1) 주소를 env로 준다.
 // 글꼴 입력이 없는 실행(next dev · 테스트의 config import)은 아무것도 쓰지 않는다. 산출 대조: scripts/fonts/check-sc-stylesheet.mjs.
-const { scStylesheetEnv } = createRequire(import.meta.url)('./scripts/fonts/sc-stylesheet.cjs');
+const { scStylesheetEnv, tcStylesheetEnv } = createRequire(import.meta.url)('./scripts/fonts/sc-stylesheet.cjs');
 
 const releaseVersion = {
   ...buildReleaseVersion(process.env),
@@ -93,6 +93,7 @@ const nextConfig = {
     MANABI_BUILD_IDENTITY: JSON.stringify(releaseVersion),
     ...fontHintEnv(),
     ...scStylesheetEnv(),
+    ...tcStylesheetEnv(),
   },
 
   // 공개 서비스 기본 보안 헤더

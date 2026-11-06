@@ -16,8 +16,20 @@ export function ScFontScopeMarker({ children }) {
   return <ScFontInScope.Provider value>{children}</ScFontInScope.Provider>;
 }
 
+// 대만 번체(Noto Sans TC)도 같은 길(VIEWER-FONT-SPLIT-001 1단계, 2026-11-07 KST) — index.css가 :lang(zh-TW) · :lang(zh-Hant-TW)만 TC로
+// 그리므로(지역 없는 zh-Hant는 SC) 그 lang을 그리는 잎은 TC 시트를, 나머지 zh*는 SC 시트를 건다. TcFontScope 안이면 걸지 않는다.
+export const TcFontInScope = createContext(false);
+
+/** TcFontScope가 감싸개 안쪽에 둔다 — 이 안의 번체 잎은 next/font TC가 이미 있으므로 링크를 걸지 않는다. */
+export function TcFontScopeMarker({ children }) {
+  return <TcFontInScope.Provider value>{children}</TcFontInScope.Provider>;
+}
+
 export const SC_STYLESHEET_HREF = process.env.MANABI_SC_STYLESHEET || '';
+export const TC_STYLESHEET_HREF = process.env.MANABI_TC_STYLESHEET || '';
 export const isZhLang = (lang) => typeof lang === 'string' && /^zh(?:-|$)/i.test(lang);
+/** index.css의 TC 규칙(:lang(zh-TW), :lang(zh-Hant-TW))과 같은 판정 — :lang은 접두 일치라 zh-TW-x도 TC다. */
+export const isZhTwLang = (lang) => typeof lang === 'string' && /^zh-(?:hant-)?tw(?:-|$)/i.test(lang);
 
 /** 독립 스타일시트 링크 하나. 범위(ScFontScope) 안 · 주소 없음(글꼴 입력 없는 next dev)이면 아무것도 그리지 않는다. */
 export function ScFontLink() {
@@ -26,18 +38,28 @@ export function ScFontLink() {
   return <link rel="stylesheet" href={SC_STYLESHEET_HREF} precedence="font-sc" />;
 }
 
+/** 번체 독립 스타일시트 링크 하나. 범위(TcFontScope) 안 · 주소 없음이면 아무것도 그리지 않는다. */
+export function TcFontLink() {
+  const inScope = useContext(TcFontInScope);
+  if (inScope || !TC_STYLESHEET_HREF) return null;
+  return <link rel="stylesheet" href={TC_STYLESHEET_HREF} precedence="font-tc" />;
+}
+
 /**
- * lang이 zh*면 자식(요소 하나)을 스타일시트가 온 뒤에 보인다 — 잎 가까이의 Suspense 경계.
+ * lang이 zh*면 자식(요소 하나)을 스타일시트가 온 뒤에 보인다 — 잎 가까이의 Suspense 경계. zh-TW · zh-Hant-TW는 번체 시트, 그 밖 zh*는 간체 시트.
  * 기다리는 동안은 같은 요소를 visibility: hidden으로 그려 자리를 지킨다. zh가 아니면 자식 그대로.
  */
 export function ZhSlot({ lang, children }) {
-  const inScope = useContext(ScFontInScope);
-  if (!isZhLang(lang) || inScope || !SC_STYLESHEET_HREF) return children;
+  const scInScope = useContext(ScFontInScope);
+  const tcInScope = useContext(TcFontInScope);
+  if (!isZhLang(lang)) return children;
+  const tw = isZhTwLang(lang);
+  if (tw ? (tcInScope || !TC_STYLESHEET_HREF) : (scInScope || !SC_STYLESHEET_HREF)) return children;
   const only = Children.only(children);
   const hidden = isValidElement(only) ? cloneElement(only, { style: { ...(only.props.style || {}), visibility: 'hidden' }, 'aria-hidden': true }) : null;
   return (
     <Suspense fallback={hidden}>
-      <ScFontLink />
+      {tw ? <TcFontLink /> : <ScFontLink />}
       {only}
     </Suspense>
   );
