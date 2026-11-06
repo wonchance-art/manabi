@@ -1049,6 +1049,10 @@
     #1701 운영 실측: 음성 1회 → usage_private에 tts 1줄(ip 해시 · 학습일 KST) — 하루 상한 카운트가 실제로 돈다(fail-open 아님).
     GEMINI-FREE-001(이번 PR): Gemini 429(무료 한도)는 재시도 없이 그 모델 10분 차단 · TTS 상류 429/403 → 10분 차단 + tts_unavailable,
     useTTS가 service_config · tts_unavailable · daily_limit을 10분 기억(화면 변화 없음). 마이그레이션 규칙(양 세션): 병합 직전 main 최신 버전보다 뒤로.
+    #1710 병합(b2670194). STARTER-ANALYSIS-001(이번 PR, 20261106210000): 서버 분석 작업에 공개 시드(starter) 종류 — material_ids 명시(운영 대상
+    118편 = 일 58 · 영 60, 관리자 「일괄 분석」 패널과 같은 집합) · 저장 함수는 starter면 그 목록 안 관리자 소유 공개 자료만 · 자료마다 관리자의
+    'analyze' 하루 상한(300) 회계 · 연달아 3 실패 멈춤 · llm_usage(모델별 호출 · 토큰). 깨우기 = 하루 한 번 예약 실행(02:45 KST) 뒤 tick이 스스로 잇는다.
+    실행 뒤 실제 호출 · 토큰을 job.llm_usage로 보고.
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
