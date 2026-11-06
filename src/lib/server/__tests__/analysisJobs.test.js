@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  CHAPTER_ATTEMPTS, FAILURE_STOP, LEASE_MS, STALL_MS, TICK_START_BUDGET_MS,
-  inProcessTransport, jobAfterChapter, kickAnalysisTick, pickChapter, runAnalysisTick, stalledJob,
+  CHAPTER_ATTEMPTS, FAILURE_STOP, LEASE_MS, STALL_MS, TICK_START_BUDGET_MS, STARTER_DAILY_LIMIT_NOTE,
+  analysisRequestUnits, inProcessTransport, jobAfterChapter, kickAnalysisTick, mergeUsage, pickChapter, runAnalysisTick, stalledJob, usageDelta,
 } from '../analysisJobs';
 
 // 서버 분석 작업(CANON-SERVER-ANALYSIS-001, 오너 「서버 분석 A안 승인, 권장대로 ㄱㄱ」 2026-10-24 KST).
@@ -202,5 +202,74 @@ describe('관리자 게시 화면 — 서버에서 분석 · 진행 · 멈춤', 
     expect(panel).toContain('const analysisBusy = !!running || !!batch || prepare.isPending || serverRunning || serverStart.isPending;');
     expect(panel).toContain("<Button size=\"sm\" disabled={release.isPending || !!running || !!batch} onClick={() => setConfirm({ action: 'release', book })}>공개</Button>");
     expect(panel).toContain("serverPost({ action: 'pause', id: job.id })");
+  });
+});
+
+describe('STARTER-ANALYSIS-001 — 공개 시드(starter) 작업', () => {
+  const STARTER = { ...JOB, id: 9, kind: 'starter', book_keys: [], material_ids: [30, 10, 20], llm_usage: {} };
+  const rowsOf = (done, extra = {}) => async (_, job) => {
+    expect(job.owner_id).toBe('admin');
+    return [{ id: 10, raw_text: 'a'.repeat(1700), language: 'Japanese' }, { id: 20, raw_text: 'b', language: 'English' }, { id: 30, raw_text: 'c', language: 'English' }]
+      .map((r) => ({ ...r, order: job.material_ids.indexOf(r.id), status: done.has(r.id) ? 'completed' : (extra[r.id] || 'idle') }));
+  };
+  const statsSeq = () => { let n = 0; return () => ({ tiers: { light: { 'claude-haiku-5-5': { calls: n, ok: n, in: n * 100, out: n * 50, thinking: 0 } } } }); };
+
+  it('material_ids 차례대로 · 책 게시 없이 · 자료마다 요청 수만큼 하루 상한을 쓰고 · llm_usage를 더한다 · 다 하면 끝', async () => {
+    const { supabase, table } = fakeJobs([STARTER]);
+    const done = new Set(); const order = []; const quota = [];
+    let n = 0; const stats = () => ({ tiers: { light: { 'claude-haiku-5-5': { calls: n, ok: n, in: n * 100, out: n * 50, thinking: 0 } } } });
+    const analyze = vi.fn(async (_, job, id) => { order.push(id); done.add(id); n += 2; });
+    const getBooks = vi.fn(); const prepare = vi.fn();
+    const out = await runAnalysisTick({
+      supabase, now: clock(), analyze, getBooks, prepare, listStarter: rowsOf(done), llmStats: stats,
+      consumeQuota: vi.fn(async (q) => { quota.push(q); return { ok: true }; }),
+    });
+    expect(order).toEqual([30, 10, 20]);
+    expect(getBooks).not.toHaveBeenCalled();
+    expect(prepare).not.toHaveBeenCalled();
+    expect(quota).toEqual([
+      { kind: 'analyze', subject: 'u:admin', units: 1 }, { kind: 'analyze', subject: 'u:admin', units: 3 }, { kind: 'analyze', subject: 'u:admin', units: 1 },
+    ]);
+    expect(out).toMatchObject({ jobId: 9, processed: 3, more: true });
+    expect(table[0]).toMatchObject({ status: 'done', chapters_done: 3, lease_until: null });
+    expect(table[0].llm_usage).toMatchObject({ calls: 6, in: 600, out: 300, byModel: { 'claude-haiku-5-5': { calls: 6, ok: 6, in: 600, out: 300 } } });
+  });
+
+  it('하루 상한에 닿으면 실패로 세지 않고 오늘은 멈춘다(작업은 도는 채로 · 다음 tick 부르지 않음)', async () => {
+    const { supabase, table } = fakeJobs([STARTER]);
+    const analyze = vi.fn();
+    const out = await runAnalysisTick({
+      supabase, now: clock(), analyze, listStarter: rowsOf(new Set()), llmStats: statsSeq(), consumeQuota: vi.fn(async () => ({ ok: false })),
+    });
+    expect(analyze).not.toHaveBeenCalled();
+    expect(out).toMatchObject({ processed: 0, more: false });
+    expect(table[0]).toMatchObject({ status: 'running', failure_streak: 0, chapters_failed: 0, last_error: STARTER_DAILY_LIMIT_NOTE, lease_until: null });
+  });
+
+  it('연달아 세 편 실패면 패널과 같은 규칙으로 작업 실패', async () => {
+    const { supabase, table } = fakeJobs([STARTER]);
+    const out = await runAnalysisTick({
+      supabase, now: clock(), analyze: vi.fn(async () => { throw new Error('LLM unavailable'); }),
+      listStarter: rowsOf(new Set()), llmStats: statsSeq(), consumeQuota: vi.fn(async () => ({ ok: true })),
+    });
+    expect(out.processed).toBe(FAILURE_STOP);
+    expect(table[0]).toMatchObject({ status: 'failed', failure_streak: FAILURE_STOP });
+  });
+
+  it('요청 수 추정 · 집계 차(창이 새로 열리면 뒤 스냅샷) · 합치기', () => {
+    expect(analysisRequestUnits('a'.repeat(800), 'Japanese')).toBe(1);
+    expect(analysisRequestUnits('a'.repeat(801), 'Japanese')).toBe(2);
+    expect(analysisRequestUnits('', 'English')).toBe(1);
+    expect(analysisRequestUnits('a'.repeat(4001), 'English')).toBe(3);
+    const before = { tiers: { light: { m: { calls: 5, ok: 5, in: 10, out: 5, thinking: 0 } } } };
+    const after = { tiers: { light: { m: { calls: 7, ok: 6, in: 30, out: 9, thinking: 1 } }, standard: { s: { calls: 1, ok: 1, in: 2, out: 3, thinking: 0 } } } };
+    expect(usageDelta(before, after)).toEqual({ m: { calls: 2, ok: 1, in: 20, out: 4, thinking: 1 }, s: { calls: 1, ok: 1, in: 2, out: 3, thinking: 0 } });
+    expect(usageDelta(before, { tiers: { light: { m: { calls: 1, ok: 1, in: 3, out: 1, thinking: 0 } } } })).toEqual({ m: { calls: 1, ok: 1, in: 3, out: 1, thinking: 0 } });
+    expect(mergeUsage({ byModel: { m: { calls: 1, ok: 1, in: 1, out: 1, thinking: 0 } } }, { m: { calls: 2, ok: 2, in: 2, out: 2, thinking: 0 } }))
+      .toEqual({ calls: 3, in: 3, out: 3, thinking: 0, byModel: { m: { calls: 3, ok: 3, in: 3, out: 3, thinking: 0 } } });
+  });
+
+  it('DB 계약이 CI에서 돈다', () => {
+    expect(read('.github/workflows/ci.yml')).toContain('node supabase/tests/starter-analysis-jobs.mjs');
   });
 });
