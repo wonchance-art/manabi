@@ -11,6 +11,7 @@ import { COMPOSER_LANGUAGES, composerRow, createComposerSave, newComposerDraft, 
 import { documentOf, openDocumentStudy, openStudyOrOriginal } from '../materialDocument';
 import { openSourcePassage, PASSAGE_LANGUAGES, passageLanguageChoices, passageLanguageOptions } from '../sourcePassage';
 import { LEVELS } from '../constants';
+import { sliceBetween } from './helpers/sliceBetween.js';
 
 const owner = '00000000-0000-4000-8000-000000000321';
 const uuid = n => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -171,5 +172,24 @@ describe('WRITE-STUDY-ENTRY — 「저장하고 공부하기」 상태', () => {
     expect(failed.study).toBeUndefined(); expect(failed.error).toBeTruthy();
     expect(failed.href).toBe('/viewer/42?returnTo=%2Fmaterials%3Fview%3Downed');
     expect(db.writes).toEqual([]);
+  });
+});
+
+describe('자료 관리 「원본에서 수정 ↗」 — 작성기 학습본 (오너 승인 2026-11-06 KST, 목업 NjLshHiUy6zi66YfEofQ1d ①)', () => {
+  // 학습본에는 「원문 수정」이 없다(!composerOf). 같은 자리 · 같은 모양(reanalyze-panel__item)으로 원본의 작성기 수정 화면 링크만 둔다.
+  const viewer = readFileSync('src/views/ViewerPage.jsx', 'utf8');
+  const menu = sliceBetween(viewer, "{reanalyzePanel === 'menu' && (", "{reanalyzePanel === 'confirm-full' && (");
+  it('자료 관리 메뉴 안에 있다 — 학습본 · 원본 id가 있을 때만, 원본의 /materials/:id/edit로', () => {
+    expect(menu).toContain("composerOf(material)?.role === 'study' && composerOf(material)?.parentId && <Link className=\"reanalyze-panel__item\"");
+    expect(menu).toContain('href={`/materials/${encodeURIComponent(composerOf(material).parentId)}/edit?returnTo=');
+    expect(menu).toContain('{vt("원본에서 수정 ↗")}');
+    expect(menu).toContain('{vt("직접 쓴 원본 글을 고쳐요 · 고친 글로 공부하면 새 학습으로 이어져요")}');
+    // 「원문 수정」은 작성기 자료에 여전히 없다(본문은 원본에서만 고친다).
+    expect(menu).toContain('{!composerOf(material) && !artBookLocked && !canonicalLiteratureLocked && <button className="reanalyze-panel__item"');
+  });
+  it('뷰어 문구 사전에 두 문구의 간체 · 번체가 있다', () => {
+    const messages = readFileSync('src/lib/viewerMessages.js', 'utf8');
+    expect(messages).toContain("['원본에서 수정 ↗','回到原稿修改 ↗','回到原稿修改 ↗']");
+    expect(messages).toContain("['직접 쓴 원본 글을 고쳐요 · 고친 글로 공부하면 새 학습으로 이어져요',");
   });
 });
