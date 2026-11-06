@@ -142,6 +142,23 @@ const GENERATION_KEYS = ['temperature', 'responseMimeType', 'responseSchema', 'm
 /** thinking 설정을 거부한 모델(인스턴스 로컬) — 같은 모델에 두 번 부딪히지 않는다. */
 const thinkingUnsupported = new Set();
 
+// Gemini 무료 등급 한도 회로 차단(GEMINI-FREE-001 — 오너 Gemini 유료 결제 취소 2026-11-06 KST, 오케스트레이터 판정 (b)).
+// 무료 등급의 429(RESOURCE_EXHAUSTED)는 분당 · 하루 요청 한도라 5/10/20초 기다려 다시 던져도 대개 다시 429다 — 그 모델을
+// 이 인스턴스에서 GEMINI_QUOTA_COOLDOWN_MS 동안 건너뛰고(재시도 없음), 사슬의 다음 후보(다른 Gemini 모델 · Groq)로 넘어간다.
+// 모델별이다(무료 한도는 모델마다 따로). 인스턴스 메모리라 다른 인스턴스는 각자 한 번씩 부딪힌다 — 헛재시도를 막는 값싼 차단기.
+// 「서비스 설정」(결제 · 크레딧 — isServiceConfigError)은 여기 말고 blocked(제공자 전체)가 맡는다. Claude(1순위)는 해당 없음.
+export const GEMINI_QUOTA_COOLDOWN_MS = 10 * 60 * 1000;
+const geminiQuotaUntil = new Map();
+export function geminiQuotaOpen(model, now = Date.now()) {
+  const until = geminiQuotaUntil.get(model);
+  if (!until) return false;
+  if (until <= now) { geminiQuotaUntil.delete(model); return false; }
+  return true;
+}
+function noteGeminiQuota(model, now = Date.now()) { geminiQuotaUntil.set(model, now + GEMINI_QUOTA_COOLDOWN_MS); }
+/** 테스트 전용 — 차단기를 비운다. */
+export function __resetGeminiQuotaForTest() { geminiQuotaUntil.clear(); }
+
 export class LLMError extends Error {
   constructor(message, { code = 'failed', status = 0, detail = null, model = null, provider = null, fallbackDepth = 0 } = {}) {
     super(message);
@@ -683,12 +700,19 @@ async function callLLMInner(tier, input, opts, started) {
   for (let depth = 0; depth < chain.length && !giveUp; depth++) {
     const { provider, model } = chain[depth];
     if (blocked.has(provider)) continue;
+    if (provider === 'gemini' && geminiQuotaOpen(model)) continue; // 무료 한도 차단 중 — 부르지 않는다
     for (let attempt = 0; attempt <= retryMax; attempt++) {
       const r = provider === 'anthropic' ? await anthropicCall(model) : await geminiCall(model);
       if (r.ok) return { text: r.text, meta: meta(model, provider, depth, r.usage) };
       last = lastByProvider[provider] = { ...r, model, provider, depth };
       if (opts.signal?.aborted) {
         throw new LLMError('aborted', { code: 'aborted', status: 0, model, provider, fallbackDepth: depth });
+      }
+      // Gemini 429 = 무료 등급 한도 — 이 모델을 잠시 끊고 재시도하지 않는다(GEMINI-FREE-001).
+      if (provider === 'gemini' && r.status === 429 && !isServiceConfigError(r.status, r.detail)) {
+        noteGeminiQuota(model);
+        console.warn(`[llm] gemini quota 429 — skip ${model} for ${GEMINI_QUOTA_COOLDOWN_MS / 60000}m`);
+        break;
       }
       if (attempt === retryMax || !isCapacityError(r.status, r.detail)) break;
       const delay = delays[attempt] ?? delays[delays.length - 1] ?? 0;

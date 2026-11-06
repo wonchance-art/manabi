@@ -1045,6 +1045,10 @@
     재실행 거절 · 복원. Gemini 유료 결제 취소(11/6) 점검: 운영 ANTHROPIC 키 있음 → 텍스트 · 이미지는 Claude 1순위, Gemini는 대체 ·
     TTS만 Gemini 직접(preview). 무료 등급 TTS 실측 1회 23:57 KST 200 audio/wav(6초). 다음: 무료 한도 차단기(LLM 모델별 · TTS 상류) PR ·
     starter 시드 작업. 사용자 내용 경로의 Gemini 대체 끄기는 **오너 결정 대기**(처리방침과 함께).
+    #1703 병합(76882ee3, 마이그레이션 시각 20261106200000 — WEB 180000 · 190000과 충돌 피함) · 운영 확인(FK 5개 SET NULL · 행 수 그대로).
+    #1701 운영 실측: 음성 1회 → usage_private에 tts 1줄(ip 해시 · 학습일 KST) — 하루 상한 카운트가 실제로 돈다(fail-open 아님).
+    GEMINI-FREE-001(이번 PR): Gemini 429(무료 한도)는 재시도 없이 그 모델 10분 차단 · TTS 상류 429/403 → 10분 차단 + tts_unavailable,
+    useTTS가 service_config · tts_unavailable · daily_limit을 10분 기억(화면 변화 없음). 마이그레이션 규칙(양 세션): 병합 직전 main 최신 버전보다 뒤로.
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
