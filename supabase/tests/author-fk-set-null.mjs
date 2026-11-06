@@ -1,5 +1,5 @@
 /** Local, disposable PGlite only — never connects to Supabase (ACCOUNT-DELETE-003 · 2026-11-06 KST).
- * 20261106180000_author_fk_set_null: 관리자 · 교사 작성자 열 5개의 auth.users FK가 NO ACTION이라 계정 탈퇴가 막히던 것.
+ * 20261106200000_author_fk_set_null: 관리자 · 교사 작성자 열 5개의 auth.users FK가 NO ACTION이라 계정 탈퇴가 막히던 것.
  * 원래 정의는 원본 마이그레이션 문장을 그대로 잘라 쓴다(손으로 다시 쓰지 않는다).
  * 증명: ① 고치기 전 — 작성자가 있는 계정 삭제가 23503으로 막힌다(교사는 주석 이력 하나만으로도)
  *       ② 적용 — 다섯 FK SET NULL · 넷 NULL 허용 · 계정 삭제 완료 · 교재 판 · 공개 · 주석 이력 · 수정본 행은 그대로, 작성자만 NULL
@@ -11,7 +11,7 @@ import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 
 const read = (p) => readFile(new URL(p, import.meta.url), 'utf8');
-const migration = await read('../migrations/20261106180000_author_fk_set_null.sql');
+const migration = await read('../migrations/20261106200000_author_fk_set_null.sql');
 const rollback = await read('../../docs/sql/author-fk-set-null-20261106-rollback.sql');
 const editions = await read('../migrations/20260906024758_textbook_book_editions.sql');
 const overrides = await read('../migrations/20260712000100_content_overrides.sql');

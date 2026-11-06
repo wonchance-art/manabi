@@ -1,4 +1,4 @@
--- 복원: supabase/migrations/20261106180000_author_fk_set_null.sql → 작성자 FK 5개를 NO ACTION으로, 넷을 NOT NULL로 되돌린다.
+-- 복원: supabase/migrations/20261106200000_author_fk_set_null.sql → 작성자 FK 5개를 NO ACTION으로, 넷을 NOT NULL로 되돌린다.
 -- 되돌리면 관리자 · 교사 계정 탈퇴가 다시 막힌다. 탈퇴로 작성자가 NULL이 된 행이 있으면 SET NOT NULL이 실패한다 — 그 행을 먼저
 -- 다른 관리자 id로 채우거나(오너 결정) 이 파일을 쓰지 않는다. 필요할 때만 오너 확인 뒤 실행.
 BEGIN;
