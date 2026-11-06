@@ -2,7 +2,8 @@
  * 20261106170000_ai_daily_quota: 비싼 AI 경로의 하루 상한 카운터(usage_private.ai_daily_usage + public.consume_ai_daily_quota).
  * 증명: ① service_role이 한도까지 원자적으로 더하고, 한도에 닿으면 더하지 않고 거절 ② 한 번에 한도를 넘는 단위는 행도 만들지 않음
  *       ③ 주체 · 종류별로 따로 센다 ④ 잘못된 입력 · 원문 IP 주체는 거절 ⑤ anon · authenticated는 함수 · 스키마 · 표 모두 닫힘
- *       ⑥ 학습일 = KST 04시 경계 ⑦ 그날 첫 사용이 30일 지난 행을 치운다 ⑧ 재실행해도 기존 사용량 보존 ⑨ 복원 SQL
+ *       ⑥ 학습일 = KST 04시 경계 ⑦ 그날 첫 사용이 30일 지난 행을 치운다 ⑧ 재실행해도 기존 사용량 보존
+ *       ⑧b 20261107020000 forget_ai_daily_usage — 탈퇴 계정 줄만 지운다 · service_role만 ⑨ 복원 SQL
  *   node supabase/tests/ai-daily-quota.mjs
  */
 import assert from 'node:assert/strict';
@@ -11,6 +12,7 @@ import { PGlite } from '@electric-sql/pglite';
 
 const migration = await readFile(new URL('../migrations/20261106170000_ai_daily_quota.sql', import.meta.url), 'utf8');
 const rollback = await readFile(new URL('../../docs/sql/ai-daily-quota-20261106-rollback.sql', import.meta.url), 'utf8');
+const forget = await readFile(new URL('../migrations/20261107020000_forget_ai_daily_usage.sql', import.meta.url), 'utf8');
 const U = 'u:00000000-0000-4000-8000-0000000000a1', V = 'u:00000000-0000-4000-8000-0000000000b2';
 const IP = 'ip:' + 'ab'.repeat(32);
 let checks = 0;
@@ -97,6 +99,27 @@ await check('⑧ 재실행해도 기존 사용량 보존(만들기만 하는 파
   const before = await usage();
   await db.exec(migration);
   assert.deepEqual(await usage(), before);
+});
+
+await check('⑧b 탈퇴 정리(20261107020000) — 그 계정 u:<uid> 줄만 지운다 · 다른 계정 · IP 해시 줄은 그대로 · service_role만 · 다시 불러도 안전', async () => {
+  await as(null);
+  await db.exec(forget);
+  await db.exec(forget); // 재실행 안전(create or replace)
+  const uid = U.slice(2);
+  const before = await usage();
+  assert.ok(before.some(r => r.subject === U) && before.some(r => r.subject !== U), 'fixture has both');
+  for (const role of ['anon', 'authenticated']) {
+    await as(role);
+    await assert.rejects(db.query('select public.forget_ai_daily_usage($1)', [uid]), /permission denied/, `${role} cannot execute`);
+  }
+  await as('service_role');
+  const n = (await db.query('select public.forget_ai_daily_usage($1) n', [uid])).rows[0].n;
+  assert.equal(n, before.filter(r => r.subject === U).length, 'every day · kind row of that account');
+  assert.deepEqual(await usage(), before.filter(r => r.subject !== U));
+  await as('service_role');
+  assert.equal((await db.query('select public.forget_ai_daily_usage($1) n', [uid])).rows[0].n, 0, 'second call deletes nothing');
+  await assert.rejects(db.query('select public.forget_ai_daily_usage(null)'), /ai_quota_invalid/);
+  await as(null);
 });
 
 await check('⑨ 복원 SQL — 함수 · 표 · 스키마 제거', async () => {

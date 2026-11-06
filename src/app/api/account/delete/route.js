@@ -38,6 +38,10 @@ export async function POST(request) {
     // service_role 전용 함수(ACCOUNT-DELETE-001 · 002). 다시 불러도 안전하다.
     const { error: learningError } = await admin.rpc('delete_account_learning_records', { p_user: user.id });
     if (learningError) throw learningError;
+    // 하루 상한 사용량(`u:<uid>`)은 auth.users를 참조하지 않아 CASCADE가 지우지 못한다 — 처리방침 「탈퇴 즉시 삭제」대로 여기서 지운다
+    // (ACCOUNT-DELETE-004). 30일 집계 숫자뿐이라 지우지 못해도 탈퇴는 막지 않는다(30일 뒤 자동으로 치워진다).
+    const { error: usageError } = await admin.rpc('forget_ai_daily_usage', { p_user: user.id });
+    if (usageError) console.warn('[account/delete] usage rows not cleared', usageError.message);
     const { error } = await admin.auth.admin.deleteUser(user.id);
     if (error) throw error;
     return Response.json({ ok: true });
