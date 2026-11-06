@@ -1,0 +1,7 @@
+/* 중국어 글꼴 변수 · 크기 보정 대체 글꼴 — 첫 그림 뒤 시트를 붙이는 세그먼트(뷰어)용(VIEWER-FONT-SPLIT-001 2단계, 2026-11-07 KST).
+   ScFontScope · TcFontScope(next/font)가 주던 두 가지를 같은 값으로 준다: ① --font-noto-sc · --font-noto-tc = 「웹폰트, 크기 보정 대체」 스택
+   ② 그 대체 글꼴(Arial을 Noto 계측에 맞춘 @font-face). 웹폰트 @font-face 자체는 DeferredZhFontSheets가 붙이는 독립 시트에 있다.
+   값은 next/font가 같은 빌드에서 내는 것과 같다(getFallbackFontOverrideMetrics — 계약 deferredZhFontSheets.test.jsx). 이 파일은 작아서(1KB 미만) 렌더 차단이어도 된다. */
+@font-face{font-family:'Noto Sans SC Fallback';src:local("Arial");ascent-override:110.73%;descent-override:27.49%;line-gap-override:0.00%;size-adjust:104.76%}
+@font-face{font-family:'Noto Sans TC Fallback';src:local("Arial");ascent-override:110.73%;descent-override:27.49%;line-gap-override:0.00%;size-adjust:104.76%}
+:root{--font-noto-sc:'Noto Sans SC','Noto Sans SC Fallback';--font-noto-tc:'Noto Sans TC','Noto Sans TC Fallback'}
