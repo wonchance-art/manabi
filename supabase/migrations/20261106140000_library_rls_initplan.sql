@@ -39,6 +39,11 @@ INSERT INTO pg_temp.lri_pins SELECT * FROM pg_temp.lri_measure();
 
 DO $pre$
 BEGIN
+  -- 서재 원장 표가 없는 환경(로컬 fixture 사슬)은 「없는 표」(42P01)로 알린다 — 운영에는 세 표가 있다.
+  IF to_regclass('library_private.operations') IS NULL OR to_regclass('library_private.operation_items') IS NULL
+     OR to_regclass('library_private.folder_operations') IS NULL THEN
+    RAISE EXCEPTION 'relation library_private.operations does not exist' USING ERRCODE = '42P01';
+  END IF;
   IF (SELECT count(*) FROM pg_temp.lri_before) <> 3 THEN
     RAISE EXCEPTION 'library rls initplan: expected 3 policies, got %', (SELECT count(*) FROM pg_temp.lri_before);
   END IF;
