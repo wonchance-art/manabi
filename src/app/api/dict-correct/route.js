@@ -12,6 +12,7 @@ import { createClient } from '@supabase/supabase-js';
 import { buildPromotedEntry } from '@/lib/server/promoteDictCorrection';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 import { requireUser, isAdminUser } from '@/lib/server/auth';
+import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 
 export const runtime = 'nodejs';
 export const maxDuration = 15;
@@ -47,6 +48,8 @@ export async function POST(request) {
       { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
     );
   }
+  const overDaily = await dailyQuotaGate('dict', quotaSubject(request, user.id)); // 하루 상한(AI-QUOTA-001)
+  if (overDaily) return overDaily;
 
   let body;
   try {

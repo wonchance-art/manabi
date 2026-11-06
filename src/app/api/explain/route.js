@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { buildTokenExplainPrompt, parseTokenExplain, sanitizeTokenExplain } from '@/lib/server/explainToken';
 import { callLLM } from '@/lib/server/llm';
 import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
+import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 
 /**
  * 오답 해설 "왜?" — 오답 직후(인코딩 최강 순간) 왜 정답이 맞고 학습자의 선택이
@@ -64,6 +65,8 @@ export async function POST(request) {
   if (isRateLimited(`u:${authUser.id}`)) {
     return Response.json({ error: { message: '요청이 너무 잦아요. 잠시 후 다시 시도해 주세요.' } }, { status: 429 });
   }
+  const overDaily = await dailyQuotaGate('explain', quotaSubject(request, authUser.id), { shape: 'nested' }); // 하루 상한(AI-QUOTA-001)
+  if (overDaily) return overDaily;
 
   // Gemini 키가 없어도 Groq만으로 진행 — 하드 실패는 두 키 모두 없을 때만
   if (!hasPrimaryLLMKey() && !process.env.GROQ_API_KEY) {

@@ -93,9 +93,10 @@ export async function middleware(request) {
   }
   // 로그인(/auth)은 정적 판에 폼을 싣는다(ROUTE-AUDIT-2 P1). 메일 재설정 링크(?mode=reset) · 로그인 실패(?error=)만 첫 그림을 미루는 판으로 —
   // 정적 로그인 폼이 잠깐 보였다가 재설정 · 오류 화면으로 바뀌지 않게. 질의는 그대로 둔다(화면이 마운트 뒤 주소에서 읽는다).
+  // ?mode=signup(가입으로 바로 여는 링크)도 같은 판 — 로그인 폼이 보였다 「회원가입」으로 바뀌지 않게(발매 점검 #11, 2026-11-06 KST).
   if (pathname === '/auth') {
     const params = request.nextUrl.searchParams;
-    if (params.get('mode') === 'reset' || params.has('error')) return rewriteTo(request, '/auth/from-link');
+    if (['reset', 'signup'].includes(params.get('mode')) || params.has('error')) return rewriteTo(request, '/auth/from-link');
     return NextResponse.next();
   }
   const variant = guestStaticVariant(request);
