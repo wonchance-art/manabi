@@ -1,7 +1,7 @@
 import {noteAuth,readOwnNote,reply,errorReply} from '@/lib/server/studyNotes';
 import {fail} from '@/lib/server/learningContext';
 import {noteFromMaterial} from '@/lib/studyNotes';
-import {recognitionFingerprint} from '@/lib/noteRecognition';
+import {recognitionFingerprint,INK_RECOGNITION_CONSENT,INK_RECOGNITION_CONSENT_MESSAGE} from '@/lib/noteRecognition';
 import {rateLimit} from '@/lib/server/rateLimit';
 import {selectedInkBody,selectedInkImage,recognizeSelectedInk} from '@/lib/server/selectedInkRecognition';
 import { consumeDailyQuota, quotaSubject, DAILY_LIMIT_MESSAGE } from '@/lib/server/dailyQuota';
@@ -12,7 +12,7 @@ export async function POST(request,{params}) {
   try {
     const {supabase,user}=await noteAuth(),id=(await params).id;
     const body=await selectedInkBody(request);
-    if(!body||body.consent!=='selected-ink-to-gemini')fail(400,'선택한 필기를 Gemini로 보내는 인식을 눌러 주세요.');
+    if(!body||body.consent!==INK_RECOGNITION_CONSENT)fail(400,INK_RECOGNITION_CONSENT_MESSAGE);
     const row=await readOwnNote(supabase,user.id,id),note=noteFromMaterial(row);
     if(body.revision!==row.processed_json.metadata.studyNote.revision)fail(409,'노트가 바뀌었어요. 최신 필기를 다시 선택해 주세요.');
     let fingerprint;

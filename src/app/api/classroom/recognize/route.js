@@ -6,6 +6,7 @@ import {materialIdValid} from '@/lib/learningSources';
 import {fail,checkDb,reply,errorReply} from '@/lib/server/learningContext';
 import {selectedInkBody,selectedInkImage,recognizeSelectedInk} from '@/lib/server/selectedInkRecognition';
 import {rateLimit} from '@/lib/server/rateLimit';
+import {INK_RECOGNITION_CONSENT,INK_RECOGNITION_CONSENT_MESSAGE} from '@/lib/noteRecognition';
 import { consumeDailyQuota, quotaSubject, DAILY_LIMIT_MESSAGE } from '@/lib/server/dailyQuota';
 
 export const maxDuration=60;
@@ -25,7 +26,7 @@ export async function POST(request) {
   try {
     const auth=await requireUser();if(auth.error)fail(auth.status,auth.error);
     const body=await selectedInkBody(request);
-    if(!body||body.consent!=='selected-ink-to-gemini')fail(400,'선택한 필기를 Gemini로 보내는 인식을 눌러 주세요.');
+    if(!body||body.consent!==INK_RECOGNITION_CONSENT)fail(400,INK_RECOGNITION_CONSENT_MESSAGE);
     const team=await teacherTeam(auth.supabase,auth.user,body);
     // This board lives on the device. The hash is an opaque response binding,
     // not proof of a server document. The client checks selected ink again.

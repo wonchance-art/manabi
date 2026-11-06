@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { bcp47ForLanguage, speechTagForLanguage, voicePrefixForLanguage } from './speechLang';
 import { viewerLanguageInfo } from './viewerLanguage';
+import { ttsRequest } from './ttsRequest';
 
 const readerSpeechTag = speechTagForLanguage;
 const readerVoiceKey = language => viewerLanguageInfo(language)?.code || voicePrefixForLanguage(language);
@@ -31,7 +32,7 @@ function saveStoredVoice(langKey, voiceURI) {
  *  - listVoices / getSelectedVoice / setSelectedVoice — 폴백용 브라우저 음성 선택
  */
 
-// 서버 TTS 재생 캐시 (URL → objectURL) + 현재 재생 핸들
+// 서버 TTS 재생 캐시 (주소 = 문장 해시 → objectURL) + 현재 재생 핸들
 const serverAudioCache = new Map();
 let currentAudio = null;
 let audioGeneration = 0;
@@ -76,7 +77,8 @@ function rememberServerTtsFailure(now = Date.now()) {
   try { window.sessionStorage?.setItem(SERVER_TTS_SKIP_KEY, String(serverSkipUntil)); } catch { /* 메모리 값만 */ }
 }
 
-const serverTtsUrl = (text, language) => `/api/tts?lang=${encodeURIComponent(language)}&text=${encodeURIComponent(text)}`;
+// 주소에는 문장의 해시만, 문장은 헤더로(TTS-URL-001 — 접속 기록 · CDN 캐시 키에 문장을 남기지 않는다). 모양의 정본은 ttsRequest.js.
+const serverTtsUrl = (text, language) => ttsRequest(text, language)?.url;
 
 // ── 소리를 끝내 내지 못했을 때(TTS-GAP-001, 2026-10-17 KST) ──
 // 서버 음성 · 브라우저 음성이 모두 막히면 지금까지는 아무 소리 · 안내 없이 끝났다. 이유 하나를 구독자(providers의 안내)에게 알린다.
@@ -136,11 +138,13 @@ export function primeSpeechSynthesis(browser = typeof window === 'undefined' ? n
 }
 
 async function playServerTTS(text, language, playbackRate = 1, generation) {
-  const url = serverTtsUrl(text, language);
+  const request = ttsRequest(text, language);
+  if (!request) throw new Error('tts empty text');
+  const { url } = request;
   let objUrl = serverAudioCache.get(url);
   if (!objUrl) {
     if (serverTtsSkipped()) throw new Error('tts skipped: service config');
-    const res = await window.fetch(url);
+    const res = await window.fetch(url, { headers: request.headers });
     if (!res.ok) {
       const body = typeof res.json === 'function' ? await res.json().catch(() => null) : null;
       // 기다려도 곧 풀리지 않는 실패만 기억한다: 결제 · 크레딧(service_config) · 상류 무료 한도/권한(tts_unavailable,
@@ -173,9 +177,11 @@ async function playServerTTS(text, language, playbackRate = 1, generation) {
 const prefetching = new Map();
 export function prefetchSpeech(text, language) {
   if (typeof window === 'undefined' || !text || !getTtsCapabilities().serverAudio || serverTtsSkipped()) return;
-  const url = serverTtsUrl(text, language);
+  const tts = ttsRequest(text, language);
+  if (!tts) return;
+  const { url } = tts;
   if (serverAudioCache.has(url) || prefetching.has(url)) return;
-  const request = window.fetch(url).then(res => (res.ok ? res.blob() : null)).then(blob => {
+  const request = window.fetch(url, { headers: tts.headers }).then(res => (res.ok ? res.blob() : null)).then(blob => {
     if (blob && !serverAudioCache.has(url)) serverAudioCache.set(url, window.URL.createObjectURL(blob));
   }).catch(() => {}).finally(() => prefetching.delete(url));
   prefetching.set(url, request);

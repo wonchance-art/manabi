@@ -660,7 +660,9 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     // 복습 카드는 펼칠 때(포인터) 소리를 자동 재생한다(REV-SCOPE-R1B-1 §3-3) — 합성 무음 음성으로 서버 음성 경로를 대신한다.
     const speechRequests = [];
     await context.route('**/api/tts**', route => {
-      speechRequests.push(new URL(route.request().url()).searchParams.get('text'));
+      // 문장은 주소가 아니라 x-tts-text 헤더로 온다(TTS-URL-001) — 주소에 text가 있으면 계약 위반이다.
+      assert.equal(new URL(route.request().url()).searchParams.has('text'), false, 'TTS URL must not carry the sentence');
+      speechRequests.push(Buffer.from(route.request().headers()['x-tts-text'] || '', 'base64url').toString('utf8'));
       return route.fulfill({ status: 200, contentType: 'audio/wav', body: Buffer.from('UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=', 'base64') });
     });
     await page.goto('/french/vocab/a1', { waitUntil: 'domcontentloaded', timeout: config.timeout });

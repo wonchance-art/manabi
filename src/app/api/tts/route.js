@@ -1,23 +1,20 @@
 /**
  * 고품질 TTS 프록시 — Gemini TTS (gemini-3.1-flash-tts-preview)
- * GET /api/tts?text=...&lang=Japanese|English|French
+ * GET /api/tts?h=<sha256(lang|voice|문장)>&lang=Japanese|English|French|Korean|Chinese  +  헤더 x-tts-text: <문장 base64url>
+ *   문장은 주소에 싣지 않는다(TTS-URL-001 — 접속 기록 · CDN 캐시 키에 남지 않게). 캐시 키는 주소(h)라 같은 문장은 그대로 캐시에 맞고,
+ *   캐시에 없을 때 서버가 헤더 문장의 해시를 h와 대조해 다르면 거절한다 — h에 저장되는 소리는 언제나 h를 만든 문장의 소리다.
+ *   요청 모양 · 해시 · 음성 표의 정본은 src/lib/ttsRequest.js(클라 useTTS와 같이 쓴다).
  * 응답: audio/wav (PCM 24kHz mono → WAV 래핑), 불변 캐시 헤더로 CDN·브라우저 캐싱.
  * 실패 시 클라이언트(useTTS)가 브라우저 내장 음성으로 폴백.
  */
 
 import { isServiceConfigError } from '@/lib/errorMessage';
+import { TTS_VOICES as VOICES, TTS_TEXT_HEADER, TTS_TEXT_HEADER_MAX, normalizeTtsText, decodeTtsText, ttsHash } from '@/lib/ttsRequest';
 import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
 
 const TTS_MODEL = 'models/gemini-3.1-flash-tts-preview'; // 2.5-preview-tts 승계 — 동일 요청·PCM 응답 실측
 
-// 언어별 프리셋 음성 (Gemini prebuilt voices)
-const VOICES = {
-  Korean: 'Kore',
-  Japanese: 'Kore',   // 또렷하고 차분한 톤 — 일본어 학습 예문에 적합
-  English:  'Puck',   // 경쾌하고 명료한 톤
-  French:   'Aoede',  // 부드러운 톤 — 프랑스어 억양과 잘 어울림
-  Chinese:  'Kore',   // 중국어 자료실 개통(#965) — 성조가 또렷한 차분한 톤
-};
+// 언어별 프리셋 음성(Gemini prebuilt voices)은 ttsRequest.js의 TTS_VOICES — 해시에도 들어가 클라와 같은 표를 쓴다.
 
 const LANG_NAMES = { Korean: 'Korean', Japanese: 'Japanese', English: 'English', French: 'French', Chinese: 'Chinese' };
 
@@ -89,16 +86,36 @@ function pcmToWav(pcm, sampleRate) {
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const text = (searchParams.get('text') || '').trim().slice(0, 160);
+  // 문장을 주소에 실은 요청(옛 화면 · 직접 호출)은 받지 않는다 — 클라는 서버 음성 실패로 보고 브라우저 음성으로 넘어간다.
+  if (searchParams.has('text')) {
+    return Response.json({ error: 'text must not be in the URL' }, { status: 400 });
+  }
+  const hash = searchParams.get('h') || '';
   const lang = searchParams.get('lang') || 'English';
-
+  if (!/^[0-9a-f]{64}$/.test(hash)) {
+    return Response.json({ error: 'hash required' }, { status: 400 });
+  }
+  const encoded = request.headers.get(TTS_TEXT_HEADER) || '';
+  if (encoded.length > TTS_TEXT_HEADER_MAX) {
+    return Response.json({ error: 'text too long' }, { status: 400 });
+  }
+  const text = decodeTtsText(encoded);
   if (!text) {
     return Response.json({ error: 'text required' }, { status: 400 });
+  }
+  // 정규화한 문장만 받는다(160자 상한 · 앞뒤 공백 · NFC) — 같은 소리가 늘 같은 주소가 되게.
+  if (normalizeTtsText(text) !== text) {
+    return Response.json({ error: 'text not normalized' }, { status: 400 });
   }
   // lang을 임의 값으로 바꾸면 URL이 매번 달라져 CDN 캐시를 우회하고 유료 호출이 그대로 발생한다.
   // 지원 목록 밖은 거절해 캐시 우회 경로를 닫는다.
   if (!Object.prototype.hasOwnProperty.call(VOICES, lang)) {
     return Response.json({ error: 'unsupported lang' }, { status: 400 });
+  }
+  // 주소(캐시 키)와 문장을 묶는다 — 다르면 다른 문장의 소리가 이 주소에 캐시될 수 있으니 거절한다.
+  // 오류 응답에는 캐시 헤더가 없고 400은 CDN이 저장하지 않는 상태다(Vercel 「Cacheable response criteria」).
+  if (ttsHash(lang, text) !== hash) {
+    return Response.json({ error: 'hash mismatch' }, { status: 400 });
   }
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
@@ -172,7 +189,8 @@ export async function GET(request) {
       status: 200,
       headers: {
         'Content-Type': 'audio/wav',
-        // 같은 문장은 영구 캐시 — 콘텐츠가 고정 문구라 비용·지연 모두 절약
+        // 같은 문장은 영구 캐시 — 콘텐츠가 고정 문구라 비용·지연 모두 절약. 키는 주소(문장 해시)뿐이다:
+        // Vary에 x-tts-text를 넣지 않는다(넣으면 헤더 값마다 캐시가 갈리고, 해시가 이미 문장을 묶는다).
         'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
       },
     });

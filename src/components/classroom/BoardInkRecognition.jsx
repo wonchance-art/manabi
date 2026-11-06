@@ -6,6 +6,7 @@ import {BoardIconButton} from './BoardIcon';
 import {WordDisplayControls} from './TeachingWord';
 import {annotatedLanguage} from '../../lib/teachingWordLayout';
 import { friendlyToastMessage } from '../../lib/errorMessage';
+import {INK_RECOGNITION_CONSENT,INK_RECOGNITION_PROVIDER_LABEL} from '../../lib/noteRecognition';
 
 export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPlace,onClose,appearance,onAppearance}) {
   const root=useRef(null),request=useRef(null),alive=useRef(false),placing=useRef(false);
@@ -26,7 +27,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
       if(!await isCurrent(capture))throw new Error('선택한 필기가 바뀌었어요. 닫은 뒤 다시 선택해 주세요.');
       if(controller.signal.aborted||!alive.current)return;
       const result=await requestNote('/api/classroom/recognize',{method:'POST',signal:controller.signal,body:JSON.stringify({
-        rootId,teamKey:team.key,image:capture.image,fingerprint:capture.fingerprint,consent:'selected-ink-to-gemini',
+        rootId,teamKey:team.key,image:capture.image,fingerprint:capture.fingerprint,consent:INK_RECOGNITION_CONSENT,
       })});
       if(controller.signal.aborted||!alive.current)return;
       if(result.fingerprint!==capture.fingerprint||!await isCurrent(capture))throw new Error('선택한 필기가 바뀌었어요. 닫은 뒤 다시 선택해 주세요.');
@@ -60,7 +61,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={capture.image} alt="인식할 선택 영역의 필기"/>
       </details>
-      {!rows?<p>선택한 부분만 <strong>Google Gemini</strong>로 인식해요. 원래 필기는 그대로 남아요.</p>:<>
+      {!rows?<p>선택한 부분만 <strong>{INK_RECOGNITION_PROVIDER_LABEL}</strong>로 인식해요. 원래 필기는 그대로 남아요.</p>:<>
         <p className="board-ink-guide">표기와 뜻을 확인해 판에 놓으세요.</p>
         <div className="board-ink-results">{rows.map(row=><article key={row.index} data-placed={row.placed}>
           <div className="board-ink-row-heading"><label><input type="checkbox" checked={row.selected} disabled={row.placed||applying||!row.text.trim()||!row.meaning.trim()} onChange={event=>edit(row.index,{selected:event.target.checked})} aria-label={`${row.original} 놓기 선택`}/><span>{row.placed?'판에 놓음':row.uncertain?'표기·뜻 확인':'인식한 표현'}</span></label><small>원문 {row.original}</small></div>
