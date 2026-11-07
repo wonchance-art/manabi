@@ -509,7 +509,7 @@ function MaterialAddForm() {
   return (
     <div className="page-container add-page">
       <div className="page-header">
-        <p className="manabi-eyebrow">IMPORT / 내 서재</p>
+        <p className="manabi-eyebrow">내 서재 / 가져오기</p>
         <h1 className="page-header__title">새 자료 추가</h1>
       </div>
       <fieldset className="import-fields" disabled={isProcessing || !!completedId}>

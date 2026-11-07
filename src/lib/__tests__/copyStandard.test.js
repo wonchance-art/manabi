@@ -129,10 +129,10 @@ describe('실패 토스트 — failureMessage(errorMessage.js 정본)', () => {
 // COPY-EN-001(2026-10-17 KST) — §1 「화면 문구에 영어 원문을 쓰지 않는다」. 읽기 확인의 「New Test」 「Close」처럼
 // 버튼 · 안내가 영어로 남아 있던 것을 기존 한국어 라벨로 바꿨다. 새 영어 라벨이 화면에 들어오지 않게 막는다.
 // 보는 자리: 영어만 있는 JSX 글(>Close<)과 aria-label · title · placeholder · alt 속성. 관리 화면(admin)과 개발 동결된 월드(world)는 밖이다.
-// 허용 목록 = 의도한 영어(상호 · 서비스 이름 · 키 이름 · 예시 주소)와 오너 결정 대기(영문 눈썹 글) — 파일 · 글 · 이유를 함께 적는다.
+// 허용 목록 = 의도한 영어(상호 · 서비스 이름 · 키 이름 · 예시 주소) — 파일 · 글 · 이유를 함께 적는다.
+// 영문 눈썹 글(머리 줄)은 오너 승인으로 전부 한국어가 됐다(2026-11-06 #9 · 2026-11-07 목업 CrsGiHf5bS4tmQk3n2HVBx ②) — 허용 목록에 되살리지 않는다.
 const EN_EXCLUDED_DIRS = ['admin', 'world'];
 const EN_EXCLUDED_FILES = ['views/AdminPage.jsx', 'views/WorldPage.jsx', 'views/WorldMapPage.jsx'];
-const EN_OWNER_PENDING = '영문 눈썹 글(디자인 장식) — 한국어로 바꿀지 오너 결정 대기(COPY-EN-001 보고 2026-10-17 KST)';
 const EN_ALLOWLIST = [
   { file: 'app/privacy/page.jsx', text: 'Supabase', reason: '처리 위탁 서비스 이름(고유명사)' },
   { file: 'app/privacy/page.jsx', text: 'Vercel', reason: '처리 위탁 서비스 이름(고유명사)' },
@@ -144,23 +144,6 @@ const EN_ALLOWLIST = [
   { file: 'components/MaterialAddLinkSection.jsx', text: 'https://youtu.be/…', reason: '입력 예시 주소' },
   { file: 'components/materials/MaterialComposer.jsx', text: 'https://', reason: '입력 예시 주소' },
   { file: 'views/AuthPage.jsx', text: 'hello@example.com', reason: '입력 예시 메일 주소' },
-  ...[
-    ['components/materials/OriginalMaterialReader.jsx', 'KEPT FOR ANOTHER DAY'],
-    ['components/materials/OriginalMaterialReader.jsx', 'ORIGINAL LINK'],
-    ['components/materials/PassageStudy.jsx', 'READ INTO LEARNING'],
-    ['components/materials/PassageStudy.jsx', 'A PASSAGE TO KEEP'],
-    ['components/materials/MaterialComposer.jsx', 'YOUR LIBRARY'],
-    ['components/materials/MaterialComposer.jsx', 'SAVED TO YOUR LIBRARY'],
-    ['components/materials/MaterialComposer.jsx', 'A PAGE OF YOUR OWN'],
-    ['components/notes/StudyNotePage.jsx', 'PERSONAL NOTEBOOK'],
-    ['components/notes/NoteVocabulary.jsx', 'MY WORDS'],
-    ['components/books/BookMaterials.jsx', 'BEYOND THE BOOK'],
-    ['components/books/BookReview.jsx', 'WORDS TO KEEP'],
-    ['components/classroom/ClassroomUI.jsx', 'MANABI / CLASS'],
-    ['components/classroom/ClassroomUI.jsx', 'manabi / class'],
-    ['views/ClassBoardPage.jsx', 'manabi / class'],
-    ['views/ClassHubPage.jsx', 'MANABI / CLASS'],
-  ].map(([file, text]) => ({ file, text, reason: EN_OWNER_PENDING })),
 ];
 
 function englishLabels(files) {

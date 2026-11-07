@@ -6,6 +6,6 @@ export default function BookCover({ language = 'Japanese', compact = false, leve
     <div className="manabi-cover__top"><span>manabi 교재</span><b>{level || series.level}</b></div>
     {<strong>{title || <>작은 문장으로<br />시작하는 {series.name}</>}</strong>}
     <span className={`manabi-cover__glyph${['English', 'French'].includes(language) ? ' manabi-cover__glyph--latin' : ''}`} lang={{ Japanese: 'ja', Chinese: 'zh', English: 'en', French: 'fr' }[language]}>{series.glyph}</span>
-    <div className="manabi-cover__bottom"><span>{series.native}</span><small>{compact ? level || series.level : 'LANGUAGE COLLECTION'}</small></div>
+    <div className="manabi-cover__bottom"><span>{series.native}</span><small>{compact ? level || series.level : '외국어 문고'}</small></div>
   </div>;
 }
