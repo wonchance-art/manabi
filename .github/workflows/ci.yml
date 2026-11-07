@@ -105,6 +105,32 @@ jobs:
 
       - run: npm ci
 
+      # CJK 시스템 글꼴(CI-CJK-FONTS-001) — 러너 이미지에는 중 · 일 글꼴이 하나도 없어(fc-list :lang=zh/ja 빈 결과, 2026-11-07 KST)
+      # 조판 · 상자 e2e가 대체 글리프로 쟀다. 로컬 개발 컨테이너와 같은 묶음(Playwright install-deps의 글꼴 —
+      # WenQuanYi Zen Hei · IPAGothic · Unifont · Noto Color Emoji · FreeFont · Liberation · TLWG Loma · X 글꼴)을 깔아 기하를 맞춘다.
+      # 받은 .deb는 캐시해 두고 다음 실행은 apt-get update 없이 그 파일만 깐다.
+      - name: CJK 글꼴 캐시
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/e2e-font-debs
+          key: e2e-font-debs-${{ runner.os }}-ubuntu24-v1
+      - name: CJK 글꼴 설치(로컬과 같은 묶음)
+        run: |
+          pkgs="fonts-ipafont-gothic fonts-wqy-zenhei fonts-freefont-ttf fonts-liberation fonts-noto-color-emoji fonts-tlwg-loma-otf fonts-unifont xfonts-cyrillic xfonts-scalable"
+          cache="$HOME/.cache/e2e-font-debs"
+          if ls "$cache"/*.deb > /dev/null 2>&1; then
+            sudo dpkg -i "$cache"/*.deb
+          else
+            mkdir -p "$cache"
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends -o APT::Keep-Downloaded-Packages=true $pkgs
+            cp /var/cache/apt/archives/*.deb "$cache"/
+          fi
+          fc-cache -f > /dev/null
+          echo '### fc-list :lang=zh / :lang=ja' >> "$GITHUB_STEP_SUMMARY"
+          { fc-list :lang=zh family | sort -u; echo '---'; fc-list :lang=ja family | sort -u; } | tee -a "$GITHUB_STEP_SUMMARY"
+          test -n "$(fc-list :lang=zh family)" && test -n "$(fc-list :lang=ja family)"
+
       # NEXT_PUBLIC_* 는 빌드 시점에 번들로 인라인된다. 런타임에만 주면 클라이언트 인증이
       # 에러 없이 조용히 죽으므로(#869 오판 선례), 빌드와 실행이 반드시 같은 값을 써야 한다.
       # e2e:build 스크립트가 그 값을 고정해 들고 있다.
