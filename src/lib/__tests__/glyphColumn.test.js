@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { toTraditional, toTraditionalTW, zhengForm, zhengSure } from '../hanjaKo';
-import { glyphColumnLayout, glyphRows, jaGlyphRow, jaWarnFromTable, jaWordFromTable, readDictJa } from '../glyphColumn';
+import { GLYPH_COLUMN_EM, glyphColumnLayout, glyphLabelNames, glyphRows, jaGlyphRow, jaWarnFromTable, jaWordFromTable, readDictJa } from '../glyphColumn';
 import { loadJaWordsTable, loadZhengTable, prefetchGlyphTables, resetGlyphTablesForTest } from '../glyphTables';
 import { JA_FALSE_FRIENDS } from '../../../scripts/hanja-curated.mjs';
 
@@ -431,5 +431,41 @@ describe('지연 로드(T1) — 받은 표를 호출부에 넘긴다(PR ② 배�
     cancel();
     await new Promise((r) => setTimeout(r, 20));
     expect(late).not.toHaveBeenCalled();
+  });
+});
+
+describe('正 · 日 옆 두 글자 이름(오너 승인 2026-11-07 KST — 목업 CrsGiHf5bS4tmQk3n2HVBx ① 권장 A)', () => {
+  const read = (p) => fs.readFileSync(p, 'utf8');
+  it('부품은 이름을 라벨 안에 · 뷰어는 세 자리 모두 이름을 넘긴다 · 간체 · 번체 사전', () => {
+    const col = read('src/components/viewer/ViewerGlyphColumn.jsx');
+    expect(col).toContain('{ch}{name && <span className="reader-card-glyph__name">{name}</span>}');
+    expect(col).toContain('mark={<GlyphMark ch="正" name={names ? labels?.zhengName : null} />}');
+    expect(col).toContain('mark={<GlyphMark ch="日" name={names ? labels?.jaName : null} />}');
+    expect(read('src/views/ViewerPage.jsx').match(/zhengName: vt\('대만'\), jaName: vt\('일본'\)/g)).toHaveLength(3);
+    expect(read('src/lib/viewerMessages.js')).toContain("['대만','台湾','臺灣'],['일본','日本','日本'],");
+  });
+  it('이름은 들어갈 때만 — CSS는 data-names일 때만 라벨 폭을 바꾼다 · 폭 상수 26px', () => {
+    const css = read('src/components/viewer/reader-controls.css');
+    expect(css).toContain('.reader-card-glyph[data-names] .reader-card-glyph__label {width:auto;white-space:nowrap;margin-inline-end:.25rem;}');
+    expect(css).not.toMatch(/:not\(\[data-layout="table"\]\) \.reader-card-glyph__label/);
+    expect(GLYPH_COLUMN_EM.labelNamePx).toBe(26);
+    const col = read('src/components/viewer/ViewerGlyphColumn.jsx');
+    expect(col).toContain('let mode = glyphColumnLayout(input) || \'side\';');
+    expect(col).toContain('const names = glyphLabelNames(mode, input);');
+  });
+  it('판정 순서: 옆 열+이름 → 옆 열(이름 없이, 지금 그대로) → 표 — 배치는 이름과 상관없이 지금 판정 그대로', () => {
+    // 壮观 · 外国 · 束缚(2글자 + 요미 4자)은 같은 폭 계산: 이름 없이 261.2px, 이름까지 287.2px.
+    for (const yomi of ['そうかん', 'がいこく', 'そくばく']) {
+      const input = { chars: 2, zheng: true, ja: { yomi } };
+      const at = (containerPx) => { const mode = glyphColumnLayout({ ...input, containerPx }); return [mode, glyphLabelNames(mode, { ...input, containerPx })]; };
+      expect(at(332), yomi).toEqual(['side', true]); // 폰 카드 폭(실측 332px) — 목업 그대로 이름
+      expect(at(287.2), yomi).toEqual(['side', true]);
+      expect(at(286.2), yomi).toEqual(['side', false]); // 이름만 빠지고 옆 열은 지금 그대로
+      expect(at(261.2), yomi).toEqual(['side', false]);
+      expect(at(260.2), yomi).toEqual(['table', false]); // 표 — 지금 그대로, 이름 없음
+    }
+    expect(glyphLabelNames('stack', {})).toBe(true); // 아래 묶음은 폭이 남는다
+    expect(glyphLabelNames('none', {})).toBe(false);
+    expect(glyphColumnLayout({ chars: 2, zheng: true, ja: { yomi: 'そうかん' }, containerPx: 261.2 })).toBe(glyphColumnLayout({ chars: 2, zheng: true, ja: { yomi: 'そうかん' }, containerPx: 261.2, labelNames: false }));
   });
 });

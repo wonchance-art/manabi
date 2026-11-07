@@ -3787,8 +3787,8 @@ export default function ViewerPage({ seed } = {}) {
             </div>
             {/* 자형 열(正 · 日) — 표제어 오른쪽(안 1) 또는 글자 칸에 맞춘 표(안 2). 수업 모드 판서에는 없다(설계서 Q3). */}
             {materialLang === 'Chinese' && (glyphStep < 2
-              ? <ViewerGlyphColumn word={headText} zheng={glyph.zheng} ja={glyph.ja} hunCells={hunCells} cardKey={glyphCardKey} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} budgetStep={glyphStep} onBudget={(step) => raiseGlyphBudget(glyphCardKey, step)} />
-              : !glyphZhengBelow && <ViewerGlyphColumn word={headText} zheng={glyph.zheng} ja={null} hunCells={hunCells} cardKey={`${glyphCardKey}:side`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} sideOnly onSideMiss={() => glyphZhengMiss(glyphCardKey)} />)}
+              ? <ViewerGlyphColumn word={headText} zheng={glyph.zheng} ja={glyph.ja} hunCells={hunCells} cardKey={glyphCardKey} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기'), zhengName: vt('대만'), jaName: vt('일본') }} budgetStep={glyphStep} onBudget={(step) => raiseGlyphBudget(glyphCardKey, step)} />
+              : !glyphZhengBelow && <ViewerGlyphColumn word={headText} zheng={glyph.zheng} ja={null} hunCells={hunCells} cardKey={`${glyphCardKey}:side`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기'), zhengName: vt('대만'), jaName: vt('일본') }} sideOnly onSideMiss={() => glyphZhengMiss(glyphCardKey)} />)}
           </div>
         );
       })()}
@@ -3947,7 +3947,7 @@ export default function ViewerPage({ seed } = {}) {
       {/* AD-R3 PR③ 직접 묶은 단어 · 되돌리기 · ⋯ 패널(설계서 §6.3 목업 — 뜻 줄 바로 아래). 이 자료 소유자 · 중·일·영만. 「AI」 표시 없음. */}
       {!classStudyActive && renderBoundaryCard()}
       {/* 첫 화면 우선 2단계: 자형 표를 뜻 줄 아래로(스크롤 아래 — 표제어 옆에는 正 한 칸만). 접힘 0. */}
-      {!classStudyActive && materialLang === 'Chinese' && glyphStep >= 2 && <ViewerGlyphColumn className="reader-card-glyph--below" forceLayout="stack" word={headText} zheng={glyphZhengBelow ? glyph.zheng : null} ja={glyph.ja} cardKey={`${glyphCardKey}:below`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기') }} />}
+      {!classStudyActive && materialLang === 'Chinese' && glyphStep >= 2 && <ViewerGlyphColumn className="reader-card-glyph--below" forceLayout="stack" word={headText} zheng={glyphZhengBelow ? glyph.zheng : null} ja={glyph.ja} cardKey={`${glyphCardKey}:below`} labels={{ zheng: vt('대만 정체'), ja: vt('일본어 표기'), zhengName: vt('대만'), jaName: vt('일본') }} />}
       {/* 사전 뜻 줄 교정 직후 한 줄(설계서 §3.4) — 되돌리기 = 이전 값 그대로 같은 mutation 1회. 그 토큰을 다시 열 때까지. */}
       {senseUndo?.tokenId === selectedToken.id && <p className="reader-card-sense-undo"><span role="status">{vt('뜻을 바꿨어요')}</span>{' · '}<button type="button" className="btn btn--ghost btn--sm" disabled={senseBusy} onClick={undoSense}>{vt('되돌리기')}</button></p>}
       {isEditingToken && !classMeaning && (

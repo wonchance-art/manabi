@@ -16,13 +16,21 @@
 // 이 열은 읽기 전용이다(쓰기 0). 수업 모드 TeachingWord 판서에는 넣지 않는다(설계서 Q3 — 호출부가 일반 모드에서만 둔다).
 import { useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { glyphColumnLayout } from '../../lib/glyphColumn';
+import { glyphColumnLayout, glyphLabelNames } from '../../lib/glyphColumn';
 import { anchorCardHead, headScrolled } from '../../lib/readingViewport';
 
 const HUN_FONT_PX = 13; // .word-fit__hun 글꼴(.8125rem) — hunRubyCells의 hunN(em) → px
 const HUN_PAD_PX = 4; // .word-fit__hun 좌우 padding .125rem × 2
 const near = (a, b) => Math.abs(a - b) < 0.5;
 const sameXs = (a, b) => (a === b) || (!!a && !!b && a.length === b.length && a.every((x, i) => near(x, b[i])));
+
+// 正 · 日 글자 옆 두 글자 이름(「正 대만」「日 일본」 — 오너 승인 2026-11-07 KST, 목업 CrsGiHf5bS4tmQk3n2HVBx ① 권장 A).
+// 줄이 늘지 않아 첫 화면 예산(AE-R1)과 무관하다. 배치 판정은 이름 없이 지금 그대로, 이름은 들어갈 때만(glyphLabelNames —
+// 옆 열+이름 → 옆 열 → 표). 표('table')는 라벨 칸이 표제어 글자 칸에 맞춘 고정 폭이라 이름이 없다.
+// 읽기 프로그램은 줄 이름(aria-label — 대만 정체 · 일본어 표기)을 그대로 읽는다.
+function GlyphMark({ ch, name }) {
+  return <span className="reader-card-glyph__label" aria-hidden="true">{ch}{name && <span className="reader-card-glyph__name">{name}</span>}</span>;
+}
 
 function GlyphRow({ kind, row, label, mark, lang, table, xs }) {
   const chars = [...row.form];
@@ -45,7 +53,7 @@ export default function ViewerGlyphColumn({ word, zheng, ja, hunCells = null, ca
   const jRow = ja || (seen.current.ja ? { ...seen.current.ja, ghost: true } : null);
   if (zheng) seen.current.zheng = zheng;
   if (ja) seen.current.ja = ja;
-  const [layout, setLayout] = useState({ mode: forceLayout || 'side', xs: null });
+  const [layout, setLayout] = useState({ mode: forceLayout || 'side', xs: null, names: forceLayout === 'stack' });
   const shown = useRef(layout.mode); // 지금 그려진 배치 — 배치가 정해진 뒤에만 첫 화면 예산을 잰다
   shown.current = layout.mode;
   const n = [...String(word || '')].length;
@@ -79,13 +87,16 @@ export default function ViewerGlyphColumn({ word, zheng, ja, hunCells = null, ca
       const cells = [...(fit.querySelector('.surface')?.children || [])];
       const drawn = cells.length === n ? cells.map((c) => c.getBoundingClientRect().width) : [];
       const hunPx = Array.from({ length: n }, (_, i) => Math.max(hunCells?.[i]?.hunN ? (hunCells[i].hunN * HUN_FONT_PX + HUN_PAD_PX) * scale : 0, drawn[i] || 0));
-      let mode = glyphColumnLayout({ chars: n, zheng: !!zKey, ja: jKey ? { yomi: jRow.yomi } : null, containerPx: wrap.clientWidth, scale, hunPx }) || 'side';
+      const input = { chars: n, zheng: !!zKey, ja: jKey ? { yomi: jRow.yomi } : null, containerPx: wrap.clientWidth, scale, hunPx };
+      let mode = glyphColumnLayout(input) || 'side';
       if (sideOnly && mode !== 'side') { mode = 'none'; onSideMiss?.(); }
+      const names = glyphLabelNames(mode, input);
       const glyphs = [...fit.querySelectorAll('[data-glyph-i]')];
       const fr = fit.getBoundingClientRect();
       const settled = shown.current === mode;
       setLayout((prev) => {
-        if (prev.mode !== mode) return { mode, xs: null }; // 배치가 바뀌면 다음 그리기(그리기 전)에서 칸을 다시 잰다
+        if (prev.mode !== mode) return { mode, xs: null, names }; // 배치가 바뀌면 다음 그리기(그리기 전)에서 칸을 다시 잰다
+        if (prev.names !== names) return { ...prev, names };
         if (mode !== 'table') return prev;
         const xs = glyphs.length === n ? glyphs.map((g) => { const r = g.getBoundingClientRect(); return r.left + r.width / 2 - fr.left; }) : null;
         return sameXs(prev.xs, xs) ? prev : { ...prev, xs };
@@ -109,10 +120,11 @@ export default function ViewerGlyphColumn({ word, zheng, ja, hunCells = null, ca
   if ((!zRow && !jRow) || layout.mode === 'none') return null;
   const table = layout.mode === 'table';
   const xs = table ? layout.xs : null;
+  const names = !table && layout.names && !!(labels?.zhengName || labels?.jaName);
   return (
-    <div ref={ref} className={`reader-card-glyph${className ? ` ${className}` : ''}`} data-layout={layout.mode} style={{ '--glyph-rows': (zRow ? 1 : 0) + (jRow ? 1 : 0) }}>
-      {zRow && <GlyphRow kind="zheng" row={zRow} label={labels?.zheng} lang="zh-Hant-TW" table={table} xs={xs} mark={<span className="reader-card-glyph__label" aria-hidden="true">正</span>} />}
-      {jRow && <GlyphRow kind="ja" row={jRow} label={labels?.ja} lang="ja" table={table} xs={xs} mark={<span className="reader-card-glyph__label" aria-hidden="true">日</span>} />}
+    <div ref={ref} className={`reader-card-glyph${className ? ` ${className}` : ''}`} data-layout={layout.mode} data-names={names ? 'true' : undefined} style={{ '--glyph-rows': (zRow ? 1 : 0) + (jRow ? 1 : 0) }}>
+      {zRow && <GlyphRow kind="zheng" row={zRow} label={labels?.zheng} lang="zh-Hant-TW" table={table} xs={xs} mark={<GlyphMark ch="正" name={names ? labels?.zhengName : null} />} />}
+      {jRow && <GlyphRow kind="ja" row={jRow} label={labels?.ja} lang="ja" table={table} xs={xs} mark={<GlyphMark ch="日" name={names ? labels?.jaName : null} />} />}
     </div>
   );
 }

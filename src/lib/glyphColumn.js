@@ -105,12 +105,25 @@ export const GLYPH_COLUMN_EM = Object.freeze({
   headCharEm: 2.25, // .word-fit 글꼴 상한 clamp(2rem,4cqi,2.25rem)
   pinyinCellRem: 3.1, // 병음 루비 칸 최소 폭
   colPx: 16, // 열 글자(正·日 표기·라벨) 크기
+  labelNamePx: 26, // 라벨 옆 두 글자 이름(「대만」「일본」 · .6875rem × 2 + 앞 간격 .2em + 뒤 .25rem) — 글꼴과 무관한 상수(2026-11-07 KST)
   yomiPx: 16, // 요미 글자 크기
   innerGapPx: 10.5, // 라벨↔표기, 표기↔요미 간격
   sideGapPx: 16, // 표제어 ↔ 오른쪽 열 간격
   colPadPx: 13, // 오른쪽 열 구분선(padding-inline-start 12px + border 1px — reader-controls.css .reader-card-glyph[data-layout="side"])
   tableGutterRem: 1.75, // 안 2 라벨 칸(正·日) — 표제어를 이만큼 들인다(.word-fit margin-inline-start)
 });
+
+/**
+ * 正 · 日 옆 두 글자 이름(「正 대만」「日 일본」 — 오너 승인 2026-11-07 KST, 목업 CrsGiHf5bS4tmQk3n2HVBx ① 권장 A · 오케스트레이터 A안).
+ * 배치 판정은 이름 없이 지금 그대로 하고(glyphColumnLayout — 배치가 한 장면도 바뀌지 않는다), 이름은 들어갈 때만 붙인다:
+ * 옆 열 + 이름이 들어가면 이름, 옆 열만 들어가면 이름 없이(지금 빌드 그대로), 표면 이름 없음(라벨 칸이 표제어 글자 칸에 맞춘 고정 폭).
+ * 아래 묶음(stack)은 폭이 남아 이름을 붙인다. 화면 읽기 이름(줄 aria-label)은 이 판정과 상관없이 늘 있다.
+ */
+export function glyphLabelNames(mode, input = {}) {
+  if (mode === 'stack') return true;
+  if (mode !== 'side') return false;
+  return glyphColumnLayout({ ...input, labelNames: true }) === 'side';
+}
 
 /**
  * 안 1('side' — 표제어 오른쪽 열) / 안 2('table' — 글자 칸에 맞춘 표) / 안 2b('stack' — 표제어 아래 두 줄 묶음) 판정.
@@ -126,7 +139,7 @@ export const GLYPH_COLUMN_EM = Object.freeze({
  * @param {number[]} [p.hunPx] - 글자별 훈음 칸 폭(있으면 칸 폭 계산에 넣는다)
  * @returns {'side'|'table'|'stack'|null} 자형 열이 없거나 입력이 잘못되면 null
  */
-export function glyphColumnLayout({ chars, zheng = false, ja = null, containerPx, scale = 1, hunPx = [] } = {}) {
+export function glyphColumnLayout({ chars, zheng = false, ja = null, containerPx, scale = 1, hunPx = [], labelNames = false } = {}) {
   const n = Math.floor(Number(chars));
   if (!(n >= 1) || !(containerPx > 0) || !(scale > 0)) return null;
   if (!zheng && !ja) return null;
@@ -135,7 +148,7 @@ export function glyphColumnLayout({ chars, zheng = false, ja = null, containerPx
   let headPx = 0;
   for (let i = 0; i < n; i++) headPx += cell(i);
   const col = k.colPx * scale;
-  const rowBase = (1 + n) * col + k.innerGapPx * scale; // 라벨 + 표기 n자 + 간격
+  const rowBase = (1 + n) * col + (labelNames ? k.labelNamePx * scale : 0) + k.innerGapPx * scale; // 라벨(+ 이름) + 표기 n자 + 간격
   const zhengPx = zheng ? rowBase : 0;
   const yomiLen = ja ? [...text(ja.yomi)].length : 0;
   const jaPx = ja ? rowBase + k.innerGapPx * scale + yomiLen * k.yomiPx * scale : 0;
