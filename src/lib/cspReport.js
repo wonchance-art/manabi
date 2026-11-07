@@ -5,9 +5,10 @@
 // 남기는 것: 지시어 이름 · 막힌 것의 출처(origin)나 'inline' · 'eval' 같은 낱말 · 문서 경로의 틀(sanitizeRoute — ID는 :id). 전체 주소 · 쿼리 · 소스 조각(sample)은
 // 남기지 않는다(확장 프로그램 · 개인 주소가 섞인다). 계정 · IP와 잇지 않는다.
 import { sanitizeRoute } from './errorEvent';
+import { CSP_REPORTED_DIRECTIVES } from './cspPolicy';
 
-/** 우리가 보내는 정책의 지시어(next.config.mjs CSP_REPORT_ONLY) — 이 밖의 지시어 보고는 버린다(브라우저 · 확장의 잡음). */
-export const CSP_DIRECTIVES = Object.freeze(['object-src', 'base-uri', 'frame-ancestors', 'form-action']);
+/** 우리가 보내는 정책의 지시어와 그 세분 이름(lib/cspPolicy) — 이 밖의 지시어 보고는 버린다(브라우저 · 확장의 잡음). */
+export const CSP_DIRECTIVES = CSP_REPORTED_DIRECTIVES;
 export const MAX_REPORTS_PER_BODY = 5;
 const KEYWORDS = new Set(['inline', 'eval', 'data', 'blob', 'self', 'wasm-eval', 'trusted-types-policy', 'trusted-types-sink']);
 
