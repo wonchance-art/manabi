@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **LAUNCH-CHECKLIST-002 공개 런칭 체크리스트를 실제와 맞춤 (2026-11-07 KST)** PR `claude/launch-checklist`(오케스트레이터 지시 ② · 문서만):
+  Anatomy Studio 잔재(예시 도메인 · 발신자) 걷음 · 환경 변수 표를 코드가 읽는 이름으로(ANTHROPIC · CRON · SHARE_LINK_SECRET · VAPID · SUPADATA · QIITA · LLM_LOG 추가, #1673 새 키 이름 안내) ·
+  Node 24 전제 · 로그인 복귀 /auth/callback · 관측성 = observe.error_events 정본. §3 도메인은 오너 결정 대기로 비움.
+  발견: 운영에 SHARE_LINK_SECRET이 없어(미리 보기에만 있음) 수업 팀 암호 해제가 503 not_configured — 오너 env 작업 필요(하드리밋).
 - **SEC-CSP-002 2단계 — CSP Report-Only를 출처 허용 목록으로 넓힘 (2026-11-07 KST)** PR `claude/csp-report-only-wide`(오케스트레이터 승인 — 관측만):
   src/lib/cspPolicy.js 정본(default/script/style/img/font/connect(Supabase https·wss)/media/frame(youtube-nocookie)/worker/manifest + 네 지시어) · Report-Only에만 · 강제 · nonce는 오너 결정 그대로.
   보고 지시어에 세분 이름(-elem · -attr). 배포 전 시뮬 17경로 위반 0. **11/14 KST 집계 보고 예정**.
