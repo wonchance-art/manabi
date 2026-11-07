@@ -243,6 +243,24 @@ const WIKINEWS_EDITIONS = {
  * 주제 슬러그 — `source` 라벨 접미. 악센트를 떼고 소문자·비문자를 `_`로(Santé → sante). 한자 등
  * 비라틴 문자는 그대로 둔다(科技 → 科技) — 떼면 zh 카테고리가 전부 빈 문자열이 된다.
  */
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const FR_MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+/**
+ * Wikinews 발행일 — 기사가 붙는 날짜 카테고리(「Category:March 22, 2026」 · 프랑스어판 「Catégorie:22 mars 2026」)에서 YYYY-MM-DD.
+ * 없으면 null(모름 — 반복 문(freshSuggestions)이 따로 막는다). STALE-SUGGEST-001.
+ */
+export function wikinewsPublishedDate(categories) {
+  const pad = (n) => String(n).padStart(2, '0');
+  for (const raw of categories || []) {
+    const name = String(raw || '').replace(/^[^:]+:/, '').trim();
+    let m = /^([A-Z][a-z]+) (\d{1,2}), (\d{4})$/.exec(name);
+    if (m && MONTHS.includes(m[1])) return `${m[3]}-${pad(MONTHS.indexOf(m[1]) + 1)}-${pad(m[2])}`;
+    m = /^(\d{1,2}) (\p{L}+) (\d{4})$/u.exec(name);
+    if (m && FR_MONTHS.includes(m[2].toLowerCase())) return `${m[3]}-${pad(FR_MONTHS.indexOf(m[2].toLowerCase()) + 1)}-${pad(m[1])}`;
+  }
+  return null;
+}
+
 export function topicSlug(text) {
   return String(text || '')
     .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
@@ -294,6 +312,8 @@ export async function fetchWikinews(count = 3, lang = 'en', opts = {}) {
       thumbnail: null,
       transcript: text,
       level: opts?.level || edition.level,
+      // 발행일(날짜 카테고리) — 크론의 신선도 문(freshSuggestions)이 오래된 기사를 거른다.
+      publishedAt: wikinewsPublishedDate(got.categories),
       // 주제 태그 — 카테고리 수집일 때만(현행 최근 글은 라벨 무변경).
       ...(topic ? { source: `wikinews_${lang}_${topic}` } : {}),
     });

@@ -165,3 +165,29 @@ export function planCronRun(byLang) {
   }
   return [...text, ...video];
 }
+
+/**
+ * 오늘의 소식 신선도(STALE-SUGGEST-001 · 2026-11-08 KST). 공급원이 멈추면(Wikinews 2026-05 폐쇄 — 「Wikimedia Foundation closes Wikinews
+ * after 21 years」) 카테고리 최신 글이 그대로라 같은 기사가 날마다 「오늘」로 다시 들어왔다(운영 실측: 영어 9/6~11/8 64일 동안 기사 6개 · 321줄).
+ * 두 문으로 막는다 — ⑴ 최근 REPEAT_WINDOW_DAYS일 안에 이미 오늘의 소식이었던 id는 다시 넣지 않는다(공급원 무관)
+ * ⑵ 발행일을 아는 기사는 MAX_ARTICLE_AGE_DAYS일보다 오래되면 넣지 않는다(Wikinews는 「Category:<Month D, YYYY>」가 발행일).
+ */
+export const REPEAT_WINDOW_DAYS = 30;
+export const MAX_ARTICLE_AGE_DAYS = 30;
+
+/** YYYY-MM-DD(KST) → n일 전 YYYY-MM-DD. */
+export function daysBefore(dateStr, n) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
+/** 이미 실린 id(seen) · 발행일(article.publishedAt, YYYY-MM-DD)로 이번 날짜에 넣을 기사만 고른다. 순수 함수. */
+export function freshSuggestions(articles, { today, seen = new Set(), maxAgeDays = MAX_ARTICLE_AGE_DAYS } = {}) {
+  const oldest = today ? daysBefore(today, maxAgeDays) : null;
+  return (articles || []).filter((a) => {
+    if (!a || seen.has(a.videoId)) return false;
+    if (oldest && typeof a.publishedAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(a.publishedAt) && a.publishedAt < oldest) return false;
+    return true;
+  });
+}
