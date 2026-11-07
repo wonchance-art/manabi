@@ -1,77 +1,89 @@
 # 공개 런칭 체크리스트
 
-> `deployment-checklist.md`는 DB 마이그레이션 중심. 이 문서는 **첫 공개(public launch)** 시 한 번만 해야 하는 Supabase/인프라 설정을 정리한다.
+> `deployment-checklist.md`는 DB 마이그레이션 중심이다. 이 문서는 **첫 공개(public launch)** 때 한 번 하는 Supabase · Vercel · 도메인 설정이다.
+> 실제와 대조해 고친 날: 2026-11-07 KST(LAUNCH-CHECKLIST-002). 환경 변수 **값**은 이 문서에 적지 않는다(이름만).
 
 ## 1. Supabase 프로젝트 설정 (Dashboard)
 
 ### Authentication → URL Configuration
-- [ ] **Site URL** = 프로덕션 도메인 (예: `https://anatomy-studio.example.com`)
-- [ ] **Redirect URLs** 에 다음 추가:
-  - `https://<domain>/auth/callback` (OAuth/이메일 확인)
-  - `https://<domain>/auth?mode=reset` (비밀번호 재설정)
-  - `http://localhost:3000/**` (로컬 개발용, 런칭 후 제거 권장)
+- [ ] **Site URL** = 대표 도메인 — 오너 결정 대기(www · apex, DOMAIN-CANONICAL-001). 정해지면 `NEXT_PUBLIC_SITE_URL`과 같은 값으로 맞춘다.
+- [ ] **Redirect URLs**: 로그인 복귀는 모두 `/auth/callback`으로 온다(`src/lib/authRedirect.js` `authCallbackUrl` — OAuth · 이메일 확인 · 비밀번호 재설정은 `?next=`로 갈 곳을 싣는다).
+  - `https://<대표 도메인>/auth/callback` (와 `?next=` 붙은 꼴 — 패턴 `https://<대표 도메인>/auth/**`)
+  - 서빙 호스트가 둘(www · apex)인 동안은 두 호스트 모두
+  - `http://localhost:3000/**` (로컬 개발용, 런칭 뒤 제거 권장)
 
 ### Authentication → Email Templates
-- [ ] **Confirm signup** — 한국어로 번역 (기본값은 영어)
-- [ ] **Magic link** — 사용 안 하면 비활성화
-- [ ] **Reset password** — 본문의 `{{ .ConfirmationURL }}` 유지, 안내 문구만 한국어화
-- [ ] 발신자 이름 "Anatomy Studio" 등 브랜딩
+- [ ] **Confirm signup** — 한국어 본문(기본은 영어)
+- [ ] **Magic link** — 쓰지 않으면 끈다
+- [ ] **Reset password** — 본문의 `{{ .ConfirmationURL }}`은 그대로, 안내 문구만 한국어로
+- [ ] 발신자 이름 「manabi」
 
 ### Authentication → Providers
-- [ ] **Email** 활성화 (기본)
-- [ ] **Google OAuth** — 사용 시 Client ID/Secret 설정, 승인된 리디렉션 URI에 Supabase callback 추가
+- [ ] **Email** 켬(기본)
+- [ ] **Google OAuth** — Client ID/Secret, Google Cloud 콘솔의 승인된 리디렉션 URI에 Supabase 콜백, 승인된 JavaScript 원본에 대표 도메인
 
 ### Auth → Rate Limits
-- [ ] 이메일 발송 기본 한도(시간당 30회) 확인, 필요 시 증설
+- [ ] 이메일 발송 기본 한도(시간당 30회) 확인, 필요하면 늘린다(또는 자체 SMTP)
 
-### Storage (PDF/이미지 업로드 사용 시)
-- [ ] 버킷 공개/비공개 정책 확인
-- [ ] 버킷별 RLS 정책 재검토
+### Storage
+- [ ] 버킷 공개/비공개 정책 · 버킷별 RLS 재검토(PDF · 손글씨 · 설명판 업로드)
 
 ### RLS 감사
-- [ ] `public` 자료가 비로그인 사용자에게도 보이는지 확인
-- [ ] `profiles` 테이블은 본인만 UPDATE 가능해야 함
-- [ ] `user_vocabulary`, `reading_progress`, `grammar_notes`, `writing_practice` 모두 `user_id = auth.uid()` 기반 정책 확인
+- [ ] 공개(`public`) 자료가 비로그인에게도 보이는지
+- [ ] `profiles`는 본인만 UPDATE
+- [ ] 학습 기록 테이블(`user_vocabulary` · `reading_progress` · `grammar_notes` · `writing_practice` 등)이 `user_id = auth.uid()` 정책인지 — 상세 절차는 `/rls-audit` 스킬
 
-## 2. 환경 변수 (Vercel 등 배포 플랫폼)
+## 2. 환경 변수 (Vercel Production)
 
-| 이름 | 필수 | 설명 |
-|------|------|------|
+> 코드가 실제로 읽는 이름 기준(2026-11-07). **#1673(Supabase 새 키 이전)이 병합되면** 공개 키 · 비밀 키 이름이 바뀐다 — 그때 이 표도 고친다.
+
+| 이름 | 필수 | 쓰는 곳 |
+|------|------|---------|
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase 프로젝트 URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | anon 공개키 |
-| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | 계정 삭제 API 등 서버 전용 |
-| `NEXT_PUBLIC_SITE_URL` | ✅ | robots/sitemap/OG에 쓰임 |
-| `GEMINI_API_KEY` | ✅ | 분석용 |
-| `GROQ_API_KEY` | ⚠️ | 폴백용 (없어도 동작) |
-| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | ⚠️ | 설정 시 Plausible 스크립트 자동 주입 (예: `anatomy-studio.example.com`) |
-| `NEXT_PUBLIC_PLAUSIBLE_SRC` | ⚠️ | self-host 시 스크립트 URL 오버라이드 |
-| `NEXT_PUBLIC_SENTRY_DSN` | ⚠️ | Sentry 연동 시 (`src/lib/reportError.js`의 주석 해제 필요) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | 공개 키(#1673 뒤 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | 서버 전용 — 계정 삭제 · 큐레이터 목록 등(#1673 뒤 `SUPABASE_SECRET_KEY`) |
+| `NEXT_PUBLIC_SITE_URL` | ✅ | 정본 주소 — canonical · og:url · sitemap · robots(`src/lib/seo.js` `siteUrl()`가 기본값보다 먼저 쓴다). 대표 도메인과 같아야 한다 |
+| `ANTHROPIC_API_KEY` | ✅ | 텍스트 LLM — 사용자 내용 경로는 Claude만(LLM-PROVIDER-POLICY-001) |
+| `GEMINI_API_KEY` | ✅ | 문장 음성(TTS) 전용 · 단어 뜻 풀이 대체 |
+| `CRON_SECRET` | ✅ | 예약 작업 라우트(`/api/cron/*`) 인증 |
+| `SHARE_LINK_SECRET` | ✅ (수업) | 수업 팀 암호 해제 토큰 서명(`src/lib/server/classAccess.js`, 16자 이상). **없으면 `/api/class/<팀>/unlock`이 503 `not_configured`** |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` · `VAPID_PRIVATE_KEY` · `VAPID_SUBJECT` | ✅ (알림) | 복습 푸시 알림 |
+| `SUPADATA_API_KEY` | ⚠️ | 링크 가져오기의 YouTube 자막(`/api/import/link`) — 없으면 그 기능만 꺼짐 |
+| `GROQ_API_KEY` | ⚠️ | 단어 뜻 대체의 마지막 순서. 사용자 내용 경로에서는 쓰지 않는다 |
+| `QIITA_TOKEN` | ⚠️ | Qiita 글 가져오기 호출 한도 완화 |
+| `LLM_LOG` | ⚠️ | `on`일 때만 LLM 호출 로그(`src/lib/server/llm.js`) |
+| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` · `NEXT_PUBLIC_PLAUSIBLE_SRC` | ⚠️ | 설정하면 Plausible 스크립트를 넣는다(`src/app/layout.jsx`) |
+| `NEXT_PUBLIC_SENTRY_DSN` | ⚠️ | Sentry를 붙일 때(`src/lib/reportError.js`의 연동 블록 주석 해제 필요) |
+
+- 빌드가 스스로 정하는 값(`MANABI_SC_STYLESHEET` · `MANABI_TC_STYLESHEET` · `MANABI_RELEASE_*` · `NEXT_PUBLIC_BUILD_*` · `MANABI_FONT_HINT_*`)과 Vercel 시스템 값(`VERCEL_*`)은 넣지 않는다.
+- **런타임은 Node 24**(`package.json` `engines: 24.x` · CI도 24). `npm test`는 Node 24 Web Locks를 전제한 검사가 있어 22에서는 실패한다.
 
 ## 3. 도메인 / DNS
-- [ ] HTTPS 강제 (Vercel 기본)
-- [ ] `www` → apex 리디렉션 선택
-- [ ] `robots.txt`, `sitemap.xml`, `opengraph-image` 접근 확인
+- 대표 도메인(www · apex) **오너 결정 대기**(DOMAIN-CANONICAL-001). 결정이 나면 이 절과 §1 Site URL · §2 `NEXT_PUBLIC_SITE_URL`을 함께 채운다.
+- [ ] `robots.txt` · `sitemap.xml` · `opengraph-image` 접근 확인
 
 ## 4. 런칭 직전 점검
-- [ ] `npm run build` 로컬 또는 CI에서 통과
-- [ ] 모바일(iOS Safari, Android Chrome) 실기 확인
-  - [ ] 가입 → 로그인 → 자료 업로드 → 단어 저장 → 복습 루프
+- [ ] `npm run build`(Node 24) · `npm test` 로컬 또는 CI 통과
+- [ ] 모바일(iOS Safari · Android Chrome) 실기 확인
+  - [ ] 가입 → 로그인 → 자료 올리기 → 단어 저장 → 복습 순환
   - [ ] PWA 홈 화면 추가
-- [ ] 비밀번호 재설정 메일 실제 수신 테스트
-- [ ] 계정 삭제 → 재가입 플로우 1회 검증
+- [ ] 비밀번호 재설정 메일 실제 수신
+- [ ] 계정 삭제 → 다시 가입 한 번
+- [ ] 수업: 학생이 팀 암호로 들어가는지(`SHARE_LINK_SECRET` — §2)
 - [ ] 공개 자료 시드 — 아래 중 하나
-  - (A) 관리자 계정으로 로그인 → `/admin` → "스타터 콘텐츠 시드" 버튼 (`STARTER_MATERIALS` 기반 일괄 삽입)
-  - (B) 직접 자료실에서 공개(public) 자료 2~3개 업로드 후 가입자 프로필의 `role = 'admin'` 지정
-  - (C) Supabase Dashboard에서 `reading_materials` 에 `visibility='public'` 로 수동 1건 삽입
+  - (A) 관리자 계정으로 스타터 자료 일괄 넣기(`/api/admin/seed-starters`, `src/lib/starter-content.js`)
+  - (B) 자료실에서 공개 자료 2~3개를 올리고 그 계정 `profiles.role = 'admin'`
+  - (C) Supabase Dashboard에서 `reading_materials`에 `visibility='public'` 한 건
 
 ## 5. 런칭 후 24시간
-- [ ] Supabase Logs → 5xx 에러 모니터링
-- [ ] Gemini 사용량 관리자 페이지에서 에러율 확인
-- [ ] 첫 실제 가입자 UX 피드백 수집 채널 정하기 (이메일/디스코드 등)
+- [ ] 운영 오류 기록: `observe.error_events`(브라우저 · 서버 오류와 CSP 보고 `csp.*`, ERROR-OBSERVE-001 · SEC-HEADERS-001)
+- [ ] Vercel 런타임 오류(Hobby는 런타임 로그를 1시간만 보관 — 오류 묶음은 7일) · Supabase Logs(API 4xx/5xx · Postgres)
+- [ ] LLM 사용량 · 오류율(관리자 화면)
+- [ ] 첫 실제 가입자 의견을 받을 창구(이메일/디스코드 등)
 
 ## 6. 신고/모더레이션 (2026-04-16 추가)
 
-- 공용 자료 신고 테이블 `content_reports` 추가됨. 관리자는 Supabase Dashboard SQL Editor에서 아래 쿼리로 대기 중 신고 확인:
+- 공용 자료 신고 테이블 `content_reports`(자료 화면의 신고 단추 — `ReportMaterialButton.jsx`). 관리자는 Supabase Dashboard SQL Editor에서 대기 중 신고를 본다:
   ```sql
   select r.*, m.title, p.display_name as reporter
   from content_reports r
@@ -80,28 +92,25 @@
   where r.status = 'pending'
   order by r.created_at desc;
   ```
-- 조치 후 상태 업데이트:
+- 조치 뒤 상태 바꾸기:
   ```sql
   update content_reports
   set status = 'actioned', reviewed_at = now(), reviewer_note = '자료 비공개 처리'
   where id = '<report_id>';
 
-  -- 필요 시 자료 비공개 전환
+  -- 필요하면 자료 비공개 전환
   update reading_materials set visibility = 'private' where id = '<material_id>';
   ```
 
-## 7. 관측성 (선택)
+## 7. 관측성
 
-### Sentry 연동
-1. `npm i @sentry/nextjs`
-2. Sentry Wizard 실행: `npx @sentry/wizard@latest -i nextjs`
-3. `src/lib/reportError.js` 상단의 Sentry 연동 블록 주석 해제
-4. `NEXT_PUBLIC_SENTRY_DSN` 환경 변수 설정
-
-### Plausible 연동
-- `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`만 설정하면 `src/app/layout.jsx`가 자동으로 `<script>` 태그 삽입
-- Self-host 시 `NEXT_PUBLIC_PLAUSIBLE_SRC` 로 경로 지정
+- 정본은 자체 오류 기록 `observe.error_events`다(ERROR-OBSERVE-001 — 경로는 식별값을 걷은 틀, 브라우저는 계열만, 30일).
+- CSP는 지금 Report-Only다. 강제 전환 초안과 조건은 `docs/security-csp.md`.
+- 성능(첫 그림) 측정 규칙은 `docs/perf-measurement.md`.
+- 선택:
+  - Sentry: `npm i @sentry/nextjs` → `npx @sentry/wizard@latest -i nextjs` → `src/lib/reportError.js`의 연동 블록 주석 해제 → `NEXT_PUBLIC_SENTRY_DSN`
+  - Plausible: `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`만 넣으면 `src/app/layout.jsx`가 스크립트를 넣는다(자체 호스팅이면 `NEXT_PUBLIC_PLAUSIBLE_SRC`)
 
 ## 8. 알려진 한계
-- In-memory rate limiter(`src/lib/server/rateLimit.js`)는 **단일 인스턴스 기준**. 서버리스/멀티 인스턴스 배포 시 Upstash Ratelimit 등으로 교체 필요.
-- 현재 `/api/analyze`는 로그인 사용자만 호출 가능 (401 차단) — 비로그인 랜딩 데모는 정적 샘플임.
+- 분당 요청 제한(`src/lib/server/rateLimit.js`)은 **인스턴스 메모리 기준**이라 서버리스 인스턴스마다 따로 센다. AI 하루 이용 한도는 DB 기준이라 인스턴스와 무관하다(`usage_private.ai_daily_usage` — 로그인 = 계정, 비로그인 = IP 해시).
+- `/api/analyze`는 로그인 사용자만 부른다(401). 손님에게 보이는 분석은 미리 분석해 둔 공개 자료다.
