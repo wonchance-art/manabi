@@ -46,7 +46,9 @@ describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', ()
     expect(viewer).toContain('src/views/ViewerPage.jsx');
     expect(viewer).toContain('src/components/Layout.jsx');
     expect(viewer).not.toContain('src/views/VocabPage.jsx'); // 복습실은 제 하위 집합 — 뷰어 파일을 키우지 않는다
-    expect(sourceFiles(ROOT, 'vocab')).toEqual(['src/components/Layout.jsx', 'src/lib/webNavigation.js', 'src/views/VocabPage.jsx']);
+    // 공통 푸터는 손님 복습실 첫 화면에 보인다 — 빼면 조각 14 → 16(앞단 실측 2026-11-07 KST). 뷰어는 푸터가 없어(몰입 화면) 넣지 않는다.
+    expect(sourceFiles(ROOT, 'vocab')).toEqual(['src/components/Layout.jsx', 'src/lib/webNavigation.js', 'src/views/VocabPage.jsx', 'src/components/web/SiteFooter.jsx']);
+    expect(viewer).not.toContain('src/components/web/SiteFooter.jsx');
     const page = fs.readFileSync(path.join(ROOT, 'src/views/VocabPage.jsx'), 'utf8');
     const block = sliceBlock(page, 'vocab-guest', 'VocabPage.jsx');
     expect(block).toContain('review-guest'); // 손님 첫 화면 마크업이 표식 안에 있다
