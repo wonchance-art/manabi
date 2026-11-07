@@ -878,6 +878,11 @@
 
 ## Claude (claude/*)
 ### doing
+- **VOCAB-GUEST-CLS-001 복습실 손님 화면 자리 이동 0.07 → 0 (2026-11-07 KST)** PR `claude/vocab-guest-cls`(오케스트레이터 지시 · 버그 수정, 최종 화면 무변경):
+  원인 = 글꼴 교체로 줄 수가 바뀜 — 손님 안내 문단이 첫 그림에선 시스템 글꼴(대체 「Noto Sans KR Fallback」 = Arial에 한글 없음)로 4줄, 4.15s에 KR 조각이 와 3줄로
+  줄며 단추 줄이 25px 올라감(컨테이너 500 → 424px). 하이드레이션 · 클라이언트 상태 · 손님 판정과 무관(손님 분기는 정적 마크업).
+  고침: 첫 화면 한글 하위 집합(KR-VIEWER-SUBSET-001)을 복습실 세그먼트에도 싣고 미리 받는다 — 글자 출처에 VocabPage(+11자 → 419자 · 52KB), 공용 preloadKrUiSubset.
+  게이트: 운영 HTML 주입 교대 3쌍 CLS 0.07 → 0 · 최종 높이 424 동일 · woff2 12 → 5 / 벽 vocab 손님 · 빈 · 채움 · 카드 + 뷰어 2 × 라이트 · 다크 × 390 · 1280 = 24장 픽셀 차 0.
 - **KR-VIEWER-SUBSET-001 뷰어 UI 한글을 한 파일로 (2026-11-07 KST)** PR `claude/kr-viewer-subset`(오케스트레이터 승인 (b) · 화면 동일 성능):
   우선순위 실측(운영 /viewer/50): 글꼴(VeryHigh) 약 460KB가 2.5–7s 동안 스크립트(Low)와 대역을 나눠 하이드레이션이 늦었다 — 첫 화면 한글 90자가 KR 조각 10개(157KB)에 흩어짐.
   뷰어 · 셸 UI 문자열의 한글 408자(scripts/fonts/kr-viewer-chars.mjs — 정본)를 같은 판 원본(NotoSansKR[wght] 2.004, sha256 고정 · 저장소 밖 캐시)에서
