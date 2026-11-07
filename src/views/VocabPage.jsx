@@ -1524,6 +1524,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
     }
   }, [inSession, user?.id, queryClient]);
 
+  // kr-subset:vocab-guest:begin — 손님 첫 화면. 이 사이 한글이 복습실 첫 화면 하위 집합 글자다(scripts/fonts/kr-viewer-chars.mjs · VOCAB-SUBSET-SMALL-001).
   if (!user && explicitScope) return <div className="page-container"><h1>{scopeHeading(explicitScope.scope)}</h1><p>담은 표현은 로그인한 계정에 보관돼요.</p><div className="manabi-row"><Link href={authEntryHref(serializeReviewScope(explicitScope.scope, { returnTo: explicitScope.returnTo }))}>로그인하고 이어가기 →</Link>{explicitScope.returnTo && <Link href={explicitScope.returnTo}>← 교재로</Link>}</div></div>;
   if (!user) {
     // 단어장은 계정 기반이지만 문법 복습은 이 기기 기록만으로도 이어갈 수 있다 —
@@ -1542,6 +1543,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       </div>
     );
   }
+  // kr-subset:vocab-guest:end
 
   const vocabList = (<VocabList
           vocab={vocab}

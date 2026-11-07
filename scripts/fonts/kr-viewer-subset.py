@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""뷰어 한글 하위 집합 재생성(KR-VIEWER-SUBSET-001, 2026-11-07 KST).
+"""첫 화면 한글 하위 집합 재생성(KR-VIEWER-SUBSET-001 · VOCAB-SUBSET-SMALL-001, 2026-11-07 KST) — 뷰어 · 복습실 둘 다.
 
 문구가 바뀌어 CI 계약(src/components/fonts/__tests__/krViewerSubset.test.js)이 「추출한 한글 ⊄ 목록」으로 실패할 때만 손으로 돌린다.
 빌드 · CI는 이 스크립트를 돌리지 않고, 원본 글꼴도 받지 않는다(커밋된 woff2 · JSON · CSS만 쓴다).
 
   python3 -m pip install fonttools brotli          # 한 번
-  python3 scripts/fonts/kr-viewer-subset.py         # 원본을 캐시(저장소 밖)로 받아 sha256 확인 → 하위 집합 · 목록 · CSS를 다시 쓴다
+  python3 scripts/fonts/kr-viewer-subset.py         # 원본을 캐시(저장소 밖)로 받아 sha256 확인 → 하위 집합마다 woff2 · 목록 · CSS를 다시 쓴다
 
 원본은 운영 next/font 조각과 같은 판(Noto Sans KR 2.004 — vendor/google-fonts/files/notosanskr/v40과 윤곽선 · 너비가 같음을 확인)이고,
 표 구성도 Google 조각과 같게 만든다(힌팅 없음 · prep/GDEF 없음 · 가변 wght 축 유지) — 그래서 같은 글자의 그림이 같다.
@@ -25,11 +25,10 @@ SOURCE_URL = 'https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskr
 SOURCE_SHA256 = '194018e6b2b293a7964f037b25c0249ce1418bc9ab3c971060a03aa57861e252'
 SOURCE_VERSION = 'Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603'
 OUT_DIR = os.path.join(ROOT, 'src', 'components', 'fonts', 'kr-viewer')
-# 글꼴 파일은 public 아래 내용 해시 이름으로 — 뷰어 레이아웃이 그 주소를 미리 받는다(preload). 첫 그림 뒤에 도착하면 상단 막대의 한글이
+# 글꼴 파일은 public 아래 내용 해시 이름으로 — 싣는 세그먼트 레이아웃(뷰어 · 복습실)이 그 주소를 미리 받는다(preload). 첫 그림 뒤에 도착하면 상단 막대의 한글이
 # 대체 글꼴 → 하위 집합으로 바뀌며 도구 묶음이 4px 밀렸다(운영 실측 CLS 0.0002, #1721 뒤). 이름이 내용이라 1년 immutable(next.config).
 PUBLIC_DIR = os.path.join(ROOT, 'public', 'fonts', 'kr-viewer')
 PUBLIC_HREF = '/fonts/kr-viewer'
-WOFF2_STEM = 'noto-sans-kr-viewer'
 # src/app/layout.jsx Noto_Sans_KR({ weight: ['400', '500', '700'] })와 같은 셋 — 계약이 대조한다.
 NEXT_FONT_WEIGHTS = ('400', '500', '700')
 CACHE = os.path.join(os.environ.get('MANABI_FONT_CACHE') or tempfile.gettempdir(), 'manabi-font-src')
@@ -71,18 +70,16 @@ def ranges(codepoints):
     return ', '.join(f'U+{a:04X}' if a == b else f'U+{a:04X}-{b:04X}' for a, b in out)
 
 
-def main():
+def build(name, spec, src):
+    """하위 집합 하나 — woff2(내용 해시 이름) · 목록 JSON · CSS를 쓴다."""
     from fontTools import subset
     from fontTools.ttLib import TTFont
 
-    chars = subprocess.run(['node', os.path.join(ROOT, 'scripts', 'fonts', 'kr-viewer-chars.mjs')], check=True, capture_output=True, text=True).stdout
-    src = source_font()
+    chars, stem = spec['chars'], spec['stem']
     font = TTFont(src)
     if font['name'].getDebugName(5) != SOURCE_VERSION:
         sys.exit(f'원본 판이 다르다: {font["name"].getDebugName(5)}')
-    os.makedirs(OUT_DIR, exist_ok=True)
-    os.makedirs(PUBLIC_DIR, exist_ok=True)
-    out = os.path.join(PUBLIC_DIR, f'{WOFF2_STEM}.tmp.woff2')
+    out = os.path.join(PUBLIC_DIR, f'{stem}.tmp.woff2')
     options = subset.Options()
     options.flavor = 'woff2'
     options.layout_features = ['*']
@@ -105,9 +102,10 @@ def main():
         sys.exit('가변 wght 축이 빠졌다')
 
     digest = sha256(out)
-    final = os.path.join(PUBLIC_DIR, f'{WOFF2_STEM}.{digest[:16]}.woff2')
+    final = os.path.join(PUBLIC_DIR, f'{stem}.{digest[:16]}.woff2')
     for old in os.listdir(PUBLIC_DIR):
-        if old.startswith(WOFF2_STEM) and old.endswith('.woff2') and os.path.join(PUBLIC_DIR, old) not in (out, final):
+        # 같은 stem의 옛 판만 지운다(다른 하위 집합 파일은 그대로).
+        if old.startswith(stem + '.') and old.endswith('.woff2') and os.path.join(PUBLIC_DIR, old) not in (out, final):
             os.remove(os.path.join(PUBLIC_DIR, old))
     os.replace(out, final)
     out = final
@@ -115,14 +113,14 @@ def main():
 
     codepoints = sorted(ord(c) for c in chars)
     meta = {
-        'note': 'KR-VIEWER-SUBSET-001 — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다.',
+        'note': f'KR-VIEWER-SUBSET-001 ({name}) — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다.',
         'chars': chars,
         'count': len(chars),
         'source': {'url': SOURCE_URL, 'sha256': SOURCE_SHA256, 'version': SOURCE_VERSION},
         'woff2': {'href': href, 'sha256': digest, 'bytes': os.path.getsize(out)},
         'unicodeRange': ranges(codepoints),
     }
-    with open(os.path.join(OUT_DIR, 'subset.json'), 'w', encoding='utf8') as f:
+    with open(os.path.join(OUT_DIR, spec['json']), 'w', encoding='utf8') as f:
         json.dump(meta, f, ensure_ascii=False, indent=1)
         f.write('\n')
     # 굵기는 next/font 선언과 같은 셋(400 · 500 · 700)을 따로 — 범위(100 900)로 선언하면 600 같은 중간 굵기를 진짜 600으로 그려
@@ -133,14 +131,23 @@ def main():
         for w in NEXT_FONT_WEIGHTS
     )
     css = (
-        '/* 뷰어 한글 하위 집합(KR-VIEWER-SUBSET-001) — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다.\n'
+        f'/* 첫 화면 한글 하위 집합 {name}(KR-VIEWER-SUBSET-001) — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다.\n'
         '   next/font의 Noto Sans KR과 같은 family · 같은 판 · 같은 윤곽선 · 같은 굵기 선언(400 · 500 · 700)이다. 같은 family의 @font-face가\n'
-        '   겹치면 뒤에 선언한 것이 먼저라(CSS Fonts 4) 뷰어 UI 한글은 이 한 파일로 그리고, 목록 밖 글자는 next/font 조각으로 넘어간다. */\n'
+        '   겹치면 뒤에 선언한 것이 먼저라(CSS Fonts 4) 화면 UI 한글은 이 한 파일로 그리고, 목록 밖 글자는 next/font 조각으로 넘어간다. */\n'
         + faces
     )
-    with open(os.path.join(OUT_DIR, 'krViewerSubset.css'), 'w', encoding='utf8') as f:
+    with open(os.path.join(OUT_DIR, spec['css']), 'w', encoding='utf8') as f:
         f.write(css)
-    print(f'{len(chars)}자 · {meta["woff2"]["bytes"]} bytes → {os.path.relpath(out, ROOT)} ({href})')
+    print(f'{name}: {len(chars)}자 · {meta["woff2"]["bytes"]} bytes → {os.path.relpath(out, ROOT)} ({href})')
+
+
+def main():
+    specs = json.loads(subprocess.run(['node', os.path.join(ROOT, 'scripts', 'fonts', 'kr-viewer-chars.mjs'), '--json'], check=True, capture_output=True, text=True).stdout)
+    src = source_font()
+    os.makedirs(OUT_DIR, exist_ok=True)
+    os.makedirs(PUBLIC_DIR, exist_ok=True)
+    for name, spec in specs.items():
+        build(name, spec, src)
 
 
 if __name__ == '__main__':
