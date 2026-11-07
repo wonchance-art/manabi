@@ -32,7 +32,7 @@ export default function RouteError({ error, reset }) {
       <p style={{ color: 'var(--text-secondary)', marginBottom: 24, maxWidth: 420, lineHeight: 1.6 }}>
         {isNetwork
           ? '연결이 불안정한 것 같아요. 잠시 후 다시 시도해 주세요.'
-          : '잠시 후 다시 시도해 주세요. 문제가 계속되면 아래 오류 ID를 알려 주세요.'}
+          : '잠시 후 다시 시도해 주세요. 계속되면 도움말에서 아래 오류 ID와 함께 알려 주세요.'}
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
         <button className="btn btn--primary btn--md" onClick={() => retryRouteError(error, reset)}>
@@ -41,6 +41,12 @@ export default function RouteError({ error, reset }) {
         <Link href="/" className="btn btn--ghost btn--md">
           홈으로
         </Link>
+        {/* 오류 ID를 알릴 곳 — 도움말(문의 안내). 연결 끊김 때는 다시 시도가 답이라 두지 않는다(목업 CrsGiHf5bS4tmQk3n2HVBx ③-2). */}
+        {!isNetwork && (
+          <Link href="/help" className="btn btn--ghost btn--md">
+            도움말
+          </Link>
+        )}
       </div>
       {error?.digest && (
         <p style={{ marginTop: 20, fontSize: '0.72rem', color: 'var(--text-muted)' }}>
