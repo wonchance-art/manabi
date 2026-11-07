@@ -2,6 +2,10 @@
 
 지금 운영은 CSP를 **보고만** 한다(`Content-Security-Policy-Report-Only`, SEC-HEADERS-001 · `next.config.mjs`).
 이 문서는 강제(`Content-Security-Policy`)로 옮길 때 쓸 허용 목록 초안과 근거다. **전환은 아직 하지 않는다**(오케스트레이터 지시).
+
+> **진행 (2026-11-07 KST)**: 2단계 목록을 **Report-Only로 넓혔다**(오케스트레이터 승인 — 관측을 늘리는 일, 강제 · nonce 아님). 정책 정본은 `src/lib/cspPolicy.js`,
+> 보고를 받는 지시어는 `src/lib/cspReport.js`(세분 이름 `-elem` · `-attr` 포함). 배포 전 확인: 넓힌 정책을 운영 응답에 얹어 17경로(손님 · 폰, 끝까지 스크롤) 위반 0.
+> **7일 뒤(2026-11-14 KST)** `csp.*`를 지시어 · 출처별로 집계해 강제 여부를 오너에게 올린다.
 보고 수신은 `/api/csp-report` → 운영 오류 기록 `observe.error_events`(kind `csp.<지시어>`, `src/lib/cspReport.js`)다.
 
 ## 1. 지금까지 들어온 보고 (2026-11-07 15:30 KST 집계)
@@ -80,6 +84,6 @@ report-uri /api/csp-report; report-to csp
 - **Supabase 저장소 이미지**: 지금 화면은 자체 보관 이미지만 쓴다. 저장소 공개 URL을 화면에 직접 쓰는 기능이 생기면 `img-src`에 더한다.
 
 ## 4. 다음 순서 제안
-1. 2단계 목록을 **Report-Only로 넓힌다**(`CSP_DIRECTIVES` · 계약 갱신, 강제 없음). 결정이 필요하다 — 지금 계약이 「fetch 계열 지시어 없음」을 고정해 두었다.
+1. ~~2단계 목록을 Report-Only로 넓힌다~~ — 2026-11-07 적용(SEC-CSP-002). 계약은 「fetch 계열은 Report-Only에만 · 강제 헤더 없음 · nonce 없음」으로 바뀌었다.
 2. 실제 사용 7일 뒤 `observe.error_events`의 `csp.*`를 지시어 · 출처별로 집계한다. 허용 목록을 고친다.
 3. 1단계(네 지시어) 강제 → 2단계 강제 순서로 옮긴다. 각 단계마다 운영 사후로 화면 순회 · 오류 기록을 확인한다.
