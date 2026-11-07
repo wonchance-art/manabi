@@ -137,12 +137,33 @@ const tokenTexts=async(f,line)=>f.page.evaluate(l=>[...document.querySelectorAll
 const bodyLine=async(f,line)=>{const ids=await tokenTexts(f,line);return ids.map(id=>row(f).processed_json.dictionary[id]?.text);};
 const until=async(check,ms=15000)=>{const end=Date.now()+ms;while(Date.now()<end){if(await check())return;await new Promise(r=>setTimeout(r,60));}assert.fail('condition not met in time');};
 const closeSheet=async f=>{const close=f.page.getByRole('button',{name:'보조 패널 닫기',exact:true});if(await close.count()&&await close.isVisible())await close.click();};
+// 간헐 실패 진단(BOUNDARY-DRAG-DIAG — CI #1738 · #1739: 드래그 뒤 「한 단어로 묶기」가 없거나 꺼진 채, 로컬 반복 재현 0):
+// 드래그 시작 · 끝 지점의 요소(hit) · 두 토큰 상자 · 줄 · 실제로 고른 토큰 · 패널/버튼/이유를 f.dragDiag에 남긴다. 판정은 그대로다.
+const hitAt=(f,pts)=>f.page.evaluate(pts=>pts.map(([x,y])=>{const e=document.elementFromPoint(x,y);
+ return {x:Math.round(x),y:Math.round(y),tag:e?.tagName??null,cls:String(e?.className||'').slice(0,60),tid:e?.closest?.('[data-tid]')?.dataset.tid??null};}),pts);
 async function drag(f,fromId,toId) {
  await closeSheet(f);
  const a=await f.page.locator(`[data-source-token="${fromId}"]`).boundingBox(),b=await f.page.locator(`[data-source-token="${toId}"]`).boundingBox();
- await f.page.mouse.move(a.x+a.width/2,a.y+a.height*.7);await f.page.mouse.down();
- await f.page.mouse.move(b.x+b.width/2,b.y+b.height*.7,{steps:12});await f.page.waitForTimeout(150);
+ const pa=[a.x+a.width/2,a.y+a.height*.7],pb=[b.x+b.width/2,b.y+b.height*.7];
+ const hit=await hitAt(f,[pa,pb]);
+ await f.page.mouse.move(...pa);await f.page.mouse.down();
+ await f.page.mouse.move(...pb,{steps:12});await f.page.waitForTimeout(150);
  await f.page.mouse.up();await f.page.waitForTimeout(250);
+ const box=r=>r&&{x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height)};
+ f.dragDiag={from:fromId,to:toId,rectFrom:box(a),rectTo:box(b),hit,
+  rectFromAfter:box(await f.page.locator(`[data-source-token="${fromId}"]`).boundingBox()),rectToAfter:box(await f.page.locator(`[data-source-token="${toId}"]`).boundingBox()),
+  ...(await f.page.evaluate(()=>{const p=document.querySelector('#inspector-sentence');const btn=p?.querySelector('.viewer-boundary-merge__start');
+   return {picked:[...document.querySelectorAll('.word-token--picked')].map(e=>e.closest('[data-tid]')?.dataset.tid??null),
+    panel:!!p&&!!p.getClientRects().length,btn:btn?(btn.disabled?'disabled':'enabled'):null,reason:p?.querySelector('.viewer-boundary__reason')?.innerText??null,
+    scrollY:Math.round(scrollY),fonts:document.fonts.status};}))};
+}
+// 묶기 버튼 누르기 — 실패하면 드래그 진단과 화면(E2E_FAILURE_DIR이 있을 때만)을 남긴다. 기다림 · 판정은 원래 click()과 같다.
+async function clickMerge(f,label) {
+ try{await sentencePanel(f).getByRole('button',{name:'한 단어로 묶기',exact:true}).click();}
+ catch(e){
+  if(process.env.E2E_FAILURE_DIR)await f.page.screenshot({path:`${process.env.E2E_FAILURE_DIR}/boundary-${label}.png`,fullPage:true}).catch(()=>{});
+  e.message+=`\nDRAGDIAG ${label} ${JSON.stringify(f.dragDiag)}`;throw e;
+ }
 }
 const sentencePanel=f=>f.page.locator('#inspector-sentence').filter({visible:true});
 const card=f=>f.page.locator('#inspector-word').filter({visible:true});
@@ -401,7 +422,7 @@ test('영어 picked up · 일본어 天気予報 묶기(390) — 공백 든 토�
  const en=await open(build('English'));
  try{
   await drag(en,'id_0_1','id_0_2');
-  await sentencePanel(en).getByRole('button',{name:'한 단어로 묶기',exact:true}).click();
+  await clickMerge(en,'en');
   const confirm=sentencePanel(en).locator('.viewer-boundary-confirm');
   assert.equal((await confirm.locator('.viewer-boundary-confirm__preview').innerText()).replace(/\s+/g,' ').trim(),'picked + up → picked up');
   await confirm.getByRole('button',{name:'묶기',exact:true}).click();
@@ -418,7 +439,7 @@ test('영어 picked up · 일본어 天気予報 묶기(390) — 공백 든 토�
  const ja=await open(build('Japanese'));
  try{
   await drag(ja,'id_0_2','id_0_3');
-  await sentencePanel(ja).getByRole('button',{name:'한 단어로 묶기',exact:true}).click();
+  await clickMerge(ja,'ja');
   await sentencePanel(ja).locator('.viewer-boundary-confirm').getByRole('button',{name:'묶기',exact:true}).click();
   await card(ja).locator('.word-detail-card__meaning').getByText('일기 예보',{exact:true}).waitFor();
   await until(async()=>(await bodyLine(ja,0)).includes('天気予報'));
