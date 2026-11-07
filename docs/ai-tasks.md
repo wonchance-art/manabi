@@ -1198,8 +1198,13 @@
     ③ 02:45 실행 상한 재확인 — 대기 53편 = analyze 53단위(중 9 · 영 39 · 일 5), 오늘 사용 0 · 3회씩 재시도해도 159/300, Gemini는 단어 뜻 대체뿐.
     FSRS-OPT-EVAL-001(문서만, docs/verification/fsrs-optimizer-eval-20261107.md): 9명 중 FSRS v2 유효 채점 400 이상 0명(최대 201 · 다른 날 복습 62),
     검증 구간 기본값 log-loss 0.526 ≈ 상수 0.522 · 기억 8%p 과대 → 적용 배제 · 재평가 기준(유효 400 · 다른 날 200) 제안. fsrs-rs 바인딩은 설치가 권한에 막혀 미실행.
-    MATERIAL-DIFFICULTY-001(이번 PR): src/lib/materialDifficulty.js — materialContentWords · 레벨 찾기 색인 재사용(새 식 없음), 일본어 가나 읽기 키.
+    MATERIAL-DIFFICULTY-001 · FSRS-OPT-EVAL-001 #1743 병합(49a1da5c). MATERIAL-DIFFICULTY-001: src/lib/materialDifficulty.js — materialContentWords · 레벨 찾기 색인 재사용(새 식 없음), 일본어 가나 읽기 키.
     공개 일본어 58편 실측(docs/verification/material-difficulty-20261107.md): 표 안 87~89% · N5 비중 78 → 69 → 56% · N3 비중 12 → 15 → 23%. 화면 노출은 목업 대상.
+    ADVISOR-RECHECK-002(이번 PR, 20261107050000 — 오케스트레이터 16:40 순회): 지문 밖 비파괴만. ⑴ notifications 중복 PERMISSIVE 3개 삭제 —
+    SELECT · UPDATE 같은 식, INSERT 넓은 쪽(uid IS NOT NULL) 삭제로 발신자 위조 삽입 차단(앱 · DB 쓰기 경로 0 전수 확인) ⑵ FK 덮개 인덱스
+    daily_suggestions · reading_progress(material_id). 계약 advisor-notifications-fk-indexes.mjs(행렬 바뀐 칸 = 위조 · 발신자 없음 4칸 · 복원 · 운영 사슬 지문 불변).
+    미룸(다음 지문 재게시): reading_materials · profiles 중복 정책, user_vocabulary · vocabulary_exclusions(capability가 인덱스 포함) · fsrs_operations ·
+    fsrs_new_receipts(core) FK 인덱스. 미사용 인덱스 22개 유지. 근거 docs/verification/advisor-recheck-20261107.md.
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
