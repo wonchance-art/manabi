@@ -2831,6 +2831,21 @@ export default function ViewerPage({ seed } = {}) {
   };
   // 「뜻을 바꿨어요 · 되돌리기」 — 그 토큰을 다시 열 때까지(다른 단어·시트 닫기에서 지운다). before = 바꾼 칸의 이전 값.
   const [senseUndo, setSenseUndo] = useState(null); // { tokenId, before, corrections }
+  // 뜻을 바꾸거나 되돌리면 뜻 줄 · 「뜻을 바꿨어요」 줄(위)이 바뀐다 — 누른 뜻 목록은 제자리에 둔다. 카드 본문 스크롤은 앱이 정한다
+  // (overflow-anchor:none — 브라우저가 대신 보정하지 않는다, CARD-SCROLL-KEEP-001). 누를 때 목록 위치를 적고, 바뀐 그림을 그리기 전에 그만큼 본문을 옮긴다.
+  const senseHold = useRef(null);
+  const holdSensesInPlace = () => {
+    const list = [...document.querySelectorAll('#inspector-word .reader-card-senses')].find((el) => el.getClientRects().length);
+    const body = list?.closest('.reader-card-body');
+    senseHold.current = list && body ? { list, body, top: list.getBoundingClientRect().top } : null;
+  };
+  useLayoutEffect(() => {
+    const hold = senseHold.current;
+    senseHold.current = null;
+    if (!hold || !hold.list.isConnected || !hold.body.isConnected) return;
+    const shift = hold.list.getBoundingClientRect().top - hold.top;
+    if (Math.abs(shift) >= 0.5) hold.body.scrollTop += shift;
+  }, [senseUndo]);
   useEffect(() => { setSenseUndo(null); }, [selectedToken?.id, isSheetOpen]);
   // ── AD-R4 PR③ 「뜻 확인 필요 N개」(설계서 docs/manabi-viewer-v2-ad-r4.md §6·§7) ──
   // 재료 = 토큰 내부 표식 meaningCheck(서버 상수 ZH_SENSE_REVIEW가 켜졌을 때만 붙음 — 꺼진 지금은 0). 중국어만.
@@ -3490,17 +3505,19 @@ export default function ViewerPage({ seed } = {}) {
     if (!corrections) return;
     const before = revertCorrections(selectedToken, corrections);
     const tokenId = selectedToken.id;
+    holdSensesInPlace();
     correctTokenMutation.mutate(
       { tokenId: selectedToken.id, corrections, quiet: true },
-      { onSuccess: () => { setSenseUndo({ tokenId, before, corrections }); focusInCard('.reader-card-sense-undo button'); } }
+      { onSuccess: () => { setSenseUndo({ tokenId, before, corrections }); focusInCard('.reader-card-sense-undo button'); }, onError: () => { senseHold.current = null; } }
     );
   };
   const undoSense = () => {
     if (!senseUndo || senseUndo.tokenId !== selectedToken?.id || senseBusy) return;
     const chosen = senseUndo.corrections.meaning;
+    holdSensesInPlace();
     correctTokenMutation.mutate(
       { tokenId: senseUndo.tokenId, corrections: senseUndo.before, quiet: true },
-      { onSuccess: () => { setSenseUndo(null); focusInCard(`.reader-card-sense__pick[data-meaning="${CSS.escape(chosen || '')}"]`); } }
+      { onSuccess: () => { setSenseUndo(null); focusInCard(`.reader-card-sense__pick[data-meaning="${CSS.escape(chosen || '')}"]`); }, onError: () => { senseHold.current = null; } }
     );
   };
   // ── AD-R3 PR③ 「이 자료」 묶기·나누기 진입점(설계서 §6.1 · §4.4 · Q4 · §12.2) ──

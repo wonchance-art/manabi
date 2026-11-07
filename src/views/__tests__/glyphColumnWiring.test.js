@@ -186,3 +186,21 @@ describe('첫 화면 예산 — 카드 본문 스크롤은 앱이 정한다(GLYP
     expect(rule).toMatch(/overflow-anchor:none/);
   });
 });
+
+describe('카드 본문 — 사람이 내려 둔 자리는 앱이 지킨다(CARD-SCROLL-KEEP-001)', () => {
+  // 뜻 교정이 processed_json을 바꾸면 시트 자리 효과가 다시 돌아 같은 단어를 다시 정한다 — 그때 표제어 자리 맞춤(anchorCardHead)이
+  // 사람이 내린 본문을 맨 위로 덮었다(폰 +306px). overflow-anchor:none이라 「뜻을 바꿨어요」 줄(목록 위 46px)도 앱이 보정한다.
+  const layout = read('src/lib/useReaderLayout.js');
+  it('시트 판정의 표제어 맞춤은 사람이 내린 본문(scrolled > 0)이면 건너뛴다', () => {
+    expect(layout).toMatch(/const showHead = height => \{ if \(core && height < core && !scrolled\) anchorCardHead\(cardBody\); \};/);
+  });
+  it('뜻 고르기 · 되돌리기는 누를 때 뜻 목록 자리를 적고 그 커밋의 layout effect에서 같은 만큼 본문을 옮긴다', () => {
+    const choose = sliceBetween(viewer, 'const chooseSense = (item) => {', 'const undoSense = () => {');
+    const undo = sliceBetween(viewer, 'const undoSense = () => {', '// ── AD-R3 PR③');
+    for (const body of [choose, undo]) {
+      expect(body).toMatch(/holdSensesInPlace\(\);\s*correctTokenMutation\.mutate\(/);
+      expect(body).toMatch(/onError: \(\) => \{ senseHold\.current = null; \}/);
+    }
+    expect(viewer).toMatch(/useLayoutEffect\(\(\) => \{\s*const hold = senseHold\.current;[\s\S]*?hold\.body\.scrollTop \+= shift;\s*\}, \[senseUndo\]\);/);
+  });
+});

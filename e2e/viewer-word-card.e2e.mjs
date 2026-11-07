@@ -538,6 +538,41 @@ test('owner: tapping another dictionary sense corrects this spot only; 「되돌
  }finally{await f.context.close();}
 });
 
+// CARD-SCROLL-KEEP-001: 뜻 목록까지 내려 다른 뜻을 누르면 폰은 시트가 같은 단어를 다시 정하며 본문을 표제어 자리로 되돌렸고(+306px),
+// 위에 「뜻을 바꿨어요」 줄이 생기면 목록이 밀렸다(+46px). 사람이 내려 둔 본문은 그대로 · 누른 목록은 제자리(앱이 보정 — overflow-anchor:none).
+for(const width of [390,1280])test(`owner ${width}: picking another sense (and undo) keeps the scrolled sense list in place`,{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const f=await open(m,{prefs:zhPrefs,own:true,rows:twoSenses,width,height:width>800?900:844});
+ try{
+  await until(()=>f.bulk.length>=1);
+  await tap(f,'id_0_7','웅장하다, 장관이다');
+  const senses=f.page.locator('#inspector-word .reader-card-senses').filter({visible:true});
+  await senses.waitFor();await f.page.waitForTimeout(400);
+  const body=f.page.locator('#inspector-word .reader-card-body').filter({visible:true});
+  const b=await body.boundingBox();
+  await f.page.mouse.move(b.x+b.width/2,b.y+b.height/2);await f.page.mouse.wheel(0,260);await f.page.waitForTimeout(400);
+  const state=()=>f.page.evaluate(()=>{const body=[...document.querySelectorAll('#inspector-word .reader-card-body')].find(e=>e.getClientRects().length);
+   return {top:body.querySelector('.reader-card-senses').getBoundingClientRect().top,scrollTop:body.scrollTop};});
+  const before=await state();
+  assert.ok(before.scrollTop>0,`the reader scrolled the card body: ${JSON.stringify(before)}`);
+  await senses.getByRole('button',{name:/장관, 웅장한 경관/}).click();
+  await f.page.locator('#inspector-word .word-detail-card__meaning').filter({visible:true}).getByText('장관, 웅장한 경관',{exact:true}).waitFor();
+  const undo=f.page.locator('#inspector-word .reader-card-sense-undo').filter({visible:true});
+  await undo.waitFor();await f.page.waitForTimeout(600);
+  const picked=await state();
+  assert.ok(Math.abs(picked.top-before.top)<=1,`sense list stays put after picking: ${JSON.stringify({before,picked})}`);
+  // 「되돌리기」 줄은 뜻 줄 바로 아래(목록 위)라 내려 둔 본문에서는 위로 올려야 보인다 — 사람처럼 그 줄을 보이게 한 뒤의 자리가 기준.
+  const undoButton=undo.getByRole('button',{name:'되돌리기',exact:true});
+  await undoButton.scrollIntoViewIfNeeded();await f.page.waitForTimeout(300);
+  const preUndo=await state();
+  await undoButton.click();
+  await undo.waitFor({state:'detached'});await f.page.waitForTimeout(600);
+  const undone=await state();
+  assert.ok(Math.abs(undone.top-preUndo.top)<=1,`sense list stays put after undo: ${JSON.stringify({preUndo,undone})}`);
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
 test('not the owner: dictionary senses are display-only and there is no ⋯ menu',{timeout:180000},async()=>{
  const m=cardMaterial();
  const f=await open(m,{prefs:zhPrefs,rows:twoSenses});
