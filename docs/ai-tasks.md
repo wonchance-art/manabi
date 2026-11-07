@@ -1158,6 +1158,11 @@
     전부 0 · 저장소 0 · 묶음 · PDF 없음 · 전체 304편. backup_private.reading_materials_orphans_20261107(모든 열 · anon/authenticated 닫힘).
     삭제는 docs/sql/orphan-private-materials-20261107-delete.sql(백업 md5 · 카탈로그의 모든 FK · 행 수 10을 스스로 확인) — 실행 확인 창은
     오너가 직접 승인. 복원 = docs/sql/orphan-private-materials-20261107-restore.sql(같은 id). 계약 PGlite 5 · vitest 3.
+    #1728 병합(52713b69). LLM-PROVIDER-POLICY-001(이번 PR): ①의 구현 — src/lib/server/llmProviderPolicy.js가 route별 제공자를 정하고 callLLM이
+    따른다. Gemini · Groq 대체는 단어 뜻(fetchMeanings · verifyMeanings — 표제어 · 품사 · 생성 뜻만, 자료 문장 0)에만, 그 밖(작문 · 회화 ·
+    손글씨 · 문단 · 문장 설명 · 한국어 분석 · 문맥 품사 판별 · 교사 조회 · 클라 프록시)과 처음 보는 route는 Claude만. TTS 그대로. 실패 문구 =
+    각 경로 기존 안내. 화면 변화 1줄: 손글씨 안내 「AI(Anthropic Claude, 안 되면 Google Gemini)」 → 「AI(Anthropic Claude)」. 계약
+    llmProviderPolicy.test.js(경로마다 Claude 실패 → Gemini · Groq 요청 0 · 모든 callLLM 호출부 route 분류). WEB에 route 표 전달(처리방침).
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
