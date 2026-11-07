@@ -27,7 +27,7 @@ const SHELL = Object.freeze([
 /**
  * 하위 집합 — 이름 → { 산출 파일 · 글자 출처 }. 싣는 세그먼트 레이아웃이 그 이름의 미리 받기 함수를 부른다(계약이 짝을 본다).
  * - viewer: 뷰어 화면 · 뷰어 부품 · 뷰어 문구표 · 셸
- * - vocab: 복습실(/vocab) 손님 첫 화면 — 셸 + VocabPage 손님 블록(VOCAB-GUEST-CLS-001 · VOCAB-SUBSET-SMALL-001). 로그인 복습실은 클라이언트에서
+ * - vocab: 복습실(/vocab) 손님 첫 화면 — 셸 + VocabPage 손님 블록 + 공통 푸터(VOCAB-GUEST-CLS-001 · VOCAB-SUBSET-SMALL-001). 로그인 복습실은 클라이언트에서
  *   그리므로 원래 조각을 쓴다(#1725 이전과 같다).
  */
 export const SUBSETS = Object.freeze({
@@ -45,6 +45,8 @@ export const SUBSETS = Object.freeze({
     sources: Object.freeze([
       ...SHELL,
       { file: 'src/views/VocabPage.jsx', block: 'vocab-guest' },
+      // 공통 푸터(SiteFooter — 손님 복습실은 짧아 첫 화면에 보인다): 빼면 woff2 조각 14 → 16(앞단 실측 2026-11-07 KST, 오케스트레이터 게이트).
+      { file: 'src/components/web/SiteFooter.jsx' },
     ]),
   }),
 });

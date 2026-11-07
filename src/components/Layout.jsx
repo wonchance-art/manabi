@@ -16,6 +16,7 @@ import { authEntryHref } from '@/lib/authRedirect';
 import VersionBadge from './VersionBadge';
 import NavPendingMark from './NavPendingMark';
 import SegmentSlot from './SegmentSlot';
+import SiteFooter from './web/SiteFooter';
 import { focusPageIfLost, watchPageHeading } from '@/lib/routeFocus';
 import { intentPrefetchProps } from '@/lib/intentPrefetch';
 import { useNavMotion } from '@/lib/useNavMotion';
@@ -327,6 +328,7 @@ export default function Layout({ children }) {
         )}
         {/* 세그먼트 자리를 main 바로 안에 두지 않는다 — 하이드레이션 #418 간헐(HYDRATION-SLOT-001, src/components/SegmentSlot.jsx). */}
         <SegmentSlot>{children}</SegmentSlot>
+        <SiteFooter />
       </main>
 
       {shouldShowOnboarding(profile, pathname) && <OnboardingModal />}
