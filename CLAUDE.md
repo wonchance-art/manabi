@@ -36,6 +36,11 @@
 - **서브에이전트 작업 브랜치는 `claude/wip/<주제>`로 만들고 push하지 않는다**(2026-10-17 KST — Vercel 무료 플랜 일일 배포 100회를
   건너뛴 배포까지 포함해 소진한 실측). 같은 컨테이너의 로컬 브랜치로 넘기고, PR 브랜치에만 묶어서 push한다.
   `vercel.json`이 `claude/wip/**` Git 배포를 닫아 둔다(계약 `scripts/vercel-deploy-policy.test.js`).
+- **배포 한도 절약 — push · 병합은 묶는다**(2026-11-07 KST, 하루 배포 기록 146건으로 한도 소진 실측 — 빌드를 건너뛴 프리뷰 97건 · 운영 49건):
+  세션 지정 브랜치 push는 PR을 열거나 갱신할 때만(로컬 커밋을 모아서), 문서 · 보드 · 테스트만 바꾸는 PR은 다음 코드 PR에 묶거나 하루 한 번
+  모아 병합한다(병합 1회 = 운영 배포 1회). 한도에 걸린 동안은 운영 영향이 있는 병합을 하지 않는다. `[preview]` 규칙은 빌드만 막고 기록은 막지 못한다.
+  그래서 `vercel.json`이 `claude/**` Git 배포를 닫고 **프리뷰 URL이 필요하면 `claude/preview/<주제>` 브랜치로 push한다**(그 브랜치만 커밋마다 빌드 —
+  오너 「ㄱㄱ」 2026-11-07 KST, 계약 `scripts/vercel-deploy-policy.test.js`).
 - 자기 네임스페이스 밖 파일 수정 금지. force-push 금지(자기 claude/* 브랜치의
   squash-merge 후 `--force-with-lease` 재동기화만 확립 관례).
 - **시간 표기는 KST 고정**(오너 지시 2026-08-28): 오너 보고·보드·이슈/PR 코멘트의

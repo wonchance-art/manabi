@@ -3,7 +3,9 @@
     "deploymentEnabled": {
       "codex/*": false,
       "codex2/*": false,
-      "claude/wip/**": false
+      "claude/**": false,
+      "claude/wip/**": false,
+      "claude/preview/**": true
     }
   },
   "regions": ["hnd1"],
