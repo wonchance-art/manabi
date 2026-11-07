@@ -770,7 +770,7 @@ test('AE-R3 390 첫 화면 우선: 3줄 문장 + 体育场(안 2) — 표제어�
   assert.ok(s.below,'step 2: the glyph rows move below the meaning line');
   assert.ok(s.below.top>=s.meaningBottom-.5,'below block is under the meaning line');
   assert.ok(s.below.text.includes('体育場')&&s.below.text.includes('たいいくじょう'),s.below.text);
-  if(s.beside){assert.equal(s.beside.layout,'side');assert.equal(s.beside.text,'正體育場','beside the headword: the 正 row only');assert.ok(!s.below.text.includes('體育場'));}
+  if(s.beside){assert.equal(s.beside.layout,'side');assert.match(s.beside.text,/^正(대만)?體育場$/,'beside the headword: the 正 row only (正 + its name 「대만」 when it fits — 목업 CrsGiHf5bS4tmQk3n2HVBx ①)');assert.ok(!s.below.text.includes('體育場'));}
   else assert.ok(s.below.text.includes('體育場'),'正 row goes below when it does not fit beside');
   assert.equal(s.details,0,'no folds');
   // 다른 단어로 가면 단계가 0으로 — 짧은 문장의 体育场은 문장 줄 3줄 예산 · 표제어 아래 표(안 2) 그대로

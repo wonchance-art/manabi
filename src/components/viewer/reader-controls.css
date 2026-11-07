@@ -540,6 +540,9 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 .reader-card-glyph__row.is-ghost {visibility:hidden;}
 .reader-card-glyph__label {flex:none;width:1em;font-size:.8125rem;line-height:inherit;color:var(--reader-muted);text-align:center;}
 .reader-card-glyph[data-layout="table"] .reader-card-glyph__label {width:1.75rem;font-size:.8125rem;text-align:start;}
+/* 正 · 日 옆 두 글자 이름(목업 CrsGiHf5bS4tmQk3n2HVBx ①) — 들어갈 때만(data-names, 판정 glyphLabelNames). 이름이 없으면 라벨은 지금 그대로. */
+.reader-card-glyph[data-names] .reader-card-glyph__label {width:auto;white-space:nowrap;margin-inline-end:.25rem;}
+.reader-card-glyph__name {margin-inline-start:.2em;font-size:.6875rem;letter-spacing:-.01em;}
 .reader-card-glyph__form {display:inline-flex;flex:none;}
 .viewer-layout .reader-card-glyph [lang="zh-Hant-TW"] {font-family:var(--font-noto-tc, 'Noto Sans TC'),var(--font-noto-kr, 'Noto Sans KR'),sans-serif;}
 .viewer-layout .reader-card-glyph [lang="ja"] {font-family:var(--font-noto-jp),'Noto Sans JP',var(--font-noto-kr),sans-serif;}

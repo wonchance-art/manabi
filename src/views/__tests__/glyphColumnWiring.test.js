@@ -63,11 +63,13 @@ describe('자형 열 배선 — 표제어 덩어리 안, 일반 모드만', () =
     expect(column).toContain('[data-glyph-i]');
   });
 
-  it('正 줄 lang="zh-Hant-TW"(Noto Sans TC) · 日 줄 lang="ja", 라벨은 한자 한 글자 正 · 日', () => {
+  it('正 줄 lang="zh-Hant-TW"(Noto Sans TC) · 日 줄 lang="ja", 라벨은 한자 한 글자 正 · 日(+ 들어갈 때만 두 글자 이름)', () => {
     expect(column).toContain('lang="zh-Hant-TW"');
     expect(column).toContain('lang="ja"');
-    expect(column).toMatch(/>正</);
-    expect(column).toMatch(/>日</);
+    // 라벨 = 한자 한 글자 표지 + 들어갈 때만 이름(「正 대만」「日 일본」 — 오너 승인 2026-11-07 KST, 목업 CrsGiHf5bS4tmQk3n2HVBx ①).
+    expect(column).toContain('<GlyphMark ch="正"');
+    expect(column).toContain('<GlyphMark ch="日"');
+    expect(column).toContain('<span className="reader-card-glyph__label" aria-hidden="true">{ch}{name && ');
   });
 
   it('안 1/안 2는 폭으로 판정한다 — glyphColumnLayout(em 추정) + 컨테이너 폭 읽기(그리기 전) + 크기 변화 재판정', () => {
