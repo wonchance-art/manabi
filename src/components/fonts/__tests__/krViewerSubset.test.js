@@ -11,6 +11,8 @@ const DIR = path.join(ROOT, 'src/components/fonts/kr-viewer');
 const meta = JSON.parse(fs.readFileSync(path.join(DIR, 'subset.json'), 'utf8'));
 const css = fs.readFileSync(path.join(DIR, 'krViewerSubset.css'), 'utf8');
 const REGEN = 'python3 scripts/fonts/kr-viewer-subset.py 로 다시 만든다(fonttools · brotli 필요)';
+// 하위 집합을 싣는 세그먼트 — 뷰어(KR-VIEWER-SUBSET-001) · 복습실(VOCAB-GUEST-CLS-001).
+const SEGMENTS = ['viewer', 'vocab'];
 
 const expandRange = (text) => text.split(',').flatMap((part) => {
   const [a, b] = part.trim().replace(/^U\+/i, '').split('-').map((h) => parseInt(h, 16));
@@ -61,19 +63,29 @@ describe('뷰어 한글 하위 집합 — 목록 · 산출물 · 배선', () => 
     expect(fs.existsSync(path.join(DIR, 'OFL.txt'))).toBe(true);
   });
 
-  it('뷰어 레이아웃이 첫 그림 전에 미리 받는다(늦게 오면 상단 막대가 밀린다 — CLS) · 1년 immutable · SW가 배포 사이에 옮긴다', async () => {
-    const layout = fs.readFileSync(path.join(ROOT, 'src/app/(app)/viewer/layout.jsx'), 'utf8');
-    expect(layout).toContain("preload(krViewerSubset.woff2.href, { as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' });");
+  it('싣는 레이아웃이 첫 그림 전에 미리 받는다(늦게 오면 줄이 다시 흐른다 — CLS) · 1년 immutable · SW가 배포 사이에 옮긴다', async () => {
+    const helper = fs.readFileSync(path.join(DIR, 'KrUiSubset.js'), 'utf8');
+    expect(helper).toContain("import './krViewerSubset.css';");
+    expect(helper).toContain("preload(subset.woff2.href, { as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' });");
+    for (const seg of SEGMENTS) {
+      const layout = fs.readFileSync(path.join(ROOT, `src/app/(app)/${seg}/layout.jsx`), 'utf8');
+      expect(layout, seg).toContain("import { preloadKrUiSubset } from '@/components/fonts/kr-viewer/KrUiSubset';");
+      expect(layout, seg).toMatch(/export default function Layout\(\{ children \}\) \{[\s\S]*?preloadKrUiSubset\(\);/);
+    }
     const { default: config } = await import('../../../../next.config.mjs');
     const rule = (await config.headers()).find((r) => r.source === '/fonts/kr-viewer/:path*');
     expect(rule?.headers).toEqual([{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }]);
     expect(fs.readFileSync(path.join(ROOT, 'public/sw.js'), 'utf8')).toMatch(/const FONT_ASSET = [^\n]*fonts\\\/kr-viewer/);
   });
 
-  it('뷰어 세그먼트에만 싣는다(다른 화면은 지금처럼 원래 조각)', () => {
-    const importers = [];
-    const walk = (dir) => { for (const n of fs.readdirSync(dir)) { const p = path.join(dir, n); if (fs.statSync(p).isDirectory()) { if (n !== 'node_modules' && n !== '__tests__') walk(p); } else if (/\.(jsx?|mjs|css)$/.test(n) && fs.readFileSync(p, 'utf8').includes('krViewerSubset.css')) importers.push(path.relative(ROOT, p)); } };
+  it('하위 집합을 싣는 세그먼트는 뷰어 · 복습실뿐이다(글자 목록 출처와 짝 — 다른 화면은 지금처럼 원래 조각)', () => {
+    const users = [];
+    const walk = (dir) => { for (const n of fs.readdirSync(dir)) { const p = path.join(dir, n); if (fs.statSync(p).isDirectory()) { if (n !== 'node_modules' && n !== '__tests__') walk(p); } else if (/\.(jsx?|mjs|css)$/.test(n)) { const src = fs.readFileSync(p, 'utf8'); if (/krViewerSubset\.css|kr-viewer\/KrUiSubset/.test(src)) users.push(path.relative(ROOT, p)); } } };
     walk(path.join(ROOT, 'src'));
-    expect(importers.filter((f) => !f.startsWith('src/components/fonts/kr-viewer/'))).toEqual(['src/app/(app)/viewer/layout.jsx']);
+    expect(users.filter((f) => !f.startsWith('src/components/fonts/kr-viewer/')).sort()).toEqual(SEGMENTS.map((seg) => `src/app/(app)/${seg}/layout.jsx`).sort());
+    // 세그먼트마다 그 화면 문자열이 글자 목록 출처에 들어 있다(싣는 곳과 목록이 어긋나지 않게).
+    const files = sourceFiles();
+    expect(files).toContain('src/views/ViewerPage.jsx');
+    expect(files).toContain('src/views/VocabPage.jsx');
   });
 });

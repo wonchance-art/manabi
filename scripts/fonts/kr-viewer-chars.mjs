@@ -14,13 +14,15 @@ import { fileURLToPath } from 'node:url';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-/** 뷰어에서 그려지는 UI 문자열이 사는 곳 — 뷰어 화면 · 뷰어 부품 · 뷰어 문구표 · 공통 셸(머리 · 아래 메뉴). */
+/** 하위 집합을 싣는 화면(뷰어 · 복습실)의 UI 문자열이 사는 곳 — 뷰어 화면 · 뷰어 부품 · 뷰어 문구표 · 공통 셸(머리 · 아래 메뉴) · 복습실 화면. */
 export const SOURCES = Object.freeze([
   { dir: 'src/views', pick: /^Viewer.*\.jsx$/ },
   { dir: 'src/components/viewer', pick: /\.(jsx|js)$/ },
   { file: 'src/lib/viewerMessages.js' },
   { file: 'src/components/Layout.jsx' },
   { file: 'src/lib/webNavigation.js' },
+  // 복습실(/vocab) — 손님 안내 · 로그인 첫 화면(VOCAB-GUEST-CLS-001)
+  { file: 'src/views/VocabPage.jsx' },
 ]);
 
 const HANGUL = /[가-힣]/gu;
