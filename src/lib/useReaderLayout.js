@@ -108,9 +108,7 @@ function judgePagedSheet(panel, token, layout) {
   const header = panel.querySelector('.viewer-inspector__header'), head = word?.querySelector('.reader-card-headword');
   const headHeight = head ? head.getBoundingClientRect().height : 64;
   const floor = core && header ? Math.ceil(header.getBoundingClientRect().height + (natural.bottom - actions.getBoundingClientRect().top) + headHeight + 8) : undefined;
-  // 사람이 내려 둔 본문(앱 표식 없이 움직인 자리 — 위에서 앱 자동 스크롤은 0으로 되돌렸다)은 그대로 둔다: 같은 단어를 다시 정할 때(뜻 교정으로
-  // 자료가 바뀌어 이 효과가 다시 돈다 등) 보던 위치를 표제어 자리로 되돌리지 않는다(뷰어 · 뜻 목록에서 다른 뜻을 누르면 폰 +306px — CARD-SCROLL-KEEP-001).
-  const showHead = height => { if (core && height < core && !scrolled) anchorCardHead(cardBody); };
+  const showHead = height => { if (core && height < core) anchorCardHead(cardBody); };
   const tokenRect = token.getBoundingClientRect();
   // A안: 아래 절반의 단어는 시트를 머리줄 아래에 세운다(data-dock="top" — paged-reader.css). 위 절반은 지금처럼 바닥(목업 C 낮추기).
   const dock = pagedSheetDock({ tokenTop: tokenRect.top, tokenBottom: tokenRect.bottom, viewportTop: viewTop, viewportHeight: viewHeight,
