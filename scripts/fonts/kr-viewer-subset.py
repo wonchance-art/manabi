@@ -29,6 +29,9 @@ OUT_DIR = os.path.join(ROOT, 'src', 'components', 'fonts', 'kr-viewer')
 # 대체 글꼴 → 하위 집합으로 바뀌며 도구 묶음이 4px 밀렸다(운영 실측 CLS 0.0002, #1721 뒤). 이름이 내용이라 1년 immutable(next.config).
 PUBLIC_DIR = os.path.join(ROOT, 'public', 'fonts', 'kr-viewer')
 PUBLIC_HREF = '/fonts/kr-viewer'
+STUDIES_STEM = 'noto-sans-kr-studies'  # scripts/fonts/kr-studies-chars.mjs와 같은 값(계약이 대조)
+STUDIES_MANIFEST = 'studies-subsets.json'
+STUDIES_WEIGHTS = {'body': 400, 'head': 700}  # kr-studies-chars.mjs STUDIES_WEIGHTS와 같다(계약이 대조)
 # src/app/layout.jsx Noto_Sans_KR({ weight: ['400', '500', '700'] })와 같은 셋 — 계약이 대조한다.
 NEXT_FONT_WEIGHTS = ('400', '500', '700')
 CACHE = os.path.join(os.environ.get('MANABI_FONT_CACHE') or tempfile.gettempdir(), 'manabi-font-src')
@@ -70,15 +73,18 @@ def ranges(codepoints):
     return ', '.join(f'U+{a:04X}' if a == b else f'U+{a:04X}-{b:04X}' for a, b in out)
 
 
-def build(name, spec, src):
-    """하위 집합 하나 — woff2(내용 해시 이름) · 목록 JSON · CSS를 쓴다."""
+def make_woff2(stem, chars, src, wght=None):
+    """woff2 하나를 내용 해시 이름으로 쓴다 — (href, sha256, bytes). 같은 stem의 옛 판은 지운다.
+    wght가 있으면 가변 원본을 그 굵기의 정적 글꼴로 고정한 뒤 자른다(지역학 — 굵기별 파일이 가변 한 파일보다 약 30% 작다)."""
     from fontTools import subset
     from fontTools.ttLib import TTFont
+    from fontTools.varLib import instancer
 
-    chars, stem = spec['chars'], spec['stem']
     font = TTFont(src)
     if font['name'].getDebugName(5) != SOURCE_VERSION:
         sys.exit(f'원본 판이 다르다: {font["name"].getDebugName(5)}')
+    if wght is not None:
+        font = instancer.instantiateVariableFont(font, {'wght': wght})
     out = os.path.join(PUBLIC_DIR, f'{stem}.tmp.woff2')
     options = subset.Options()
     options.flavor = 'woff2'
@@ -98,8 +104,10 @@ def build(name, spec, src):
     missing = [c for c in chars if ord(c) not in cmap]
     if missing:
         sys.exit(f'원본에 없는 글자: {"".join(missing)}')
-    if 'fvar' not in check:
+    if wght is None and 'fvar' not in check:
         sys.exit('가변 wght 축이 빠졌다')
+    if wght is not None and 'fvar' in check:
+        sys.exit(f'{wght} 정적 글꼴에 가변 축이 남았다')
 
     digest = sha256(out)
     final = os.path.join(PUBLIC_DIR, f'{stem}.{digest[:16]}.woff2')
@@ -108,16 +116,21 @@ def build(name, spec, src):
         if old.startswith(stem + '.') and old.endswith('.woff2') and os.path.join(PUBLIC_DIR, old) not in (out, final):
             os.remove(os.path.join(PUBLIC_DIR, old))
     os.replace(out, final)
-    out = final
-    href = f'{PUBLIC_HREF}/{os.path.basename(final)}'
+    return f'{PUBLIC_HREF}/{os.path.basename(final)}', digest, os.path.getsize(final)
 
+
+def build(name, spec, src):
+    """화면 하위 집합 하나(뷰어 · 복습실) — woff2 · 목록 JSON · CSS를 쓴다."""
+    chars = spec['chars']
+    href, digest, size = make_woff2(spec['stem'], chars, src)
+    out = os.path.join(ROOT, 'public', href.lstrip('/'))
     codepoints = sorted(ord(c) for c in chars)
     meta = {
         'note': f'KR-VIEWER-SUBSET-001 ({name}) — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다.',
         'chars': chars,
         'count': len(chars),
         'source': {'url': SOURCE_URL, 'sha256': SOURCE_SHA256, 'version': SOURCE_VERSION},
-        'woff2': {'href': href, 'sha256': digest, 'bytes': os.path.getsize(out)},
+        'woff2': {'href': href, 'sha256': digest, 'bytes': size},
         'unicodeRange': ranges(codepoints),
     }
     with open(os.path.join(OUT_DIR, spec['json']), 'w', encoding='utf8') as f:
@@ -141,6 +154,40 @@ def build(name, spec, src):
     print(f'{name}: {len(chars)}자 · {meta["woff2"]["bytes"]} bytes → {os.path.relpath(out, ROOT)} ({href})')
 
 
+def build_studies(src):
+    """지역학 문서별 첫 화면 하위 집합(STUDIES-CLS-001) — 문서마다 본문 400 · 제목 700 정적 woff2 두 개, 목록은 studies-subsets.json 한 파일.
+    CSS는 문서 쪽(KrStudiesSubset)이 목록의 unicodeRange로 그 자리에서 만든다(문서 26개의 CSS 파일을 따로 두지 않는다)."""
+    docs = json.loads(subprocess.run(['node', os.path.join(ROOT, 'scripts', 'fonts', 'kr-studies-chars.mjs')], check=True, capture_output=True, text=True).stdout)
+    manifest = {
+        'note': 'STUDIES-CLS-001 — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다. 문서 앞부분 문구를 크게 고치면 다시 돌린다.',
+        'source': {'url': SOURCE_URL, 'sha256': SOURCE_SHA256, 'version': SOURCE_VERSION},
+        'weights': STUDIES_WEIGHTS,
+        'docs': {},
+    }
+    stems = set()
+    for d in docs:
+        entry = {}
+        for part, wght in STUDIES_WEIGHTS.items():
+            stem = f"{STUDIES_STEM}-{d['slug']}-{wght}"
+            chars = d[part]
+            href, digest, size = make_woff2(stem, chars, src, wght=wght)
+            stems.add(stem)
+            entry[part] = {
+                'chars': chars, 'count': len(chars),
+                'woff2': {'href': href, 'sha256': digest, 'bytes': size},
+                'unicodeRange': ranges(sorted(ord(c) for c in chars)),
+            }
+        manifest['docs'][d['key']] = entry
+        print(f"studies {d['key']}: 본문 {entry['body']['count']}자 {entry['body']['woff2']['bytes']}B · 제목 {entry['head']['count']}자 {entry['head']['woff2']['bytes']}B")
+    # 사라진 문서의 파일을 지운다
+    for old in os.listdir(PUBLIC_DIR):
+        if old.startswith(STUDIES_STEM + '-') and old.endswith('.woff2') and old.split('.')[0] not in stems:
+            os.remove(os.path.join(PUBLIC_DIR, old))
+    with open(os.path.join(OUT_DIR, STUDIES_MANIFEST), 'w', encoding='utf8') as f:
+        json.dump(manifest, f, ensure_ascii=False, indent=1)
+        f.write('\n')
+
+
 def main():
     specs = json.loads(subprocess.run(['node', os.path.join(ROOT, 'scripts', 'fonts', 'kr-viewer-chars.mjs'), '--json'], check=True, capture_output=True, text=True).stdout)
     src = source_font()
@@ -148,6 +195,7 @@ def main():
     os.makedirs(PUBLIC_DIR, exist_ok=True)
     for name, spec in specs.items():
         build(name, spec, src)
+    build_studies(src)
 
 
 if __name__ == '__main__':

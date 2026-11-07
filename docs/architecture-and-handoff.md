@@ -164,6 +164,12 @@ MIME만 있으면 JSON 꼬리 한 줄 + 추출. Claude 4.6+ 계열은 temperatur
 **route 라벨이 품질 모델을 고르므로 라벨을 바꾸면 표도 같이 바꾼다**(계약이 잡는다). 음성(`/api/tts`)은 Claude에 음성 API가 없어 Gemini 전용으로
 남고, 실패하면 클라(useTTS)가 브라우저 내장 음성으로 넘긴다. 품질 비교는 /admin/llm-bench(Haiku 5.5 · Sonnet 5.5 · 현행 Gemini).
 
+### 4.9-3 첫 화면 한글 하위 집합 — 화면 문구 · 지역학 앞부분을 바꾸면 재생성 (KR-VIEWER-SUBSET-001 · VOCAB-SUBSET-SMALL-001 · STUDIES-CLS-001, 2026-11-07 KST)
+뷰어 · 복습실 손님 화면 · 지역학 문서는 첫 화면 한글만 담은 작은 Noto Sans KR 파일(`public/fonts/kr-viewer/`)을 첫 그림 전에 미리 받는다 — 늦게 오면 대체 글꼴(한글 폭 1.0em) → Noto Sans KR(0.92em)로 바뀌며 줄이 다시 흐른다(CLS).
+글자 출처는 `scripts/fonts/kr-viewer-chars.mjs`(뷰어 · 복습실) · `scripts/fonts/kr-studies-chars.mjs`(지역학 — 문서 제목 · 요약 · 앞 절 700자). 문구가 바뀌면 계약이 알린다:
+뷰어 · 복습실은 추출 ⊆ 목록(엄격), 지역학은 문서마다 포함률 95% 이상 통과(빠진 글자는 경고), 미만이면 실패.
+**재생성 한 줄**: `python3 -m pip install fonttools brotli && python3 scripts/fonts/kr-viewer-subset.py` (원본은 저장소 밖 캐시로 받아 sha256 확인). 성능 측정 규칙은 `docs/perf-measurement.md`.
+
 ### 4.9 ui 이벤트 규약 (행동 계측 — review_events 재사용, 마이그레이션 0)
 예보 탭·푸시 같은 **행동 계측**은 신규 테이블 없이 `review_events`에 `source:'ui'`로 적재한다 (헌법 3 — 신규 테이블 최후의 수단). 형태: `{source:'ui', item_key:'-', correct:true, detail:{qtype, ...}}`. `correct`는 NOT NULL이라 의미 없이 `true`로 채우고, **종류는 `detail.qtype`로 구분**한다(집계는 `detail->>'qtype'` 필터 — `admin_v3_metrics`). qtype 종류: `forecast_tap`(예보 카드 탭), `push_optin`(구독 동의), `push_sent`(발송), `push_open`(알림 클릭). **rung·FSRS 계산은 `source:'vocab'`만 보므로 ui 이벤트와 무간섭**(skillRung/fsrs 필터). **EWMA 다이얼은 필터가 없어 구멍이었다** — studyMaterials의 gradedEvents가 `ui`·`dict`를 제외하고 공급한다(2026-07 정정). 새 source 추가 시 이 세 필터(skillRung·fsrs·gradedEvents)를 모두 점검하라. 저용량(하루 수 건) 전제이며, **월 1만 건을 초과하면 분리 테이블로 승격**한다(레드팀 응답 §7). 적재는 `logReviewEvents`(reviewEvents.js) 재사용, 실패는 조용히 무시.
 
