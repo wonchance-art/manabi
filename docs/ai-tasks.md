@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **DEPLOY-BUDGET-001 Vercel 일일 배포 한도 — claude/** Git 배포 닫고 claude/preview/**만 (2026-11-07 KST)** PR `claude/deploy-budget`(오너 「ㄱㄱ」 · ⓑ안):
+  실측: 최근 24시간 배포 기록 146건(빌드를 건너뛴 프리뷰 97 · 운영 49)으로 한도 소진, 세션 지정 브랜치 두 개가 프리뷰의 63%. [preview] 규칙은 빌드만 막고 기록은 못 막는다.
+  고침: vercel.json `claude/**` false + `claude/preview/**` true(Vercel 규칙 — 하나라도 true면 배포), vercel-ignore.sh는 프리뷰 브랜치를 커밋마다 빌드.
+  계약 vercel-deploy-policy(Vercel 패턴 해석 그대로 브랜치별 배포 여부) · CLAUDE.md 「배포 한도 절약」(push · 병합 묶기 + 프리뷰 브랜치). 남은 것: ⓓ 요금제는 오너 결정.
 - **LAUNCH-CHECKLIST-002 공개 런칭 체크리스트를 실제와 맞춤 (2026-11-07 KST)** PR `claude/launch-checklist`(오케스트레이터 지시 ② · 문서만):
   Anatomy Studio 잔재(예시 도메인 · 발신자) 걷음 · 환경 변수 표를 코드가 읽는 이름으로(ANTHROPIC · CRON · SHARE_LINK_SECRET · VAPID · SUPADATA · QIITA · LLM_LOG 추가, #1673 새 키 이름 안내) ·
   Node 24 전제 · 로그인 복귀 /auth/callback · 관측성 = observe.error_events 정본. §3 도메인은 오너 결정 대기로 비움.
