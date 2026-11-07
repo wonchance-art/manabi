@@ -164,7 +164,8 @@ export async function fetchNHKHeadlines(count = 1, config = {}) {
   const transcript = `${heading}\n\n` +
     selected.map((item, i) => `【${i + 1}】${item.title}\n${item.desc}`).join('\n\n');
   const date = new Date().toISOString().split('T')[0];
-  const dateLabel = new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+  // 제목 날짜는 수집한 날(KST = JST)로 — 서버(UTC) 기준이면 00:06 KST 수집이 전날 날짜를 달았다(「今日の… — 11月7日」이 11/8 칸에, 디자인 점검 11/8).
+  const dateLabel = new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', timeZone: 'Asia/Seoul' });
 
   return [{
     // 주제 피드는 id에 피드를 넣는다 — upsert 키(date, video_id)가 cat0 다이제스트와 충돌하지 않게.

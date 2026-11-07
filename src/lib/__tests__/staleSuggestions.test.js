@@ -41,3 +41,13 @@ describe('STALE-SUGGEST-001 — 오늘의 소식 신선도', () => {
     expect(fs.readFileSync('src/lib/content-sources.js', 'utf8')).toMatch(/publishedAt: wikinewsPublishedDate\(got\.categories\)/);
   });
 });
+
+describe('STALE-SUGGEST-001 — NHK 다이제스트 제목 날짜는 KST', () => {
+  it('제목 날짜 형식이 Asia/Seoul 기준이다(서버 UTC면 00:06 KST 수집이 전날 날짜를 단다)', () => {
+    const src = fs.readFileSync('src/lib/content-sources.js', 'utf8');
+    expect(src).toMatch(/toLocaleDateString\('ja-JP', \{ month: 'long', day: 'numeric', timeZone: 'Asia\/Seoul' \}\)/);
+    // 00:06 KST(= 전날 15:06 UTC)에 같은 식으로 만든 날짜는 KST 날짜다
+    const at = new Date('2026-11-07T15:06:00Z');
+    expect(at.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', timeZone: 'Asia/Seoul' })).toBe('11月8日');
+  });
+});
