@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **LAUNCH-CHECKLIST-002 공개 런칭 체크리스트를 실제와 맞춤 (2026-11-07 KST)** PR `claude/launch-checklist`(오케스트레이터 지시 ② · 문서만):
+  Anatomy Studio 잔재(예시 도메인 · 발신자) 걷음 · 환경 변수 표를 코드가 읽는 이름으로(ANTHROPIC · CRON · SHARE_LINK_SECRET · VAPID · SUPADATA · QIITA · LLM_LOG 추가, #1673 새 키 이름 안내) ·
+  Node 24 전제 · 로그인 복귀 /auth/callback · 관측성 = observe.error_events 정본. §3 도메인은 오너 결정 대기로 비움.
+  발견: 운영에 SHARE_LINK_SECRET이 없어(미리 보기에만 있음) 수업 팀 암호 해제가 503 not_configured — 오너 env 작업 필요(하드리밋).
 - **STUDIES-CLS-001 지역학 문서 자리 이동 → 0 · 문서별 첫 화면 한글 하위 집합 (2026-11-07 KST)** PR `claude/studies-cls`(오케스트레이터 지시 · 버그 수정, 최종 화면 무변경):
   원인 = 본문 한글의 Noto Sans KR 조각(문서당 28개 · 780KB, 굵기마다 따로)이 첫 그림 뒤 4.3–4.6s에 와서 대체 글꼴(한글 1.0em) → Noto Sans KR(0.92em)로 바뀌며
   줄이 다시 흐름(운영 CLS jp-culture 0.0063 · kr-culture 0.0124 · fr-overview 0.0636). Manrope와 무관.
