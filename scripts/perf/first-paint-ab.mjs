@@ -62,7 +62,7 @@ async function measure(chromium, devices, { origin, port, pathname }) {
           ttfb: Math.round(nav.responseStart), fcp: Math.round(fcp), lcp: Math.round(lcp),
           fcpMinusTtfb: Math.round(fcp - nav.responseStart), lcpMinusTtfb: Math.round(lcp - nav.responseStart),
           cls: +window.__shifts.reduce((a, s) => a + s.v, 0).toFixed(4), shifts: window.__shifts.map((s) => `${s.t} ${s.v.toFixed(4)} ${s.src}`),
-          woff2: fonts.length,
+          woff2: fonts.length, woff2KB: Math.round(fonts.reduce((a, e) => a + (e.encodedBodySize || e.transferSize || 0), 0) / 1024),
         });
       }).observe({ type: 'largest-contentful-paint', buffered: true });
     }));
@@ -102,7 +102,7 @@ export async function runAb({ arms, pathname = '/', rounds = 5, origin = 'https:
   }
   const summary = Object.fromEntries(names.map((arm) => {
     const rs = all.filter((r) => r.arm === arm);
-    return [arm, { fcpMinusTtfb: median(rs.map((r) => r.fcpMinusTtfb)), lcpMinusTtfb: median(rs.map((r) => r.lcpMinusTtfb)), cls: median(rs.map((r) => r.cls)), maxCls: Math.max(...rs.map((r) => r.cls)), woff2: median(rs.map((r) => r.woff2)), n: rs.length }];
+    return [arm, { fcpMinusTtfb: median(rs.map((r) => r.fcpMinusTtfb)), lcpMinusTtfb: median(rs.map((r) => r.lcpMinusTtfb)), cls: median(rs.map((r) => r.cls)), maxCls: Math.max(...rs.map((r) => r.cls)), woff2: median(rs.map((r) => r.woff2)), woff2KB: median(rs.map((r) => r.woff2KB)), n: rs.length }];
   }));
   return { conditions: CONDITIONS, pathname, rounds, summary, runs: all };
 }

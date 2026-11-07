@@ -32,10 +32,15 @@ describe('첫 그림 A/B 도구 — 같은 출처 앞단만', () => {
     expect(ab).toContain("Network.emulateNetworkConditions");
   });
 
-  it('앞단은 운영처럼 압축해서 보낸다(압축 없이 보내면 CSS · JS가 커져 FCP가 7초대로 밀린다) · 문서는 캐시하지 않는다', () => {
+  it('앞단은 운영처럼 HTTP/2 · 압축 · 자산 캐시 머리글로 보낸다 — 문서만 no-store', () => {
     const proxy = fs.readFileSync(path.join(DIR, 'same-origin-proxy.mjs'), 'utf8');
-    expect(proxy).toContain("headers['content-encoding'] = 'br'");
+    expect(proxy).toContain("headers['content-encoding'] = 'br'"); // 압축 없이 보내면 CSS · JS가 커져 FCP가 7초대로 밀린다
     expect(proxy).toContain('if (!isDocument && r.status === 200) cache.set(req.url, hit);');
+    // HTTP/1.1 앞단은 연결 6개 제한으로 Manrope가 늦게 와 운영에 없는 이동을 만들었다
+    expect(proxy).toContain('http2.createSecureServer({ ...certificate(), allowHTTP1: true }');
+    // 정적 자산까지 no-store면 미리 받은 글꼴을 다시 받아 늦게 온다 — 문서에만 건다
+    expect(proxy).toContain("const headers = isDocument ? { ...hit.headers, 'cache-control': 'no-store' } : { ...hit.headers };");
+    expect(proxy).not.toMatch(/'cache-control': 'no-store'[^\n]*font\/woff2|font\/woff2[^\n]*'cache-control': 'no-store'/);
   });
 
   it('규칙 문서가 있고 route.fulfill 함정 · FCP−TTFB · 교대 · 실험실 대체 글꼴 차이를 적는다', () => {

@@ -10,16 +10,17 @@
 //
 // 팔 파일(ESM): export default { A: {}, B: { html: (html) => html.replace(…), link: (value) => value, files: { '/x.woff2': '/abs/x.woff2' } } }
 // 팔 바꾸기: GET https://127.0.0.1:<port>/__arm/<이름> (first-paint-ab.mjs가 판마다 부른다).
-// 모든 팔이 같은 앞단 · 같은 연결 조건(HTTP/1.1 · br 재압축 · 정적 자산 메모리 캐시)을 지나므로 팔 사이 비교만 뜻이 있다(절대값은 운영과 조금 다르다).
+// 모든 팔이 같은 앞단 · 같은 연결 조건(HTTP/2 · br 재압축 · 정적 자산 메모리 캐시)을 지나므로 팔 사이 비교만 뜻이 있다(절대값은 운영과 조금 다르다).
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
-import https from 'node:https';
+import http2 from 'node:http2';
 import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import zlib from 'node:zlib';
 
-const HOP = new Set(['content-encoding', 'content-length', 'transfer-encoding', 'connection', 'keep-alive', 'strict-transport-security', 'alt-svc']);
+// HTTP/2에서 금지된 연결 머리글과, 다시 압축 · 길이를 정하는 머리글은 넘기지 않는다.
+const HOP = new Set(['content-encoding', 'content-length', 'transfer-encoding', 'connection', 'keep-alive', 'upgrade', 'proxy-connection', 'te', 'strict-transport-security', 'alt-svc']);
 const TEXT = /text|javascript|json|css|x-component|svg|xml/;
 
 function arg(name, fallback) {
@@ -37,7 +38,9 @@ function certificate() {
 export async function startProxy({ origin = 'https://www.manabi.co.kr', port = 18443, arms = { A: {} } } = {}) {
   let current = Object.keys(arms)[0];
   const cache = new Map(); // 정적 자산(HTML 아닌 200 응답) — 판마다 운영을 다시 부르지 않게
-  const server = https.createServer(certificate(), async (req, res) => {
+  // HTTP/2(ALPN, 1.1도 받음) — 운영처럼 한 연결에 여러 요청을 싣는다. HTTP/1.1 앞단은 연결 6개 제한 때문에 next/font의 Manrope가
+  // 늦게 와 운영에 없는 이동(단추 줄 0.0172)이 생겼다(VOCAB-SUBSET-SMALL-001 실측).
+  const server = http2.createSecureServer({ ...certificate(), allowHTTP1: true }, async (req, res) => {
     try {
       if (req.url.startsWith('/__arm/')) {
         const next = decodeURIComponent(req.url.slice(7));
@@ -47,7 +50,7 @@ export async function startProxy({ origin = 'https://www.manabi.co.kr', port = 1
       const arm = arms[current] || {};
       const pathname = req.url.split('?')[0];
       if (arm.files?.[pathname]) {
-        res.writeHead(200, { 'content-type': arm.contentType?.[pathname] || 'font/woff2', 'cache-control': 'no-store' });
+        res.writeHead(200, { 'content-type': arm.contentType?.[pathname] || 'font/woff2', 'cache-control': 'public, max-age=31536000, immutable' });
         res.end(fs.readFileSync(arm.files[pathname]));
         return;
       }
@@ -62,7 +65,9 @@ export async function startProxy({ origin = 'https://www.manabi.co.kr', port = 1
         if (!isDocument && r.status === 200) cache.set(req.url, hit);
       }
       let { status, body } = hit;
-      const headers = { ...hit.headers, 'cache-control': 'no-store' };
+      // 문서만 no-store로 — 정적 자산까지 no-store면 브라우저가 미리 받은(preload) 응답을 다시 쓰지 않고 글꼴을 또 받는다(실측: /vocab 글꼴이
+      // 4.1s에 다시 와서 운영에 없는 이동이 생겼다). 판마다 새 브라우저 맥락이라 자산 캐시가 판을 넘지 않는다.
+      const headers = isDocument ? { ...hit.headers, 'cache-control': 'no-store' } : { ...hit.headers };
       if (isDocument) {
         if (arm.html) body = Buffer.from(arm.html(body.toString('utf8')));
         if (arm.link && headers.link) headers.link = arm.link(headers.link);
