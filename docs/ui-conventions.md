@@ -241,6 +241,8 @@ R3에서 `myplan` 격자를 실제로 옮겨 그 차이를 실측했다 — 260p
 
 > **계약 = 배선 보증, e2e = 동작 보증.**
 
+e2e 기하는 글꼴에 달려 있다 — **CI 러너와 로컬 개발 컨테이너는 같은 시스템 글꼴 묶음**(Playwright install-deps의 글꼴: WenQuanYi Zen Hei · IPAGothic · Unifont 등, CI는 `.github/workflows/ci.yml` 「CJK 글꼴 설치」 단계)을 쓴다(CI-CJK-FONTS-001). 웹폰트는 e2e 빌드에서 목(`e2e/fixtures/google-fonts-mock.cjs`)이라 CJK 글리프는 이 시스템 글꼴로 그려진다 — 운영 글꼴(Noto) 기하는 Preview 실글꼴 확인으로 본다.
+
 새 계약을 심을 때는 **일부러 깨뜨려 FAIL을 1회 확인**하고 커밋한다(v2-L에서
 공허 통과가 실측된 뒤 굳은 절차). 앵커 슬라이스는 `helpers/sliceBetween`만 쓴다.
 
