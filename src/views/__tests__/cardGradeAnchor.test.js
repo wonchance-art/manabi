@@ -23,7 +23,7 @@ describe('1440 옆 패널 — 채점 줄이 패널 아래에 머문다', () => {
   it('390과 같은 세로 칸 배치를 그대로 쓴다(새 규칙 없음) — 카드 flex:1 · 본문만 스크롤 · 채점 줄 flex:none', () => {
     expect(css).toContain('.viewer-inspector .viewer-side__content {height:100%;display:flex;flex-direction:column;min-height:0;}');
     expect(css).toContain('.viewer-inspector .word-detail-card {display:flex;flex-direction:column;min-height:0;max-height:100%;flex:1;}');
-    expect(css).toContain('.reader-card-body {flex:1;overflow:auto;overscroll-behavior:contain;min-height:0;padding:12px 16px;}');
+    expect(css).toContain('.reader-card-body {flex:1;overflow:auto;overscroll-behavior:contain;overflow-anchor:none;min-height:0;padding:12px 16px;}');
     expect(css).toContain('.reader-card-actions {flex:none;padding:8px 12px;');
     expect(css).not.toMatch(/\.reader-card-actions\s*\{[^}]*position:\s*(?:fixed|absolute|sticky)/); // 흐름 안 — 내용을 덮지 않는다
   });

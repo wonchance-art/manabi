@@ -46,8 +46,11 @@ const dictRows={
 
 const SENTENCE_PREFETCH='viewer-sentence-prefetch';
 const notPrefetch=r=>r.purpose!==SENTENCE_PREFETCH;
-async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoSpeakOnClick:false},common=null,width=390,height=844,saved=null,own=false,rows:rowOverride=null,details={}}={}) {
+async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoSpeakOnClick:false},common=null,width=390,height=844,saved=null,own=false,rows:rowOverride=null,details={},lateSheetMs=0}={}) {
  const f=await fixture({width,guest});
+ // 시트 첫 자리 판정(useReaderLayout placeOnShow — data-selected를 보는 MutationObserver)을 늦춰 CI에서 드물게 나던 순서를 고정한다:
+ // 첫 화면 예산 단계가 먼저 돌고 시트 자리가 뒤에 온다(GLYPH-BUDGET-ANCHOR-001).
+ if(lateSheetMs)await f.context.addInitScript(ms=>{const M=window.MutationObserver;window.MutationObserver=class extends M{constructor(cb){let late=false;super((r,o)=>late?setTimeout(()=>cb(r,o),ms):cb(r,o));this.__late=()=>{late=true;};}observe(t,o){if(o?.attributeFilter?.includes('data-selected'))this.__late();return super.observe(t,o);}};},lateSheetMs);
  await f.page.setViewportSize({width,height});
  await f.context.addInitScript(({language,prefs,common})=>{
   if(!localStorage.getItem('viewer_preferences_v2'))localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,...(common?{common}:{}),languages:{[language]:prefs}}));
@@ -762,12 +765,16 @@ test('AE-R3 390 첫 화면 우선: 3줄 문장 + 体育场(안 2) — 표제어�
    const meaning=card.querySelector('.word-detail-card__meaning').getBoundingClientRect();
    const below=card.querySelector('.reader-card-glyph--below');
    const beside=card.querySelector('.word-fit-wrap > .reader-card-glyph');
-   return {tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),
+   // 간헐 실패(CI 1/6 — 단계 1만 오르고 2가 안 오름) 진단: 실패하면 카드 본문 예산을 그대로 남긴다.
+   const body=card.querySelector('.reader-card-body'),br=body?.getBoundingClientRect(),gl=card.querySelector('.reader-card-glyph');
+   const budget=body&&{limit:br.top+body.clientHeight,meaningBottom:meaning.bottom,scrollTop:body.scrollTop,headScroll:body.dataset.headScroll??null,clientHeight:body.clientHeight,
+    layout:gl?.dataset.layout??null,names:gl?.dataset.names??null,sheet:card.closest('.viewer-inspector')?.getBoundingClientRect().height??null,compact:card.closest('.viewer-inspector')?.dataset.compact??null};
+   return {budget,tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),
     below:below?{top:below.getBoundingClientRect().top,text:below.textContent,layout:below.dataset.layout}:null,meaningBottom:meaning.bottom,
     beside:beside?{layout:beside.dataset.layout,text:beside.textContent}:null,details:card.querySelectorAll('details,[aria-expanded="false"]:not([data-inspect-key])').length};
   });
   assert.equal(s.tight,true,'step 1: the sentence line drops to the 2-line budget');
-  assert.ok(s.below,'step 2: the glyph rows move below the meaning line');
+  assert.ok(s.below,`step 2: the glyph rows move below the meaning line — ${JSON.stringify(s.budget)}`);
   assert.ok(s.below.top>=s.meaningBottom-.5,'below block is under the meaning line');
   assert.ok(s.below.text.includes('体育場')&&s.below.text.includes('たいいくじょう'),s.below.text);
   if(s.beside){assert.equal(s.beside.layout,'side');assert.match(s.beside.text,/^正(대만)?體育場$/,'beside the headword: the 正 row only (正 + its name 「대만」 when it fits — 목업 CrsGiHf5bS4tmQk3n2HVBx ①)');assert.ok(!s.below.text.includes('體育場'));}
@@ -781,6 +788,31 @@ test('AE-R3 390 첫 화면 우선: 3줄 문장 + 体育场(안 2) — 표제어�
   assertFirstScreen(await measure(f.page),{label:'1-line + 体育场 table 390'});
   assert.equal(await f.page.locator('#inspector-word .reader-card-glyph--below').filter({visible:true}).count(),0);
   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/glyph-budget-390.png`});
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// GLYPH-BUDGET-ANCHOR-001: 브라우저 스크롤 고정이 문장 줄 2줄 예산에 카드 본문 scrollTop을 몰래 옮기면(66 → 42) 앱의 자동 스크롤 표식과
+// 어긋나 「사람이 움직였다」로 읽혀 단계 2가 멈췄다 — 시트 자리 판정이 늦게 오는 순서에서 4번 중 3번. 그 순서를 고정해 늘 잰다.
+for(const late of [8,100])test(`AE-R3 390 첫 화면 우선: 시트 자리 판정이 ${late}ms 늦게 와도 단계 2까지 오른다(스크롤 고정 0)`,{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const f=await open(m,{prefs:zhPrefs,rows:glyphRows,lateSheetMs:late});
+ try{
+  await until(()=>f.bulk.length>=1);
+  const longId=m.sequence.find(id=>id.startsWith('id_2_')&&m.dictionary[id].text==='体育场');
+  await tap(f,longId,'경기장');
+  await f.page.waitForTimeout(400+late);
+  const s=await f.page.evaluate(()=>{
+   const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
+   const body=card.querySelector('.reader-card-body');
+   return {tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),below:!!card.querySelector('.reader-card-glyph--below'),
+    scrollTop:body.scrollTop,headScroll:body.dataset.headScroll??null,anchor:getComputedStyle(body).overflowAnchor};
+  });
+  assert.equal(s.anchor,'none');
+  assert.equal(s.tight,true,'step 1');
+  assert.ok(s.below,`step 2 — ${JSON.stringify(s)}`);
+  assert.ok(!s.headScroll||Math.abs(s.scrollTop-Number(s.headScroll))<1,`the app's head-scroll mark matches the body scroll — ${JSON.stringify(s)}`);
+  assertFirstScreen(await measure(f.page),{label:`3-line + 体育场 late sheet ${late}ms`});
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });

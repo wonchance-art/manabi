@@ -438,7 +438,9 @@ button.reader-pattern__formula {cursor:pointer;min-height:44px;}
 .viewer-inspector [data-panel="right"] {padding:0;}
 .viewer-inspector .viewer-side__content {height:100%;display:flex;flex-direction:column;min-height:0;}
 .viewer-inspector .word-detail-card {display:flex;flex-direction:column;min-height:0;max-height:100%;flex:1;}
-.reader-card-body {flex:1;overflow:auto;overscroll-behavior:contain;min-height:0;padding:12px 16px;}
+/* 본문 스크롤 자리는 앱이 정한다(anchorCardHead · data-head-scroll). 브라우저 스크롤 고정(overflow-anchor)이 위 내용 변화(문장 줄 2줄 예산 등)에
+   scrollTop을 몰래 옮기면 「사람이 움직였다」로 읽혀 첫 화면 예산 단계가 멈췄다(e2e 体育场 단계 2 간헐 실패 — GLYPH-BUDGET-ANCHOR-001). */
+.reader-card-body {flex:1;overflow:auto;overscroll-behavior:contain;overflow-anchor:none;min-height:0;padding:12px 16px;}
 .reader-card-actions {flex:none;padding:8px 12px;background:var(--reader-paper);border-top:1px solid var(--reader-line);}
 .reader-card-actions:empty {display:none;}
 .reader-card-actions .save-grade__guide {margin:0 0 6px;}
