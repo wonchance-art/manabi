@@ -1210,8 +1210,11 @@
     미룸(다음 지문 재게시): reading_materials · profiles 중복 정책, user_vocabulary · vocabulary_exclusions(capability가 인덱스 포함) · fsrs_operations ·
     fsrs_new_receipts(core) FK 인덱스. 미사용 인덱스 22개 유지. 근거 docs/verification/advisor-recheck-20261107.md.
     STARTER-RUN-002(11/8 02:45 cron): job 1 done · 132/132 completed · 실패 0 · analyze 53/300 · llm 278 calls(haiku 217 · sonnet 61, Gemini 0) ·
-    토큰 이음 = 원문 132/132. JA-PUNCT-001(이번 PR, 20261108000000): kuromoji가 반각 ( ) / ~ — 를 名詞로 내 공개 시드 60~67에 뜻 없는
+    토큰 이음 = 원문 132/132. JA-PUNCT-001(#1747 병합 2851a628 · 운영 확인 — 대상 0 · 백업 60 · 지문 넷 불변, 20261108000000): kuromoji가 반각 ( ) / ~ — 를 名詞로 내 공개 시드 60~67에 뜻 없는
     「명사」 60개 → tokenizeJaLine 기호 고정 + 60개 사전 항목만 pos 기호(백업 · 복원 SQL · 계약 ja-punct-pos.mjs · jaPunct.test.js). 단어장 기호 0행.
+    JA-PUNCT-002(이번 PR, 20261108010000 — 오케스트레이터 04:15 판정): 비공개 7편(소유자 2명) 기호 항목 104개 pos만 기호 · 뜻 그대로 ·
+    주인 없는 정리 대상 6편(13 · 14 · 16 · 17 · 18 · 30)은 삭제 SQL의 백업 md5 검사 때문에 제외. 계약 punct-pos-private.mjs.
+    목업 후보(기록만): 숫자만 든 토큰(134 「010-1234-5678」 등)을 읽기 화면에서 누를 수 있게 둘지 — 전 언어 규칙.
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
