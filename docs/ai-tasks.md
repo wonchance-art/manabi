@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **ERROR-HARVEST-001 · SEC-CSP-002 운영 오류 수확 · CSP 강제 전환 초안 (2026-11-07 KST)** PR `claude/csp-allowlist`(오케스트레이터 지시 ① · 문서만):
+  수확: observe.error_events 30일 = 탐침 2건뿐(실제 0) · Vercel 런타임 오류 7일 0 · Supabase API 4xx/5xx 24시간 0 · Postgres 오류는 개발 세션 직접 SQL뿐 — 관측이 11/6부터 · 계정 9개라 「0」은 「쓰임 적음」과 구별 안 됨.
+  CSP: 운영 17경로 순회(출처 = 같은 출처 + Supabase뿐, 인라인 스크립트 257 · style 속성 429) + 코드 훑기(wss Realtime · youtube-nocookie · blob 오디오 · data 이미지 · PDF 워커)로
+  docs/security-csp.md 초안 — 1단계 지금 네 지시어 강제(7일 · 위반 0 조건) · 2단계 출처 허용 목록(Report-Only 7일 뒤). 2단계 Report-Only 확장은 계약(「fetch 계열 지시어 없음」) 변경이라 결정 대기.
 - **STUDIES-CLS-001 지역학 문서 자리 이동 → 0 · 문서별 첫 화면 한글 하위 집합 (2026-11-07 KST)** PR `claude/studies-cls`(오케스트레이터 지시 · 버그 수정, 최종 화면 무변경):
   원인 = 본문 한글의 Noto Sans KR 조각(문서당 28개 · 780KB, 굵기마다 따로)이 첫 그림 뒤 4.3–4.6s에 와서 대체 글꼴(한글 1.0em) → Noto Sans KR(0.92em)로 바뀌며
   줄이 다시 흐름(운영 CLS jp-culture 0.0063 · kr-culture 0.0124 · fr-overview 0.0636). Manrope와 무관.
