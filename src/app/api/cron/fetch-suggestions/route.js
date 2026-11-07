@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { kstDateString } from '@/lib/growthStats';
 import { fetchFromSource } from '../../../../lib/content-sources.js';
-import { groupByLanguage, isVideoSource, planCronRun, resolveActiveSources, suggestionSourceLabel } from '../../../../lib/suggestionSources.js';
+import { REPEAT_WINDOW_DAYS, daysBefore, freshSuggestions, groupByLanguage, isVideoSource, planCronRun, resolveActiveSources, suggestionSourceLabel } from '../../../../lib/suggestionSources.js';
 
 // 영상 수집은 영상마다 왕복이 여러 번이라 느리다. 함수 한도를 명시하고(다른 크론과 같은 60초),
 // 그 안에서 영상 소스는 남은 시간이 있을 때만 시작한다 — 넘기면 이미 모은 것까지 잃는다.
@@ -40,6 +40,15 @@ export async function GET(request) {
     .order('created_at');
   const dbSources = rows || [];
 
+  // 최근 REPEAT_WINDOW_DAYS일 동안 이미 오늘의 소식이었던 id — 멈춘 공급원이 같은 기사를 날마다 「오늘」로 다시 올리지 않게(STALE-SUGGEST-001).
+  // 읽기에 실패하면 빈 집합(지금까지와 같은 동작)으로 둔다 — 수집 자체를 멈추지 않는다.
+  const { data: recentRows } = await supabase
+    .from('daily_suggestions')
+    .select('video_id')
+    .gte('date', daysBefore(today, REPEAT_WINDOW_DAYS))
+    .lt('date', today);
+  const seen = new Set((recentRows || []).map((r) => r.video_id));
+
   // 편성 결정 두 가지(기본값 언어별 보충·언어 그룹핑)는 순수 함수로 빼서 계약을 걸었다.
   // 둘 다 공급이 ja/en에 갇혀 있던 원인이라, 라우트 안에 두면 회귀를 잡을 수 없다.
   const byLang = groupByLanguage(resolveActiveSources(dbSources));
@@ -55,7 +64,8 @@ export async function GET(request) {
       continue;
     }
     const t0 = Date.now();
-    const articles = await fetchFromSource(src, 2);
+    const fetched = await fetchFromSource(src, 2);
+    const articles = freshSuggestions(fetched, { today, seen });
     let ok = 0;
 
     for (const a of articles) {
@@ -77,7 +87,7 @@ export async function GET(request) {
       if (error) errors.push(`${language}: ${error.message}`);
       else { saved[language]++; ok++; }
     }
-    runLog.push(`${label}:${ok}/${articles.length}(${Date.now() - t0}ms)`);
+    runLog.push(`${label}:${ok}/${articles.length}${fetched.length > articles.length ? `(stale ${fetched.length - articles.length})` : ''}(${Date.now() - t0}ms)`);
   }
   // 소스별 수확·소요를 한 줄로 남긴다 — 「조용한 0건」이 어느 소스인지 로그만으로 가른다.
   console.log('[cron/fetch-suggestions]', `${Date.now() - startedAt}ms`, runLog.join(' '));
