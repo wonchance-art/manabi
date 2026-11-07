@@ -889,6 +889,12 @@
   수확: observe.error_events 30일 = 탐침 2건뿐(실제 0) · Vercel 런타임 오류 7일 0 · Supabase API 4xx/5xx 24시간 0 · Postgres 오류는 개발 세션 직접 SQL뿐 — 관측이 11/6부터 · 계정 9개라 「0」은 「쓰임 적음」과 구별 안 됨.
   CSP: 운영 17경로 순회(출처 = 같은 출처 + Supabase뿐, 인라인 스크립트 257 · style 속성 429) + 코드 훑기(wss Realtime · youtube-nocookie · blob 오디오 · data 이미지 · PDF 워커)로
   docs/security-csp.md 초안 — 1단계 지금 네 지시어 강제(7일 · 위반 0 조건) · 2단계 출처 허용 목록(Report-Only 7일 뒤). 2단계 Report-Only 확장은 계약(「fetch 계열 지시어 없음」) 변경이라 결정 대기.
+- **STUDIES-REST-001 지역학 문서 글꼴 824 → 178KB — 문서별 「나머지」 하위 집합 (2026-11-07 KST)** PR `claude/studies-rest`(오케스트레이터 승인 · 화면 무변경):
+  집계: jp-culture 글꼴 31개 · 824KB 중 Noto Sans KR 400 조각 28개 — 한자 17자가 조각 12개 · 495KB, 첫 화면 밖 한글이 14개 · 244KB(굵기 문제 아님 — 조각은 전부 400).
+  고침: 문서마다 첫 화면 밖 한글 · 한자 · 가나 · CJK 기호를 400 · 700 정적 파일로(미리 받기 없음, 첫 화면 파일과 글자 겹침 0). Noto Sans KR에 없는 일본 신자체(縄 · 仏 · 様 …)는 skipped로 남김.
+  공통 푸터(SiteFooter)를 글자 출처에 더함. 26문서 52파일 · 저장소 약 470KB. 계약: 나머지도 포함률 95% · 겹침 0 · 나머지는 미리 받지 않음.
+  게이트(같은 출처 앞단 교대 · 3판 중앙값): FCP−TTFB 악화 없음(jp +0.02 · kr +0.035 · fr −0.035s, 판 사이 흔들림 안) · CLS 0(첫 화면 · 끝까지 스크롤) ·
+  jp 824 → 178 · kr 265 → 176 · fr 266 → 173KB · 한 글자 뺀 변이 = 그 글자의 next/font 조각만 받음(셋 다) · 26문서 × 폰/PC 좌표 diff 0.
 - **STUDIES-CLS-001 지역학 문서 자리 이동 → 0 · 문서별 첫 화면 한글 하위 집합 (2026-11-07 KST)** PR `claude/studies-cls`(오케스트레이터 지시 · 버그 수정, 최종 화면 무변경):
   원인 = 본문 한글의 Noto Sans KR 조각(문서당 28개 · 780KB, 굵기마다 따로)이 첫 그림 뒤 4.3–4.6s에 와서 대체 글꼴(한글 1.0em) → Noto Sans KR(0.92em)로 바뀌며
   줄이 다시 흐름(운영 CLS jp-culture 0.0063 · kr-culture 0.0124 · fr-overview 0.0636). Manrope와 무관.

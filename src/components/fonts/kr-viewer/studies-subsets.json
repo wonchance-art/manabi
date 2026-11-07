@@ -9,17 +9,21 @@
   "body": 400,
   "head": 700
  },
+ "restWeights": {
+  "rest400": 400,
+  "rest700": 700
+ },
  "docs": {
   "japan/jp-overview": {
    "body": {
-    "chars": "가간감강개갱건걸검것게겨결경계고공과관광교구국군권규그극기길까께꼽나남내냈너넷년노논높놓뉜뉴는늘니다단대도동됐된둔뒤든들등따뛰라래려렵령로록료루류른를름리림만많메며면멸명모목못무문밀바반받발방배보복본볼부북분비뼈사산상색생서설섬섰세션소속송수술슈습시식신심아악알앙앱야약양어억업었에여역연열예오온와요우울움원웹위유율으은을음의이인일읽있자장잦재저적전점정제져조종주준중증지진질집쪽찍차책처척천체쳐초촌총최추축출치칭카코쿄쿠큰키태터테토통트파편평포폭표필하학한할함합해했행현혼홈홋화확환활회획후히",
-    "count": 247,
+    "chars": "가간감강개갱건걸검것게겨결경계고공과관광교구국군권규그극기길까께꼽나남내냈너넷년노논높놓뉜뉴는늘니다단대도동됐된둔뒤든들등따뛰라래려렵령로록료루류른를름리림만많말메며면멸명모목못무문밀바반받발방배보복본볼부북분비뼈사산상색생서설섬섰세션소속송수술슈습시식신심아악알앙앱야약양어억업었에여역연열예오온와요용우울움원웹위유율으은을음의이인일읽있자장잦재저적전점정제져조종주준중증지진질집쪽찍차책처척천체쳐초촌총최추축출치침칭카코쿄쿠큰키태터테토통트파편평포폭표필하학한할함합해했행현혼홈홋화확환활회획후히",
+    "count": 250,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-overview-400.b36d28a120ff1512.woff2",
-     "sha256": "b36d28a120ff15122a793c167b0ef5f9d00f2eb5cc414d81c07508be4e4db86a",
-     "bytes": 17772
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-overview-400.ba78375abeccc999.woff2",
+     "sha256": "ba78375abeccc9997ddaa7609ba59be1edf3867ba79c0e1eee4f4ddd11152a1b",
+     "bytes": 17956
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC15, U+AC1C, U+AC31, U+AC74, U+AC78, U+AC80, U+AC83, U+AC8C, U+ACA8, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD50, U+AD6C-AD6D, U+AD70, U+AD8C, U+ADDC, U+ADF8-ADF9, U+AE30, U+AE38, U+AE4C, U+AED8, U+AF3D, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B17C, U+B192-B193, U+B25C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B300, U+B3C4, U+B3D9, U+B410, U+B41C, U+B454, U+B4A4, U+B4E0, U+B4E4, U+B4F1, U+B530, U+B6F0, U+B77C, U+B798, U+B824, U+B835, U+B839, U+B85C-B85D, U+B8CC, U+B8E8, U+B958, U+B978, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9CC, U+B9CE, U+BA54, U+BA70, U+BA74, U+BA78, U+BA85, U+BAA8-BAA9, U+BABB, U+BB34, U+BB38, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80-BD81, U+BD84, U+BE44, U+BF08, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C12C, U+C130, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C220, U+C288, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C544-C545, U+C54C, U+C559, U+C571, U+C57C-C57D, U+C591, U+C5B4-C5B5, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C608, U+C624, U+C628, U+C640, U+C694, U+C6B0, U+C6B8, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C728, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C7A5-C7A6, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9C8, U+C9D1, U+CABD, U+CC0D, U+CC28, U+CC45, U+CC98-CC99, U+CC9C, U+CCB4, U+CCD0, U+CD08, U+CD0C, U+CD1D, U+CD5C, U+CD94-CD95, U+CD9C, U+CE58, U+CE6D, U+CE74, U+CF54, U+CFC4, U+CFE0, U+D070, U+D0A4, U+D0DC, U+D130, U+D14C, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D3B8, U+D3C9, U+D3EC-D3ED, U+D45C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D604, U+D63C, U+D648, U+D64B, U+D654-D655, U+D658, U+D65C, U+D68C-D68D, U+D6C4, U+D788"
+    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC15, U+AC1C, U+AC31, U+AC74, U+AC78, U+AC80, U+AC83, U+AC8C, U+ACA8, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD50, U+AD6C-AD6D, U+AD70, U+AD8C, U+ADDC, U+ADF8-ADF9, U+AE30, U+AE38, U+AE4C, U+AED8, U+AF3D, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B17C, U+B192-B193, U+B25C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B300, U+B3C4, U+B3D9, U+B410, U+B41C, U+B454, U+B4A4, U+B4E0, U+B4E4, U+B4F1, U+B530, U+B6F0, U+B77C, U+B798, U+B824, U+B835, U+B839, U+B85C-B85D, U+B8CC, U+B8E8, U+B958, U+B978, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9CC, U+B9CE, U+B9D0, U+BA54, U+BA70, U+BA74, U+BA78, U+BA85, U+BAA8-BAA9, U+BABB, U+BB34, U+BB38, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80-BD81, U+BD84, U+BE44, U+BF08, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C12C, U+C130, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C220, U+C288, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C544-C545, U+C54C, U+C559, U+C571, U+C57C-C57D, U+C591, U+C5B4-C5B5, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C608, U+C624, U+C628, U+C640, U+C694, U+C6A9, U+C6B0, U+C6B8, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C728, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C7A5-C7A6, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9C8, U+C9D1, U+CABD, U+CC0D, U+CC28, U+CC45, U+CC98-CC99, U+CC9C, U+CCB4, U+CCD0, U+CD08, U+CD0C, U+CD1D, U+CD5C, U+CD94-CD95, U+CD9C, U+CE58, U+CE68, U+CE6D, U+CE74, U+CF54, U+CFC4, U+CFE0, U+D070, U+D0A4, U+D0DC, U+D130, U+D14C, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D3B8, U+D3C9, U+D3EC-D3ED, U+D45C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D604, U+D63C, U+D648, U+D64B, U+D654-D655, U+D658, U+D65C, U+D68C-D68D, U+D6C4, U+D788"
    },
    "head": {
     "chars": "개경과관구권극나도든라리만본부산수열의이인일정제조중지집행현",
@@ -30,6 +34,27 @@
      "bytes": 3728
     },
     "unicodeRange": "U+AC1C, U+ACBD, U+ACFC, U+AD00, U+AD6C, U+AD8C, U+ADF9, U+B098, U+B3C4, U+B4E0, U+B77C, U+B9AC, U+B9CC, U+BCF8, U+BD80, U+C0B0, U+C218, U+C5F4, U+C758, U+C774, U+C778, U+C77C, U+C815, U+C81C, U+C870, U+C911, U+C9C0, U+C9D1, U+D589, U+D604"
+   },
+   "rest400": {
+    "chars": "「」九円北四国州市府本村東沖海町県西道都関각같객거겹괄괴금급꽃눈당던독되두듬디뚜레렷론룬린마막망물밖버벚별병불붕블삼선성순스언엔였영완왕외월육융잃임입작쟁졸즌징채큐크특품프플헤호",
+    "count": 89,
+    "skipped": "縄",
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-overview-rest400.a83ae32461624263.woff2",
+     "sha256": "a83ae324616242632d879acaa66b194b68aa035ded887cef32fc15d7a9d41377",
+     "bytes": 9280
+    },
+    "unicodeRange": "U+300C-300D, U+4E5D, U+5186, U+5317, U+56DB, U+56FD, U+5DDE, U+5E02, U+5E9C, U+672C, U+6751, U+6771, U+6C96, U+6D77, U+753A, U+770C, U+897F, U+9053, U+90FD, U+95A2, U+AC01, U+AC19, U+AC1D, U+AC70, U+ACB9, U+AD04, U+AD34, U+AE08-AE09, U+AF43, U+B208, U+B2F9, U+B358, U+B3C5, U+B418, U+B450, U+B4EC, U+B514, U+B69C, U+B808, U+B837, U+B860, U+B8EC, U+B9B0, U+B9C8-B9C9, U+B9DD, U+BB3C, U+BC16, U+BC84, U+BC9A, U+BCC4, U+BCD1, U+BD88, U+BD95, U+BE14, U+C0BC, U+C120, U+C131, U+C21C, U+C2A4, U+C5B8, U+C5D4, U+C600-C601, U+C644, U+C655, U+C678, U+C6D4, U+C721, U+C735, U+C783-C785, U+C791, U+C7C1, U+C878, U+C98C, U+C9D5, U+CC44, U+D050, U+D06C, U+D2B9, U+D488, U+D504, U+D50C, U+D5E4, U+D638"
+   },
+   "rest700": {
+    "chars": "각간강검계고광교국기내냅노는두명무문발분사샷성스업역예와용원육은전증처총추축출칭토통트표화환회",
+    "count": 47,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-overview-rest700.c2a53c502f6ef1e3.woff2",
+     "sha256": "c2a53c502f6ef1e32b53f17e8bfdba3f6bc48b50c349264e3637ba25491faac8",
+     "bytes": 5024
+    },
+    "unicodeRange": "U+AC01, U+AC04, U+AC15, U+AC80, U+ACC4, U+ACE0, U+AD11, U+AD50, U+AD6D, U+AE30, U+B0B4, U+B0C5, U+B178, U+B294, U+B450, U+BA85, U+BB34, U+BB38, U+BC1C, U+BD84, U+C0AC, U+C0F7, U+C131, U+C2A4, U+C5C5, U+C5ED, U+C608, U+C640, U+C6A9, U+C6D0, U+C721, U+C740, U+C804, U+C99D, U+CC98, U+CD1D, U+CD94-CD95, U+CD9C, U+CE6D, U+D1A0, U+D1B5, U+D2B8, U+D45C, U+D654, U+D658, U+D68C"
    }
   },
   "japan/jp-history-premodern": {
@@ -52,18 +77,39 @@
      "bytes": 3920
     },
     "unicodeRange": "U+AC00, U+ACE0, U+AD6D, U+AD8C, U+ADF8, U+AE4C, U+B144, U+B300, U+B3C4, U+B839, U+B984, U+B9AC, U+BAAC, U+BB34, U+BCF8, U+C0AC, U+C11C, U+C120, U+C138, U+C2DC, U+C57C, U+C5D0, U+C640, U+C694, U+C728, U+C758, U+C774, U+C77C, U+C791, U+C815, U+C870, U+C911, U+C9C0, U+D750"
+   },
+   "rest400": {
+    "chars": "「」古国墳弥戦文生能藩街道격겹겼경궁궐규균급길끌난날남네논능니닦달덜데뒤드등때란략레려렸룬뤘류머명묘물므민번별상센쇄쇠숙슈승식없었영왕왜외우운위음임쟁점존참창축칸켰코키킨퇴투평포프피현혼회흥힌",
+    "count": 96,
+    "skipped": "禅縄",
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-premodern-rest400.58807fc952e31777.woff2",
+     "sha256": "58807fc952e317771fe188bd50da778e28ca55db558cbab4cb5d06589eedca78",
+     "bytes": 9728
+    },
+    "unicodeRange": "U+300C-300D, U+53E4, U+56FD, U+58B3, U+5F25, U+6226, U+6587, U+751F, U+80FD, U+85E9, U+8857, U+9053, U+ACA9, U+ACB9, U+ACBC-ACBD, U+AD81, U+AD90, U+ADDC, U+ADE0, U+AE09, U+AE38, U+B04C, U+B09C, U+B0A0, U+B0A8, U+B124, U+B17C, U+B2A5, U+B2C8, U+B2E6, U+B2EC, U+B35C, U+B370, U+B4A4, U+B4DC, U+B4F1, U+B54C, U+B780, U+B7B5, U+B808, U+B824, U+B838, U+B8EC, U+B918, U+B958, U+BA38, U+BA85, U+BB18, U+BB3C, U+BBC0, U+BBFC, U+BC88, U+BCC4, U+C0C1, U+C13C, U+C1C4, U+C1E0, U+C219, U+C288, U+C2B9, U+C2DD, U+C5C6, U+C5C8, U+C601, U+C655, U+C65C, U+C678, U+C6B0, U+C6B4, U+C704, U+C74C, U+C784, U+C7C1, U+C810, U+C874, U+CC38, U+CC3D, U+CD95, U+CE78, U+CF30, U+CF54, U+D0A4, U+D0A8, U+D1F4, U+D22C, U+D3C9, U+D3EC, U+D504, U+D53C, U+D604, U+D63C, U+D68C, U+D765, U+D78C"
+   },
+   "rest700": {
+    "chars": "각감개검것계공관구근기긴날남네노늘닌다등략록료립막문미번분산설스신심여연오유자재적전제준증처청체출치코쿠토통트표학한행화흔",
+    "count": 61,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-premodern-rest700.7ab5a0a3fab44fad.woff2",
+     "sha256": "7ab5a0a3fab44fad00bfc46ce222dda4fc042a381ebcbfe0c6390b2f2e436b7a",
+     "bytes": 5708
+    },
+    "unicodeRange": "U+AC01, U+AC10, U+AC1C, U+AC80, U+AC83, U+ACC4, U+ACF5, U+AD00, U+AD6C, U+ADFC, U+AE30, U+AE34, U+B0A0, U+B0A8, U+B124, U+B178, U+B298, U+B2CC, U+B2E4, U+B4F1, U+B7B5, U+B85D, U+B8CC, U+B9BD, U+B9C9, U+BB38, U+BBF8, U+BC88, U+BD84, U+C0B0, U+C124, U+C2A4, U+C2E0, U+C2EC, U+C5EC, U+C5F0, U+C624, U+C720, U+C790, U+C7AC, U+C801, U+C804, U+C81C, U+C900, U+C99D, U+CC98, U+CCAD, U+CCB4, U+CD9C, U+CE58, U+CF54, U+CFE0, U+D1A0, U+D1B5, U+D2B8, U+D45C, U+D559, U+D55C, U+D589, U+D654, U+D754"
    }
   },
   "japan/jp-history-modern": {
    "body": {
-    "chars": "가간강갖같개갱건검게격결경계고공과관교구국권그근글기길까나내냈너넷년념노논뉴늑는늘다단담대도돌동됐둔드들뛰략러레력로록료뤘륙를름리마막만메며면모못무문물므민바받발방배버번법벽변별병보복본볼부비빼뼈사산새색서설섰성세센션속송수습승시식신실심앗앙애앱약양어억업없에여역연열였영오와외요우운움원월웹위유으은을의이인일읽임입있자작장재쟁저적전점정제졌조존종좌주중증지진집징책처천철청체최축출췄층치침칸코쿄키탄태터토통투트판패편평폐포폭표풍필하학한할함합항해했행헌현형홈화확황흐흥히",
-    "count": 236,
+    "chars": "가간강갖같개갱건검게격결경계고공과관교구국권그근글기길까나내냈너넷년념노논뉴늑는늘다단담대도돌동됐둔드들뛰략러레력로록료뤘륙를름리마막만말메며면모못무문물므민바받발방배버번법벽변별병보복본볼부비빼뼈사산새색서설섰성세센션속송수습승시식신실심앗앙애앱약양어억업없에여역연열였영오와외요용우운움원월웹위유으은을의이인일읽임입있자작장재쟁저적전점정제졌조존종좌주중증지진집징책처천철청체최축출췄층치침칸코쿄키탄태터토통투트판패편평폐포폭표풍필하학한할함합항해했행헌현형홈화확황흐흥히",
+    "count": 238,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-modern-400.e39af9e8f617acb3.woff2",
-     "sha256": "e39af9e8f617acb3181ba4d13b87afb11a09e53fa2703e188cded04cfa9d248d",
-     "bytes": 17276
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-modern-400.526a0ce857f74f94.woff2",
+     "sha256": "526a0ce857f74f94032aa16a4baab7a47ef9b414cf09ffd0024dfa6b33ae50c1",
+     "bytes": 17424
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC15-AC16, U+AC19, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC8C, U+ACA9, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADF8, U+ADFC, U+AE00, U+AE30, U+AE38, U+AE4C, U+B098, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B150, U+B178, U+B17C, U+B274, U+B291, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F4, U+B300, U+B3C4, U+B3CC, U+B3D9, U+B410, U+B454, U+B4DC, U+B4E4, U+B6F0, U+B7B5, U+B7EC, U+B808, U+B825, U+B85C-B85D, U+B8CC, U+B918, U+B959, U+B97C, U+B984, U+B9AC, U+B9C8-B9C9, U+B9CC, U+BA54, U+BA70, U+BA74, U+BAA8, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BBFC, U+BC14, U+BC1B-BC1C, U+BC29, U+BC30, U+BC84, U+BC88, U+BC95, U+BCBD, U+BCC0, U+BCC4, U+BCD1, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BE44, U+BE7C, U+BF08, U+C0AC, U+C0B0, U+C0C8-C0C9, U+C11C, U+C124, U+C130-C131, U+C138, U+C13C, U+C158, U+C18D, U+C1A1, U+C218, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C557, U+C559, U+C560, U+C571, U+C57D, U+C591, U+C5B4-C5B5, U+C5C5-C5C6, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C600-C601, U+C624, U+C640, U+C678, U+C694, U+C6B0, U+C6B4, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C788, U+C790-C791, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C84C, U+C870, U+C874, U+C885, U+C88C, U+C8FC, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC45, U+CC98, U+CC9C, U+CCA0, U+CCAD, U+CCB4, U+CD5C, U+CD95, U+CD9C, U+CDC4, U+CE35, U+CE58, U+CE68, U+CE78, U+CF54, U+CFC4, U+D0A4, U+D0C4, U+D0DC, U+D130, U+D1A0, U+D1B5, U+D22C, U+D2B8, U+D310, U+D328, U+D3B8, U+D3C9, U+D3D0, U+D3EC-D3ED, U+D45C, U+D48D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D5CC, U+D604, U+D615, U+D648, U+D654-D655, U+D669, U+D750, U+D765, U+D788"
+    "unicodeRange": "U+AC00, U+AC04, U+AC15-AC16, U+AC19, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC8C, U+ACA9, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADF8, U+ADFC, U+AE00, U+AE30, U+AE38, U+AE4C, U+B098, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B150, U+B178, U+B17C, U+B274, U+B291, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F4, U+B300, U+B3C4, U+B3CC, U+B3D9, U+B410, U+B454, U+B4DC, U+B4E4, U+B6F0, U+B7B5, U+B7EC, U+B808, U+B825, U+B85C-B85D, U+B8CC, U+B918, U+B959, U+B97C, U+B984, U+B9AC, U+B9C8-B9C9, U+B9CC, U+B9D0, U+BA54, U+BA70, U+BA74, U+BAA8, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BBFC, U+BC14, U+BC1B-BC1C, U+BC29, U+BC30, U+BC84, U+BC88, U+BC95, U+BCBD, U+BCC0, U+BCC4, U+BCD1, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BE44, U+BE7C, U+BF08, U+C0AC, U+C0B0, U+C0C8-C0C9, U+C11C, U+C124, U+C130-C131, U+C138, U+C13C, U+C158, U+C18D, U+C1A1, U+C218, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C557, U+C559, U+C560, U+C571, U+C57D, U+C591, U+C5B4-C5B5, U+C5C5-C5C6, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C600-C601, U+C624, U+C640, U+C678, U+C694, U+C6A9, U+C6B0, U+C6B4, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C788, U+C790-C791, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C84C, U+C870, U+C874, U+C885, U+C88C, U+C8FC, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC45, U+CC98, U+CC9C, U+CCA0, U+CCAD, U+CCB4, U+CD5C, U+CD95, U+CD9C, U+CDC4, U+CE35, U+CE58, U+CE68, U+CE78, U+CF54, U+CFC4, U+D0A4, U+D0C4, U+D0DC, U+D130, U+D1A0, U+D1B5, U+D22C, U+D2B8, U+D310, U+D328, U+D3B8, U+D3C9, U+D3D0, U+D3EC-D3ED, U+D45C, U+D48D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D5CC, U+D604, U+D615, U+D648, U+D654-D655, U+D669, U+D750, U+D765, U+D788"
    },
    "head": {
     "chars": "가계국근기까대로름메본사서설신에운유으의이일장쟁전제지현확흐",
@@ -74,18 +120,38 @@
      "bytes": 3652
     },
     "unicodeRange": "U+AC00, U+ACC4, U+AD6D, U+ADFC, U+AE30, U+AE4C, U+B300, U+B85C, U+B984, U+BA54, U+BCF8, U+C0AC, U+C11C, U+C124, U+C2E0, U+C5D0, U+C6B4, U+C720, U+C73C, U+C758, U+C774, U+C77C, U+C7A5, U+C7C1, U+C804, U+C81C, U+C9C0, U+D604, U+D655, U+D750"
+   },
+   "rest400": {
+    "chars": "「」각겹골괴굴균급김남농놓눈니독된둘뒤등디때또라란랐래램렵령례른린림립망명목밀반벌불붕블상샌석선소술스십싼쌓아안야얼올완왜음잃차참쳐초추츠카콘크타텐파팎품프픽헤혁호회후힌",
+    "count": 85,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-modern-rest400.d588034ca8e8830e.woff2",
+     "sha256": "d588034ca8e8830e1d17e78fed055a85eab6ae244487ef39f6bbe97bf0e162f3",
+     "bytes": 7580
+    },
+    "unicodeRange": "U+300C-300D, U+AC01, U+ACB9, U+ACE8, U+AD34, U+AD74, U+ADE0, U+AE09, U+AE40, U+B0A8, U+B18D, U+B193, U+B208, U+B2C8, U+B3C5, U+B41C, U+B458, U+B4A4, U+B4F1, U+B514, U+B54C, U+B610, U+B77C, U+B780, U+B790, U+B798, U+B7A8, U+B835, U+B839, U+B840, U+B978, U+B9B0, U+B9BC-B9BD, U+B9DD, U+BA85, U+BAA9, U+BC00, U+BC18, U+BC8C, U+BD88, U+BD95, U+BE14, U+C0C1, U+C0CC, U+C11D, U+C120, U+C18C, U+C220, U+C2A4, U+C2ED, U+C2FC, U+C313, U+C544, U+C548, U+C57C, U+C5BC, U+C62C, U+C644, U+C65C, U+C74C, U+C783, U+CC28, U+CC38, U+CCD0, U+CD08, U+CD94, U+CE20, U+CE74, U+CF58, U+D06C, U+D0C0, U+D150, U+D30C, U+D30E, U+D488, U+D504, U+D53D, U+D5E4, U+D601, U+D638, U+D68C, U+D6C4, U+D78C"
+   },
+   "rest700": {
+    "chars": "日本각감검경고공과관구네노도령록료립면목무문발분산성세센스시심아여역위자재점중증처청총출코터통트패행화",
+    "count": 51,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-modern-rest700.1944c880742bd960.woff2",
+     "sha256": "1944c880742bd960c1b5ddb64ad900a659ef71aecc858dc7ee77e938d3b931ad",
+     "bytes": 5264
+    },
+    "unicodeRange": "U+65E5, U+672C, U+AC01, U+AC10, U+AC80, U+ACBD, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD6C, U+B124, U+B178, U+B3C4, U+B839, U+B85D, U+B8CC, U+B9BD, U+BA74, U+BAA9, U+BB34, U+BB38, U+BC1C, U+BD84, U+C0B0, U+C131, U+C138, U+C13C, U+C2A4, U+C2DC, U+C2EC, U+C544, U+C5EC-C5ED, U+C704, U+C790, U+C7AC, U+C810, U+C911, U+C99D, U+CC98, U+CCAD, U+CD1D, U+CD9C, U+CF54, U+D130, U+D1B5, U+D2B8, U+D328, U+D589, U+D654"
    }
   },
   "japan/jp-history-roads": {
    "body": {
-    "chars": "가간감개갱건걷검것게결겹경계고과관교구국권규그근금기길까나날내냈너넷년노놓눈뉴는늘니닛다단달당대도동됐되된두둔들따때뛰라랑래런레렌력렬례로록료류륙르를리린림마막만망메며면명모못묘무문물므밑바박반받발배백법별보복본볼부분비사산삼상색생서선설섯성세센션속송수숙순술슈스습시신실심아악앞앱어업었에여역연였영옛오와완요움워웹위유으은을의이인일읽있자작장재저적전점정제졌조존종주준중즈증지쪽참책처천체총최축출층치카칸코쿠터통트틀퍼편표피필하학한할함해했행현혼홈화확활회후",
-    "count": 230,
+    "chars": "가간감개갱건걷검것게결겹경계고과관교구국권규그근금기길까나날내냈너넷년노놓눈뉴는늘니닛다단달당대도동됐되된두둔들따때뛰라랑래런레렌력렬례로록료류륙르를리린림마막만말망메며면명모못묘무문물므밑바박반받발방배백법별보복본볼부분비사산삼상색생서선설섯성세센션속송수숙순술슈스습시신실심아악앞앱약어업었에여역연였영옛오와완요용움워웹위유으은을의이인일읽있자작장재저적전점정제졌조존종주준중즈증지쪽참책처천체총최축출층치침카칸코쿠터통트틀퍼편표피필하학한할함해했행현혼홈화확활회후",
+    "count": 235,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-roads-400.9e1f2ab5568e56c0.woff2",
-     "sha256": "9e1f2ab5568e56c09724994e83ba5d3a59a21f61bb925859171e6a1bd290ca98",
-     "bytes": 16748
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-roads-400.7b1c54b5325733a7.woff2",
+     "sha256": "7b1c54b5325733a732b18c69ce898d969ca18bb098fdf758fcf40c29677339bd",
+     "bytes": 16952
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC1C, U+AC31, U+AC74, U+AC77, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADF8, U+ADFC, U+AE08, U+AE30, U+AE38, U+AE4C, U+B098, U+B0A0, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B193, U+B208, U+B274, U+B294, U+B298, U+B2C8, U+B2DB, U+B2E4, U+B2E8, U+B2EC, U+B2F9, U+B300, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B4E4, U+B530, U+B54C, U+B6F0, U+B77C, U+B791, U+B798, U+B7F0, U+B808, U+B80C, U+B825, U+B82C, U+B840, U+B85C-B85D, U+B8CC, U+B958-B959, U+B974, U+B97C, U+B9AC, U+B9B0, U+B9BC, U+B9C8-B9C9, U+B9CC, U+B9DD, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB18, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BC11, U+BC14-BC15, U+BC18, U+BC1B-BC1C, U+BC30-BC31, U+BC95, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C120, U+C124, U+C12F, U+C131, U+C138, U+C13C, U+C158, U+C18D, U+C1A1, U+C218-C219, U+C21C, U+C220, U+C288, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C2E4, U+C2EC, U+C544-C545, U+C55E, U+C571, U+C5B4, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C600-C601, U+C61B, U+C624, U+C640, U+C644, U+C694, U+C6C0, U+C6CC, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790-C791, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C84C, U+C870, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C988, U+C99D, U+C9C0, U+CABD, U+CC38, U+CC45, U+CC98, U+CC9C, U+CCB4, U+CD1D, U+CD5C, U+CD95, U+CD9C, U+CE35, U+CE58, U+CE74, U+CE78, U+CF54, U+CFE0, U+D130, U+D1B5, U+D2B8, U+D2C0, U+D37C, U+D3B8, U+D45C, U+D53C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D604, U+D63C, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4"
+    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC1C, U+AC31, U+AC74, U+AC77, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADF8, U+ADFC, U+AE08, U+AE30, U+AE38, U+AE4C, U+B098, U+B0A0, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B193, U+B208, U+B274, U+B294, U+B298, U+B2C8, U+B2DB, U+B2E4, U+B2E8, U+B2EC, U+B2F9, U+B300, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B4E4, U+B530, U+B54C, U+B6F0, U+B77C, U+B791, U+B798, U+B7F0, U+B808, U+B80C, U+B825, U+B82C, U+B840, U+B85C-B85D, U+B8CC, U+B958-B959, U+B974, U+B97C, U+B9AC, U+B9B0, U+B9BC, U+B9C8-B9C9, U+B9CC, U+B9D0, U+B9DD, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB18, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BC11, U+BC14-BC15, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30-BC31, U+BC95, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C120, U+C124, U+C12F, U+C131, U+C138, U+C13C, U+C158, U+C18D, U+C1A1, U+C218-C219, U+C21C, U+C220, U+C288, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C2E4, U+C2EC, U+C544-C545, U+C55E, U+C571, U+C57D, U+C5B4, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C600-C601, U+C61B, U+C624, U+C640, U+C644, U+C694, U+C6A9, U+C6C0, U+C6CC, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790-C791, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C84C, U+C870, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C988, U+C99D, U+C9C0, U+CABD, U+CC38, U+CC45, U+CC98, U+CC9C, U+CCB4, U+CD1D, U+CD5C, U+CD95, U+CD9C, U+CE35, U+CE58, U+CE68, U+CE74, U+CE78, U+CF54, U+CFE0, U+D130, U+D1B5, U+D2B8, U+D2C0, U+D37C, U+D3B8, U+D45C, U+D53C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D604, U+D63C, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4"
    },
    "head": {
     "chars": "가계과교근길는다대도라렌로를마법본사산서섯세시에역와유의일읽제조즈지참치카",
@@ -96,18 +162,38 @@
      "bytes": 4024
     },
     "unicodeRange": "U+AC00, U+ACC4, U+ACFC, U+AD50, U+ADFC, U+AE38, U+B294, U+B2E4, U+B300, U+B3C4, U+B77C, U+B80C, U+B85C, U+B97C, U+B9C8, U+BC95, U+BCF8, U+C0AC, U+C0B0, U+C11C, U+C12F, U+C138, U+C2DC, U+C5D0, U+C5ED, U+C640, U+C720, U+C758, U+C77C-C77D, U+C81C, U+C870, U+C988, U+C9C0, U+CC38, U+CE58, U+CE74"
+   },
+   "rest400": {
+    "chars": "「」上下交代勤参史城場宿屋山戰曲町皇禍輪通각갈강갖같거걸겨격견곧골곳공곽군궁급긴께껴꼽끌끝남넘네논누능담데독돈돼뒤드등디란랙러럼렉려렸령루뤄른름립맵목미민변병북빗뼈뿌뿐새석섞소쇼승식쓰안알앙야언없온올우운원음입잔쟁접져진집차찬창청초추춘칭컬콘크키타탑택털토투특판페평폐포프합항핵헌헤형호황획효흐흔흘흥히힌",
+    "count": 152,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-roads-rest400.a00497eb7d503204.woff2",
+     "sha256": "a00497eb7d503204687fd507d1e72feffa52716bb996415380f9d071b594571b",
+     "bytes": 13760
+    },
+    "unicodeRange": "U+300C-300D, U+4E0A-4E0B, U+4EA4, U+4EE3, U+52E4, U+53C2, U+53F2, U+57CE, U+5834, U+5BBF, U+5C4B, U+5C71, U+6230, U+66F2, U+753A, U+7687, U+798D, U+8F2A, U+901A, U+AC01, U+AC08, U+AC15-AC16, U+AC19, U+AC70, U+AC78, U+ACA8-ACA9, U+ACAC, U+ACE7-ACE8, U+ACF3, U+ACF5, U+ACFD, U+AD70, U+AD81, U+AE09, U+AE34, U+AED8, U+AEF4, U+AF3D, U+B04C, U+B05D, U+B0A8, U+B118, U+B124, U+B17C, U+B204, U+B2A5, U+B2F4, U+B370, U+B3C5, U+B3C8, U+B3FC, U+B4A4, U+B4DC, U+B4F1, U+B514, U+B780, U+B799, U+B7EC, U+B7FC, U+B809, U+B824, U+B838-B839, U+B8E8, U+B904, U+B978, U+B984, U+B9BD, U+B9F5, U+BAA9, U+BBF8, U+BBFC, U+BCC0, U+BCD1, U+BD81, U+BE57, U+BF08, U+BFCC, U+BFD0, U+C0C8, U+C11D-C11E, U+C18C, U+C1FC, U+C2B9, U+C2DD, U+C4F0, U+C548, U+C54C, U+C559, U+C57C, U+C5B8, U+C5C6, U+C628, U+C62C, U+C6B0, U+C6B4, U+C6D0, U+C74C, U+C785, U+C794, U+C7C1, U+C811, U+C838, U+C9C4, U+C9D1, U+CC28, U+CC2C, U+CC3D, U+CCAD, U+CD08, U+CD94, U+CD98, U+CE6D, U+CEEC, U+CF58, U+D06C, U+D0A4, U+D0C0, U+D0D1, U+D0DD, U+D138, U+D1A0, U+D22C, U+D2B9, U+D310, U+D398, U+D3C9, U+D3D0, U+D3EC, U+D504, U+D569, U+D56D, U+D575, U+D5CC, U+D5E4, U+D615, U+D638, U+D669, U+D68D, U+D6A8, U+D750, U+D754, U+D758, U+D765, U+D788, U+D78C"
+   },
+   "rest700": {
+    "chars": "『』개걷걸검관구국기내노논능들등디람래러렉료립목문바보북분생선설성센션소수술슈스승아안어연열으을이자재전존증집차처천청출컬쿠터털통트학한현화활회",
+    "count": 72,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-history-roads-rest700.c308d4b59fefc666.woff2",
+     "sha256": "c308d4b59fefc666f0319a8e6bf66f8856ee9b8a4d76f179df3efc2bb38642f6",
+     "bytes": 6748
+    },
+    "unicodeRange": "U+300E-300F, U+AC1C, U+AC77-AC78, U+AC80, U+AD00, U+AD6C-AD6D, U+AE30, U+B0B4, U+B178, U+B17C, U+B2A5, U+B4E4, U+B4F1, U+B514, U+B78C, U+B798, U+B7EC, U+B809, U+B8CC, U+B9BD, U+BAA9, U+BB38, U+BC14, U+BCF4, U+BD81, U+BD84, U+C0DD, U+C120, U+C124, U+C131, U+C13C, U+C158, U+C18C, U+C218, U+C220, U+C288, U+C2A4, U+C2B9, U+C544, U+C548, U+C5B4, U+C5F0, U+C5F4, U+C73C, U+C744, U+C774, U+C790, U+C7AC, U+C804, U+C874, U+C99D, U+C9D1, U+CC28, U+CC98, U+CC9C, U+CCAD, U+CD9C, U+CEEC, U+CFE0, U+D130, U+D138, U+D1B5, U+D2B8, U+D559, U+D55C, U+D604, U+D654, U+D65C, U+D68C"
    }
   },
   "japan/jp-economy": {
    "body": {
-    "chars": "가간강같개객갱건검것게견결겹경계고곤공과관광괴구국권규균그금급기까꺼꼽나내냈너널넷년노논뉴는늘니닛다단대도독동됐되된둔뒤드들등디뛰라랐랜레려력렵로록료룬류르를름리린림마만많말망매메며면명모못무묶문물밀바반받발방배버보복본볼봇부분붕브블비사산상색서석선설성세센션소속송수순스습시신실아안않알았애액앱야약양어업었에여역연오올와완외요용운움웹위유율으은을의이인일읽잃임있자작잡장재저적전점정제져조종주준중증지진징찍차착찰채책처철체초최축출츠치칭카칸케켰콘쿄큰터텐통투트특편평표품플픽필하학한할함해했행형홈화확환후흐힌",
-    "count": 255,
+    "chars": "가간강같개객갱건검것게견결겹경계고곤공과관광괴구국권규균그금급기까꺼꼽나내냈너널넷년노논뉴는늘니닛다단대도독동됐되된둔뒤드들등디뛰라랐랜레려력렵로록료룬류르를름리린림마만많말망매메며면명모못무묶문물밀바반받발방배버보복본볼봇부분붕브블비사산상색서석선설성세센션소속송수순스습시신실아안않알았애액앱야약양어업었에여역연오올와완외요용운움웹위유율으은을의이인일읽잃임있자작잡장재저적전점정제져조종주준중증지진징찍차착찰채책처철체초최축출츠치침칭카칸케켰콘쿄큰터텐통투트특편평표품플픽필하학한할함해했행형홈화확환후흐힌",
+    "count": 256,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-economy-400.093a4b4c4cf5176f.woff2",
-     "sha256": "093a4b4c4cf5176fa8e3955b9736bd66734f830f326eaa49feb677dabea22e86",
-     "bytes": 18132
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-economy-400.0c8b38a60d9afb0c.woff2",
+     "sha256": "0c8b38a60d9afb0c4a12b34639a94582ddb4d7a648c36249b8ccf450c388a5a5",
+     "bytes": 18120
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC15, U+AC19, U+AC1C-AC1D, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACAC, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACE4, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD34, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADE0, U+ADF8, U+AE08-AE09, U+AE30, U+AE4C, U+AEBC, U+AF3D, U+B098, U+B0B4, U+B0C8, U+B108, U+B110, U+B137, U+B144, U+B178, U+B17C, U+B274, U+B294, U+B298, U+B2C8, U+B2DB, U+B2E4, U+B2E8, U+B300, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B4A4, U+B4DC, U+B4E4, U+B4F1, U+B514, U+B6F0, U+B77C, U+B790, U+B79C, U+B808, U+B824-B825, U+B835, U+B85C-B85D, U+B8CC, U+B8EC, U+B958, U+B974, U+B97C, U+B984, U+B9AC, U+B9B0, U+B9BC, U+B9C8, U+B9CC, U+B9CE, U+B9D0, U+B9DD, U+B9E4, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB36, U+BB38, U+BB3C, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC84, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD07, U+BD80, U+BD84, U+BD95, U+BE0C, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C11C-C11D, U+C120, U+C124, U+C131, U+C138, U+C13C, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C21C, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C2E4, U+C544, U+C548, U+C54A, U+C54C, U+C558, U+C560-C561, U+C571, U+C57C-C57D, U+C591, U+C5B4, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C624, U+C62C, U+C640, U+C644, U+C678, U+C694, U+C6A9, U+C6B4, U+C6C0, U+C6F9, U+C704, U+C720, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C783-C784, U+C788, U+C790-C791, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D5, U+CC0D, U+CC28-CC29, U+CC30, U+CC44-CC45, U+CC98, U+CCA0, U+CCB4, U+CD08, U+CD5C, U+CD95, U+CD9C, U+CE20, U+CE58, U+CE6D, U+CE74, U+CE78, U+CF00, U+CF30, U+CF58, U+CFC4, U+D070, U+D130, U+D150, U+D1B5, U+D22C, U+D2B8-D2B9, U+D3B8, U+D3C9, U+D45C, U+D488, U+D50C, U+D53D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D615, U+D648, U+D654-D655, U+D658, U+D6C4, U+D750, U+D78C"
+    "unicodeRange": "U+AC00, U+AC04, U+AC15, U+AC19, U+AC1C-AC1D, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACAC, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACE4, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD34, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADE0, U+ADF8, U+AE08-AE09, U+AE30, U+AE4C, U+AEBC, U+AF3D, U+B098, U+B0B4, U+B0C8, U+B108, U+B110, U+B137, U+B144, U+B178, U+B17C, U+B274, U+B294, U+B298, U+B2C8, U+B2DB, U+B2E4, U+B2E8, U+B300, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B4A4, U+B4DC, U+B4E4, U+B4F1, U+B514, U+B6F0, U+B77C, U+B790, U+B79C, U+B808, U+B824-B825, U+B835, U+B85C-B85D, U+B8CC, U+B8EC, U+B958, U+B974, U+B97C, U+B984, U+B9AC, U+B9B0, U+B9BC, U+B9C8, U+B9CC, U+B9CE, U+B9D0, U+B9DD, U+B9E4, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB36, U+BB38, U+BB3C, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC84, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD07, U+BD80, U+BD84, U+BD95, U+BE0C, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C11C-C11D, U+C120, U+C124, U+C131, U+C138, U+C13C, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C21C, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C2E4, U+C544, U+C548, U+C54A, U+C54C, U+C558, U+C560-C561, U+C571, U+C57C-C57D, U+C591, U+C5B4, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C624, U+C62C, U+C640, U+C644, U+C678, U+C694, U+C6A9, U+C6B4, U+C6C0, U+C6F9, U+C704, U+C720, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C783-C784, U+C788, U+C790-C791, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D5, U+CC0D, U+CC28-CC29, U+CC30, U+CC44-CC45, U+CC98, U+CCA0, U+CCB4, U+CD08, U+CD5C, U+CD95, U+CD9C, U+CE20, U+CE58, U+CE68, U+CE6D, U+CE74, U+CE78, U+CF00, U+CF30, U+CF58, U+CFC4, U+D070, U+D130, U+D150, U+D1B5, U+D22C, U+D2B8-D2B9, U+D3B8, U+D3C9, U+D45C, U+D488, U+D50C, U+D53D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D615, U+D648, U+D654-D655, U+D658, U+D6C4, U+D750, U+D78C"
    },
    "head": {
     "chars": "강경계고과괴구그기년는도류리린버보본붕블산상성세시않어업위의이일잃자작장전제조지형환후",
@@ -118,18 +204,38 @@
      "bytes": 4672
     },
     "unicodeRange": "U+AC15, U+ACBD, U+ACC4, U+ACE0, U+ACFC, U+AD34, U+AD6C, U+ADF8, U+AE30, U+B144, U+B294, U+B3C4, U+B958, U+B9AC, U+B9B0, U+BC84, U+BCF4, U+BCF8, U+BD95, U+BE14, U+C0B0, U+C0C1, U+C131, U+C138, U+C2DC, U+C54A, U+C5B4, U+C5C5, U+C704, U+C758, U+C774, U+C77C, U+C783, U+C790-C791, U+C7A5, U+C804, U+C81C, U+C870, U+C9C0, U+D615, U+D658, U+D6C4"
+   },
+   "rest400": {
+    "chars": "「」円総額감거격교극근높뚜러렷론루목별병붐술슈승식악엔영원융음응쟁절집추칙캐코쿠클토파포프합헤현회",
+    "count": 49,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-economy-rest400.4bd690cd125dc1fb.woff2",
+     "sha256": "4bd690cd125dc1fbf9ce4f4a6aa2a8093832f98bf26299eb1c6c5a2a6976a2a6",
+     "bytes": 5680
+    },
+    "unicodeRange": "U+300C-300D, U+5186, U+7DCF, U+984D, U+AC10, U+AC70, U+ACA9, U+AD50, U+ADF9, U+ADFC, U+B192, U+B69C, U+B7EC, U+B837, U+B860, U+B8E8, U+BAA9, U+BCC4, U+BCD1, U+BD90, U+C220, U+C288, U+C2B9, U+C2DD, U+C545, U+C5D4, U+C601, U+C6D0, U+C735, U+C74C, U+C751, U+C7C1, U+C808, U+C9D1, U+CD94, U+CE59, U+CE90, U+CF54, U+CFE0, U+D074, U+D1A0, U+D30C, U+D3EC, U+D504, U+D569, U+D5E4, U+D604, U+D68C"
+   },
+   "rest700": {
+    "chars": "가각감개검공관광국균극깥내노닛대료메모물민바발부분생설야여역와은정준증처체축출치케쿄통트평표하행화활",
+    "count": 50,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-economy-rest700.90b32b3b31c63925.woff2",
+     "sha256": "90b32b3b31c63925372fd6029dfd78c0f9e0d10164b2f98b90f2cb87e00a6bd3",
+     "bytes": 5232
+    },
+    "unicodeRange": "U+AC00-AC01, U+AC10, U+AC1C, U+AC80, U+ACF5, U+AD00, U+AD11, U+AD6D, U+ADE0, U+ADF9, U+AE65, U+B0B4, U+B178, U+B2DB, U+B300, U+B8CC, U+BA54, U+BAA8, U+BB3C, U+BBFC, U+BC14, U+BC1C, U+BD80, U+BD84, U+C0DD, U+C124, U+C57C, U+C5EC-C5ED, U+C640, U+C740, U+C815, U+C900, U+C99D, U+CC98, U+CCB4, U+CD95, U+CD9C, U+CE58, U+CF00, U+CFC4, U+D1B5, U+D2B8, U+D3C9, U+D45C, U+D558, U+D589, U+D654, U+D65C"
    }
   },
   "japan/jp-culture": {
    "body": {
-    "chars": "가각간감개갱건검것게결경계고공과관교귀그기까께꼽꽃나내냈너넘넷노놀놓뉴는늘니다단대데덴도될두둔드든듬뚜뛰래럽레려렷례로록료룬르를름리마만많맞메며면모몬못묘무문미밑바박반받발배번법벚보복본볼봄부불브비뼈사산상색생서설성세션소속송쇼수순술슈스습시식신쓰않알았애앱어업에여역연예오온와요용우움원월웹위유으은을의이인일읽임있자잡장재저적전절정제져조존종주중즌증지진찰참책처첫최출층치카컬코쿄쿠탕태터토통트파판편표풍필하학한할함해했행현형혼홈화확활회획힌",
-    "count": 222,
+    "chars": "가각간감개갱건검것게결경계고공과관교귀그기까께꼽꽃나내냈너넘넷노놀놓뉴는늘니다단대데덴도될두둔드든듬뚜뛰래럽레려렷례로록료룬르를름리마만많말맞메며면모몬못묘무문미밑바박반받발방배번법벚보복본볼봄부불브비뼈사산상색생서설성세션소속송쇼수순술슈스습시식신쓰않알았애앱약어업에여역연예오온와요용우움원월웹위유으은을의이인일읽임있자잡장재저적전절정제져조존종주중즌증지진찰참책처첫최출층치침카컬코쿄쿠탕태터토통트파판편표풍필하학한할함해했행현형혼홈화확활회획힌",
+    "count": 226,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-culture-400.1acf978545e5dfd5.woff2",
-     "sha256": "1acf978545e5dfd51955d841c59104a442aa5f42f3ed2fbe2f6e5d3e9a78eb66",
-     "bytes": 16300
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-culture-400.b882088b6118be75.woff2",
+     "sha256": "b882088b6118be753701ab6b71084f4c3b24746f85c2075189b0fb6788c527af",
+     "bytes": 16540
     },
-    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC10, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+ADC0, U+ADF8, U+AE30, U+AE4C, U+AED8, U+AF3D, U+AF43, U+B098, U+B0B4, U+B0C8, U+B108, U+B118, U+B137, U+B178, U+B180, U+B193, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B300, U+B370, U+B374, U+B3C4, U+B420, U+B450, U+B454, U+B4DC, U+B4E0, U+B4EC, U+B69C, U+B6F0, U+B798, U+B7FD, U+B808, U+B824, U+B837, U+B840, U+B85C-B85D, U+B8CC, U+B8EC, U+B974, U+B97C, U+B984, U+B9AC, U+B9C8, U+B9CC, U+B9CE, U+B9DE, U+BA54, U+BA70, U+BA74, U+BAA8, U+BAAC, U+BABB, U+BB18, U+BB34, U+BB38, U+BBF8, U+BC11, U+BC14-BC15, U+BC18, U+BC1B-BC1C, U+BC30, U+BC88, U+BC95, U+BC9A, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD04, U+BD80, U+BD88, U+BE0C, U+BE44, U+BF08, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1FC, U+C218, U+C21C, U+C220, U+C288, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C4F0, U+C54A, U+C54C, U+C558, U+C560, U+C571, U+C5B4, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C608, U+C624, U+C628, U+C640, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C815, U+C81C, U+C838, U+C870, U+C874, U+C885, U+C8FC, U+C911, U+C98C, U+C99D, U+C9C0, U+C9C4, U+CC30, U+CC38, U+CC45, U+CC98, U+CCAB, U+CD5C, U+CD9C, U+CE35, U+CE58, U+CE74, U+CEEC, U+CF54, U+CFC4, U+CFE0, U+D0D5, U+D0DC, U+D130, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D310, U+D3B8, U+D45C, U+D48D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D604, U+D615, U+D63C, U+D648, U+D654-D655, U+D65C, U+D68C-D68D, U+D78C"
+    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC10, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+ADC0, U+ADF8, U+AE30, U+AE4C, U+AED8, U+AF3D, U+AF43, U+B098, U+B0B4, U+B0C8, U+B108, U+B118, U+B137, U+B178, U+B180, U+B193, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B300, U+B370, U+B374, U+B3C4, U+B420, U+B450, U+B454, U+B4DC, U+B4E0, U+B4EC, U+B69C, U+B6F0, U+B798, U+B7FD, U+B808, U+B824, U+B837, U+B840, U+B85C-B85D, U+B8CC, U+B8EC, U+B974, U+B97C, U+B984, U+B9AC, U+B9C8, U+B9CC, U+B9CE, U+B9D0, U+B9DE, U+BA54, U+BA70, U+BA74, U+BAA8, U+BAAC, U+BABB, U+BB18, U+BB34, U+BB38, U+BBF8, U+BC11, U+BC14-BC15, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC88, U+BC95, U+BC9A, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD04, U+BD80, U+BD88, U+BE0C, U+BE44, U+BF08, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1FC, U+C218, U+C21C, U+C220, U+C288, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C4F0, U+C54A, U+C54C, U+C558, U+C560, U+C571, U+C57D, U+C5B4, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C608, U+C624, U+C628, U+C640, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C815, U+C81C, U+C838, U+C870, U+C874, U+C885, U+C8FC, U+C911, U+C98C, U+C99D, U+C9C0, U+C9C4, U+CC30, U+CC38, U+CC45, U+CC98, U+CCAB, U+CD5C, U+CD9C, U+CE35, U+CE58, U+CE68, U+CE74, U+CEEC, U+CF54, U+CFC4, U+CFE0, U+D0D5, U+D0DC, U+D130, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D310, U+D3B8, U+D45C, U+D48D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D604, U+D615, U+D63C, U+D648, U+D654-D655, U+D65C, U+D68C-D68D, U+D78C"
    },
    "head": {
     "chars": "계공교까리마문본불브사생서속신쓰에연와의일절존종중지처컬행화활",
@@ -140,18 +246,38 @@
      "bytes": 3996
     },
     "unicodeRange": "U+ACC4, U+ACF5, U+AD50, U+AE4C, U+B9AC, U+B9C8, U+BB38, U+BCF8, U+BD88, U+BE0C, U+C0AC, U+C0DD, U+C11C, U+C18D, U+C2E0, U+C4F0, U+C5D0, U+C5F0, U+C640, U+C758, U+C77C, U+C808, U+C874, U+C885, U+C911, U+C9C0, U+CC98, U+CEEC, U+D589, U+D654, U+D65C"
+   },
+   "rest400": {
+    "chars": "「」おり一三和寺居山汁治湯盆社神祭菜門食鳥강같겠곳구국굿권규근금급꽂낳넣네년논닌담당동됐되된둥뒤들등디라락란랙론루류른릇맛망매맵먹멘명목몸물믹민밥변뿌삼섞선숙실심씻아악양언없열옅욕육율음입작잘젊점접젓즈즙질집징찬채천체칙칠칭칸케크키타탈특패팬평푸품합핵헤호후",
+    "count": 129,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-culture-rest400.073bdd62660b5e71.woff2",
+     "sha256": "073bdd62660b5e71e645f5d75eb3afcb6ec562aa2cd28ebe6784599da61609ea",
+     "bytes": 12264
+    },
+    "unicodeRange": "U+300C-300D, U+304A, U+308A, U+4E00, U+4E09, U+548C, U+5BFA, U+5C45, U+5C71, U+6C41, U+6CBB, U+6E6F, U+76C6, U+793E, U+795E, U+796D, U+83DC, U+9580, U+98DF, U+9CE5, U+AC15, U+AC19, U+ACA0, U+ACF3, U+AD6C-AD6D, U+AD7F, U+AD8C, U+ADDC, U+ADFC, U+AE08-AE09, U+AF42, U+B0B3, U+B123-B124, U+B144, U+B17C, U+B2CC, U+B2F4, U+B2F9, U+B3D9, U+B410, U+B418, U+B41C, U+B465, U+B4A4, U+B4E4, U+B4F1, U+B514, U+B77C-B77D, U+B780, U+B799, U+B860, U+B8E8, U+B958, U+B978, U+B987, U+B9DB, U+B9DD, U+B9E4, U+B9F5, U+BA39, U+BA58, U+BA85, U+BAA9, U+BAB8, U+BB3C, U+BBF9, U+BBFC, U+BC25, U+BCC0, U+BFCC, U+C0BC, U+C11E, U+C120, U+C219, U+C2E4, U+C2EC, U+C53B, U+C544-C545, U+C591, U+C5B8, U+C5C6, U+C5F4, U+C605, U+C695, U+C721, U+C728, U+C74C, U+C785, U+C791, U+C798, U+C80A, U+C810-C811, U+C813, U+C988, U+C999, U+C9C8, U+C9D1, U+C9D5, U+CC2C, U+CC44, U+CC9C, U+CCB4, U+CE59, U+CE60, U+CE6D, U+CE78, U+CF00, U+D06C, U+D0A4, U+D0C0, U+D0C8, U+D2B9, U+D328, U+D32C, U+D3C9, U+D478, U+D488, U+D569, U+D575, U+D5E4, U+D638, U+D6C4"
+   },
+   "rest700": {
+    "chars": "개검경과관광기내네노대등례록료목무박법보산성쇼숙스식안업예온요욕우유자재제증찰천청출츠칸코콘쿠키텐통트형",
+    "count": 52,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-culture-rest700.b19df94e442fb05d.woff2",
+     "sha256": "b19df94e442fb05d4dfda4a15aa5fdfa813c5b119d7547ce2d1bab9f449122c2",
+     "bytes": 5272
+    },
+    "unicodeRange": "U+AC1C, U+AC80, U+ACBD, U+ACFC, U+AD00, U+AD11, U+AE30, U+B0B4, U+B124, U+B178, U+B300, U+B4F1, U+B840, U+B85D, U+B8CC, U+BAA9, U+BB34, U+BC15, U+BC95, U+BCF4, U+C0B0, U+C131, U+C1FC, U+C219, U+C2A4, U+C2DD, U+C548, U+C5C5, U+C608, U+C628, U+C694-C695, U+C6B0, U+C720, U+C790, U+C7AC, U+C81C, U+C99D, U+CC30, U+CC9C, U+CCAD, U+CD9C, U+CE20, U+CE78, U+CF54, U+CF58, U+CFE0, U+D0A4, U+D150, U+D1B5, U+D2B8, U+D615"
    }
   },
   "japan/jp-food-deep": {
    "body": {
-    "chars": "가각간감강개갱건검것게결겹계고곧골과관교구국권균그근글급기까께나날내낸냈너네넷년노논뉴는늘니다단담당대덜데도돼됐되된두둔둥드등딩뛰라래랜략런레려로록론료루를름리림마만맛메며면명모못무문미바반받발밥방배번법변별보복본볼부분불브비사산삼상색서석선설섯성세셋션속송쇼수술스습시식신실심쓰아안앱약양어언얻업었에여역연열영예오와요용우움원웹위유으은을음의이인일읽있자장재쟁저적전절점정제조족존종주준중즉즙증지진째쪽차찬참찾채책처천체쳐최출층치칠케코쿠키탁탐탕터토통트특틀패퍼편푸필하학한할함합해했행형홈화확회효후흔히",
-    "count": 253,
+    "chars": "가각간감강개갱건검것게결겹계고곧골과관교구국권균그근글급기까께나날내낸냈너네넷년노논뉴는늘니다단담당대덜데도돼됐되된두둔둥드등딩뛰라래랜략런레려로록론료루를름리림마만말맛메며면명모못무문미바반받발밥방배번법변별보복본볼부분불브비사산삼상색서석선설섯성세셋션속송쇼수술스습시식신실심쓰아안앱약양어언얻업었에여역연열영예오와요용우움원웹위유으은을음의이인일읽있자장재쟁저적전절점정제조족존종주준중즉즙증지진째쪽차찬참찾채책처천체쳐최출층치칠침케코쿠키탁탐탕터토통트특틀패퍼편푸필하학한할함합해했행형홈화확회효후흔히",
+    "count": 255,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-food-deep-400.f3db305f2d201232.woff2",
-     "sha256": "f3db305f2d20123237b0117b51f6148a660bdda289e8677d8a20f55d49557ff4",
-     "bytes": 17916
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-food-deep-400.c79b088a721d7313.woff2",
+     "sha256": "c79b088a721d73130de826e213dbd0ab7623fbf5c90f05ce7c96cd9ec16d2113",
+     "bytes": 18088
     },
-    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC10, U+AC15, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACB9, U+ACC4, U+ACE0, U+ACE7-ACE8, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADE0, U+ADF8, U+ADFC, U+AE00, U+AE09, U+AE30, U+AE4C, U+AED8, U+B098, U+B0A0, U+B0B4, U+B0B8, U+B0C8, U+B108, U+B124, U+B137, U+B144, U+B178, U+B17C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F4, U+B2F9, U+B300, U+B35C, U+B370, U+B3C4, U+B3FC, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B465, U+B4DC, U+B4F1, U+B529, U+B6F0, U+B77C, U+B798, U+B79C, U+B7B5, U+B7F0, U+B808, U+B824, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+B9DB, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BBF8, U+BC14, U+BC18, U+BC1B-BC1C, U+BC25, U+BC29, U+BC30, U+BC88, U+BC95, U+BCC0, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE0C, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C11C-C11D, U+C120, U+C124, U+C12F, U+C131, U+C138, U+C14B, U+C158, U+C18D, U+C1A1, U+C1FC, U+C218, U+C220, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C4F0, U+C544, U+C548, U+C571, U+C57D, U+C591, U+C5B4, U+C5B8, U+C5BB, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C601, U+C608, U+C624, U+C640, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C870-C871, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C989, U+C999, U+C99D, U+C9C0, U+C9C4, U+C9F8, U+CABD, U+CC28, U+CC2C, U+CC38, U+CC3E, U+CC44-CC45, U+CC98, U+CC9C, U+CCB4, U+CCD0, U+CD5C, U+CD9C, U+CE35, U+CE58, U+CE60, U+CF00, U+CF54, U+CFE0, U+D0A4, U+D0C1, U+D0D0, U+D0D5, U+D130, U+D1A0, U+D1B5, U+D2B8-D2B9, U+D2C0, U+D328, U+D37C, U+D3B8, U+D478, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D615, U+D648, U+D654-D655, U+D68C, U+D6A8, U+D6C4, U+D754, U+D788"
+    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC10, U+AC15, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACB9, U+ACC4, U+ACE0, U+ACE7-ACE8, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADE0, U+ADF8, U+ADFC, U+AE00, U+AE09, U+AE30, U+AE4C, U+AED8, U+B098, U+B0A0, U+B0B4, U+B0B8, U+B0C8, U+B108, U+B124, U+B137, U+B144, U+B178, U+B17C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F4, U+B2F9, U+B300, U+B35C, U+B370, U+B3C4, U+B3FC, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B465, U+B4DC, U+B4F1, U+B529, U+B6F0, U+B77C, U+B798, U+B79C, U+B7B5, U+B7F0, U+B808, U+B824, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+B9D0, U+B9DB, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BBF8, U+BC14, U+BC18, U+BC1B-BC1C, U+BC25, U+BC29, U+BC30, U+BC88, U+BC95, U+BCC0, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE0C, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C11C-C11D, U+C120, U+C124, U+C12F, U+C131, U+C138, U+C14B, U+C158, U+C18D, U+C1A1, U+C1FC, U+C218, U+C220, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C4F0, U+C544, U+C548, U+C571, U+C57D, U+C591, U+C5B4, U+C5B8, U+C5BB, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C601, U+C608, U+C624, U+C640, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C870-C871, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C989, U+C999, U+C99D, U+C9C0, U+C9C4, U+C9F8, U+CABD, U+CC28, U+CC2C, U+CC38, U+CC3E, U+CC44-CC45, U+CC98, U+CC9C, U+CCB4, U+CCD0, U+CD5C, U+CD9C, U+CE35, U+CE58, U+CE60, U+CE68, U+CF00, U+CF54, U+CFE0, U+D0A4, U+D0C1, U+D0D0, U+D0D5, U+D130, U+D1A0, U+D1B5, U+D2B8-D2B9, U+D2C0, U+D328, U+D37C, U+D3B8, U+D478, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D615, U+D648, U+D654-D655, U+D68C, U+D6A8, U+D6C4, U+D754, U+D788"
    },
    "head": {
     "chars": "가것과는니다된등라름리맛문법본삼쇼시식심아역와요은의이일재즙지채층쿠형화",
@@ -162,18 +288,40 @@
      "bytes": 4124
     },
     "unicodeRange": "U+AC00, U+AC83, U+ACFC, U+B294, U+B2C8, U+B2E4, U+B41C, U+B4F1, U+B77C, U+B984, U+B9AC, U+B9DB, U+BB38, U+BC95, U+BCF8, U+C0BC, U+C1FC, U+C2DC-C2DD, U+C2EC, U+C544, U+C5ED, U+C640, U+C694, U+C740, U+C758, U+C774, U+C77C, U+C7AC, U+C999, U+C9C0, U+CC44, U+CE35, U+CFE0, U+D615, U+D654"
+   },
+   "rest400": {
+    "chars": "「」うま一三乾事会出味和國席料水汁物理石精菌菜行軟進食갖같거겨견겼경곁곡곰공궁규금길깎꼽꽂꾸낙남낫낮냉농누능달던덴돈돌동들뜻락랙랭련례룩뤄류륙륨르른릇먹멘목몬물므민밀박백베병뼈뽕생섭소숙순쉬슈승쌀씩않알야얹엇염였옅온올완외운울월육임작접젓져즈질집징짬찰창척초추축충춰취카칸콩쿄크큼타태탠탱판팡포표품프피항핵향험헤현호혼홋힌",
+    "count": 161,
+    "skipped": "懐麹",
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-food-deep-rest400.5c8bf51b16e04630.woff2",
+     "sha256": "5c8bf51b16e0463042cf284a70e6140d177f600cd30a89f7e46162e076893d96",
+     "bytes": 15332
+    },
+    "unicodeRange": "U+300C-300D, U+3046, U+307E, U+4E00, U+4E09, U+4E7E, U+4E8B, U+4F1A, U+51FA, U+5473, U+548C, U+570B, U+5E2D, U+6599, U+6C34, U+6C41, U+7269, U+7406, U+77F3, U+7CBE, U+83CC, U+83DC, U+884C, U+8EDF, U+9032, U+98DF, U+AC16, U+AC19, U+AC70, U+ACA8, U+ACAC, U+ACBC-ACBD, U+ACC1, U+ACE1, U+ACF0, U+ACF5, U+AD81, U+ADDC, U+AE08, U+AE38, U+AE4E, U+AF3D, U+AF42, U+AFB8, U+B099, U+B0A8, U+B0AB, U+B0AE, U+B0C9, U+B18D, U+B204, U+B2A5, U+B2EC, U+B358, U+B374, U+B3C8, U+B3CC, U+B3D9, U+B4E4, U+B73B, U+B77D, U+B799, U+B7AD, U+B828, U+B840, U+B8E9, U+B904, U+B958-B959, U+B968, U+B974, U+B978, U+B987, U+BA39, U+BA58, U+BAA9, U+BAAC, U+BB3C, U+BBC0, U+BBFC, U+BC00, U+BC15, U+BC31, U+BCA0, U+BCD1, U+BF08, U+BF55, U+C0DD, U+C12D, U+C18C, U+C219, U+C21C, U+C26C, U+C288, U+C2B9, U+C300, U+C529, U+C54A, U+C54C, U+C57C, U+C5B9, U+C5C7, U+C5FC, U+C600, U+C605, U+C628, U+C62C, U+C644, U+C678, U+C6B4, U+C6B8, U+C6D4, U+C721, U+C784, U+C791, U+C811, U+C813, U+C838, U+C988, U+C9C8, U+C9D1, U+C9D5, U+C9EC, U+CC30, U+CC3D, U+CC99, U+CD08, U+CD94-CD95, U+CDA9, U+CDB0, U+CDE8, U+CE74, U+CE78, U+CF69, U+CFC4, U+D06C, U+D07C, U+D0C0, U+D0DC, U+D0E0, U+D0F1, U+D310, U+D321, U+D3EC, U+D45C, U+D488, U+D504, U+D53C, U+D56D, U+D575, U+D5A5, U+D5D8, U+D5E4, U+D604, U+D638, U+D63C, U+D64B, U+D78C"
+   },
+   "rest700": {
+    "chars": "「」『』うちの土料理간개걸검게경계공구국군권균기나네노농대덴도동두드든딩랜러록료림만무물미바발배보분브사산서석설섯성세소수술스양어에연영예오유을읽자장전절조증진집처출치코키탁토통트패표푸학회효후",
+    "count": 97,
+    "skipped": "郷",
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-food-deep-rest700.da0303a0207bb975.woff2",
+     "sha256": "da0303a0207bb975fdb8e785c458a752e42e8682151de259dc088dd99a5fb497",
+     "bytes": 8844
+    },
+    "unicodeRange": "U+300C-300F, U+3046, U+3061, U+306E, U+571F, U+6599, U+7406, U+AC04, U+AC1C, U+AC78, U+AC80, U+AC8C, U+ACBD, U+ACC4, U+ACF5, U+AD6C-AD6D, U+AD70, U+AD8C, U+ADE0, U+AE30, U+B098, U+B124, U+B178, U+B18D, U+B300, U+B374, U+B3C4, U+B3D9, U+B450, U+B4DC, U+B4E0, U+B529, U+B79C, U+B7EC, U+B85D, U+B8CC, U+B9BC, U+B9CC, U+BB34, U+BB3C, U+BBF8, U+BC14, U+BC1C, U+BC30, U+BCF4, U+BD84, U+BE0C, U+C0AC, U+C0B0, U+C11C-C11D, U+C124, U+C12F, U+C131, U+C138, U+C18C, U+C218, U+C220, U+C2A4, U+C591, U+C5B4, U+C5D0, U+C5F0, U+C601, U+C608, U+C624, U+C720, U+C744, U+C77D, U+C790, U+C7A5, U+C804, U+C808, U+C870, U+C99D, U+C9C4, U+C9D1, U+CC98, U+CD9C, U+CE58, U+CF54, U+D0A4, U+D0C1, U+D1A0, U+D1B5, U+D2B8, U+D328, U+D45C, U+D478, U+D559, U+D68C, U+D6A8, U+D6C4"
    }
   },
   "japan/jp-literature-travel": {
    "body": {
-    "chars": "가간같개갱거건걷검게겐결겹경계고곤곧곳공과관광교구국군궁권그근기길까께나날내낸냈너넷년념노뉴는늘능다단담답대데도돌동돼됐되된두둔들디따떠뛰라래렉례로록료루룬르른를리릭립마만망메며면명모못무문므미바반받발방배번범법별보복본볼봄부분블비사산살상색생서선설성세션소속송쇼수술슈스습시식신실쓰아안않앱야약어억업에여역연열영오와요용우운움원웹위으은을음의이인일읽입잇있자작장재저적전절점접정제조족존종주중즈증지직집찬책처체쳐초최축출치카컬케쿠키타태터털텁텍토트파판퍼편평품필하학한할함해했행헤현형호홈화확활회후훑흥히",
-    "count": 253,
+    "chars": "가간같개갱거건걷검게겐결겹경계고곤곧곳공과관광교구국군궁권그근기길까께나날내낸냈너넷년념노뉴는늘능다단담답대데도돌동돼됐되된두둔들디따떠뛰라래렉례로록료루룬르른를리릭립마만말망메며면명모못무문므미바반받발방배번범법별보복본볼봄부분블비사산살상색생서선설성세션소속송쇼수술슈스습시식신실쓰아안않앱야약어억업에여역연열영오와요용우운움원웹위으은을음의이인일읽입잇있자작장재저적전절점접정제조족존종주중즈증지직집찬책처체쳐초최축출치침카컬케쿠키타태터털텁텍토트파판퍼편평품필하학한할함해했행헤현형호홈화확활회후훑흥히",
+    "count": 255,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-literature-travel-400.6d03707ca1a797a8.woff2",
-     "sha256": "6d03707ca1a797a807feffd50c5bd9aa39d80c7166bafa9bebd69977a4239e18",
-     "bytes": 17824
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-literature-travel-400.1eb73ae394d20efd.woff2",
+     "sha256": "1eb73ae394d20efd1183259eeba621d86b38c15d384bd350dda7100bd033efef",
+     "bytes": 18036
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC19, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC77, U+AC80, U+AC8C, U+AC90, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACE4, U+ACE7, U+ACF3, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD50, U+AD6C-AD6D, U+AD70, U+AD81, U+AD8C, U+ADF8, U+ADFC, U+AE30, U+AE38, U+AE4C, U+AED8, U+B098, U+B0A0, U+B0B4, U+B0B8, U+B0C8, U+B108, U+B137, U+B144, U+B150, U+B178, U+B274, U+B294, U+B298, U+B2A5, U+B2E4, U+B2E8, U+B2F4-B2F5, U+B300, U+B370, U+B3C4, U+B3CC, U+B3D9, U+B3FC, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B4E4, U+B514, U+B530, U+B5A0, U+B6F0, U+B77C, U+B798, U+B809, U+B840, U+B85C-B85D, U+B8CC, U+B8E8, U+B8EC, U+B974, U+B978, U+B97C, U+B9AC-B9AD, U+B9BD, U+B9C8, U+B9CC, U+B9DD, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BBC0, U+BBF8, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC88, U+BC94-BC95, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD04, U+BD80, U+BD84, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0B4, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C120, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1FC, U+C218, U+C220, U+C288, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C4F0, U+C544, U+C548, U+C54A, U+C571, U+C57C-C57D, U+C5B4-C5B5, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C601, U+C624, U+C640, U+C694, U+C6A9, U+C6B0, U+C6B4, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C785, U+C787-C788, U+C790-C791, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810-C811, U+C815, U+C81C, U+C870-C871, U+C874, U+C885, U+C8FC, U+C911, U+C988, U+C99D, U+C9C0-C9C1, U+C9D1, U+CC2C, U+CC45, U+CC98, U+CCB4, U+CCD0, U+CD08, U+CD5C, U+CD95, U+CD9C, U+CE58, U+CE74, U+CEEC, U+CF00, U+CFE0, U+D0A4, U+D0C0, U+D0DC, U+D130, U+D138, U+D141, U+D14D, U+D1A0, U+D2B8, U+D30C, U+D310, U+D37C, U+D3B8, U+D3C9, U+D488, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D5E4, U+D604, U+D615, U+D638, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4, U+D6D1, U+D765, U+D788"
+    "unicodeRange": "U+AC00, U+AC04, U+AC19, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC77, U+AC80, U+AC8C, U+AC90, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACE4, U+ACE7, U+ACF3, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD50, U+AD6C-AD6D, U+AD70, U+AD81, U+AD8C, U+ADF8, U+ADFC, U+AE30, U+AE38, U+AE4C, U+AED8, U+B098, U+B0A0, U+B0B4, U+B0B8, U+B0C8, U+B108, U+B137, U+B144, U+B150, U+B178, U+B274, U+B294, U+B298, U+B2A5, U+B2E4, U+B2E8, U+B2F4-B2F5, U+B300, U+B370, U+B3C4, U+B3CC, U+B3D9, U+B3FC, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B4E4, U+B514, U+B530, U+B5A0, U+B6F0, U+B77C, U+B798, U+B809, U+B840, U+B85C-B85D, U+B8CC, U+B8E8, U+B8EC, U+B974, U+B978, U+B97C, U+B9AC-B9AD, U+B9BD, U+B9C8, U+B9CC, U+B9D0, U+B9DD, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BBC0, U+BBF8, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC88, U+BC94-BC95, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD04, U+BD80, U+BD84, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0B4, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C120, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1FC, U+C218, U+C220, U+C288, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C4F0, U+C544, U+C548, U+C54A, U+C571, U+C57C-C57D, U+C5B4-C5B5, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C601, U+C624, U+C640, U+C694, U+C6A9, U+C6B0, U+C6B4, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C785, U+C787-C788, U+C790-C791, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810-C811, U+C815, U+C81C, U+C870-C871, U+C874, U+C885, U+C8FC, U+C911, U+C988, U+C99D, U+C9C0-C9C1, U+C9D1, U+CC2C, U+CC45, U+CC98, U+CCB4, U+CCD0, U+CD08, U+CD5C, U+CD95, U+CD9C, U+CE58, U+CE68, U+CE74, U+CEEC, U+CF00, U+CFE0, U+D0A4, U+D0C0, U+D0DC, U+D130, U+D138, U+D141, U+D14D, U+D1A0, U+D2B8, U+D30C, U+D310, U+D37C, U+D3B8, U+D3C9, U+D488, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D5E4, U+D604, U+D615, U+D638, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4, U+D6D1, U+D765, U+D788"
    },
    "head": {
     "chars": "가걷고기길낸노는대도라래를무문미바방법본사소쇼야오와의이일작전지치쿠품하학행호",
@@ -184,18 +332,38 @@
      "bytes": 4004
     },
     "unicodeRange": "U+AC00, U+AC77, U+ACE0, U+AE30, U+AE38, U+B0B8, U+B178, U+B294, U+B300, U+B3C4, U+B77C, U+B798, U+B97C, U+BB34, U+BB38, U+BBF8, U+BC14, U+BC29, U+BC95, U+BCF8, U+C0AC, U+C18C, U+C1FC, U+C57C, U+C624, U+C640, U+C758, U+C774, U+C77C, U+C791, U+C804, U+C9C0, U+CE58, U+CFE0, U+D488, U+D558-D559, U+D589, U+D638"
+   },
+   "rest400": {
+    "chars": "「」『』おくそとのほ万修典古句合子学宗家尾居平庫彰文斐春曾最松枕正氏河源物甲碑空紀羅舊良芭草葉蕉行語道集青顯갈것격골급긴남니님독될드든등때락람력련룰류맞목물민박밤병봉섯승암언없예온완웠유임잡준줄즉진징차창천철첫촌칙코쿄탕테통패페포표합향허헌험혁협힌",
+    "count": 124,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-literature-travel-rest400.bb70a4bf1a4503a1.woff2",
+     "sha256": "bb70a4bf1a4503a1b8bf2c46000407c977a375d33a0cc1c5e8f4a33639a08f2a",
+     "bytes": 15268
+    },
+    "unicodeRange": "U+300C-300F, U+304A, U+304F, U+305D, U+3068, U+306E, U+307B, U+4E07, U+4FEE, U+5178, U+53E4-53E5, U+5408, U+5B50, U+5B66, U+5B97, U+5BB6, U+5C3E, U+5C45, U+5E73, U+5EAB, U+5F70, U+6587, U+6590, U+6625, U+66FE, U+6700, U+677E, U+6795, U+6B63, U+6C0F, U+6CB3, U+6E90, U+7269, U+7532, U+7891, U+7A7A, U+7D00, U+7F85, U+820A, U+826F, U+82AD, U+8349, U+8449, U+8549, U+884C, U+8A9E, U+9053, U+96C6, U+9752, U+986F, U+AC08, U+AC83, U+ACA9, U+ACE8, U+AE09, U+AE34, U+B0A8, U+B2C8, U+B2D8, U+B3C5, U+B420, U+B4DC, U+B4E0, U+B4F1, U+B54C, U+B77D, U+B78C, U+B825, U+B828, U+B8F0, U+B958, U+B9DE, U+BAA9, U+BB3C, U+BBFC, U+BC15, U+BC24, U+BCD1, U+BD09, U+C12F, U+C2B9, U+C554, U+C5B8, U+C5C6, U+C608, U+C628, U+C644, U+C6E0, U+C720, U+C784, U+C7A1, U+C900, U+C904, U+C989, U+C9C4, U+C9D5, U+CC28, U+CC3D, U+CC9C, U+CCA0, U+CCAB, U+CD0C, U+CE59, U+CF54, U+CFC4, U+D0D5, U+D14C, U+D1B5, U+D328, U+D398, U+D3EC, U+D45C, U+D569, U+D5A5, U+D5C8, U+D5CC, U+D5D8, U+D601, U+D611, U+D78C"
+   },
+   "rest700": {
+    "chars": "庫文空青간개거검공관교국권규근내념닌다동등디렉로록료립반보산서설섯성세션수시식심아안엇용원유읽자저정조좌증집처출컬키털트핵회",
+    "count": 62,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-literature-travel-rest700.1be3fea63e44108f.woff2",
+     "sha256": "1be3fea63e44108f06316ac0282ec363e2db2da273504e6f9ceab85821ac21c6",
+     "bytes": 6312
+    },
+    "unicodeRange": "U+5EAB, U+6587, U+7A7A, U+9752, U+AC04, U+AC1C, U+AC70, U+AC80, U+ACF5, U+AD00, U+AD50, U+AD6D, U+AD8C, U+ADDC, U+ADFC, U+B0B4, U+B150, U+B2CC, U+B2E4, U+B3D9, U+B4F1, U+B514, U+B809, U+B85C-B85D, U+B8CC, U+B9BD, U+BC18, U+BCF4, U+C0B0, U+C11C, U+C124, U+C12F, U+C131, U+C138, U+C158, U+C218, U+C2DC-C2DD, U+C2EC, U+C544, U+C548, U+C5C7, U+C6A9, U+C6D0, U+C720, U+C77D, U+C790, U+C800, U+C815, U+C870, U+C88C, U+C99D, U+C9D1, U+CC98, U+CD9C, U+CEEC, U+D0A4, U+D138, U+D2B8, U+D575, U+D68C"
    }
   },
   "japan/jp-art-pilgrimage": {
    "body": {
-    "chars": "가각간감개갱건검것게격결겹경계고공과관교구국그기길까꼽나난내냈너넷년념노논뉴는늘니다단답당대데도동돼됐되된둔들디뛰뛴라래러럽레렵렸례로록료루룬뤘류르를리릭린림립마막만메며면명모몸못묘무문물미민바박반받발방배법벽별보복본볼부분붙블비사산삼상색생서선설섯성세션소속송쇄수숙순술스습승시식신실쓰아안앱야약어언업었에여역연열예옛오온와외요용우운움원웹유으은을의이인일읽있자장재저적전절점정제져조종주준중즈즘증지직짜차찰참책처최축출충치친카쿄쿠키타터토통트파판퍼편포표풍피필하학한할함합해했행헤현형호홈화확활회후흘흡흥흩히",
-    "count": 256,
+    "chars": "가각간감개갱건검것게격결겹경계고공과관교구국그기길까꼽나난내냈너넷년념노논뉴는늘니다단답당대데도동돼됐되된둔들디뛰뛴라래러럽레렵렸례로록료루룬뤘류르를리릭린림립마막만말메며면명모몸못묘무문물미민바박반받발방배법벽별보복본볼부분붙블비사산삼상색생서선설섯성세션소속송쇄수숙순술스습승시식신실쓰아안앱야약어언업었에여역연열예옛오온와외요용우운움원웹유으은을의이인일읽있자장재저적전절점정제져조종주준중즈즘증지직짜차찰참책처최축출충치친침카쿄쿠키타터토통트파판퍼편포표풍피필하학한할함합해했행헤현형호홈화확활회후흘흡흥흩히",
+    "count": 258,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-art-pilgrimage-400.b392fd215350b7ba.woff2",
-     "sha256": "b392fd215350b7baa64c863436e928513c4fd2c48adf6615ed5d74292b7895c9",
-     "bytes": 18216
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-art-pilgrimage-400.10e22fd9a7ae5156.woff2",
+     "sha256": "10e22fd9a7ae51565d4a72f34308750889703e1a9f96754dc5dd41a43f891c16",
+     "bytes": 18320
     },
-    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC10, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+ADF8, U+AE30, U+AE38, U+AE4C, U+AF3D, U+B098, U+B09C, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B150, U+B178, U+B17C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F5, U+B2F9, U+B300, U+B370, U+B3C4, U+B3D9, U+B3FC, U+B410, U+B418, U+B41C, U+B454, U+B4E4, U+B514, U+B6F0, U+B6F4, U+B77C, U+B798, U+B7EC, U+B7FD, U+B808, U+B835, U+B838, U+B840, U+B85C-B85D, U+B8CC, U+B8E8, U+B8EC, U+B918, U+B958, U+B974, U+B97C, U+B9AC-B9AD, U+B9B0, U+B9BC-B9BD, U+B9C8-B9C9, U+B9CC, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BAB8, U+BABB, U+BB18, U+BB34, U+BB38, U+BB3C, U+BBF8, U+BBFC, U+BC14-BC15, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC95, U+BCBD, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD99, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C120, U+C124, U+C12F, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1C4, U+C218-C219, U+C21C, U+C220, U+C2A4, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C4F0, U+C544, U+C548, U+C571, U+C57C-C57D, U+C5B4, U+C5B8, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C608, U+C61B, U+C624, U+C628, U+C640, U+C678, U+C694, U+C6A9, U+C6B0, U+C6B4, U+C6C0, U+C6D0, U+C6F9, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C988, U+C998, U+C99D, U+C9C0-C9C1, U+C9DC, U+CC28, U+CC30, U+CC38, U+CC45, U+CC98, U+CD5C, U+CD95, U+CD9C, U+CDA9, U+CE58, U+CE5C, U+CE74, U+CFC4, U+CFE0, U+D0A4, U+D0C0, U+D130, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D310, U+D37C, U+D3B8, U+D3EC, U+D45C, U+D48D, U+D53C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5E4, U+D604, U+D615, U+D638, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4, U+D758, U+D761, U+D765, U+D769, U+D788"
+    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC10, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+ADF8, U+AE30, U+AE38, U+AE4C, U+AF3D, U+B098, U+B09C, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B150, U+B178, U+B17C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F5, U+B2F9, U+B300, U+B370, U+B3C4, U+B3D9, U+B3FC, U+B410, U+B418, U+B41C, U+B454, U+B4E4, U+B514, U+B6F0, U+B6F4, U+B77C, U+B798, U+B7EC, U+B7FD, U+B808, U+B835, U+B838, U+B840, U+B85C-B85D, U+B8CC, U+B8E8, U+B8EC, U+B918, U+B958, U+B974, U+B97C, U+B9AC-B9AD, U+B9B0, U+B9BC-B9BD, U+B9C8-B9C9, U+B9CC, U+B9D0, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BAB8, U+BABB, U+BB18, U+BB34, U+BB38, U+BB3C, U+BBF8, U+BBFC, U+BC14-BC15, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC95, U+BCBD, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD99, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C120, U+C124, U+C12F, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1C4, U+C218-C219, U+C21C, U+C220, U+C2A4, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C4F0, U+C544, U+C548, U+C571, U+C57C-C57D, U+C5B4, U+C5B8, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C608, U+C61B, U+C624, U+C628, U+C640, U+C678, U+C694, U+C6A9, U+C6B0, U+C6B4, U+C6C0, U+C6D0, U+C6F9, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C988, U+C998, U+C99D, U+C9C0-C9C1, U+C9DC, U+CC28, U+CC30, U+CC38, U+CC45, U+CC98, U+CD5C, U+CD95, U+CD9C, U+CDA9, U+CE58, U+CE5C, U+CE68, U+CE74, U+CFC4, U+CFE0, U+D0A4, U+D0C0, U+D130, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D310, U+D37C, U+D3B8, U+D3EC, U+D45C, U+D48D, U+D53C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5E4, U+D604, U+D615, U+D638, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4, U+D758, U+D761, U+D765, U+D769, U+D788"
    },
    "head": {
     "chars": "건계공까는대례를리린마미법보비사산서소순술야업에여예요우유의이중지축키토파판하한행화회",
@@ -206,18 +374,38 @@
      "bytes": 4556
     },
     "unicodeRange": "U+AC74, U+ACC4, U+ACF5, U+AE4C, U+B294, U+B300, U+B840, U+B97C, U+B9AC, U+B9B0, U+B9C8, U+BBF8, U+BC95, U+BCF4, U+BE44, U+C0AC, U+C0B0, U+C11C, U+C18C, U+C21C, U+C220, U+C57C, U+C5C5, U+C5D0, U+C5EC, U+C608, U+C694, U+C6B0, U+C720, U+C758, U+C774, U+C911, U+C9C0, U+CD95, U+D0A4, U+D1A0, U+D30C, U+D310, U+D558, U+D55C, U+D589, U+D654, U+D68C"
+   },
+   "rest400": {
+    "chars": "「」三世五伎六十古和大室寂寺山敬文日書本枯楽次歌水派浮淑清漢狩琳画畵社禪私窯絵能舞茶造野院題갈갓강갖겐견골권규극근글금급께꿔꿨끌끼날납낳네높뉜달담던돌두등때락람려뤄멸목므번범병봉붕석섬셋쇠쇼슈악알았액양억없엔염영올완위음입작잡접젝젠존진집징쪽찬채천철청체초촬추층칠코크탄퇴평폴품프픈험협황힌",
+    "count": 145,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-art-pilgrimage-rest400.e42a5fedaefbab85.woff2",
+     "sha256": "e42a5fedaefbab85f93a91c76f3dd7f151efd3d31b734feb390a584370b81166",
+     "bytes": 15580
+    },
+    "unicodeRange": "U+300C-300D, U+4E09, U+4E16, U+4E94, U+4F0E, U+516D, U+5341, U+53E4, U+548C, U+5927, U+5BA4, U+5BC2, U+5BFA, U+5C71, U+656C, U+6587, U+65E5, U+66F8, U+672C, U+67AF, U+697D, U+6B21, U+6B4C, U+6C34, U+6D3E, U+6D6E, U+6DD1, U+6E05, U+6F22, U+72E9, U+7433, U+753B, U+7575, U+793E, U+79AA, U+79C1, U+7AAF, U+7D75, U+80FD, U+821E, U+8336, U+9020, U+91CE, U+9662, U+984C, U+AC08, U+AC13, U+AC15-AC16, U+AC90, U+ACAC, U+ACE8, U+AD8C, U+ADDC, U+ADF9, U+ADFC, U+AE00, U+AE08-AE09, U+AED8, U+AFD4, U+AFE8, U+B04C, U+B07C, U+B0A0, U+B0A9, U+B0B3, U+B124, U+B192, U+B25C, U+B2EC, U+B2F4, U+B358, U+B3CC, U+B450, U+B4F1, U+B54C, U+B77D, U+B78C, U+B824, U+B904, U+BA78, U+BAA9, U+BBC0, U+BC88, U+BC94, U+BCD1, U+BD09, U+BD95, U+C11D, U+C12C, U+C14B, U+C1E0, U+C1FC, U+C288, U+C545, U+C54C, U+C558, U+C561, U+C591, U+C5B5, U+C5C6, U+C5D4, U+C5FC, U+C601, U+C62C, U+C644, U+C704, U+C74C, U+C785, U+C791, U+C7A1, U+C811, U+C81D, U+C820, U+C874, U+C9C4, U+C9D1, U+C9D5, U+CABD, U+CC2C, U+CC44, U+CC9C, U+CCA0, U+CCAD, U+CCB4, U+CD08, U+CD2C, U+CD94, U+CE35, U+CE60, U+CF54, U+D06C, U+D0C4, U+D1F4, U+D3C9, U+D3F4, U+D488, U+D504, U+D508, U+D5D8, U+D611, U+D669, U+D78C"
+   },
+   "rest700": {
+    "chars": "가검과관구국권규근금기나내노논도등라렉로료립메명모목무문박발본부분상색섬세션수스습시식안액양어언연영오온와용원인일자장재점정조증집처청출컬쿠탄통트편폴품픈학합향현확활",
+    "count": 83,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-art-pilgrimage-rest700.67c2c4c35e794cee.woff2",
+     "sha256": "67c2c4c35e794ceebf6d1eee60e723dd8639f5a02c0c613329405bde1f4707a2",
+     "bytes": 7376
+    },
+    "unicodeRange": "U+AC00, U+AC80, U+ACFC, U+AD00, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADFC, U+AE08, U+AE30, U+B098, U+B0B4, U+B178, U+B17C, U+B3C4, U+B4F1, U+B77C, U+B809, U+B85C, U+B8CC, U+B9BD, U+BA54, U+BA85, U+BAA8-BAA9, U+BB34, U+BB38, U+BC15, U+BC1C, U+BCF8, U+BD80, U+BD84, U+C0C1, U+C0C9, U+C12C, U+C138, U+C158, U+C218, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C548, U+C561, U+C591, U+C5B4, U+C5B8, U+C5F0, U+C601, U+C624, U+C628, U+C640, U+C6A9, U+C6D0, U+C778, U+C77C, U+C790, U+C7A5, U+C7AC, U+C810, U+C815, U+C870, U+C99D, U+C9D1, U+CC98, U+CCAD, U+CD9C, U+CEEC, U+CFE0, U+D0C4, U+D1B5, U+D2B8, U+D3B8, U+D3F4, U+D488, U+D508, U+D559, U+D569, U+D5A5, U+D604, U+D655, U+D65C"
    }
   },
   "japan/jp-faith-festivals": {
    "body": {
-    "chars": "가각간갈개갱거건검것게결경계고공과관괴교구국굴권그기긴길까께나날남났내낸냈너네넷년노논놓누뉴느는늘니다단달대더도됐되된두둔둘둥들땅떤떻뛰라래러럼렌려력령례로록론료루류르를름리림마만메며면명모못무문물므미민믿바반받발방배범병보복본볼부분불비사산살상색생샤서석섞설성세션소속송수순술스습승시식신실심싼쓰아않앙앱야양어억언얽업없었에여역연영예오온와왕왜외요움원월웹위유으은을음의이인일읽있자잔장재쟁저적전점정제존종좌주준중즈증지짝찰참책처천체초최축출층칙카코쿠키타탕탠터텍토통트파편평폐표필하학한할함합항해했행혀형호홈화확활회후훼흡히힘",
-    "count": 265,
+    "chars": "가각간갈개갱거건검것게결경계고공과관괴교구국굴권그기긴길까께나날남났내낸냈너네넷년노논놓누뉴느는늘니다단달대더도됐되된두둔둘둥들땅떤떻뛰라래러럼렌려력령례로록론료루류르를름리림마만말메며면명모못무문물므미민믿바반받발방배범병보복본볼부분불비사산살상색생샤서석섞설성세션소속송수순술스습승시식신실심싼쓰아않앙앱야약양어억언얽업없었에여역연영예오온와왕왜외요용움원월웹위유으은을음의이인일읽있자잔장재쟁저적전점정제존종좌주준중즈증지짝찰참책처천체초최축출층칙침카코쿠키타탕탠터텍토통트파편평폐표필하학한할함합항해했행혀형호홈화확활회후훼흡히힘",
+    "count": 269,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-faith-festivals-400.23a021adcbe5930f.woff2",
-     "sha256": "23a021adcbe5930fde23628c9d0706767b0e6466a63233b541f9404e911399a6",
-     "bytes": 19132
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-faith-festivals-400.9fd62af59eac95ed.woff2",
+     "sha256": "9fd62af59eac95ede35d03dfd3b807675c75c766d49e2fe88bf9cec8a9f1249e",
+     "bytes": 19344
     },
-    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC08, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD34, U+AD50, U+AD6C-AD6D, U+AD74, U+AD8C, U+ADF8, U+AE30, U+AE34, U+AE38, U+AE4C, U+AED8, U+B098, U+B0A0, U+B0A8, U+B0AC, U+B0B4, U+B0B8, U+B0C8, U+B108, U+B124, U+B137, U+B144, U+B178, U+B17C, U+B193, U+B204, U+B274, U+B290, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2EC, U+B300, U+B354, U+B3C4, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B458, U+B465, U+B4E4, U+B545, U+B5A4, U+B5BB, U+B6F0, U+B77C, U+B798, U+B7EC, U+B7FC, U+B80C, U+B824-B825, U+B839, U+B840, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B958, U+B974, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BBF8, U+BBFC, U+BBFF, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC94, U+BCD1, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE44, U+C0AC, U+C0B0, U+C0B4, U+C0C1, U+C0C9, U+C0DD, U+C0E4, U+C11C-C11E, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C21C, U+C220, U+C2A4, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C2FC, U+C4F0, U+C544, U+C54A, U+C559, U+C571, U+C57C, U+C591, U+C5B4-C5B5, U+C5B8, U+C5BD, U+C5C5-C5C6, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C601, U+C608, U+C624, U+C628, U+C640, U+C655, U+C65C, U+C678, U+C694, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C794, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C874, U+C885, U+C88C, U+C8FC, U+C900, U+C911, U+C988, U+C99D, U+C9C0, U+C9DD, U+CC30, U+CC38, U+CC45, U+CC98, U+CC9C, U+CCB4, U+CD08, U+CD5C, U+CD95, U+CD9C, U+CE35, U+CE59, U+CE74, U+CF54, U+CFE0, U+D0A4, U+D0C0, U+D0D5, U+D0E0, U+D130, U+D14D, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D3B8, U+D3C9, U+D3D0, U+D45C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D600, U+D615, U+D638, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4, U+D6FC, U+D761, U+D788, U+D798"
+    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC08, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD34, U+AD50, U+AD6C-AD6D, U+AD74, U+AD8C, U+ADF8, U+AE30, U+AE34, U+AE38, U+AE4C, U+AED8, U+B098, U+B0A0, U+B0A8, U+B0AC, U+B0B4, U+B0B8, U+B0C8, U+B108, U+B124, U+B137, U+B144, U+B178, U+B17C, U+B193, U+B204, U+B274, U+B290, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2EC, U+B300, U+B354, U+B3C4, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B458, U+B465, U+B4E4, U+B545, U+B5A4, U+B5BB, U+B6F0, U+B77C, U+B798, U+B7EC, U+B7FC, U+B80C, U+B824-B825, U+B839, U+B840, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B958, U+B974, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+B9D0, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BBF8, U+BBFC, U+BBFF, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC94, U+BCD1, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE44, U+C0AC, U+C0B0, U+C0B4, U+C0C1, U+C0C9, U+C0DD, U+C0E4, U+C11C-C11E, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C21C, U+C220, U+C2A4, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C2FC, U+C4F0, U+C544, U+C54A, U+C559, U+C571, U+C57C-C57D, U+C591, U+C5B4-C5B5, U+C5B8, U+C5BD, U+C5C5-C5C6, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C601, U+C608, U+C624, U+C628, U+C640, U+C655, U+C65C, U+C678, U+C694, U+C6A9, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C794, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C874, U+C885, U+C88C, U+C8FC, U+C900, U+C911, U+C988, U+C99D, U+C9C0, U+C9DD, U+CC30, U+CC38, U+CC45, U+CC98, U+CC9C, U+CCB4, U+CD08, U+CD5C, U+CD95, U+CD9C, U+CE35, U+CE59, U+CE68, U+CE74, U+CF54, U+CFE0, U+D0A4, U+D0C0, U+D0D5, U+D0E0, U+D130, U+D14D, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D3B8, U+D3C9, U+D3D0, U+D45C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D600, U+D615, U+D638, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4, U+D6FC, U+D761, U+D788, U+D798"
    },
    "head": {
     "chars": "공과길는도라렌례리마모민불사성속순신쓰앙의이제존즈지축학화",
@@ -228,18 +416,39 @@
      "bytes": 3676
     },
     "unicodeRange": "U+ACF5, U+ACFC, U+AE38, U+B294, U+B3C4, U+B77C, U+B80C, U+B840, U+B9AC, U+B9C8, U+BAA8, U+BBFC, U+BD88, U+C0AC, U+C131, U+C18D, U+C21C, U+C2E0, U+C4F0, U+C559, U+C758, U+C774, U+C81C, U+C874, U+C988, U+C9C0, U+CD95, U+D559, U+D654"
+   },
+   "rest400": {
+    "chars": "「」『』おり傳出合國在坊大宿寺山待接月母無物社神紀習記語議讓遠野雲갓강걷곡곤곧광귀규근금꼽끌넘농담데독동돼드든등락량렬렸롱룬뤄린립망맵목몰묘묶밀박백버법베벽별뽑삼삿새센셋쇼숙슈씩악안앞열올옷완운임작잠절접조즌직진집짓징짧차창채추치칠켄크태테특판포프피헌험헤헨현황흰힌",
+    "count": 133,
+    "skipped": "仏",
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-faith-festivals-rest400.3f823717171e6574.woff2",
+     "sha256": "3f823717171e6574f5ae692fa87c7a352148e620ad72f0f9ccd58f4db4c1c1d1",
+     "bytes": 13812
+    },
+    "unicodeRange": "U+300C-300F, U+304A, U+308A, U+50B3, U+51FA, U+5408, U+570B, U+5728, U+574A, U+5927, U+5BBF, U+5BFA, U+5C71, U+5F85, U+63A5, U+6708, U+6BCD, U+7121, U+7269, U+793E, U+795E, U+7D00, U+7FD2, U+8A18, U+8A9E, U+8B70, U+8B93, U+9060, U+91CE, U+96F2, U+AC13, U+AC15, U+AC77, U+ACE1, U+ACE4, U+ACE7, U+AD11, U+ADC0, U+ADDC, U+ADFC, U+AE08, U+AF3D, U+B04C, U+B118, U+B18D, U+B2F4, U+B370, U+B3C5, U+B3D9, U+B3FC, U+B4DC, U+B4E0, U+B4F1, U+B77D, U+B7C9, U+B82C, U+B838, U+B871, U+B8EC, U+B904, U+B9B0, U+B9BD, U+B9DD, U+B9F5, U+BAA9, U+BAB0, U+BB18, U+BB36, U+BC00, U+BC15, U+BC31, U+BC84, U+BC95, U+BCA0, U+BCBD, U+BCC4, U+BF51, U+C0BC, U+C0BF, U+C0C8, U+C13C, U+C14B, U+C1FC, U+C219, U+C288, U+C529, U+C545, U+C548, U+C55E, U+C5F4, U+C62C, U+C637, U+C644, U+C6B4, U+C784, U+C791, U+C7A0, U+C808, U+C811, U+C870, U+C98C, U+C9C1, U+C9C4, U+C9D1, U+C9D3, U+C9D5, U+C9E7, U+CC28, U+CC3D, U+CC44, U+CD94, U+CE58, U+CE60, U+CF04, U+D06C, U+D0DC, U+D14C, U+D2B9, U+D310, U+D3EC, U+D504, U+D53C, U+D5CC, U+D5D8, U+D5E4, U+D5E8, U+D604, U+D669, U+D770, U+D78C"
+   },
+   "rest700": {
+    "chars": "『』가개검고관광괴교구국권기나내노논니달당대된두등려력료를름만명무문발보본봉분브산센소수술승시식아안야에여역연오와요우원위일읽자작잔재저전정증집처청출층치카켄코쿠타터트한형호히",
+    "count": 88,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-faith-festivals-rest700.95990b3a2e9d8a9c.woff2",
+     "sha256": "95990b3a2e9d8a9c18bf34e1200ffb750b2f50d314430db4c438f00ae8d72e81",
+     "bytes": 7760
+    },
+    "unicodeRange": "U+300E-300F, U+AC00, U+AC1C, U+AC80, U+ACE0, U+AD00, U+AD11, U+AD34, U+AD50, U+AD6C-AD6D, U+AD8C, U+AE30, U+B098, U+B0B4, U+B178, U+B17C, U+B2C8, U+B2EC, U+B2F9, U+B300, U+B41C, U+B450, U+B4F1, U+B824-B825, U+B8CC, U+B97C, U+B984, U+B9CC, U+BA85, U+BB34, U+BB38, U+BC1C, U+BCF4, U+BCF8, U+BD09, U+BD84, U+BE0C, U+C0B0, U+C13C, U+C18C, U+C218, U+C220, U+C2B9, U+C2DC-C2DD, U+C544, U+C548, U+C57C, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C624, U+C640, U+C694, U+C6B0, U+C6D0, U+C704, U+C77C-C77D, U+C790-C791, U+C794, U+C7AC, U+C800, U+C804, U+C815, U+C99D, U+C9D1, U+CC98, U+CCAD, U+CD9C, U+CE35, U+CE58, U+CE74, U+CF04, U+CF54, U+CFE0, U+D0C0, U+D130, U+D2B8, U+D55C, U+D615, U+D638, U+D788"
    }
   },
   "japan/jp-society": {
    "body": {
-    "chars": "가간갈감개갱거건검것게결겹경계고공과관괄교구국규균그급기까께나남내냈너넷녀년노논뉴는늘늙능니다단대도독동됐되된두둔둘득들등떨떻뚜뛰라래러럼려력련렵렷령로록론료률르른를리만메며면멸명모못무문바반받발방배법변별보복본볼부분비빈빠사산상색생서설섰성세션소속송수습시식신실심싼아안않알앱야약어억업에여역연열오온올와완외요용움월웹유육율으은을의이인일읽입있자장재저적전점정제져조족졸종주준중증지진짐집차찬찰채책처체초최축출취치친크키터토통트특팎편평표필하학한할함해했행향혁형호혼홈화확회후휴흔히",
-    "count": 242,
+    "chars": "가간갈감개갱거건검것게결겹경계고공과관괄교구국규균그급기까께나남내냈너넷녀년노논뉴는늘늙능니다단대도독동됐되된두둔둘득들등떨떻뚜뛰라래러럼려력련렵렷령로록론료률르른를리만말메며면멸명모못무문바반받발방배법변별보복본볼부분비빈빠사산상색생서설섰성세션소속송수습시식신실심싼아안않알앱야약어억업에여역연열오온올와완외요용움월웹유육율으은을의이인일읽입있자장재저적전점정제져조족졸종주준중증지진짐집차찬찰채책처체초최축출취치친침크키터토통트특팎편평표필하학한할함해했행향혁형호혼홈화확회후휴흔히",
+    "count": 244,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-society-400.4dc6ab4c99e2946e.woff2",
-     "sha256": "4dc6ab4c99e2946ed9fb977d92c394cb07f1828f91edfb39f5f1c28e0bdfba19",
-     "bytes": 17320
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-society-400.9de7685fc0aae107.woff2",
+     "sha256": "9de7685fc0aae107fd3d7e210219f2efce2174bbac9193dcc2f90715db52b312",
+     "bytes": 17444
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC10, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD04, U+AD50, U+AD6C-AD6D, U+ADDC, U+ADE0, U+ADF8, U+AE09, U+AE30, U+AE4C, U+AED8, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B137, U+B140, U+B144, U+B178, U+B17C, U+B274, U+B294, U+B298-B299, U+B2A5, U+B2C8, U+B2E4, U+B2E8, U+B300, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B458, U+B4DD, U+B4E4, U+B4F1, U+B5A8, U+B5BB, U+B69C, U+B6F0, U+B77C, U+B798, U+B7EC, U+B7FC, U+B824-B825, U+B828, U+B835, U+B837, U+B839, U+B85C-B85D, U+B860, U+B8CC, U+B960, U+B974, U+B978, U+B97C, U+B9AC, U+B9CC, U+BA54, U+BA70, U+BA74, U+BA78, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC95, U+BCC0, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BE44, U+BE48, U+BE60, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C130-C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C2FC, U+C544, U+C548, U+C54A, U+C54C, U+C571, U+C57C-C57D, U+C5B4-C5B5, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C624, U+C628, U+C62C, U+C640, U+C644, U+C678, U+C694, U+C6A9, U+C6C0, U+C6D4, U+C6F9, U+C720-C721, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C785, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C838, U+C870-C871, U+C878, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D0-C9D1, U+CC28, U+CC2C, U+CC30, U+CC44-CC45, U+CC98, U+CCB4, U+CD08, U+CD5C, U+CD95, U+CD9C, U+CDE8, U+CE58, U+CE5C, U+D06C, U+D0A4, U+D130, U+D1A0, U+D1B5, U+D2B8-D2B9, U+D30E, U+D3B8, U+D3C9, U+D45C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D5A5, U+D601, U+D615, U+D638, U+D63C, U+D648, U+D654-D655, U+D68C, U+D6C4, U+D734, U+D754, U+D788"
+    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC10, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD04, U+AD50, U+AD6C-AD6D, U+ADDC, U+ADE0, U+ADF8, U+AE09, U+AE30, U+AE4C, U+AED8, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B137, U+B140, U+B144, U+B178, U+B17C, U+B274, U+B294, U+B298-B299, U+B2A5, U+B2C8, U+B2E4, U+B2E8, U+B300, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B458, U+B4DD, U+B4E4, U+B4F1, U+B5A8, U+B5BB, U+B69C, U+B6F0, U+B77C, U+B798, U+B7EC, U+B7FC, U+B824-B825, U+B828, U+B835, U+B837, U+B839, U+B85C-B85D, U+B860, U+B8CC, U+B960, U+B974, U+B978, U+B97C, U+B9AC, U+B9CC, U+B9D0, U+BA54, U+BA70, U+BA74, U+BA78, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC95, U+BCC0, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BE44, U+BE48, U+BE60, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C130-C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C2FC, U+C544, U+C548, U+C54A, U+C54C, U+C571, U+C57C-C57D, U+C5B4-C5B5, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C624, U+C628, U+C62C, U+C640, U+C644, U+C678, U+C694, U+C6A9, U+C6C0, U+C6D4, U+C6F9, U+C720-C721, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C785, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C838, U+C870-C871, U+C878, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D0-C9D1, U+CC28, U+CC2C, U+CC30, U+CC44-CC45, U+CC98, U+CCB4, U+CD08, U+CD5C, U+CD95, U+CD9C, U+CDE8, U+CE58, U+CE5C, U+CE68, U+D06C, U+D0A4, U+D130, U+D1A0, U+D1B5, U+D2B8-D2B9, U+D30E, U+D3B8, U+D3C9, U+D45C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D5A5, U+D601, U+D615, U+D638, U+D63C, U+D648, U+D654-D655, U+D68C, U+D6C4, U+D734, U+D754, U+D788"
    },
    "head": {
     "chars": "가개고공과관구그노는단대독동리방본사상세소시식실와완의인일조족체축하행혁화회",
@@ -250,18 +459,39 @@
      "bytes": 4324
     },
     "unicodeRange": "U+AC00, U+AC1C, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD6C, U+ADF8, U+B178, U+B294, U+B2E8, U+B300, U+B3C5, U+B3D9, U+B9AC, U+BC29, U+BCF8, U+C0AC, U+C0C1, U+C138, U+C18C, U+C2DC-C2DD, U+C2E4, U+C640, U+C644, U+C758, U+C778, U+C77C, U+C870-C871, U+CCB4, U+CD95, U+D558, U+D589, U+D601, U+D654, U+D68C"
+   },
+   "rest400": {
+    "chars": "「」会活町部권긴꼽날낮녹달답당드마매물범병살숙술스쓰언우원위익작접존줄직징참청추츠층카쿠태테템파포풍피험헤환활훈힌",
+    "count": 57,
+    "skipped": "内",
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-society-rest400.ea7e14065a040521.woff2",
+     "sha256": "ea7e14065a0405218f1568ab76e87216f250273c5c62a31ea29d488e4418fff0",
+     "bytes": 6252
+    },
+    "unicodeRange": "U+300C-300D, U+4F1A, U+6D3B, U+753A, U+90E8, U+AD8C, U+AE34, U+AF3D, U+B0A0, U+B0AE, U+B179, U+B2EC, U+B2F5, U+B2F9, U+B4DC, U+B9C8, U+B9E4, U+BB3C, U+BC94, U+BCD1, U+C0B4, U+C219, U+C220, U+C2A4, U+C4F0, U+C5B8, U+C6B0, U+C6D0, U+C704, U+C775, U+C791, U+C811, U+C874, U+C904, U+C9C1, U+C9D5, U+CC38, U+CCAD, U+CD94, U+CE20, U+CE35, U+CE74, U+CFE0, U+D0DC, U+D14C, U+D15C, U+D30C, U+D3EC, U+D48D, U+D53C, U+D5D8, U+D5E4, U+D658, U+D65C, U+D6C8, U+D78C"
+   },
+   "rest700": {
+    "chars": "검경계교국까나력무부생서성수안에용육이재전주증지찰처청초총추출츠치카태택토통트험후",
+    "count": 41,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-society-rest700.954c86b5ead528f6.woff2",
+     "sha256": "954c86b5ead528f62e214ec5c403d7883b92046ea6861022968c606ede7362f0",
+     "bytes": 4752
+    },
+    "unicodeRange": "U+AC80, U+ACBD, U+ACC4, U+AD50, U+AD6D, U+AE4C, U+B098, U+B825, U+BB34, U+BD80, U+C0DD, U+C11C, U+C131, U+C218, U+C548, U+C5D0, U+C6A9, U+C721, U+C774, U+C7AC, U+C804, U+C8FC, U+C99D, U+C9C0, U+CC30, U+CC98, U+CCAD, U+CD08, U+CD1D, U+CD94, U+CD9C, U+CE20, U+CE58, U+CE74, U+D0DC-D0DD, U+D1A0, U+D1B5, U+D2B8, U+D5D8, U+D6C4"
    }
   },
   "japan/jp-life": {
    "body": {
-    "chars": "가간갈감같개객갱건검것게견결겸경계고공과관교구국군굴권그근급기께나난낮내냈너넨넷노뉴는늘니다단달담당대데도되된둔뒤등디때떻뚜뛰라람랙러려렷로록료류르를름리마만말먼메면명모못문뭐바밖반받발방배법베벤별보복본볼부분불붙비사산살상색생서설성세션소속송수습시식신씬아안알앱야양어억언업에여역연오와왜요용우움워웹위유육으은을의이인일읽임있자장재저적전절점접정져존종주준중증지진짱차책처첫체최추축출층치칭카케콘쿄쿠크큰키타터테토통투트팎편표프필하학한할함합해했행현형호혼홈화확활회후",
-    "count": 235,
+    "chars": "가간갈감같개객갱건검것게견결겸경계고공과관교구국군굴권그근급기께나난낮내냈너넨넷노뉴는늘니다단달담당대데도되된둔뒤등디때떻뚜뛰라람랙러려렷로록료류르를름리마만말먼메면명모못문뭐바밖반받발방배법베벤별보복본볼부분불붙비사산살상색생서설성세션소속송수습시식신씬아안알앱야약양어억언업에여역연오와왜요용우움워웹위유육으은을의이인일읽임있자장재저적전절점접정져존종주준중증지진짱차책처첫체최추축출층치침칭카케콘쿄쿠크큰키타터테토통투트팎편표프필하학한할함합해했행현형호혼홈화확활회후",
+    "count": 237,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-life-400.4352c8b35f23bbfc.woff2",
-     "sha256": "4352c8b35f23bbfc42245e3cbf3f5e83de530e6a894cc73af65ef0c88b13cb20",
-     "bytes": 16824
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-life-400.05885f557aa1d9ba.woff2",
+     "sha256": "05885f557aa1d9ba2765d7b3f67c438d721983162e600339aa288fdd33fc3844",
+     "bytes": 17012
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC10, U+AC19, U+AC1C-AC1D, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACAC, U+ACB0, U+ACB8, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD70, U+AD74, U+AD8C, U+ADF8, U+ADFC, U+AE09, U+AE30, U+AED8, U+B098, U+B09C, U+B0AE, U+B0B4, U+B0C8, U+B108, U+B128, U+B137, U+B178, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2EC, U+B2F4, U+B2F9, U+B300, U+B370, U+B3C4, U+B418, U+B41C, U+B454, U+B4A4, U+B4F1, U+B514, U+B54C, U+B5BB, U+B69C, U+B6F0, U+B77C, U+B78C, U+B799, U+B7EC, U+B824, U+B837, U+B85C-B85D, U+B8CC, U+B958, U+B974, U+B97C, U+B984, U+B9AC, U+B9C8, U+B9CC, U+B9D0, U+BA3C, U+BA54, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB38, U+BB50, U+BC14, U+BC16, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC95, U+BCA0, U+BCA4, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BD99, U+BE44, U+C0AC, U+C0B0, U+C0B4, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C52C, U+C544, U+C548, U+C54C, U+C571, U+C57C, U+C591, U+C5B4-C5B5, U+C5B8, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C624, U+C640, U+C65C, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6CC, U+C6F9, U+C704, U+C720-C721, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810-C811, U+C815, U+C838, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9F1, U+CC28, U+CC45, U+CC98, U+CCAB, U+CCB4, U+CD5C, U+CD94-CD95, U+CD9C, U+CE35, U+CE58, U+CE6D, U+CE74, U+CF00, U+CF58, U+CFC4, U+CFE0, U+D06C, U+D070, U+D0A4, U+D0C0, U+D130, U+D14C, U+D1A0, U+D1B5, U+D22C, U+D2B8, U+D30E, U+D3B8, U+D45C, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D604, U+D615, U+D638, U+D63C, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4"
+    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC10, U+AC19, U+AC1C-AC1D, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACAC, U+ACB0, U+ACB8, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD70, U+AD74, U+AD8C, U+ADF8, U+ADFC, U+AE09, U+AE30, U+AED8, U+B098, U+B09C, U+B0AE, U+B0B4, U+B0C8, U+B108, U+B128, U+B137, U+B178, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2EC, U+B2F4, U+B2F9, U+B300, U+B370, U+B3C4, U+B418, U+B41C, U+B454, U+B4A4, U+B4F1, U+B514, U+B54C, U+B5BB, U+B69C, U+B6F0, U+B77C, U+B78C, U+B799, U+B7EC, U+B824, U+B837, U+B85C-B85D, U+B8CC, U+B958, U+B974, U+B97C, U+B984, U+B9AC, U+B9C8, U+B9CC, U+B9D0, U+BA3C, U+BA54, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB38, U+BB50, U+BC14, U+BC16, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC95, U+BCA0, U+BCA4, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BD99, U+BE44, U+C0AC, U+C0B0, U+C0B4, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C52C, U+C544, U+C548, U+C54C, U+C571, U+C57C-C57D, U+C591, U+C5B4-C5B5, U+C5B8, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C624, U+C640, U+C65C, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6CC, U+C6F9, U+C704, U+C720-C721, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810-C811, U+C815, U+C838, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9F1, U+CC28, U+CC45, U+CC98, U+CCAB, U+CCB4, U+CD5C, U+CD94-CD95, U+CD9C, U+CE35, U+CE58, U+CE68, U+CE6D, U+CE74, U+CF00, U+CF58, U+CFC4, U+CFE0, U+D06C, U+D070, U+D0A4, U+D0C0, U+D130, U+D14C, U+D1A0, U+D1B5, U+D22C, U+D2B8, U+D30E, U+D3B8, U+D45C, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D604, U+D615, U+D638, U+D63C, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4"
    },
    "head": {
     "chars": "간경고과그는라리방벤본사상생성소어언와우의이인일정지체치토프형활회",
@@ -272,18 +502,39 @@
      "bytes": 4008
     },
     "unicodeRange": "U+AC04, U+ACBD, U+ACE0, U+ACFC, U+ADF8, U+B294, U+B77C, U+B9AC, U+BC29, U+BCA4, U+BCF8, U+C0AC, U+C0C1, U+C0DD, U+C131, U+C18C, U+C5B4, U+C5B8, U+C640, U+C6B0, U+C758, U+C774, U+C778, U+C77C, U+C815, U+C9C0, U+CCB4, U+CE58, U+D1A0, U+D504, U+D615, U+D65C, U+D68C"
+   },
+   "rest400": {
+    "chars": "「」さちゃん君姓弁西関강거겹골규금까꽃날납네년능덕동두드든들락래레루룬른맡매멜목묵물미밀박범벗벚삼석선셈숙순술스실쓰완외왼욕운원월입작제조족줄질징쪽참창천철초칸캐컬택톤특판포풍항험헤환휘휴히",
+    "count": 95,
+    "skipped": "様",
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-life-rest400.2352de221e9af4d1.woff2",
+     "sha256": "2352de221e9af4d16f45079cd20935107dea658876842c899575ec5ff3af89f6",
+     "bytes": 9684
+    },
+    "unicodeRange": "U+300C-300D, U+3055, U+3061, U+3083, U+3093, U+541B, U+59D3, U+5F01, U+897F, U+95A2, U+AC15, U+AC70, U+ACB9, U+ACE8, U+ADDC, U+AE08, U+AE4C, U+AF43, U+B0A0, U+B0A9, U+B124, U+B144, U+B2A5, U+B355, U+B3D9, U+B450, U+B4DC, U+B4E0, U+B4E4, U+B77D, U+B798, U+B808, U+B8E8, U+B8EC, U+B978, U+B9E1, U+B9E4, U+BA5C, U+BAA9, U+BB35, U+BB3C, U+BBF8, U+BC00, U+BC15, U+BC94, U+BC97, U+BC9A, U+C0BC, U+C11D, U+C120, U+C148, U+C219, U+C21C, U+C220, U+C2A4, U+C2E4, U+C4F0, U+C644, U+C678, U+C67C, U+C695, U+C6B4, U+C6D0, U+C6D4, U+C785, U+C791, U+C81C, U+C870-C871, U+C904, U+C9C8, U+C9D5, U+CABD, U+CC38, U+CC3D, U+CC9C, U+CCA0, U+CD08, U+CE78, U+CE90, U+CEEC, U+D0DD, U+D1A4, U+D2B9, U+D310, U+D3EC, U+D48D, U+D56D, U+D5D8, U+D5E4, U+D658, U+D718, U+D734, U+D788"
+   },
+   "rest700": {
+    "chars": "개검계공구국기노니도듬랜례료립문분비세시업에여연용월음자작즈증차처철청출침콘통트판표하한행협화",
+    "count": 47,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-jp-life-rest700.793a9d8096cc066d.woff2",
+     "sha256": "793a9d8096cc066d5ef3547d378ad4cad16b0d2f6a5595d3bdaae9949fb49c48",
+     "bytes": 4952
+    },
+    "unicodeRange": "U+AC1C, U+AC80, U+ACC4, U+ACF5, U+AD6C-AD6D, U+AE30, U+B178, U+B2C8, U+B3C4, U+B4EC, U+B79C, U+B840, U+B8CC, U+B9BD, U+BB38, U+BD84, U+BE44, U+C138, U+C2DC, U+C5C5, U+C5D0, U+C5EC, U+C5F0, U+C6A9, U+C6D4, U+C74C, U+C790-C791, U+C988, U+C99D, U+CC28, U+CC98, U+CCA0, U+CCAD, U+CD9C, U+CE68, U+CF58, U+D1B5, U+D2B8, U+D310, U+D45C, U+D558, U+D55C, U+D589, U+D611, U+D654"
    }
   },
   "korea/kr-overview": {
    "body": {
-    "chars": "가간감강개갯갱건검것게겨격결경계고골공과관광괴교구국권그금기깊나낙남내냈너널넷년노뉴는늘다단달담대데도동됐되된둔든들등뚜뛰라래려렵렷령로록롭료루류륙르른를름리림마만맥맵메며면명모몬못무문민바반받발배백벌별보복본볼봉부북분비빠사산상색서선설성세션소속송수순스습시식신심아안알앱야약어업에여역연열영예오온와왕요용우울움원웹위유율으은을의이인일읽임있자잡장재저적전절점정제져조종주준중증지진질짐집쪽차책처천체쳐초총최축출충츠치콘크큰타태터텐토통트특파편평표필하학한할함합해했행혀형홈화확환활후흐",
-    "count": 244,
+    "chars": "가간감강개갯갱건검것게겨격결경계고골공과관광괴교구국권그금기깊나낙남내냈너널넷년노뉴는늘다단달담대데도동됐되된둔든들등뚜뛰라래려렵렷령로록롭료루류륙르른를름리림마만말맥맵메며면명모몬못무문민바반받발방배백벌별보복본볼봉부북분비빠사산상색서선설성세션소속송수순스습시식신심아안알앱야약어업에여역연열영예오온와왕요용우울움원웹위유율으은을의이인일읽임있자잡장재저적전절점정제져조종주준중증지진질짐집쪽차책처천체쳐초총최축출충츠치침콘크큰타태터텐토통트특파편평표필하학한할함합해했행혀형홈화확환활후흐",
+    "count": 247,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-overview-400.0d4704510b422db9.woff2",
-     "sha256": "0d4704510b422db970293113d95562893dd87f31a4d64cd5179324a84b5c520f",
-     "bytes": 17216
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-overview-400.b85f08359a63d3bf.woff2",
+     "sha256": "b85f08359a63d3bf47a2c87fce875fee159422c27d1d0ec078f429b99a0eca73",
+     "bytes": 17372
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC15, U+AC1C, U+AC2F, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA8-ACA9, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACE8, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD34, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADF8, U+AE08, U+AE30, U+AE4A, U+B098-B099, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B110, U+B137, U+B144, U+B178, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2EC, U+B2F4, U+B300, U+B370, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B4E0, U+B4E4, U+B4F1, U+B69C, U+B6F0, U+B77C, U+B798, U+B824, U+B835, U+B837, U+B839, U+B85C-B85D, U+B86D, U+B8CC, U+B8E8, U+B958-B959, U+B974, U+B978, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+B9E5, U+B9F5, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BAAC, U+BABB, U+BB34, U+BB38, U+BBFC, U+BC14, U+BC18, U+BC1B-BC1C, U+BC30-BC31, U+BC8C, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD09, U+BD80-BD81, U+BD84, U+BE44, U+BE60, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C11C, U+C120, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C21C, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C544, U+C548, U+C54C, U+C571, U+C57C-C57D, U+C5B4, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C601, U+C608, U+C624, U+C628, U+C640, U+C655, U+C694, U+C6A9, U+C6B0, U+C6B8, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9C8, U+C9D0-C9D1, U+CABD, U+CC28, U+CC45, U+CC98, U+CC9C, U+CCB4, U+CCD0, U+CD08, U+CD1D, U+CD5C, U+CD95, U+CD9C, U+CDA9, U+CE20, U+CE58, U+CF58, U+D06C, U+D070, U+D0C0, U+D0DC, U+D130, U+D150, U+D1A0, U+D1B5, U+D2B8-D2B9, U+D30C, U+D3B8, U+D3C9, U+D45C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D600, U+D615, U+D648, U+D654-D655, U+D658, U+D65C, U+D6C4, U+D750"
+    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC15, U+AC1C, U+AC2F, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA8-ACA9, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACE8, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD34, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADF8, U+AE08, U+AE30, U+AE4A, U+B098-B099, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B110, U+B137, U+B144, U+B178, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2EC, U+B2F4, U+B300, U+B370, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B4E0, U+B4E4, U+B4F1, U+B69C, U+B6F0, U+B77C, U+B798, U+B824, U+B835, U+B837, U+B839, U+B85C-B85D, U+B86D, U+B8CC, U+B8E8, U+B958-B959, U+B974, U+B978, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+B9D0, U+B9E5, U+B9F5, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BAAC, U+BABB, U+BB34, U+BB38, U+BBFC, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30-BC31, U+BC8C, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD09, U+BD80-BD81, U+BD84, U+BE44, U+BE60, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C11C, U+C120, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C21C, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C544, U+C548, U+C54C, U+C571, U+C57C-C57D, U+C5B4, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C601, U+C608, U+C624, U+C628, U+C640, U+C655, U+C694, U+C6A9, U+C6B0, U+C6B8, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9C8, U+C9D0-C9D1, U+CABD, U+CC28, U+CC45, U+CC98, U+CC9C, U+CCB4, U+CCD0, U+CD08, U+CD1D, U+CD5C, U+CD95, U+CD9C, U+CDA9, U+CE20, U+CE58, U+CE68, U+CF58, U+D06C, U+D070, U+D0C0, U+D0DC, U+D130, U+D150, U+D1A0, U+D1B5, U+D2B8-D2B9, U+D30C, U+D3B8, U+D3C9, U+D45C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D600, U+D615, U+D648, U+D654-D655, U+D658, U+D65C, U+D6C4, U+D750"
    },
    "head": {
     "chars": "개경과관구국권는다도라리바반사산수의이인절정제조지한행",
@@ -294,6 +545,26 @@
      "bytes": 3448
     },
     "unicodeRange": "U+AC1C, U+ACBD, U+ACFC, U+AD00, U+AD6C-AD6D, U+AD8C, U+B294, U+B2E4, U+B3C4, U+B77C, U+B9AC, U+BC14, U+BC18, U+C0AC, U+C0B0, U+C218, U+C758, U+C774, U+C778, U+C808, U+C815, U+C81C, U+C870, U+C9C0, U+D55C, U+D589"
+   },
+   "rest400": {
+    "chars": "「」低東西高갈같견곰군궁규균극급께꼽꾼네논높뉜능덕돼드디력례률릉목묘묶물미밀밖밥벽병불빔새생석술실쓰씬악압액양언외월육음입작존징참창첫청코큼탕털투툰품프험헤현혜호회힌",
+    "count": 83,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-overview-rest400.b4541a813caf5354.woff2",
+     "sha256": "b4541a813caf535457e476c88dab51b9a0192ed45995a729511dad089d0d8590",
+     "bytes": 7800
+    },
+    "unicodeRange": "U+300C-300D, U+4F4E, U+6771, U+897F, U+9AD8, U+AC08, U+AC19, U+ACAC, U+ACF0, U+AD70, U+AD81, U+ADDC, U+ADE0, U+ADF9, U+AE09, U+AED8, U+AF3D, U+AFBC, U+B124, U+B17C, U+B192, U+B25C, U+B2A5, U+B355, U+B3FC, U+B4DC, U+B514, U+B825, U+B840, U+B960, U+B989, U+BAA9, U+BB18, U+BB36, U+BB3C, U+BBF8, U+BC00, U+BC16, U+BC25, U+BCBD, U+BCD1, U+BD88, U+BE54, U+C0C8, U+C0DD, U+C11D, U+C220, U+C2E4, U+C4F0, U+C52C, U+C545, U+C555, U+C561, U+C591, U+C5B8, U+C678, U+C6D4, U+C721, U+C74C, U+C785, U+C791, U+C874, U+C9D5, U+CC38, U+CC3D, U+CCAB, U+CCAD, U+CF54, U+D07C, U+D0D5, U+D138, U+D22C, U+D230, U+D488, U+D504, U+D5D8, U+D5E4, U+D604, U+D61C, U+D638, U+D68C, U+D78C"
+   },
+   "rest700": {
+    "chars": "가검계교그기냅네노등디래록무문방법보부분상샷세스언업역열예원유육은입자장재주증처청총추출코택털토통트프화회",
+    "count": 53,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-overview-rest700.af85c5790a15c5e9.woff2",
+     "sha256": "af85c5790a15c5e9b7a584ee8f1809db987d23e0944ef41984bfce174afcfe0c",
+     "bytes": 5344
+    },
+    "unicodeRange": "U+AC00, U+AC80, U+ACC4, U+AD50, U+ADF8, U+AE30, U+B0C5, U+B124, U+B178, U+B4F1, U+B514, U+B798, U+B85D, U+BB34, U+BB38, U+BC29, U+BC95, U+BCF4, U+BD80, U+BD84, U+C0C1, U+C0F7, U+C138, U+C2A4, U+C5B8, U+C5C5, U+C5ED, U+C5F4, U+C608, U+C6D0, U+C720-C721, U+C740, U+C785, U+C790, U+C7A5, U+C7AC, U+C8FC, U+C99D, U+CC98, U+CCAD, U+CD1D, U+CD94, U+CD9C, U+CF54, U+D0DD, U+D138, U+D1A0, U+D1B5, U+D2B8, U+D504, U+D654, U+D68C"
    }
   },
   "korea/kr-history-premodern": {
@@ -316,18 +587,38 @@
      "bytes": 4092
     },
     "unicodeRange": "U+AC1C, U+ACE0, U+ACFC, U+AD50, U+AD6D, U+AE30, U+AE4C, U+B098, U+B294, U+B300, U+B77C, U+B7EC, U+B824, U+B984, U+B9AC, U+B9CC, U+BA85, U+BB38, U+BD88, U+C0AC, U+C0BC, U+C11C, U+C120, U+C2E0, U+C544, U+C5D0, U+C5EC, U+C640, U+C6D0, U+C758, U+C774, U+C77C, U+C870, U+C9C0, U+CF54, U+D1B5, U+D55C, U+D654, U+D750"
+   },
+   "rest400": {
+    "chars": "「」격곳권글긴깊날났념덕두뒤든란래략레례룬뤘맵물미별병스식실안양언왜외울육음임작참촌축춤측탈토평풍프항향호훈흔",
+    "count": 55,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-history-premodern-rest400.d81fb4e858bce915.woff2",
+     "sha256": "d81fb4e858bce915ead20c876a926b2907defb1038d2d79d6606f2cf14055e0c",
+     "bytes": 5544
+    },
+    "unicodeRange": "U+300C-300D, U+ACA9, U+ACF3, U+AD8C, U+AE00, U+AE34, U+AE4A, U+B0A0, U+B0AC, U+B150, U+B355, U+B450, U+B4A4, U+B4E0, U+B780, U+B798, U+B7B5, U+B808, U+B840, U+B8EC, U+B918, U+B9F5, U+BB3C, U+BBF8, U+BCC4, U+BCD1, U+C2A4, U+C2DD, U+C2E4, U+C548, U+C591, U+C5B8, U+C65C, U+C678, U+C6B8, U+C721, U+C74C, U+C784, U+C791, U+CC38, U+CD0C, U+CD95, U+CDA4, U+CE21, U+D0C8, U+D1A0, U+D3C9, U+D48D, U+D504, U+D56D, U+D5A5, U+D638, U+D6C8, U+D754"
+   },
+   "rest700": {
+    "chars": "가각감검것계공구근긴날남네년노늘등략록료산설세스시심연오위유자재적전중증찬처청출트편행회흔",
+    "count": 45,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-history-premodern-rest700.5a14c441cffb5086.woff2",
+     "sha256": "5a14c441cffb5086107d4fa4ab72484b6a56459548eaf6369cddee76ef973e64",
+     "bytes": 4820
+    },
+    "unicodeRange": "U+AC00-AC01, U+AC10, U+AC80, U+AC83, U+ACC4, U+ACF5, U+AD6C, U+ADFC, U+AE34, U+B0A0, U+B0A8, U+B124, U+B144, U+B178, U+B298, U+B4F1, U+B7B5, U+B85D, U+B8CC, U+C0B0, U+C124, U+C138, U+C2A4, U+C2DC, U+C2EC, U+C5F0, U+C624, U+C704, U+C720, U+C790, U+C7AC, U+C801, U+C804, U+C911, U+C99D, U+CC2C, U+CC98, U+CCAD, U+CD9C, U+D2B8, U+D3B8, U+D589, U+D68C, U+D754"
    }
   },
   "korea/kr-history-modern": {
    "body": {
-    "chars": "가각간강같개갱거건검것게격결겼경계고공과관광교구국궁권그근금급기긴까께나남내냈너넷년노뉴늑는늘다단담대덕도독동됐된둔들등따뛰띠랐래략러럼력로록료륙를름리립마만망맞메며면명모몫못무문물므미민바반받발방배번법변별병보복본볼부분불비빼뼈사산상색서석선설섰성세션소속송수술습승시식신실심씨아압앗앱약양어업었에여역연오와외요운울움원웹위유육으은을의이인일읽임있자작잠장재쟁저적전점정제졌조종좌주준중즉증지직진짧차참창책처천철체총최축출층치침탈터턱토통트편포표풍필하학한할함합항해했행헌험혁현형홈화확황획후흐흔히",
-    "count": 250,
+    "chars": "가각간강같개갱거건검것게격결겼경계고공과관광교구국궁권그근금급기긴까께나남내냈너넷년노뉴늑는늘다단담대덕도독동됐된둔들등따뛰띠랐래략러럼력로록료륙를름리립마만말망맞메며면명모몫못무문물므미민바반받발방배번법변별병보복본볼부분불비빼뼈사산상색서석선설섰성세션소속송수술습승시식신실심씨아압앗앱약양어업었에여역연오와외요용운울움원웹위유육으은을의이인일읽임있자작잠장재쟁저적전점정제졌조종좌주준중즉증지직진짧차참창책처천철체총최축출층치침탈터턱토통트편포표풍필하학한할함합항해했행헌험혁현형홈화확황획후흐흔히",
+    "count": 252,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-history-modern-400.d7732ea339d9a39b.woff2",
-     "sha256": "d7732ea339d9a39b71aea4aa085952fa7474109dcce5c83422d633ef0e7a9e58",
-     "bytes": 18296
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-history-modern-400.5a3c29abe127546f.woff2",
+     "sha256": "5a3c29abe127546f368ba9f73c43c6b2ce058dc6c188ff098aa69248999f062f",
+     "bytes": 18452
     },
-    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC15, U+AC19, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACBC-ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD50, U+AD6C-AD6D, U+AD81, U+AD8C, U+ADF8, U+ADFC, U+AE08-AE09, U+AE30, U+AE34, U+AE4C, U+AED8, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B274, U+B291, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F4, U+B300, U+B355, U+B3C4-B3C5, U+B3D9, U+B410, U+B41C, U+B454, U+B4E4, U+B4F1, U+B530, U+B6F0, U+B760, U+B790, U+B798, U+B7B5, U+B7EC, U+B7FC, U+B825, U+B85C-B85D, U+B8CC, U+B959, U+B97C, U+B984, U+B9AC, U+B9BD, U+B9C8, U+B9CC, U+B9DD-B9DE, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BAAB, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BBF8, U+BBFC, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC88, U+BC95, U+BCC0, U+BCC4, U+BCD1, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE44, U+BE7C, U+BF08, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C11C-C11D, U+C120, U+C124, U+C130-C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C220, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C528, U+C544, U+C555, U+C557, U+C571, U+C57D, U+C591, U+C5B4, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C624, U+C640, U+C678, U+C694, U+C6B4, U+C6B8, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720-C721, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790-C791, U+C7A0, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C84C, U+C870, U+C885, U+C88C, U+C8FC, U+C900, U+C911, U+C989, U+C99D, U+C9C0-C9C1, U+C9C4, U+C9E7, U+CC28, U+CC38, U+CC3D, U+CC45, U+CC98, U+CC9C, U+CCA0, U+CCB4, U+CD1D, U+CD5C, U+CD95, U+CD9C, U+CE35, U+CE58, U+CE68, U+D0C8, U+D130-D131, U+D1A0, U+D1B5, U+D2B8, U+D3B8, U+D3EC, U+D45C, U+D48D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D5CC, U+D5D8, U+D601, U+D604, U+D615, U+D648, U+D654-D655, U+D669, U+D68D, U+D6C4, U+D750, U+D754, U+D788"
+    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC15, U+AC19, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACBC-ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD50, U+AD6C-AD6D, U+AD81, U+AD8C, U+ADF8, U+ADFC, U+AE08-AE09, U+AE30, U+AE34, U+AE4C, U+AED8, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B274, U+B291, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F4, U+B300, U+B355, U+B3C4-B3C5, U+B3D9, U+B410, U+B41C, U+B454, U+B4E4, U+B4F1, U+B530, U+B6F0, U+B760, U+B790, U+B798, U+B7B5, U+B7EC, U+B7FC, U+B825, U+B85C-B85D, U+B8CC, U+B959, U+B97C, U+B984, U+B9AC, U+B9BD, U+B9C8, U+B9CC, U+B9D0, U+B9DD-B9DE, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BAAB, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BBF8, U+BBFC, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC88, U+BC95, U+BCC0, U+BCC4, U+BCD1, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE44, U+BE7C, U+BF08, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C11C-C11D, U+C120, U+C124, U+C130-C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C220, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C528, U+C544, U+C555, U+C557, U+C571, U+C57D, U+C591, U+C5B4, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C624, U+C640, U+C678, U+C694, U+C6A9, U+C6B4, U+C6B8, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720-C721, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790-C791, U+C7A0, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C84C, U+C870, U+C885, U+C88C, U+C8FC, U+C900, U+C911, U+C989, U+C99D, U+C9C0-C9C1, U+C9C4, U+C9E7, U+CC28, U+CC38, U+CC3D, U+CC45, U+CC98, U+CC9C, U+CCA0, U+CCB4, U+CD1D, U+CD5C, U+CD95, U+CD9C, U+CE35, U+CE58, U+CE68, U+D0C8, U+D130-D131, U+D1A0, U+D1B5, U+D2B8, U+D3B8, U+D3EC, U+D45C, U+D48D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D5CC, U+D5D8, U+D601, U+D604, U+D615, U+D648, U+D654-D655, U+D669, U+D68D, U+D6C4, U+D750, U+D754, U+D788"
    },
    "head": {
     "chars": "과국권근기까대도름문민변사상서식실에의제지턱한현형흐",
@@ -338,18 +629,38 @@
      "bytes": 3340
     },
     "unicodeRange": "U+ACFC, U+AD6D, U+AD8C, U+ADFC, U+AE30, U+AE4C, U+B300, U+B3C4, U+B984, U+BB38, U+BBFC, U+BCC0, U+C0AC, U+C0C1, U+C11C, U+C2DD, U+C2E4, U+C5D0, U+C758, U+C81C, U+C9C0, U+D131, U+D55C, U+D604, U+D615, U+D750"
+   },
+   "rest400": {
+    "chars": "「」감겹골군궤길김꼽뀐난논눈뉘더던되두둘때라란레령례린림머멈백벽북빈숲스안았였올왜월율융잡절죽집징쳐쳤추췄카타투특파패평폐프피픽헤협호환회휴흰",
+    "count": 71,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-history-modern-rest400.8a1f536333db87f0.woff2",
+     "sha256": "8a1f536333db87f0eac0afcfad415722e5084aebfd989d0660c7f5e439e63d89",
+     "bytes": 6896
+    },
+    "unicodeRange": "U+300C-300D, U+AC10, U+ACB9, U+ACE8, U+AD70, U+ADA4, U+AE38, U+AE40, U+AF3D, U+B010, U+B09C, U+B17C, U+B208, U+B258, U+B354, U+B358, U+B418, U+B450, U+B458, U+B54C, U+B77C, U+B780, U+B808, U+B839, U+B840, U+B9B0, U+B9BC, U+BA38, U+BA48, U+BC31, U+BCBD, U+BD81, U+BE48, U+C232, U+C2A4, U+C548, U+C558, U+C600, U+C62C, U+C65C, U+C6D4, U+C728, U+C735, U+C7A1, U+C808, U+C8FD, U+C9D1, U+C9D5, U+CCD0, U+CCE4, U+CD94, U+CDC4, U+CE74, U+D0C0, U+D22C, U+D2B9, U+D30C, U+D328, U+D3C9, U+D3D0, U+D504, U+D53C-D53D, U+D5E4, U+D611, U+D638, U+D658, U+D68C, U+D734, U+D770"
+   },
+   "rest700": {
+    "chars": "가각감개검계구궤노단데두면방베분산성스시심압여원위유이자장쟁적전주중증찬처청축출터털통트편포해행화회",
+    "count": 50,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-history-modern-rest700.dfb9f1234a250d05.woff2",
+     "sha256": "dfb9f1234a250d05b285bd3a338d2085532f2c62cfd9bd45df510249b4c90192",
+     "bytes": 5300
+    },
+    "unicodeRange": "U+AC00-AC01, U+AC10, U+AC1C, U+AC80, U+ACC4, U+AD6C, U+ADA4, U+B178, U+B2E8, U+B370, U+B450, U+BA74, U+BC29, U+BCA0, U+BD84, U+C0B0, U+C131, U+C2A4, U+C2DC, U+C2EC, U+C555, U+C5EC, U+C6D0, U+C704, U+C720, U+C774, U+C790, U+C7A5, U+C7C1, U+C801, U+C804, U+C8FC, U+C911, U+C99D, U+CC2C, U+CC98, U+CCAD, U+CD95, U+CD9C, U+D130, U+D138, U+D1B5, U+D2B8, U+D3B8, U+D3EC, U+D574, U+D589, U+D654, U+D68C"
    }
   },
   "korea/kr-economy": {
    "body": {
-    "chars": "가간갈감강같개객갱건검것게결경계고공과관구국권규균그금기길까께나난남내냈너널넘넷년노논높뉴는늘다단닷당대도독동됐되된둔뒤드들뛰라량려례로록료류률르를름리림마만많말메면명모목못무문물미바밖반받발방배벌보복본볼부분브비사산상새색서석선설성세션속송수스습시신알압았앱약어억업었에여역연오와외요용운움원웹위유율융으은을의이인일읽임입잇있자작잡장재저적전절점정제져조존종주준중증지진질짐징차책처척철체최추축출츠칭카컨코콘큰타터테텐통투트페편평표품프필하학한할함합항해했행허혜홈화확환회후흐",
-    "count": 239,
+    "chars": "가간갈감강같개객갱건검것게결경계고공과관구국권규균그금기길까께나난남내냈너널넘넷년노논높뉴는늘다단닷당대도독동됐되된둔뒤드들뛰라량려례로록료류률르를름리림마만많말메면명모목못무문물미바밖반받발방배벌보복본볼부분브비사산상새색서석선설성세션속송수스습시신알압았앱약어억업었에여역연오와외요용운움원웹위유율융으은을의이인일읽임입잇있자작잡장재저적전절점정제져조존종주준중증지진질짐징차책처척철체최추축출츠침칭카컨코콘큰타터테텐통투트페편평표품프필하학한할함합항해했행허혜홈화확환회후흐",
+    "count": 240,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-economy-400.6f730fa73513043a.woff2",
-     "sha256": "6f730fa73513043a5cc3a9594ea94451b9b74e53b3c8e00683a608f85b8c4ec2",
-     "bytes": 17140
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-economy-400.f336cd8a919c1a53.woff2",
+     "sha256": "f336cd8a919c1a53528ae5638ca0cafcc62e3ec8add6b340c3c8f566a7202d5c",
+     "bytes": 17192
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC10, U+AC15, U+AC19, U+AC1C-AC1D, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADE0, U+ADF8, U+AE08, U+AE30, U+AE38, U+AE4C, U+AED8, U+B098, U+B09C, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B110, U+B118, U+B137, U+B144, U+B178, U+B17C, U+B192, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F7, U+B2F9, U+B300, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B4A4, U+B4DC, U+B4E4, U+B6F0, U+B77C, U+B7C9, U+B824, U+B840, U+B85C-B85D, U+B8CC, U+B958, U+B960, U+B974, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+B9CE, U+B9D0, U+BA54, U+BA74, U+BA85, U+BAA8-BAA9, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBF8, U+BC14, U+BC16, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC8C, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BE0C, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C8-C0C9, U+C11C-C11D, U+C120, U+C124, U+C131, U+C138, U+C158, U+C18D, U+C1A1, U+C218, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C54C, U+C555, U+C558, U+C571, U+C57D, U+C5B4-C5B5, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C624, U+C640, U+C678, U+C694, U+C6A9, U+C6B4, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C728, U+C735, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C787-C788, U+C790-C791, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9C8, U+C9D0, U+C9D5, U+CC28, U+CC45, U+CC98-CC99, U+CCA0, U+CCB4, U+CD5C, U+CD94-CD95, U+CD9C, U+CE20, U+CE6D, U+CE74, U+CEE8, U+CF54, U+CF58, U+D070, U+D0C0, U+D130, U+D14C, U+D150, U+D1B5, U+D22C, U+D2B8, U+D398, U+D3B8, U+D3C9, U+D45C, U+D488, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D5C8, U+D61C, U+D648, U+D654-D655, U+D658, U+D68C, U+D6C4, U+D750"
+    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC10, U+AC15, U+AC19, U+AC1C-AC1D, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADE0, U+ADF8, U+AE08, U+AE30, U+AE38, U+AE4C, U+AED8, U+B098, U+B09C, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B110, U+B118, U+B137, U+B144, U+B178, U+B17C, U+B192, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F7, U+B2F9, U+B300, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B4A4, U+B4DC, U+B4E4, U+B6F0, U+B77C, U+B7C9, U+B824, U+B840, U+B85C-B85D, U+B8CC, U+B958, U+B960, U+B974, U+B97C, U+B984, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+B9CE, U+B9D0, U+BA54, U+BA74, U+BA85, U+BAA8-BAA9, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBF8, U+BC14, U+BC16, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC8C, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BE0C, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C8-C0C9, U+C11C-C11D, U+C120, U+C124, U+C131, U+C138, U+C158, U+C18D, U+C1A1, U+C218, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C54C, U+C555, U+C558, U+C571, U+C57D, U+C5B4-C5B5, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C624, U+C640, U+C678, U+C694, U+C6A9, U+C6B4, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C728, U+C735, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C787-C788, U+C790-C791, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9C8, U+C9D0, U+C9D5, U+CC28, U+CC45, U+CC98-CC99, U+CCA0, U+CCB4, U+CD5C, U+CD94-CD95, U+CD9C, U+CE20, U+CE68, U+CE6D, U+CE74, U+CEE8, U+CF54, U+CF58, U+D070, U+D0C0, U+D130, U+D14C, U+D150, U+D1B5, U+D22C, U+D2B8, U+D398, U+D3B8, U+D3C9, U+D45C, U+D488, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D5C8, U+D61C, U+D648, U+D654-D655, U+D658, U+D68C, U+D6C4, U+D750"
    },
    "head": {
     "chars": "경고구국그기년는단대도라리만반산성세수압업외위의장절제조척체추축출츠콘텐한화환",
@@ -360,18 +671,38 @@
      "bytes": 4404
     },
     "unicodeRange": "U+ACBD, U+ACE0, U+AD6C-AD6D, U+ADF8, U+AE30, U+B144, U+B294, U+B2E8, U+B300, U+B3C4, U+B77C, U+B9AC, U+B9CC, U+BC18, U+C0B0, U+C131, U+C138, U+C218, U+C555, U+C5C5, U+C678, U+C704, U+C758, U+C7A5, U+C808, U+C81C, U+C870, U+CC99, U+CCB4, U+CD94-CD95, U+CD9C, U+CE20, U+CF58, U+D150, U+D55C, U+D654, U+D658"
+   },
+   "rest400": {
+    "chars": "「」격견광교급끌달등란랜린망맵며묶밀벽변별병생소순술악언없영올음찰참층치툰포헤현호흥",
+    "count": 42,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-economy-rest400.b64b8bb500b7289a.woff2",
+     "sha256": "b64b8bb500b7289aacaa0c46b40a1be4e249e6f56455e51b5a6b557f09d73bf7",
+     "bytes": 4780
+    },
+    "unicodeRange": "U+300C-300D, U+ACA9, U+ACAC, U+AD11, U+AD50, U+AE09, U+B04C, U+B2EC, U+B4F1, U+B780, U+B79C, U+B9B0, U+B9DD, U+B9F5, U+BA70, U+BB36, U+BC00, U+BCBD, U+BCC0, U+BCC4, U+BCD1, U+C0DD, U+C18C, U+C21C, U+C220, U+C545, U+C5B8, U+C5C6, U+C601, U+C62C, U+C74C, U+CC30, U+CC38, U+CE35, U+CE58, U+D230, U+D3EC, U+D5E4, U+D604, U+D638, U+D765"
+   },
+   "rest700": {
+    "chars": "가감검결계공노동록류물민부사상생여와용원은입자정증진처치통트하학항행향활흥",
+    "count": 37,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-economy-rest700.5ff29f4a77608ebc.woff2",
+     "sha256": "5ff29f4a77608ebcb73954990d96cb4345e4687ed61dafdb59be4c2ce04a47ac",
+     "bytes": 4360
+    },
+    "unicodeRange": "U+AC00, U+AC10, U+AC80, U+ACB0, U+ACC4, U+ACF5, U+B178, U+B3D9, U+B85D, U+B958, U+BB3C, U+BBFC, U+BD80, U+C0AC, U+C0C1, U+C0DD, U+C5EC, U+C640, U+C6A9, U+C6D0, U+C740, U+C785, U+C790, U+C815, U+C99D, U+C9C4, U+CC98, U+CE58, U+D1B5, U+D2B8, U+D558-D559, U+D56D, U+D589, U+D5A5, U+D65C, U+D765"
    }
   },
   "korea/kr-culture": {
    "body": {
-    "chars": "가간갈갑같개갱건검것게결겹계고곡곳공과관교구국굿귀그기김까나내냈너네넷년노뉴는늘다단달담당대더도돌동돼됐되된두둔둥뒤드든들듬등떡뛰라락란래러럼렁려력례로록료룬류르를름릇리림마만맞메면명모못묘무문물미밀바반받발밥배백법보복볶본볼부분불비빔뼈사산삼상색생서석설성세션속송수숟스습승시식신심쌓쓰씬아않알았액앱양어업없에여역연예오와요용운울움원월웹위유육으은을음의이인일읽임있자작잡장재저적전절점젓정제져조종주죽중즌즙증지진집징차찬찰참채책처천첩쳐최추출층치친코콘킨타탕터테템통트특팥편표풍플필하학한할함합해했행향현형홈화확환활효후흔흥",
-    "count": 264,
+    "chars": "가간갈갑같개갱건검것게결겹계고곡곳공과관교구국굿귀그기김까나내냈너네넷년노뉴는늘다단달담당대더도돌동돼됐되된두둔둥뒤드든들듬등떡뛰라락란래러럼렁려력례로록료룬류르를름릇리림마만말맞메면명모못묘무문물미밀바반받발밥방배백법보복볶본볼부분불비빔뼈사산삼상색생서석설성세션속송수숟스습승시식신심쌓쓰씬아않알았액앱약양어업없에여역연예오와요용운울움원월웹위유육으은을음의이인일읽임있자작잡장재저적전절점젓정제져조종주죽중즌즙증지진집징차찬찰참채책처천첩쳐최추출층치친침코콘킨타탕터테템통트특팥편표풍플필하학한할함합해했행향현형홈화확환활효후흔흥",
+    "count": 268,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-culture-400.f64c67b0803364af.woff2",
-     "sha256": "f64c67b0803364af1759037ba8dcc20d74e53b779d6e155a02ff1b090a1b38af",
-     "bytes": 18968
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-culture-400.c5279b47faf48b05.woff2",
+     "sha256": "c5279b47faf48b05de0ead6d2bd2238ac1aadf1c7b9286f47f970a576cdc2a63",
+     "bytes": 19180
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC11, U+AC19, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACB9, U+ACC4, U+ACE0-ACE1, U+ACF3, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD7F, U+ADC0, U+ADF8, U+AE30, U+AE40, U+AE4C, U+B098, U+B0B4, U+B0C8, U+B108, U+B124, U+B137, U+B144, U+B178, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2EC, U+B2F4, U+B2F9, U+B300, U+B354, U+B3C4, U+B3CC, U+B3D9, U+B3FC, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B465, U+B4A4, U+B4DC, U+B4E0, U+B4E4, U+B4EC, U+B4F1, U+B5A1, U+B6F0, U+B77C-B77D, U+B780, U+B798, U+B7EC, U+B7FC, U+B801, U+B824-B825, U+B840, U+B85C-B85D, U+B8CC, U+B8EC, U+B958, U+B974, U+B97C, U+B984, U+B987, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+B9DE, U+BA54, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB18, U+BB34, U+BB38, U+BB3C, U+BBF8, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC25, U+BC30-BC31, U+BC95, U+BCF4-BCF6, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE44, U+BE54, U+BF08, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C-C11D, U+C124, U+C131, U+C138, U+C158, U+C18D, U+C1A1, U+C218, U+C21F, U+C2A4, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C313, U+C4F0, U+C52C, U+C544, U+C54A, U+C54C, U+C558, U+C561, U+C571, U+C591, U+C5B4, U+C5C5-C5C6, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C608, U+C624, U+C640, U+C694, U+C6A9, U+C6B4, U+C6B8, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720-C721, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790-C791, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C813, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC-C8FD, U+C911, U+C98C, U+C999, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC28, U+CC2C, U+CC30, U+CC38, U+CC44-CC45, U+CC98, U+CC9C, U+CCA9, U+CCD0, U+CD5C, U+CD94, U+CD9C, U+CE35, U+CE58, U+CE5C, U+CF54, U+CF58, U+D0A8, U+D0C0, U+D0D5, U+D130, U+D14C, U+D15C, U+D1B5, U+D2B8-D2B9, U+D325, U+D3B8, U+D45C, U+D48D, U+D50C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5A5, U+D604, U+D615, U+D648, U+D654-D655, U+D658, U+D65C, U+D6A8, U+D6C4, U+D754, U+D765"
+    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC11, U+AC19, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACB9, U+ACC4, U+ACE0-ACE1, U+ACF3, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD7F, U+ADC0, U+ADF8, U+AE30, U+AE40, U+AE4C, U+B098, U+B0B4, U+B0C8, U+B108, U+B124, U+B137, U+B144, U+B178, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2EC, U+B2F4, U+B2F9, U+B300, U+B354, U+B3C4, U+B3CC, U+B3D9, U+B3FC, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B465, U+B4A4, U+B4DC, U+B4E0, U+B4E4, U+B4EC, U+B4F1, U+B5A1, U+B6F0, U+B77C-B77D, U+B780, U+B798, U+B7EC, U+B7FC, U+B801, U+B824-B825, U+B840, U+B85C-B85D, U+B8CC, U+B8EC, U+B958, U+B974, U+B97C, U+B984, U+B987, U+B9AC, U+B9BC, U+B9C8, U+B9CC, U+B9D0, U+B9DE, U+BA54, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB18, U+BB34, U+BB38, U+BB3C, U+BBF8, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC25, U+BC29, U+BC30-BC31, U+BC95, U+BCF4-BCF6, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE44, U+BE54, U+BF08, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C-C11D, U+C124, U+C131, U+C138, U+C158, U+C18D, U+C1A1, U+C218, U+C21F, U+C2A4, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C313, U+C4F0, U+C52C, U+C544, U+C54A, U+C54C, U+C558, U+C561, U+C571, U+C57D, U+C591, U+C5B4, U+C5C5-C5C6, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C608, U+C624, U+C640, U+C694, U+C6A9, U+C6B4, U+C6B8, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720-C721, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790-C791, U+C7A1, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C813, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC-C8FD, U+C911, U+C98C, U+C999, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC28, U+CC2C, U+CC30, U+CC38, U+CC44-CC45, U+CC98, U+CC9C, U+CCA9, U+CCD0, U+CD5C, U+CD94, U+CD9C, U+CE35, U+CE58, U+CE5C, U+CE68, U+CF54, U+CF58, U+D0A8, U+D0C0, U+D0D5, U+D130, U+D14C, U+D15C, U+D1B5, U+D2B8-D2B9, U+D325, U+D3B8, U+D45C, U+D48D, U+D50C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5A5, U+D604, U+D615, U+D648, U+D654-D655, U+D658, U+D65C, U+D6A8, U+D6C4, U+D754, U+D765"
    },
    "head": {
     "chars": "겹과교국기까는두둥라류문반발법생서석설세속시식쌓에와위의이인종지찬추층풍한화활효",
@@ -382,18 +713,38 @@
      "bytes": 4632
     },
     "unicodeRange": "U+ACB9, U+ACFC, U+AD50, U+AD6D, U+AE30, U+AE4C, U+B294, U+B450, U+B465, U+B77C, U+B958, U+BB38, U+BC18, U+BC1C, U+BC95, U+C0DD, U+C11C-C11D, U+C124, U+C138, U+C18D, U+C2DC-C2DD, U+C313, U+C5D0, U+C640, U+C704, U+C758, U+C774, U+C778, U+C885, U+C9C0, U+CC2C, U+CD94, U+CE35, U+D48D, U+D55C, U+D654, U+D65C, U+D6A8"
+   },
+   "rest400": {
+    "chars": "「」거견경곤규급난논놀농놓능닥닿덤독막매맥머목밖브뿌선소술실악앉언영온욕율졌존좌질짐찜체춤칭칸컬케쿄키탈태툰티파판팬평폰품프헤호히",
+    "count": 65,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-culture-rest400.b534b21daeeaed2c.woff2",
+     "sha256": "b534b21daeeaed2c1c75639f43977833726421fe6ae4df18cef3597da183caed",
+     "bytes": 6208
+    },
+    "unicodeRange": "U+300C-300D, U+AC70, U+ACAC, U+ACBD, U+ACE4, U+ADDC, U+AE09, U+B09C, U+B17C, U+B180, U+B18D, U+B193, U+B2A5, U+B2E5, U+B2FF, U+B364, U+B3C5, U+B9C9, U+B9E4-B9E5, U+BA38, U+BAA9, U+BC16, U+BE0C, U+BFCC, U+C120, U+C18C, U+C220, U+C2E4, U+C545, U+C549, U+C5B8, U+C601, U+C628, U+C695, U+C728, U+C84C, U+C874, U+C88C, U+C9C8, U+C9D0, U+CC1C, U+CCB4, U+CDA4, U+CE6D, U+CE78, U+CEEC, U+CF00, U+CFC4, U+D0A4, U+D0C8, U+D0DC, U+D230, U+D2F0, U+D30C, U+D310, U+D32C, U+D3C9, U+D3F0, U+D488, U+D504, U+D5E4, U+D638, U+D788"
+   },
+   "rest700": {
+    "chars": "검계관광구네노당대돌등례로록린립마목무물민박방백보부사산스업온욕용원유육으재조중증진질찜처청체출츠치코콘크텐통트형흥",
+    "count": 58,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-culture-rest700.6db4083b7a56101f.woff2",
+     "sha256": "6db4083b7a56101f117592faeb311752950a3132c4907d5387d2118a249f0934",
+     "bytes": 5728
+    },
+    "unicodeRange": "U+AC80, U+ACC4, U+AD00, U+AD11, U+AD6C, U+B124, U+B178, U+B2F9, U+B300, U+B3CC, U+B4F1, U+B840, U+B85C-B85D, U+B9B0, U+B9BD, U+B9C8, U+BAA9, U+BB34, U+BB3C, U+BBFC, U+BC15, U+BC29, U+BC31, U+BCF4, U+BD80, U+C0AC, U+C0B0, U+C2A4, U+C5C5, U+C628, U+C695, U+C6A9, U+C6D0, U+C720-C721, U+C73C, U+C7AC, U+C870, U+C911, U+C99D, U+C9C4, U+C9C8, U+CC1C, U+CC98, U+CCAD, U+CCB4, U+CD9C, U+CE20, U+CE58, U+CF54, U+CF58, U+D06C, U+D150, U+D1B5, U+D2B8, U+D615, U+D765"
    }
   },
   "korea/kr-society": {
    "body": {
-    "chars": "가간감같개갱거건검것게결경계고공과관교구국권그근기까나날내냈너널넘넷년노논놀뉴는늘능다단닮대도독동됐되된둔듣디뚜뛰라란랙려력렵렷령례로록론료루륙률를리만맵메며면멸명모못무문물민밀바반받발방배변보복본볼부블비사산상새색생서설성세션소속송쇄수순습시신실심아안알압았앱약어업에여역연열영오와외요용울움원웹위유육율으은을의이인일읽임입있자장재저적절점정제져조종주준중증지진집징짧차착참책처청초총최축출츠층치칭카켜큰큼타택터털토통트파편평표풍필하학한할함합항해했험형혼홀홈화확활회",
-    "count": 235,
+    "chars": "가간감같개갱거건검것게결경계고공과관교구국권그근기까나날내냈너널넘넷년노논놀뉴는늘능다단닮대도독동됐되된둔듣디뚜뛰라란랙려력렵렷령례로록론료루륙률를리만말맵메며면멸명모못무문물민밀바반받발방배변보복본볼부블비사산상새색생서설성세션소속송쇄수순습시신실심아안알압았앱약어업에여역연열영오와외요용울움원웹위유육율으은을의이인일읽임입있자장재저적절점정제져조종주준중증지진집징짧차착참책처청초총최축출츠층치침칭카켜큰큼타택터털토통트파편평표풍필하학한할함합항해했험형혼홀홈화확활회",
+    "count": 237,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-society-400.25afed549441a14d.woff2",
-     "sha256": "25afed549441a14d1c2f148f4c1fd1d67b184e90dc351b2f4146e7665553eeb2",
-     "bytes": 17100
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-society-400.82939c8360f8e131.woff2",
+     "sha256": "82939c8360f8e1318242cbf6c511cb45f785187180cd07eae4b27861965c2aff",
+     "bytes": 17252
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC19, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADF8, U+ADFC, U+AE30, U+AE4C, U+B098, U+B0A0, U+B0B4, U+B0C8, U+B108, U+B110, U+B118, U+B137, U+B144, U+B178, U+B17C, U+B180, U+B274, U+B294, U+B298, U+B2A5, U+B2E4, U+B2E8, U+B2EE, U+B300, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B4E3, U+B514, U+B69C, U+B6F0, U+B77C, U+B780, U+B799, U+B824-B825, U+B835, U+B837, U+B839, U+B840, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B959, U+B960, U+B97C, U+B9AC, U+B9CC, U+B9F5, U+BA54, U+BA70, U+BA74, U+BA78, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBFC, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BCC0, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C8-C0C9, U+C0DD, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1C4, U+C218, U+C21C, U+C2B5, U+C2DC, U+C2E0, U+C2E4, U+C2EC, U+C544, U+C548, U+C54C, U+C555, U+C558, U+C571, U+C57D, U+C5B4, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C601, U+C624, U+C640, U+C678, U+C694, U+C6A9, U+C6B8, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720-C721, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+C9E7, U+CC28-CC29, U+CC38, U+CC45, U+CC98, U+CCAD, U+CD08, U+CD1D, U+CD5C, U+CD95, U+CD9C, U+CE20, U+CE35, U+CE58, U+CE6D, U+CE74, U+CF1C, U+D070, U+D07C, U+D0C0, U+D0DD, U+D130, U+D138, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D3B8, U+D3C9, U+D45C, U+D48D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588, U+D5D8, U+D615, U+D63C, U+D640, U+D648, U+D654-D655, U+D65C, U+D68C"
+    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC19, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADF8, U+ADFC, U+AE30, U+AE4C, U+B098, U+B0A0, U+B0B4, U+B0C8, U+B108, U+B110, U+B118, U+B137, U+B144, U+B178, U+B17C, U+B180, U+B274, U+B294, U+B298, U+B2A5, U+B2E4, U+B2E8, U+B2EE, U+B300, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B4E3, U+B514, U+B69C, U+B6F0, U+B77C, U+B780, U+B799, U+B824-B825, U+B835, U+B837, U+B839, U+B840, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B959, U+B960, U+B97C, U+B9AC, U+B9CC, U+B9D0, U+B9F5, U+BA54, U+BA70, U+BA74, U+BA78, U+BA85, U+BAA8, U+BABB, U+BB34, U+BB38, U+BB3C, U+BBFC, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BCC0, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C8-C0C9, U+C0DD, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1C4, U+C218, U+C21C, U+C2B5, U+C2DC, U+C2E0, U+C2E4, U+C2EC, U+C544, U+C548, U+C54C, U+C555, U+C558, U+C571, U+C57D, U+C5B4, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C601, U+C624, U+C640, U+C678, U+C694, U+C6A9, U+C6B8, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720-C721, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+C9E7, U+CC28-CC29, U+CC38, U+CC45, U+CC98, U+CCAD, U+CD08, U+CD1D, U+CD5C, U+CD95, U+CD9C, U+CE20, U+CE35, U+CE58, U+CE68, U+CE6D, U+CE74, U+CF1C, U+D070, U+D07C, U+D0C0, U+D0DD, U+D130, U+D138, U+D1A0, U+D1B5, U+D2B8, U+D30C, U+D3B8, U+D3C9, U+D45C, U+D48D, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588, U+D5D8, U+D615, U+D63C, U+D640, U+D648, U+D654-D655, U+D65C, U+D68C"
    },
    "head": {
     "chars": "가간계고공교구국권그는능도라랙루리보블사산세속수실열육이인저적조지초출켜하한험홀회",
@@ -404,18 +755,38 @@
      "bytes": 4404
     },
     "unicodeRange": "U+AC00, U+AC04, U+ACC4, U+ACE0, U+ACF5, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADF8, U+B294, U+B2A5, U+B3C4, U+B77C, U+B799, U+B8E8, U+B9AC, U+BCF4, U+BE14, U+C0AC, U+C0B0, U+C138, U+C18D, U+C218, U+C2E4, U+C5F4, U+C721, U+C774, U+C778, U+C800-C801, U+C870, U+C9C0, U+CD08, U+CD9C, U+CF1C, U+D558, U+D55C, U+D5D8, U+D640, U+D68C"
+   },
+   "rest400": {
+    "chars": "강광규급긴깊꾸난낮담당드등림망밍밖병분살술스식야양언왔워작전족존즉직찰체코키템특폰프행향헤호히",
+    "count": 47,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-society-rest400.7f891596ea6f0c96.woff2",
+     "sha256": "7f891596ea6f0c96965c8791431aa48943265e2ef2c52d35ed03fc439455dda6",
+     "bytes": 5176
+    },
+    "unicodeRange": "U+AC15, U+AD11, U+ADDC, U+AE09, U+AE34, U+AE4A, U+AFB8, U+B09C, U+B0AE, U+B2F4, U+B2F9, U+B4DC, U+B4F1, U+B9BC, U+B9DD, U+BC0D, U+BC16, U+BCD1, U+BD84, U+C0B4, U+C220, U+C2A4, U+C2DD, U+C57C, U+C591, U+C5B8, U+C654, U+C6CC, U+C791, U+C804, U+C871, U+C874, U+C989, U+C9C1, U+CC30, U+CCB4, U+CF54, U+D0A4, U+D15C, U+D2B9, U+D3F0, U+D504, U+D589, U+D5A5, U+D5E4, U+D638, U+D788"
+   },
+   "rest700": {
+    "chars": "검경근노동된디래로료망문부비상안압용의일장전정주증찰처청추축치택털토통트행향화환",
+    "count": 40,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-society-rest700.f4af4e3735c0c1e8.woff2",
+     "sha256": "f4af4e3735c0c1e8d4f2a1d92cab9fe926f40cc088fe65fba09fd1e805253836",
+     "bytes": 4696
+    },
+    "unicodeRange": "U+AC80, U+ACBD, U+ADFC, U+B178, U+B3D9, U+B41C, U+B514, U+B798, U+B85C, U+B8CC, U+B9DD, U+BB38, U+BD80, U+BE44, U+C0C1, U+C548, U+C555, U+C6A9, U+C758, U+C77C, U+C7A5, U+C804, U+C815, U+C8FC, U+C99D, U+CC30, U+CC98, U+CCAD, U+CD94-CD95, U+CE58, U+D0DD, U+D138, U+D1A0, U+D1B5, U+D2B8, U+D589, U+D5A5, U+D654, U+D658"
    }
   },
   "korea/kr-life": {
    "body": {
-    "chars": "가간감개갱거건검것게결경계고곤공과관괄구국그글기끌나남내냈너널넷녀년노높놓뉴는늘늠니님다단달당대댓델도동되된둔드들등뛰라래려례로록료르를름리마만말먼메면명모못묶문묻물미민밀바반받발배법병보복본볼부비빌빠빨사산삼상색생서섞선설성세션소속송쇼수습시식신실쓰아안않알았앱어언엄업없에여역연열오온와왜외요용우움원웹위유으은을음의이인일읽임있자작장재저적전절점접정제져졌조족존종주준중증지직진징찰참창책처체촌최축출층치친칭큰택터토통트특팀팎판편평표풍프필하학한할함합해했행험현형호홈화확환활회훈",
-    "count": 242,
+    "chars": "가간감개갱거건검것게결경계고곤공과관괄구국그글기끌나남내냈너널넷녀년노높놓뉴는늘늠니님다단달당대댓델도동되된둔드들등뛰라래려례로록료르를름리마만말먼메면명모못묶문묻물미민밀바반받발방배법병보복본볼부비빌빠빨사산삼상색생서섞선설성세션소속송쇼수습시식신실쓰아안않알았앱약어언엄업없에여역연열오온와왜외요용우움원웹위유으은을음의이인일읽임있자작장재저적전절점접정제져졌조족존종주준중증지직진징찰참창책처체촌최축출층치친침칭큰택터토통트특팀팎판편평표풍프필하학한할함합해했행험현형호홈화확환활회훈",
+    "count": 245,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-life-400.a2542b14861b175f.woff2",
-     "sha256": "a2542b14861b175f1c12478f95dcf8830bd2a113d5de0f83e78d822bf35cb364",
-     "bytes": 17512
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-life-400.811d4f7d7343b733.woff2",
+     "sha256": "811d4f7d7343b73340d69972524ec70ffc1196330637c4bb3ab616fe6419f7ad",
+     "bytes": 17572
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACE4, U+ACF5, U+ACFC, U+AD00, U+AD04, U+AD6C-AD6D, U+ADF8, U+AE00, U+AE30, U+B04C, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B110, U+B137, U+B140, U+B144, U+B178, U+B192-B193, U+B274, U+B294, U+B298, U+B2A0, U+B2C8, U+B2D8, U+B2E4, U+B2E8, U+B2EC, U+B2F9, U+B300, U+B313, U+B378, U+B3C4, U+B3D9, U+B418, U+B41C, U+B454, U+B4DC, U+B4E4, U+B4F1, U+B6F0, U+B77C, U+B798, U+B824, U+B840, U+B85C-B85D, U+B8CC, U+B974, U+B97C, U+B984, U+B9AC, U+B9C8, U+B9CC, U+B9D0, U+BA3C, U+BA54, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB36, U+BB38, U+BB3B-BB3C, U+BBF8, U+BBFC, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC30, U+BC95, U+BCD1, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BE44, U+BE4C, U+BE60, U+BE68, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C11E, U+C120, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1FC, U+C218, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C4F0, U+C544, U+C548, U+C54A, U+C54C, U+C558, U+C571, U+C5B4, U+C5B8, U+C5C4-C5C6, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C624, U+C628, U+C640, U+C65C, U+C678, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790-C791, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810-C811, U+C815, U+C81C, U+C838, U+C84C, U+C870-C871, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0-C9C1, U+C9C4, U+C9D5, U+CC30, U+CC38, U+CC3D, U+CC45, U+CC98, U+CCB4, U+CD0C, U+CD5C, U+CD95, U+CD9C, U+CE35, U+CE58, U+CE5C, U+CE6D, U+D070, U+D0DD, U+D130, U+D1A0, U+D1B5, U+D2B8-D2B9, U+D300, U+D30E, U+D310, U+D3B8, U+D3C9, U+D45C, U+D48D, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5D8, U+D604, U+D615, U+D638, U+D648, U+D654-D655, U+D658, U+D65C, U+D68C, U+D6C8"
+    "unicodeRange": "U+AC00, U+AC04, U+AC10, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACE4, U+ACF5, U+ACFC, U+AD00, U+AD04, U+AD6C-AD6D, U+ADF8, U+AE00, U+AE30, U+B04C, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B110, U+B137, U+B140, U+B144, U+B178, U+B192-B193, U+B274, U+B294, U+B298, U+B2A0, U+B2C8, U+B2D8, U+B2E4, U+B2E8, U+B2EC, U+B2F9, U+B300, U+B313, U+B378, U+B3C4, U+B3D9, U+B418, U+B41C, U+B454, U+B4DC, U+B4E4, U+B4F1, U+B6F0, U+B77C, U+B798, U+B824, U+B840, U+B85C-B85D, U+B8CC, U+B974, U+B97C, U+B984, U+B9AC, U+B9C8, U+B9CC, U+B9D0, U+BA3C, U+BA54, U+BA74, U+BA85, U+BAA8, U+BABB, U+BB36, U+BB38, U+BB3B-BB3C, U+BBF8, U+BBFC, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC95, U+BCD1, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BE44, U+BE4C, U+BE60, U+BE68, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C11E, U+C120, U+C124, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C1FC, U+C218, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C4F0, U+C544, U+C548, U+C54A, U+C54C, U+C558, U+C571, U+C57D, U+C5B4, U+C5B8, U+C5C4-C5C6, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C624, U+C628, U+C640, U+C65C, U+C678, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790-C791, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810-C811, U+C815, U+C81C, U+C838, U+C84C, U+C870-C871, U+C874, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0-C9C1, U+C9C4, U+C9D5, U+CC30, U+CC38, U+CC3D, U+CC45, U+CC98, U+CCB4, U+CD0C, U+CD5C, U+CD95, U+CD9C, U+CE35, U+CE58, U+CE5C, U+CE68, U+CE6D, U+D070, U+D0DD, U+D130, U+D1A0, U+D1B5, U+D2B8-D2B9, U+D300, U+D30E, U+D310, U+D3B8, U+D3C9, U+D45C, U+D48D, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5D8, U+D604, U+D615, U+D638, U+D648, U+D654-D655, U+D658, U+D65C, U+D68C, U+D6C8"
    },
    "head": {
     "chars": "경고과국그글나는댓라르름리말문법부빨사상생않어언용을의이일자전존지축칭풍한호활회",
@@ -426,18 +797,38 @@
      "bytes": 4588
     },
     "unicodeRange": "U+ACBD, U+ACE0, U+ACFC, U+AD6D, U+ADF8, U+AE00, U+B098, U+B294, U+B313, U+B77C, U+B974, U+B984, U+B9AC, U+B9D0, U+BB38, U+BC95, U+BD80, U+BE68, U+C0AC, U+C0C1, U+C0DD, U+C54A, U+C5B4, U+C5B8, U+C6A9, U+C744, U+C758, U+C774, U+C77C, U+C790, U+C804, U+C874, U+C9C0, U+CD95, U+CE6D, U+D48D, U+D55C, U+D638, U+D65C, U+D68C"
+   },
+   "rest400": {
+    "chars": "さん姓情갈격교규금급긋께꼽날덤됐뒤든듬랙량레력류른린림맵무밤범변봉분석셈스승압앞양완월육잇질집찜차찬철초추충칙카키투파페폰향헷후휴힌",
+    "count": 66,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-life-rest400.2b50661987fa462c.woff2",
+     "sha256": "2b50661987fa462c74bda2d54a5b7773b2bffd4f6df70dc35384c33cdd8efdd5",
+     "bytes": 7172
+    },
+    "unicodeRange": "U+3055, U+3093, U+59D3, U+60C5, U+AC08, U+ACA9, U+AD50, U+ADDC, U+AE08-AE09, U+AE0B, U+AED8, U+AF3D, U+B0A0, U+B364, U+B410, U+B4A4, U+B4E0, U+B4EC, U+B799, U+B7C9, U+B808, U+B825, U+B958, U+B978, U+B9B0, U+B9BC, U+B9F5, U+BB34, U+BC24, U+BC94, U+BCC0, U+BD09, U+BD84, U+C11D, U+C148, U+C2A4, U+C2B9, U+C555, U+C55E, U+C591, U+C644, U+C6D4, U+C721, U+C787, U+C9C8, U+C9D1, U+CC1C, U+CC28, U+CC2C, U+CCA0, U+CD08, U+CD94, U+CDA9, U+CE59, U+CE74, U+D0A4, U+D22C, U+D30C, U+D398, U+D3F0, U+D5A5, U+D5F7, U+D6C4, U+D734, U+D78C"
+   },
+   "rest700": {
+    "chars": "情간검계교기내네노달도듬등록립만배산세스시안에여예원월유인작재절정제준증처출코토통트표프하행환",
+    "count": 47,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-kr-life-rest700.a7f48e7984c2ccec.woff2",
+     "sha256": "a7f48e7984c2ccecdc37b6c1c71edd9f67b1d94f9850382c3da0bf10c15a0d9d",
+     "bytes": 4936
+    },
+    "unicodeRange": "U+60C5, U+AC04, U+AC80, U+ACC4, U+AD50, U+AE30, U+B0B4, U+B124, U+B178, U+B2EC, U+B3C4, U+B4EC, U+B4F1, U+B85D, U+B9BD, U+B9CC, U+BC30, U+C0B0, U+C138, U+C2A4, U+C2DC, U+C548, U+C5D0, U+C5EC, U+C608, U+C6D0, U+C6D4, U+C720, U+C778, U+C791, U+C7AC, U+C808, U+C815, U+C81C, U+C900, U+C99D, U+CC98, U+CD9C, U+CF54, U+D1A0, U+D1B5, U+D2B8, U+D45C, U+D504, U+D558, U+D589, U+D658"
    }
   },
   "france/fr-overview": {
    "body": {
-    "chars": "가각간강개객갯갱건검게겨격견결경계고곤골공과곽관광구국권규그기까꼽나남낮내냈너넓네넷년노농뉜뉴는늘니다단담당대도동됐되된둔둥드든들디뛰라랑랫량럽레렉력로록론료루륙르를름리린릴립마만많망메면명모목못몽무문물미밀바받발방밭배벌법별보복본볼봉부분불블비사산상색생샹서성세센션셸속송수스습시식신심아안알앙앱약양어억업에여역연였영오온옹와외요우울움워원웹위유육윤으은을음의이인일읽임있자장재저적전점정제조종주준줄중쥐즈증지진집쪽차책처천체쳐최축출칭코큰터토통툴트파팎편펼포표품프필하학한할함합항해했행혁현협형홈화확후휴힌",
-    "count": 255,
+    "chars": "가각간강개객갯갱건검게겨격견결경계고곤골공과곽관광구국권규그기까꼽나남낮내냈너넓네넷년노농뉜뉴는늘니다단담당대도동됐되된둔둥드든들디뛰라랑랫량럽레렉력로록론료루륙르를름리린릴립마만많말망메면명모목못몽무문물미밀바받발방밭배벌법별보복본볼봉부분불블비사산상색생샹서성세센션셸속송수스습시식신심아안알앙앱약양어억업에여역연였영오온옹와외요용우울움워원웹위유육윤으은을음의이인일읽임있자장재저적전점정제조종주준줄중쥐즈증지진집쪽차책처천체쳐최축출침칭코큰터토통툴트파팎편펼포표품프필하학한할함합항해했행혁현협형홈화확후휴힌",
+    "count": 258,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-overview-400.1d28fdbd40e2eb76.woff2",
-     "sha256": "1d28fdbd40e2eb767aa042f5845329044a977b63fc2242161c63d0d9af9e6054",
-     "bytes": 17996
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-overview-400.b1e799057531121d.woff2",
+     "sha256": "b1e799057531121da83ca34137869222a7950d7c1839dd5c4f149bb7c26260a6",
+     "bytes": 18184
     },
-    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC15, U+AC1C-AC1D, U+AC2F, U+AC31, U+AC74, U+AC80, U+AC8C, U+ACA8-ACA9, U+ACAC, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACE4, U+ACE8, U+ACF5, U+ACFC-ACFD, U+AD00, U+AD11, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADF8, U+AE30, U+AE4C, U+AF3D, U+B098, U+B0A8, U+B0AE, U+B0B4, U+B0C8, U+B108, U+B113, U+B124, U+B137, U+B144, U+B178, U+B18D, U+B25C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F4, U+B2F9, U+B300, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B465, U+B4DC, U+B4E0, U+B4E4, U+B514, U+B6F0, U+B77C, U+B791, U+B7AB, U+B7C9, U+B7FD, U+B808-B809, U+B825, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B959, U+B974, U+B97C, U+B984, U+B9AC, U+B9B0, U+B9B4, U+B9BD, U+B9C8, U+B9CC, U+B9CE, U+B9DD, U+BA54, U+BA74, U+BA85, U+BAA8-BAA9, U+BABB, U+BABD, U+BB34, U+BB38, U+BB3C, U+BBF8, U+BC00, U+BC14, U+BC1B-BC1C, U+BC29, U+BC2D, U+BC30, U+BC8C, U+BC95, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD09, U+BD80, U+BD84, U+BD88, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C0F9, U+C11C, U+C131, U+C138, U+C13C, U+C158, U+C178, U+C18D, U+C1A1, U+C218, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C544, U+C548, U+C54C, U+C559, U+C571, U+C57D, U+C591, U+C5B4-C5B5, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C600-C601, U+C624, U+C628, U+C639, U+C640, U+C678, U+C694, U+C6B0, U+C6B8, U+C6C0, U+C6CC, U+C6D0, U+C6F9, U+C704, U+C720-C721, U+C724, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C870, U+C885, U+C8FC, U+C900, U+C904, U+C911, U+C950, U+C988, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+CABD, U+CC28, U+CC45, U+CC98, U+CC9C, U+CCB4, U+CCD0, U+CD5C, U+CD95, U+CD9C, U+CE6D, U+CF54, U+D070, U+D130, U+D1A0, U+D1B5, U+D234, U+D2B8, U+D30C, U+D30E, U+D3B8, U+D3BC, U+D3EC, U+D45C, U+D488, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D601, U+D604, U+D611, U+D615, U+D648, U+D654-D655, U+D6C4, U+D734, U+D78C"
+    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC15, U+AC1C-AC1D, U+AC2F, U+AC31, U+AC74, U+AC80, U+AC8C, U+ACA8-ACA9, U+ACAC, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACE4, U+ACE8, U+ACF5, U+ACFC-ACFD, U+AD00, U+AD11, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADF8, U+AE30, U+AE4C, U+AF3D, U+B098, U+B0A8, U+B0AE, U+B0B4, U+B0C8, U+B108, U+B113, U+B124, U+B137, U+B144, U+B178, U+B18D, U+B25C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F4, U+B2F9, U+B300, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B465, U+B4DC, U+B4E0, U+B4E4, U+B514, U+B6F0, U+B77C, U+B791, U+B7AB, U+B7C9, U+B7FD, U+B808-B809, U+B825, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B959, U+B974, U+B97C, U+B984, U+B9AC, U+B9B0, U+B9B4, U+B9BD, U+B9C8, U+B9CC, U+B9CE, U+B9D0, U+B9DD, U+BA54, U+BA74, U+BA85, U+BAA8-BAA9, U+BABB, U+BABD, U+BB34, U+BB38, U+BB3C, U+BBF8, U+BC00, U+BC14, U+BC1B-BC1C, U+BC29, U+BC2D, U+BC30, U+BC8C, U+BC95, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD09, U+BD80, U+BD84, U+BD88, U+BE14, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C0F9, U+C11C, U+C131, U+C138, U+C13C, U+C158, U+C178, U+C18D, U+C1A1, U+C218, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C544, U+C548, U+C54C, U+C559, U+C571, U+C57D, U+C591, U+C5B4-C5B5, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C600-C601, U+C624, U+C628, U+C639, U+C640, U+C678, U+C694, U+C6A9, U+C6B0, U+C6B8, U+C6C0, U+C6CC, U+C6D0, U+C6F9, U+C704, U+C720-C721, U+C724, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C870, U+C885, U+C8FC, U+C900, U+C904, U+C911, U+C950, U+C988, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+CABD, U+CC28, U+CC45, U+CC98, U+CC9C, U+CCB4, U+CCD0, U+CD5C, U+CD95, U+CD9C, U+CE68, U+CE6D, U+CF54, U+D070, U+D130, U+D1A0, U+D1B5, U+D234, U+D2B8, U+D30C, U+D30E, U+D3B8, U+D3BC, U+D3EC, U+D45C, U+D488, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D601, U+D604, U+D611, U+D615, U+D648, U+D654-D655, U+D6C4, U+D734, U+D78C"
    },
    "head": {
     "chars": "가각강개게경과관구국네농는다대라랑리무바산세스심업와육의이인자정제조중지토파프행형",
@@ -448,18 +839,38 @@
      "bytes": 4468
     },
     "unicodeRange": "U+AC00-AC01, U+AC15, U+AC1C, U+AC8C, U+ACBD, U+ACFC, U+AD00, U+AD6C-AD6D, U+B124, U+B18D, U+B294, U+B2E4, U+B300, U+B77C, U+B791, U+B9AC, U+BB34, U+BC14, U+C0B0, U+C138, U+C2A4, U+C2EC, U+C5C5, U+C640, U+C721, U+C758, U+C774, U+C778, U+C790, U+C815, U+C81C, U+C870, U+C911, U+C9C0, U+D1A0, U+D30C, U+D504, U+D589, U+D615"
+   },
+   "rest400": {
+    "chars": "「」같교급길논뉘데독등랙랜례며박반범베북브선설순승애야언었예율작졸참초치칙카칼크타테페평험헤호황회",
+    "count": 49,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-overview-rest400.4ca128bb9ba9386b.woff2",
+     "sha256": "4ca128bb9ba9386b4aa4a64ca427e456fcc2208a412dd1da2858e4a9217b0036",
+     "bytes": 5124
+    },
+    "unicodeRange": "U+300C-300D, U+AC19, U+AD50, U+AE09, U+AE38, U+B17C, U+B258, U+B370, U+B3C5, U+B4F1, U+B799, U+B79C, U+B840, U+BA70, U+BC15, U+BC18, U+BC94, U+BCA0, U+BD81, U+BE0C, U+C120, U+C124, U+C21C, U+C2B9, U+C560, U+C57C, U+C5B8, U+C5C8, U+C608, U+C728, U+C791, U+C878, U+CC38, U+CD08, U+CE58-CE59, U+CE74, U+CE7C, U+D06C, U+D0C0, U+D14C, U+D398, U+D3C9, U+D5D8, U+D5E4, U+D638, U+D669, U+D68C"
+   },
+   "rest700": {
+    "chars": "검계고공광교권그냅노도략록료립목문발법부비사샷소수어언역연외유증처청출치코통트표항화회",
+    "count": 43,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-overview-rest700.1353ed43e31b4b9d.woff2",
+     "sha256": "1353ed43e31b4b9d53278e5ac738e96010d61b713d7a3f2f0d7a626d45f4f57e",
+     "bytes": 4636
+    },
+    "unicodeRange": "U+AC80, U+ACC4, U+ACE0, U+ACF5, U+AD11, U+AD50, U+AD8C, U+ADF8, U+B0C5, U+B178, U+B3C4, U+B7B5, U+B85D, U+B8CC, U+B9BD, U+BAA9, U+BB38, U+BC1C, U+BC95, U+BD80, U+BE44, U+C0AC, U+C0F7, U+C18C, U+C218, U+C5B4, U+C5B8, U+C5ED, U+C5F0, U+C678, U+C720, U+C99D, U+CC98, U+CCAD, U+CD9C, U+CE58, U+CF54, U+D1B5, U+D2B8, U+D45C, U+D56D, U+D654, U+D68C"
    }
   },
   "france/fr-history-premodern": {
    "body": {
-    "chars": "가각간갈갔개갱건검것게결겼경계고공과곽관교구국군권그근글금기길까나남내냈너넷년노눔뉴는늘니님다단담당대도독됐되된됭두둔뒤드들디딕땅뛰라락랑래랜럽레렸례로록롤료루뤘르를름리릭마막만말망메며면모못몽무문미민바받발배백베벽보복본볼봉부분불비뼈뿌사산살삼새색생샤서설성세션셸소속송수순스습승시식신실심씬아않앙앞앱앵약양어업었에역연였영오온옹와왔왕요우움워원웹위유으은을의이인일읽임있잉자작잔잡장재쟁저적전절점정제져졌조족종좌주중즉증지진집짙쪽창책처체최축출카켈크클탈탕터토톨통트특틴파페편포퐁표프필하학한할함합항해했행형홈화확황회후흐히",
-    "count": 264,
+    "chars": "가각간갈갔개갱건검것게결겼경계고공과곽관교구국군권그근글금기길까나남내냈너넷년노눔뉴는늘니님다단담당대도독됐되된됭두둔뒤드들디딕땅뛰라락랑래랜럽레렸례로록롤료루뤘르를름리릭마막만말망메며면모못몽무문미민바받발방배백베벽보복본볼봉부분불비뼈뿌사산살삼새색생샤서설성세션셸소속송수순스습승시식신실심씬아않앙앞앱앵약양어업었에역연였영오온옹와왔왕요용우움워원웹위유으은을의이인일읽임있잉자작잔잡장재쟁저적전절점정제져졌조족종좌주중즉증지진집짙쪽창책처체최축출침카켈크클탈탕터토톨통트특틴파페편포퐁표프필하학한할함합항해했행형홈화확황회후흐히",
+    "count": 267,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-history-premodern-400.a0585e308db51a28.woff2",
-     "sha256": "a0585e308db51a283ff5782d23dec7dc434165cb9a7a0b47c60ba089a33ca2a1",
-     "bytes": 19184
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-history-premodern-400.0049f9d679f4f4a5.woff2",
+     "sha256": "0049f9d679f4f4a55a0f4a634b003df64fef2c1d7ce621f34fd981c67c909a6b",
+     "bytes": 19404
     },
-    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC08, U+AC14, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBC-ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC-ACFD, U+AD00, U+AD50, U+AD6C-AD6D, U+AD70, U+AD8C, U+ADF8, U+ADFC, U+AE00, U+AE08, U+AE30, U+AE38, U+AE4C, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B214, U+B274, U+B294, U+B298, U+B2C8, U+B2D8, U+B2E4, U+B2E8, U+B2F4, U+B2F9, U+B300, U+B3C4-B3C5, U+B410, U+B418, U+B41C, U+B42D, U+B450, U+B454, U+B4A4, U+B4DC, U+B4E4, U+B514-B515, U+B545, U+B6F0, U+B77C-B77D, U+B791, U+B798, U+B79C, U+B7FD, U+B808, U+B838, U+B840, U+B85C-B85D, U+B864, U+B8CC, U+B8E8, U+B918, U+B974, U+B97C, U+B984, U+B9AC-B9AD, U+B9C8-B9C9, U+B9CC, U+B9D0, U+B9DD, U+BA54, U+BA70, U+BA74, U+BAA8, U+BABB, U+BABD, U+BB34, U+BB38, U+BBF8, U+BBFC, U+BC14, U+BC1B-BC1C, U+BC30-BC31, U+BCA0, U+BCBD, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD09, U+BD80, U+BD84, U+BD88, U+BE44, U+BF08, U+BFCC, U+C0AC, U+C0B0, U+C0B4, U+C0BC, U+C0C8-C0C9, U+C0DD, U+C0E4, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C178, U+C18C-C18D, U+C1A1, U+C218, U+C21C, U+C2A4, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C52C, U+C544, U+C54A, U+C559, U+C55E, U+C571, U+C575, U+C57D, U+C591, U+C5B4, U+C5C5, U+C5C8, U+C5D0, U+C5ED, U+C5F0, U+C600-C601, U+C624, U+C628, U+C639, U+C640, U+C654-C655, U+C694, U+C6B0, U+C6C0, U+C6CC, U+C6D0, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788-C789, U+C790-C791, U+C794, U+C7A1, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C84C, U+C870-C871, U+C885, U+C88C, U+C8FC, U+C911, U+C989, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D9, U+CABD, U+CC3D, U+CC45, U+CC98, U+CCB4, U+CD5C, U+CD95, U+CD9C, U+CE74, U+CF08, U+D06C, U+D074, U+D0C8, U+D0D5, U+D130, U+D1A0, U+D1A8, U+D1B5, U+D2B8-D2B9, U+D2F4, U+D30C, U+D398, U+D3B8, U+D3EC, U+D401, U+D45C, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D615, U+D648, U+D654-D655, U+D669, U+D68C, U+D6C4, U+D750, U+D788"
+    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC08, U+AC14, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACB0, U+ACBC-ACBD, U+ACC4, U+ACE0, U+ACF5, U+ACFC-ACFD, U+AD00, U+AD50, U+AD6C-AD6D, U+AD70, U+AD8C, U+ADF8, U+ADFC, U+AE00, U+AE08, U+AE30, U+AE38, U+AE4C, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B214, U+B274, U+B294, U+B298, U+B2C8, U+B2D8, U+B2E4, U+B2E8, U+B2F4, U+B2F9, U+B300, U+B3C4-B3C5, U+B410, U+B418, U+B41C, U+B42D, U+B450, U+B454, U+B4A4, U+B4DC, U+B4E4, U+B514-B515, U+B545, U+B6F0, U+B77C-B77D, U+B791, U+B798, U+B79C, U+B7FD, U+B808, U+B838, U+B840, U+B85C-B85D, U+B864, U+B8CC, U+B8E8, U+B918, U+B974, U+B97C, U+B984, U+B9AC-B9AD, U+B9C8-B9C9, U+B9CC, U+B9D0, U+B9DD, U+BA54, U+BA70, U+BA74, U+BAA8, U+BABB, U+BABD, U+BB34, U+BB38, U+BBF8, U+BBFC, U+BC14, U+BC1B-BC1C, U+BC29, U+BC30-BC31, U+BCA0, U+BCBD, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD09, U+BD80, U+BD84, U+BD88, U+BE44, U+BF08, U+BFCC, U+C0AC, U+C0B0, U+C0B4, U+C0BC, U+C0C8-C0C9, U+C0DD, U+C0E4, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C178, U+C18C-C18D, U+C1A1, U+C218, U+C21C, U+C2A4, U+C2B5, U+C2B9, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C52C, U+C544, U+C54A, U+C559, U+C55E, U+C571, U+C575, U+C57D, U+C591, U+C5B4, U+C5C5, U+C5C8, U+C5D0, U+C5ED, U+C5F0, U+C600-C601, U+C624, U+C628, U+C639, U+C640, U+C654-C655, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6CC, U+C6D0, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788-C789, U+C790-C791, U+C794, U+C7A1, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C84C, U+C870-C871, U+C885, U+C88C, U+C8FC, U+C911, U+C989, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D9, U+CABD, U+CC3D, U+CC45, U+CC98, U+CCB4, U+CD5C, U+CD95, U+CD9C, U+CE68, U+CE74, U+CF08, U+D06C, U+D074, U+D0C8, U+D0D5, U+D130, U+D1A0, U+D1A8, U+D1B5, U+D2B8-D2B9, U+D2F4, U+D30C, U+D398, U+D3B8, U+D3EC, U+D401, U+D45C, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D615, U+D648, U+D654-D655, U+D669, U+D68C, U+D6C4, U+D750, U+D788"
    },
    "head": {
     "chars": "갈고국기까나대딕라랑로르름리마바베사서세스시아에와왕원유의이조중지카크탕페프흐",
@@ -470,18 +881,38 @@
      "bytes": 4180
     },
     "unicodeRange": "U+AC08, U+ACE0, U+AD6D, U+AE30, U+AE4C, U+B098, U+B300, U+B515, U+B77C, U+B791, U+B85C, U+B974, U+B984, U+B9AC, U+B9C8, U+BC14, U+BCA0, U+C0AC, U+C11C, U+C138, U+C2A4, U+C2DC, U+C544, U+C5D0, U+C640, U+C655, U+C6D0, U+C720, U+C758, U+C774, U+C870, U+C911, U+C9C0, U+CE74, U+D06C, U+D0D5, U+D398, U+D504, U+D750"
+   },
+   "rest400": {
+    "chars": "「」감강같겨격궁귀규끌낭네누데동등랙렀려령룬립매명물반변빌상샹섬술언여옮운율입준즈직짐징참층치칙코콜택테팩평폐폭헤혁현호흔",
+    "count": 61,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-history-premodern-rest400.187d992d7b5d718b.woff2",
+     "sha256": "187d992d7b5d718ba2c25bb1fc444b066dbb66d7d3156a202d3eaa19ab24b3d9",
+     "bytes": 6080
+    },
+    "unicodeRange": "U+300C-300D, U+AC10, U+AC15, U+AC19, U+ACA8-ACA9, U+AD81, U+ADC0, U+ADDC, U+B04C, U+B0AD, U+B124, U+B204, U+B370, U+B3D9, U+B4F1, U+B799, U+B800, U+B824, U+B839, U+B8EC, U+B9BD, U+B9E4, U+BA85, U+BB3C, U+BC18, U+BCC0, U+BE4C, U+C0C1, U+C0F9, U+C12C, U+C220, U+C5B8, U+C5EC, U+C62E, U+C6B4, U+C728, U+C785, U+C900, U+C988, U+C9C1, U+C9D0, U+C9D5, U+CC38, U+CE35, U+CE58-CE59, U+CF54, U+CF5C, U+D0DD, U+D14C, U+D329, U+D3C9, U+D3D0, U+D3ED, U+D5E4, U+D601, U+D604, U+D638, U+D754"
+   },
+   "rest700": {
+    "chars": "가각감검것계공관구근긴남네노도레록료립면목문부분산상심앙앵여자장전절정증짐처출코트표행화",
+    "count": 44,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-history-premodern-rest700.67fc94becd7e1f5f.woff2",
+     "sha256": "67fc94becd7e1f5f301f979404c0031d091de4de52908029ca7e6eb9b7d7cfae",
+     "bytes": 4652
+    },
+    "unicodeRange": "U+AC00-AC01, U+AC10, U+AC80, U+AC83, U+ACC4, U+ACF5, U+AD00, U+AD6C, U+ADFC, U+AE34, U+B0A8, U+B124, U+B178, U+B3C4, U+B808, U+B85D, U+B8CC, U+B9BD, U+BA74, U+BAA9, U+BB38, U+BD80, U+BD84, U+C0B0, U+C0C1, U+C2EC, U+C559, U+C575, U+C5EC, U+C790, U+C7A5, U+C804, U+C808, U+C815, U+C99D, U+C9D0, U+CC98, U+CD9C, U+CF54, U+D2B8, U+D45C, U+D589, U+D654"
    }
   },
   "france/fr-history-modern": {
    "body": {
-    "chars": "가간같개갱거건검것게격결경계고골공과관광괴교구국군권그근금기까끝나날남내냈너널넷년념노뇌뉴는늘니다단담대던데도독동됐되된됭두둔둥든들등디때뛰라람랑래러런럼럽레려렸령로록뢰료루륙르를름리린립막만망맞메며면명모못몽무문물므미민바박반받발방배번범법베벨별보복본볼부북분불붕비뼈사산삼상색생서선성세션셸소속솜송수스습시신실아안았앱약어언업었에여역연열였영오옹와왕외요움웃워원월웹위유육으은을의이인일읽임입있자장재쟁저적전점정제졌조종좌주준중증지진집징차착참채책처체최출층치크탑탕택터털텔통투트티파판패페펠편평폐포폴표풍프필하학한할함합해했행향험혁현형호홈화확환활황회후흐",
-    "count": 281,
+    "chars": "가간같개갱거건검것게격결경계고골공과관광괴교구국군권그근금기까끝나날남내냈너널넷년념노뇌뉴는늘니다단담대던데도독동됐되된됭두둔둥든들등디때뛰라람랑래러런럼럽레려렸령로록뢰료루륙르를름리린립막만말망맞메며면명모못몽무문물므미민바박반받발방배번범법베벨별보복본볼부북분불붕비뼈사산삼상색생서선성세션셸소속솜송수스습시신실아안았앱약어언업었에여역연열였영오옹와왕외요용움웃워원월웹위유육으은을의이인일읽임입있자장재쟁저적전점정제졌조종좌주준중증지진집징차착참채책처체최출층치침크탑탕택터털텔통투트티파판패페펠편평폐포폴표풍프필하학한할함합해했행향험혁현형호홈화확환활황회후흐",
+    "count": 284,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-history-modern-400.97471890175e2275.woff2",
-     "sha256": "97471890175e227575663ab6483cf7c69b0bcba67e03e633edff5a5da26b7c4d",
-     "bytes": 19920
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-history-modern-400.c73b937fe5493d69.woff2",
+     "sha256": "c73b937fe5493d699ae28a6fa2890d45cf0d8c053e2c450a92e425eb02779524",
+     "bytes": 20064
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC19, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACE8, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD34, U+AD50, U+AD6C-AD6D, U+AD70, U+AD8C, U+ADF8, U+ADFC, U+AE08, U+AE30, U+AE4C, U+B05D, U+B098, U+B0A0, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B110, U+B137, U+B144, U+B150, U+B178, U+B1CC, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F4, U+B300, U+B358, U+B370, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B42D, U+B450, U+B454, U+B465, U+B4E0, U+B4E4, U+B4F1, U+B514, U+B54C, U+B6F0, U+B77C, U+B78C, U+B791, U+B798, U+B7EC, U+B7F0, U+B7FC-B7FD, U+B808, U+B824, U+B838-B839, U+B85C-B85D, U+B8B0, U+B8CC, U+B8E8, U+B959, U+B974, U+B97C, U+B984, U+B9AC, U+B9B0, U+B9BD, U+B9C9, U+B9CC, U+B9DD-B9DE, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BABD, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BBF8, U+BBFC, U+BC14-BC15, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC88, U+BC94-BC95, U+BCA0, U+BCA8, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80-BD81, U+BD84, U+BD88, U+BD95, U+BE44, U+BF08, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C120, U+C131, U+C138, U+C158, U+C178, U+C18C-C18D, U+C19C, U+C1A1, U+C218, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C2E4, U+C544, U+C548, U+C558, U+C571, U+C57D, U+C5B4, U+C5B8, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C600-C601, U+C624, U+C639, U+C640, U+C655, U+C678, U+C694, U+C6C0, U+C6C3, U+C6CC, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720-C721, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C788, U+C790, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C84C, U+C870, U+C885, U+C88C, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC28-CC29, U+CC38, U+CC44-CC45, U+CC98, U+CCB4, U+CD5C, U+CD9C, U+CE35, U+CE58, U+D06C, U+D0D1, U+D0D5, U+D0DD, U+D130, U+D138, U+D154, U+D1B5, U+D22C, U+D2B8, U+D2F0, U+D30C, U+D310, U+D328, U+D398, U+D3A0, U+D3B8, U+D3C9, U+D3D0, U+D3EC, U+D3F4, U+D45C, U+D48D, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5A5, U+D5D8, U+D601, U+D604, U+D615, U+D638, U+D648, U+D654-D655, U+D658, U+D65C, U+D669, U+D68C, U+D6C4, U+D750"
+    "unicodeRange": "U+AC00, U+AC04, U+AC19, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACE8, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD34, U+AD50, U+AD6C-AD6D, U+AD70, U+AD8C, U+ADF8, U+ADFC, U+AE08, U+AE30, U+AE4C, U+B05D, U+B098, U+B0A0, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B110, U+B137, U+B144, U+B150, U+B178, U+B1CC, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F4, U+B300, U+B358, U+B370, U+B3C4-B3C5, U+B3D9, U+B410, U+B418, U+B41C, U+B42D, U+B450, U+B454, U+B465, U+B4E0, U+B4E4, U+B4F1, U+B514, U+B54C, U+B6F0, U+B77C, U+B78C, U+B791, U+B798, U+B7EC, U+B7F0, U+B7FC-B7FD, U+B808, U+B824, U+B838-B839, U+B85C-B85D, U+B8B0, U+B8CC, U+B8E8, U+B959, U+B974, U+B97C, U+B984, U+B9AC, U+B9B0, U+B9BD, U+B9C9, U+B9CC, U+B9D0, U+B9DD-B9DE, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BABD, U+BB34, U+BB38, U+BB3C, U+BBC0, U+BBF8, U+BBFC, U+BC14-BC15, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC88, U+BC94-BC95, U+BCA0, U+BCA8, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80-BD81, U+BD84, U+BD88, U+BD95, U+BE44, U+BF08, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C120, U+C131, U+C138, U+C158, U+C178, U+C18C-C18D, U+C19C, U+C1A1, U+C218, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C2E4, U+C544, U+C548, U+C558, U+C571, U+C57D, U+C5B4, U+C5B8, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C5F4, U+C600-C601, U+C624, U+C639, U+C640, U+C655, U+C678, U+C694, U+C6A9, U+C6C0, U+C6C3, U+C6CC, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720-C721, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C788, U+C790, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C84C, U+C870, U+C885, U+C88C, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC28-CC29, U+CC38, U+CC44-CC45, U+CC98, U+CCB4, U+CD5C, U+CD9C, U+CE35, U+CE58, U+CE68, U+D06C, U+D0D1, U+D0D5, U+D0DD, U+D130, U+D138, U+D154, U+D1B5, U+D22C, U+D2B8, U+D2F0, U+D30C, U+D310, U+D328, U+D398, U+D3A0, U+D3B8, U+D3C9, U+D3D0, U+D3EC, U+D3F4, U+D45C, U+D48D, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5A5, U+D5D8, U+D601, U+D604, U+D615, U+D638, U+D648, U+D654-D655, U+D658, U+D65C, U+D669, U+D68C, U+D6C4, U+D750"
    },
    "head": {
     "chars": "계공과괴구국기까나대두랑레름명번벨붕사서세스에옹와의이전제지체크포폴프혁현화흐",
@@ -492,18 +923,38 @@
      "bytes": 4280
     },
     "unicodeRange": "U+ACC4, U+ACF5, U+ACFC, U+AD34, U+AD6C-AD6D, U+AE30, U+AE4C, U+B098, U+B300, U+B450, U+B791, U+B808, U+B984, U+BA85, U+BC88, U+BCA8, U+BD95, U+C0AC, U+C11C, U+C138, U+C2A4, U+C5D0, U+C639, U+C640, U+C758, U+C774, U+C804, U+C81C, U+C9C0, U+CCB4, U+D06C, U+D3EC, U+D3F4, U+D504, U+D601, U+D604, U+D654, U+D750"
+   },
+   "rest400": {
+    "chars": "「」갈걸겐겹긴끌놓눈둘드롯뤼몫브셀솅식심싼알운작철쳐쳤축타탈피헌헤획힌",
+    "count": 35,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-history-modern-rest400.7e3d0abf73a12dae.woff2",
+     "sha256": "7e3d0abf73a12dae11e61c59ecf1e04339ae5dcec7f3d9a9733466a09e08fa01",
+     "bytes": 4304
+    },
+    "unicodeRange": "U+300C-300D, U+AC08, U+AC78, U+AC90, U+ACB9, U+AE34, U+B04C, U+B193, U+B208, U+B458, U+B4DC, U+B86F, U+B93C, U+BAAB, U+BE0C, U+C140, U+C185, U+C2DD, U+C2EC, U+C2FC, U+C54C, U+C6B4, U+C791, U+CCA0, U+CCD0, U+CCE4, U+CD95, U+D0C0, U+D0C8, U+D53C, U+D5CC, U+D5E4, U+D68D, U+D78C"
+   },
+   "rest700": {
+    "chars": "각감검관광년념노도록료립면방보부분소시심여영자장중증처출트행후",
+    "count": 31,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-history-modern-rest700.fd668495cdd34af5.woff2",
+     "sha256": "fd668495cdd34af586d5b75391eff2b9d444148b7da1505bb7c381a2b51e960c",
+     "bytes": 3712
+    },
+    "unicodeRange": "U+AC01, U+AC10, U+AC80, U+AD00, U+AD11, U+B144, U+B150, U+B178, U+B3C4, U+B85D, U+B8CC, U+B9BD, U+BA74, U+BC29, U+BCF4, U+BD80, U+BD84, U+C18C, U+C2DC, U+C2EC, U+C5EC, U+C601, U+C790, U+C7A5, U+C911, U+C99D, U+CC98, U+CD9C, U+D2B8, U+D589, U+D6C4"
    }
   },
   "france/fr-economy": {
    "body": {
-    "chars": "가각간감같개갱건검게견결경계고곡공과관광교구국군권규그기까께끈낳내냈너넷년노논농뉴는늘다단담당대도동됐되된둔둥들뛰라랑랜량럽레력로록료루룹류르를리립만메며면명모목못무묶문민밀바반받발밭배백법베보복본볼부불비사산삼상색생샹서석선세션소속송수스습시신심안앱약양어업에여역연영오옥와요우움원웹위유율으은을의이인일읽임있자작장재저적전정제젝조존종주죽준중즈증지진집징차창책처철청체최축출치칭카컬콜타탄탈탕택터통툴트특파패페편포표품프필하학한할함합항해했행향현형혜호홈화확활획후",
-    "count": 234,
+    "chars": "가각간감같개갱건검게견결경계고곡공과관광교구국군권규그기까께끈낳내냈너넷년노논농뉴는늘다단담당대도동됐되된둔둥들뛰라랑랜량럽레력로록료루룹류르를리립만말메며면명모목못무묶문민밀바반받발방밭배백법베보복본볼부불비사산삼상색생샹서석선세션소속송수스습시신심안앱약양어업에여역연영오옥와요용우움원웹위유율으은을의이인일읽임있자작장재저적전정제젝조존종주죽준중즈증지진집징차창책처철청체최축출치침칭카컬콜타탄탈탕택터통툴트특파패페편포표품프필하학한할함합항해했행향현형혜호홈화확활획후",
+    "count": 238,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-economy-400.5cace39527d776f1.woff2",
-     "sha256": "5cace39527d776f12688b0eae6ff611999c9374646c6e3260c5c655297436fdd",
-     "bytes": 16792
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-economy-400.2f21e34f54af5f53.woff2",
+     "sha256": "2f21e34f54af5f53db885e392e188f701d256bf1d0229ce35cca470d0392c0d7",
+     "bytes": 17100
     },
-    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC10, U+AC19, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC8C, U+ACAC, U+ACB0, U+ACBD, U+ACC4, U+ACE0-ACE1, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD50, U+AD6C-AD6D, U+AD70, U+AD8C, U+ADDC, U+ADF8, U+AE30, U+AE4C, U+AED8, U+B048, U+B0B3-B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B17C, U+B18D, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F4, U+B2F9, U+B300, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B465, U+B4E4, U+B6F0, U+B77C, U+B791, U+B79C, U+B7C9, U+B7FD, U+B808, U+B825, U+B85C-B85D, U+B8CC, U+B8E8, U+B8F9, U+B958, U+B974, U+B97C, U+B9AC, U+B9BD, U+B9CC, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8-BAA9, U+BABB, U+BB34, U+BB36, U+BB38, U+BBFC, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC2D, U+BC30-BC31, U+BC95, U+BCA0, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD88, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C0F9, U+C11C-C11D, U+C120, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C2EC, U+C548, U+C571, U+C57D, U+C591, U+C5B4, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C601, U+C624-C625, U+C640, U+C694, U+C6B0, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790-C791, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C815, U+C81C-C81D, U+C870, U+C874, U+C885, U+C8FC-C8FD, U+C900, U+C911, U+C988, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC28, U+CC3D, U+CC45, U+CC98, U+CCA0, U+CCAD, U+CCB4, U+CD5C, U+CD95, U+CD9C, U+CE58, U+CE6D, U+CE74, U+CEEC, U+CF5C, U+D0C0, U+D0C4, U+D0C8, U+D0D5, U+D0DD, U+D130, U+D1B5, U+D234, U+D2B8-D2B9, U+D30C, U+D328, U+D398, U+D3B8, U+D3EC, U+D45C, U+D488, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D5A5, U+D604, U+D615, U+D61C, U+D638, U+D648, U+D654-D655, U+D65C, U+D68D, U+D6C4"
+    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC10, U+AC19, U+AC1C, U+AC31, U+AC74, U+AC80, U+AC8C, U+ACAC, U+ACB0, U+ACBD, U+ACC4, U+ACE0-ACE1, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD50, U+AD6C-AD6D, U+AD70, U+AD8C, U+ADDC, U+ADF8, U+AE30, U+AE4C, U+AED8, U+B048, U+B0B3-B0B4, U+B0C8, U+B108, U+B137, U+B144, U+B178, U+B17C, U+B18D, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F4, U+B2F9, U+B300, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B454, U+B465, U+B4E4, U+B6F0, U+B77C, U+B791, U+B79C, U+B7C9, U+B7FD, U+B808, U+B825, U+B85C-B85D, U+B8CC, U+B8E8, U+B8F9, U+B958, U+B974, U+B97C, U+B9AC, U+B9BD, U+B9CC, U+B9D0, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8-BAA9, U+BABB, U+BB34, U+BB36, U+BB38, U+BBFC, U+BC00, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC2D, U+BC30-BC31, U+BC95, U+BCA0, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD88, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C0F9, U+C11C-C11D, U+C120, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C218, U+C2A4, U+C2B5, U+C2DC, U+C2E0, U+C2EC, U+C548, U+C571, U+C57D, U+C591, U+C5B4, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C601, U+C624-C625, U+C640, U+C694, U+C6A9, U+C6B0, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720, U+C728, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790-C791, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C815, U+C81C-C81D, U+C870, U+C874, U+C885, U+C8FC-C8FD, U+C900, U+C911, U+C988, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC28, U+CC3D, U+CC45, U+CC98, U+CCA0, U+CCAD, U+CCB4, U+CD5C, U+CD95, U+CD9C, U+CE58, U+CE68, U+CE6D, U+CE74, U+CEEC, U+CF5C, U+D0C0, U+D0C4, U+D0C8, U+D0D5, U+D0DD, U+D130, U+D1B5, U+D234, U+D2B8-D2B9, U+D30C, U+D328, U+D398, U+D3B8, U+D3EC, U+D45C, U+D488, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D56D, U+D574, U+D588-D589, U+D5A5, U+D604, U+D615, U+D61C, U+D638, U+D648, U+D654-D655, U+D65C, U+D68D, U+D6C4"
    },
    "head": {
     "chars": "가각경계고곡공과관광국그까농는대도라랑럽력르리명문법베산삼서스업에와우원유의이인자전제주지창콜통품프항획",
@@ -514,18 +965,38 @@
      "bytes": 5232
     },
     "unicodeRange": "U+AC00-AC01, U+ACBD, U+ACC4, U+ACE0-ACE1, U+ACF5, U+ACFC, U+AD00, U+AD11, U+AD6D, U+ADF8, U+AE4C, U+B18D, U+B294, U+B300, U+B3C4, U+B77C, U+B791, U+B7FD, U+B825, U+B974, U+B9AC, U+BA85, U+BB38, U+BC95, U+BCA0, U+C0B0, U+C0BC, U+C11C, U+C2A4, U+C5C5, U+C5D0, U+C640, U+C6B0, U+C6D0, U+C720, U+C758, U+C774, U+C778, U+C790, U+C804, U+C81C, U+C8FC, U+C9C0, U+CC3D, U+CF5C, U+D1B5, U+D488, U+D504, U+D56D, U+D68D"
+   },
+   "rest400": {
+    "chars": "「」객격금닫더드듬등략례룬린림마많맞몽물미박봉브살셈셰셸숙식실싸싼아액억올외운월입점접참촉칙캉큐큰테투팁팎풍헤히",
+    "count": 56,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-economy-rest400.88a7a1ce2e31bad2.woff2",
+     "sha256": "88a7a1ce2e31bad2ed3957b610a8d708ad3d5317c58012d8e98cb20ae781360e",
+     "bytes": 5640
+    },
+    "unicodeRange": "U+300C-300D, U+AC1D, U+ACA9, U+AE08, U+B2EB, U+B354, U+B4DC, U+B4EC, U+B4F1, U+B7B5, U+B840, U+B8EC, U+B9B0, U+B9BC, U+B9C8, U+B9CE, U+B9DE, U+BABD, U+BB3C, U+BBF8, U+BC15, U+BD09, U+BE0C, U+C0B4, U+C148, U+C170, U+C178, U+C219, U+C2DD, U+C2E4, U+C2F8, U+C2FC, U+C544, U+C561, U+C5B5, U+C62C, U+C678, U+C6B4, U+C6D4, U+C785, U+C810-C811, U+CC38, U+CD09, U+CE59, U+CE89, U+D050, U+D070, U+D14C, U+D22C, U+D301, U+D30E, U+D48D, U+D5E4, U+D788"
+   },
+   "rest700": {
+    "chars": "감검결권노략료물방부비상생세여위재정증집처청체출트표하학행활회",
+    "count": 31,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-economy-rest700.8307a8be8d990158.woff2",
+     "sha256": "8307a8be8d990158ef80572e2e335e7e4a892efd38b234255bebc2ed34016926",
+     "bytes": 4028
+    },
+    "unicodeRange": "U+AC10, U+AC80, U+ACB0, U+AD8C, U+B178, U+B7B5, U+B8CC, U+BB3C, U+BC29, U+BD80, U+BE44, U+C0C1, U+C0DD, U+C138, U+C5EC, U+C704, U+C7AC, U+C815, U+C99D, U+C9D1, U+CC98, U+CCAD, U+CCB4, U+CD9C, U+D2B8, U+D45C, U+D558-D559, U+D589, U+D65C, U+D68C"
    }
   },
   "france/fr-society": {
    "body": {
-    "chars": "가간갈강개갱거건검것게격결겹경계고골공과곽관교구국권규그금급기까나날내냈너넷녀년념노논높눌뉴는늘니다단당닿대도동됐되된두둔둘드듬등때뛰라란랑래랜략러럽레려로록료루르를리립마만맞멈메며면모못문민바받발방배범법별보복본볼부분불브비사산상색생서설성세션속송수술스습시식신실심싼쌓아악안않알앱약어언업없에여역연영오와외요용움원웹위유육율으은을음의이인일읽있자장재쟁저적전점정제져조족종주준중증지진집차책처체최추출층치칙카코쿠크탈터테통투트파편포폴표프필하학한할함해했행험현협홈화확활회후휴",
-    "count": 240,
+    "chars": "가간갈강개갱거건검것게격결겹경계고골공과곽관교구국권규그금급기까나날내냈너넷녀년념노논높눌뉴는늘니다단당닿대도동됐되된두둔둘드듬등때뛰라란랑래랜략러럽레려로록료루르를리립마만말맞멈메며면모못문민바받발방배범법별보복본볼부분불브비사산상색생서설성세션속송수술스습시식신실심싼쌓아악안않알앱약어언업없에여역연영오와외요용움원웹위유육율으은을음의이인일읽있자장재쟁저적전점정제져조족종주준중증지진집차책처체최추출층치칙침카코쿠크탈터테통투트파편포폴표프필하학한할함해했행험현협홈화확활회후휴",
+    "count": 242,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-society-400.5009b6857fad8e3f.woff2",
-     "sha256": "5009b6857fad8e3f55a2c2dcf4c4550e450a9902caa10d0a64099b9925007cfc",
-     "bytes": 17240
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-society-400.d95690c205a090a6.woff2",
+     "sha256": "d95690c205a090a6a5f804154887d03e253f67ac6bbbae8303c47e14c19a53a2",
+     "bytes": 17324
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC15, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACE8, U+ACF5, U+ACFC-ACFD, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADF8, U+AE08-AE09, U+AE30, U+AE4C, U+B098, U+B0A0, U+B0B4, U+B0C8, U+B108, U+B137, U+B140, U+B144, U+B150, U+B178, U+B17C, U+B192, U+B20C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F9, U+B2FF-B300, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B458, U+B4DC, U+B4EC, U+B4F1, U+B54C, U+B6F0, U+B77C, U+B780, U+B791, U+B798, U+B79C, U+B7B5, U+B7EC, U+B7FD, U+B808, U+B824, U+B85C-B85D, U+B8CC, U+B8E8, U+B974, U+B97C, U+B9AC, U+B9BD, U+B9C8, U+B9CC, U+B9DE, U+BA48, U+BA54, U+BA70, U+BA74, U+BAA8, U+BABB, U+BB38, U+BBFC, U+BC14, U+BC1B-BC1C, U+BC29, U+BC30, U+BC94-BC95, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE0C, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C18D, U+C1A1, U+C218, U+C220, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C2FC, U+C313, U+C544-C545, U+C548, U+C54A, U+C54C, U+C571, U+C57D, U+C5B4, U+C5B8, U+C5C5-C5C6, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C601, U+C624, U+C640, U+C678, U+C694, U+C6A9, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720-C721, U+C728, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C838, U+C870-C871, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+CC28, U+CC45, U+CC98, U+CCB4, U+CD5C, U+CD94, U+CD9C, U+CE35, U+CE58-CE59, U+CE74, U+CF54, U+CFE0, U+D06C, U+D0C8, U+D130, U+D14C, U+D1B5, U+D22C, U+D2B8, U+D30C, U+D3B8, U+D3EC, U+D3F4, U+D45C, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D5D8, U+D604, U+D611, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4, U+D734"
+    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC15, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACB9, U+ACBD, U+ACC4, U+ACE0, U+ACE8, U+ACF5, U+ACFC-ACFD, U+AD00, U+AD50, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADF8, U+AE08-AE09, U+AE30, U+AE4C, U+B098, U+B0A0, U+B0B4, U+B0C8, U+B108, U+B137, U+B140, U+B144, U+B150, U+B178, U+B17C, U+B192, U+B20C, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F9, U+B2FF-B300, U+B3C4, U+B3D9, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B458, U+B4DC, U+B4EC, U+B4F1, U+B54C, U+B6F0, U+B77C, U+B780, U+B791, U+B798, U+B79C, U+B7B5, U+B7EC, U+B7FD, U+B808, U+B824, U+B85C-B85D, U+B8CC, U+B8E8, U+B974, U+B97C, U+B9AC, U+B9BD, U+B9C8, U+B9CC, U+B9D0, U+B9DE, U+BA48, U+BA54, U+BA70, U+BA74, U+BAA8, U+BABB, U+BB38, U+BBFC, U+BC14, U+BC1B-BC1C, U+BC29, U+BC30, U+BC94-BC95, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD84, U+BD88, U+BE0C, U+BE44, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C0DD, U+C11C, U+C124, U+C131, U+C138, U+C158, U+C18D, U+C1A1, U+C218, U+C220, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2E4, U+C2EC, U+C2FC, U+C313, U+C544-C545, U+C548, U+C54A, U+C54C, U+C571, U+C57D, U+C5B4, U+C5B8, U+C5C5-C5C6, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C601, U+C624, U+C640, U+C678, U+C694, U+C6A9, U+C6C0, U+C6D0, U+C6F9, U+C704, U+C720-C721, U+C728, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790, U+C7A5, U+C7AC, U+C7C1, U+C800-C801, U+C804, U+C810, U+C815, U+C81C, U+C838, U+C870-C871, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+CC28, U+CC45, U+CC98, U+CCB4, U+CD5C, U+CD94, U+CD9C, U+CE35, U+CE58-CE59, U+CE68, U+CE74, U+CF54, U+CFE0, U+D06C, U+D0C8, U+D130, U+D14C, U+D1B5, U+D22C, U+D2B8, U+D30C, U+D3B8, U+D3EC, U+D3F4, U+D45C, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568, U+D574, U+D588-D589, U+D5D8, U+D604, U+D611, U+D648, U+D654-D655, U+D65C, U+D68C, U+D6C4, U+D734"
    },
    "head": {
     "chars": "공과구국권노닿도동듬라랑리맞모민보불사상성스시어요은의이인일자장전제크테통프학협화회",
@@ -536,18 +1007,38 @@
      "bytes": 4508
     },
     "unicodeRange": "U+ACF5, U+ACFC, U+AD6C-AD6D, U+AD8C, U+B178, U+B2FF, U+B3C4, U+B3D9, U+B4EC, U+B77C, U+B791, U+B9AC, U+B9DE, U+BAA8, U+BBFC, U+BCF4, U+BD88, U+C0AC, U+C0C1, U+C131, U+C2A4, U+C2DC, U+C5B4, U+C694, U+C740, U+C758, U+C774, U+C778, U+C77C, U+C790, U+C7A5, U+C804, U+C81C, U+D06C, U+D14C, U+D1B5, U+D504, U+D559, U+D611, U+D654, U+D68C"
+   },
+   "rest400": {
+    "chars": "「」각감같걷광께네녁느늦담들램룬린먹먼명무미봉빵선소십야엘예온완월응임작절징참초춤캉콜페평풍합핵헤혁형호",
+    "count": 52,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-society-rest400.b5723a8cf9375ef9.woff2",
+     "sha256": "b5723a8cf9375ef9a79a18d4deb031387d53ea3cd9c0cb549ebd28d6a1dd7a70",
+     "bytes": 5564
+    },
+    "unicodeRange": "U+300C-300D, U+AC01, U+AC10, U+AC19, U+AC77, U+AD11, U+AED8, U+B124, U+B141, U+B290, U+B2A6, U+B2F4, U+B4E4, U+B7A8, U+B8EC, U+B9B0, U+BA39, U+BA3C, U+BA85, U+BB34, U+BBF8, U+BD09, U+BE75, U+C120, U+C18C, U+C2ED, U+C57C, U+C5D8, U+C608, U+C628, U+C644, U+C6D4, U+C751, U+C784, U+C791, U+C808, U+C9D5, U+CC38, U+CD08, U+CDA4, U+CE89, U+CF5C, U+D398, U+D3C9, U+D48D, U+D569, U+D575, U+D5E4, U+D601, U+D615, U+D638"
+   },
+   "rest700": {
+    "chars": "감건검격골교그는료멈부생여역영와육증지처체추출콜트표행활",
+    "count": 28,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-society-rest700.ea14d8cdeea9ff98.woff2",
+     "sha256": "ea14d8cdeea9ff988bf3c023ca101f34d047866f846631ed7f82715f38138709",
+     "bytes": 3620
+    },
+    "unicodeRange": "U+AC10, U+AC74, U+AC80, U+ACA9, U+ACE8, U+AD50, U+ADF8, U+B294, U+B8CC, U+BA48, U+BD80, U+C0DD, U+C5EC-C5ED, U+C601, U+C640, U+C721, U+C99D, U+C9C0, U+CC98, U+CCB4, U+CD94, U+CD9C, U+CF5C, U+D2B8, U+D45C, U+D589, U+D65C"
    }
   },
   "france/fr-culture": {
    "body": {
-    "chars": "가각간강개갱거건검것게격결경계고곳공과관교구규그기긴까께끝나내냈너네넷녁년념노높놓눈뉴는늘다단당대도돈됐되된두둔드들듬등디땅뛰라란람랑래레로록론료루류르를름리마만말망머메며면명모못몽무문미바반받발방배백법베보복본볼부불브비빵사산살상색서석성세션소속송숑수숙순슈스습시식신심쓰아앉알앱야어언업었에여역연예오온옹와왜외요운울움원월웹위유으은을음의이인일읽임입있자잔장재저적전절점정제져조종좌주중즈증지질집쪽책처최축출치침칭카캉컬코크탁터테토통트티파페편표품프플필하학한할함합해했행향형호홈화확회후히",
-    "count": 247,
+    "chars": "가각간강개갱거건검것게격결경계고곳공과관교구규그기긴까께끝나내냈너네넷녁년념노높놓눈뉴는늘다단당대도돈됐되된두둔드들듬등디땅뛰라란람랑래레로록론료루류르를름리마만말망머메며면명모못몽무문미바반받발방배백법베보복본볼부불브비빵사산살상색서석성세션소속송숑수숙순슈스습시식신심쓰아앉알앱야약어언업었에여역연예오온옹와왜외요용운울움원월웹위유으은을음의이인일읽임입있자잔장재저적전절점정제져조종좌주중즈증지질집쪽책처최축출치침칭카캉컬코크탁터테토통트티파페편표품프플필하학한할함합해했행향형호홈화확회후히",
+    "count": 249,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-culture-400.3049fe32932b0c2c.woff2",
-     "sha256": "3049fe32932b0c2c0caca34b73f97e0946308e98dee516af6c923c42cf8d48bb",
-     "bytes": 17464
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-culture-400.6762436c244b6414.woff2",
+     "sha256": "6762436c244b641474f990cfdbc98473581164246d08d8f91a6c23b4affa058a",
+     "bytes": 17680
     },
-    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC15, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF3, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C, U+ADDC, U+ADF8, U+AE30, U+AE34, U+AE4C, U+AED8, U+B05D, U+B098, U+B0B4, U+B0C8, U+B108, U+B124, U+B137, U+B141, U+B144, U+B150, U+B178, U+B192-B193, U+B208, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F9, U+B300, U+B3C4, U+B3C8, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B4DC, U+B4E4, U+B4EC, U+B4F1, U+B514, U+B545, U+B6F0, U+B77C, U+B780, U+B78C, U+B791, U+B798, U+B808, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B958, U+B974, U+B97C, U+B984, U+B9AC, U+B9C8, U+B9CC, U+B9D0, U+B9DD, U+BA38, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BABD, U+BB34, U+BB38, U+BBF8, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30-BC31, U+BC95, U+BCA0, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD88, U+BE0C, U+BE44, U+BE75, U+C0AC, U+C0B0, U+C0B4, U+C0C1, U+C0C9, U+C11C-C11D, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C211, U+C218-C219, U+C21C, U+C288, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C4F0, U+C544, U+C549, U+C54C, U+C571, U+C57C, U+C5B4, U+C5B8, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C608, U+C624, U+C628, U+C639, U+C640, U+C65C, U+C678, U+C694, U+C6B4, U+C6B8, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C788, U+C790, U+C794, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C88C, U+C8FC, U+C911, U+C988, U+C99D, U+C9C0, U+C9C8, U+C9D1, U+CABD, U+CC45, U+CC98, U+CD5C, U+CD95, U+CD9C, U+CE58, U+CE68, U+CE6D, U+CE74, U+CE89, U+CEEC, U+CF54, U+D06C, U+D0C1, U+D130, U+D14C, U+D1A0, U+D1B5, U+D2B8, U+D2F0, U+D30C, U+D398, U+D3B8, U+D45C, U+D488, U+D504, U+D50C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5A5, U+D615, U+D638, U+D648, U+D654-D655, U+D68C, U+D6C4, U+D788"
+    "unicodeRange": "U+AC00-AC01, U+AC04, U+AC15, U+AC1C, U+AC31, U+AC70, U+AC74, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACBD, U+ACC4, U+ACE0, U+ACF3, U+ACF5, U+ACFC, U+AD00, U+AD50, U+AD6C, U+ADDC, U+ADF8, U+AE30, U+AE34, U+AE4C, U+AED8, U+B05D, U+B098, U+B0B4, U+B0C8, U+B108, U+B124, U+B137, U+B141, U+B144, U+B150, U+B178, U+B192-B193, U+B208, U+B274, U+B294, U+B298, U+B2E4, U+B2E8, U+B2F9, U+B300, U+B3C4, U+B3C8, U+B410, U+B418, U+B41C, U+B450, U+B454, U+B4DC, U+B4E4, U+B4EC, U+B4F1, U+B514, U+B545, U+B6F0, U+B77C, U+B780, U+B78C, U+B791, U+B798, U+B808, U+B85C-B85D, U+B860, U+B8CC, U+B8E8, U+B958, U+B974, U+B97C, U+B984, U+B9AC, U+B9C8, U+B9CC, U+B9D0, U+B9DD, U+BA38, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BABB, U+BABD, U+BB34, U+BB38, U+BBF8, U+BC14, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30-BC31, U+BC95, U+BCA0, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BD88, U+BE0C, U+BE44, U+BE75, U+C0AC, U+C0B0, U+C0B4, U+C0C1, U+C0C9, U+C11C-C11D, U+C131, U+C138, U+C158, U+C18C-C18D, U+C1A1, U+C211, U+C218-C219, U+C21C, U+C288, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C2EC, U+C4F0, U+C544, U+C549, U+C54C, U+C571, U+C57C-C57D, U+C5B4, U+C5B8, U+C5C5, U+C5C8, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C608, U+C624, U+C628, U+C639, U+C640, U+C65C, U+C678, U+C694, U+C6A9, U+C6B4, U+C6B8, U+C6C0, U+C6D0, U+C6D4, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784-C785, U+C788, U+C790, U+C794, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C808, U+C810, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C88C, U+C8FC, U+C911, U+C988, U+C99D, U+C9C0, U+C9C8, U+C9D1, U+CABD, U+CC45, U+CC98, U+CD5C, U+CD95, U+CD9C, U+CE58, U+CE68, U+CE6D, U+CE74, U+CE89, U+CEEC, U+CF54, U+D06C, U+D0C1, U+D130, U+D14C, U+D1A0, U+D1B5, U+D2B8, U+D2F0, U+D30C, U+D398, U+D3B8, U+D45C, U+D488, U+D504, U+D50C, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D5A5, U+D615, U+D638, U+D648, U+D654-D655, U+D68C, U+D6C4, U+D788"
    },
    "head": {
     "chars": "공과는도듬땅라랑론름리마문미바법사스시식와을의이인장제즈치카캉탁테페프학화회",
@@ -558,18 +1049,38 @@
      "bytes": 4156
     },
     "unicodeRange": "U+ACF5, U+ACFC, U+B294, U+B3C4, U+B4EC, U+B545, U+B77C, U+B791, U+B860, U+B984, U+B9AC, U+B9C8, U+BB38, U+BBF8, U+BC14, U+BC95, U+C0AC, U+C2A4, U+C2DC-C2DD, U+C640, U+C744, U+C758, U+C774, U+C778, U+C7A5, U+C81C, U+C988, U+CE58, U+CE74, U+CE89, U+D0C1, U+D14C, U+D398, U+D504, U+D559, U+D654, U+D68C"
+   },
+   "rest400": {
+    "chars": "「」갈같겨골광국급꼽날남논뉘니달닿데든랜략러려뢰룬린매물박변별생샹손솔술악안양엘열영우율작접진차참채첫콩쿼큐큰키풍헤현활휴",
+    "count": 61,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-culture-rest400.75d4ecbd35eca143.woff2",
+     "sha256": "75d4ecbd35eca143e0c490688cd9a029b08633ea4be5a8779e5ec39516756dd1",
+     "bytes": 6076
+    },
+    "unicodeRange": "U+300C-300D, U+AC08, U+AC19, U+ACA8, U+ACE8, U+AD11, U+AD6D, U+AE09, U+AF3D, U+B0A0, U+B0A8, U+B17C, U+B258, U+B2C8, U+B2EC, U+B2FF, U+B370, U+B4E0, U+B79C, U+B7B5, U+B7EC, U+B824, U+B8B0, U+B8EC, U+B9B0, U+B9E4, U+BB3C, U+BC15, U+BCC0, U+BCC4, U+C0DD, U+C0F9, U+C190, U+C194, U+C220, U+C545, U+C548, U+C591, U+C5D8, U+C5F4, U+C601, U+C6B0, U+C728, U+C791, U+C811, U+C9C4, U+CC28, U+CC38, U+CC44, U+CCAB, U+CF69, U+CFFC, U+D050, U+D070, U+D0A4, U+D48D, U+D5E4, U+D604, U+D65C, U+D734"
+   },
+   "rest700": {
+    "chars": "검게계관네노록료류멈목무부산상술습심역연영예외유일임자전정증지책처추출코키통트표핵형",
+    "count": 42,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-culture-rest700.b391057182a0159d.woff2",
+     "sha256": "b391057182a0159d8b8d2e3384468759343894f6fbcbe0104e17333339366093",
+     "bytes": 4620
+    },
+    "unicodeRange": "U+AC80, U+AC8C, U+ACC4, U+AD00, U+B124, U+B178, U+B85D, U+B8CC, U+B958, U+BA48, U+BAA9, U+BB34, U+BD80, U+C0B0, U+C0C1, U+C220, U+C2B5, U+C2EC, U+C5ED, U+C5F0, U+C601, U+C608, U+C678, U+C720, U+C77C, U+C784, U+C790, U+C804, U+C815, U+C99D, U+C9C0, U+CC45, U+CC98, U+CD94, U+CD9C, U+CF54, U+D0A4, U+D1B5, U+D2B8, U+D45C, U+D575, U+D615"
    }
   },
   "france/fr-francophonie": {
    "body": {
-    "chars": "가간갈같개갱건걸검것게격결계고공과관구국권규그급기까께꼽나남내냈너네넷노농눈뉴는늘니다단담대도동됐된둔듣들디따때뛰라란랑럽레려력로록롯뢰료루룩룬뤼륙르를리린마만많말망메며면명모몬못몽묶문미민바밖반받발배법벡벨별보복본볼부북불브비사산삼상색생샤서섬섯세셀셈션속송수쉽스습시식신쓰아안알앱어억언업에여역연영오올와왈왔외요용운움웃원웹위유으은을음의이인일읽임있자잔장재저적전정제져조종주준중증지진집징차참책처체쳐최추축출칙친침카캐켜코퀘크큰킨터토트특티파팎편포프필하학한할함합해했행협호홈화확활회휘히",
-    "count": 247,
+    "chars": "가간갈같개갱건걸검것게격결계고공과관구국권규그급기까께꼽나남내냈너네넷노농눈뉴는늘니다단담대도동됐된둔듣들디따때뛰라란랑럽레려력로록롯뢰료루룩룬뤼륙르를리린마만많말망메며면명모몬못몽묶문미민바밖반받발방배법벡벨별보복본볼부북불브비사산삼상색생샤서섬섯세셀셈션속송수쉽스습시식신쓰아안알앱약어억언업에여역연영오올와왈왔외요용운움웃원웹위유으은을음의이인일읽임있자잔장재저적전정제져조종주준중증지진집징차참책처체쳐최추축출칙친침카캐켜코퀘크큰킨터토트특티파팎편포프필하학한할함합해했행협호홈화확활회휘히",
+    "count": 249,
     "woff2": {
-     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-francophonie-400.966abc20dcac90e9.woff2",
-     "sha256": "966abc20dcac90e9ff0f3894b0b53729d095fe2afc2987f6939b4b4d295704b5",
-     "bytes": 17596
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-francophonie-400.0c14a66ecc9b0029.woff2",
+     "sha256": "0c14a66ecc9b0029ac91142a24068ed43e69893b7c8814011956fe95b5bad851",
+     "bytes": 17744
     },
-    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC19, U+AC1C, U+AC31, U+AC74, U+AC78, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADF8, U+AE09, U+AE30, U+AE4C, U+AED8, U+AF3D, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B124, U+B137, U+B178, U+B18D, U+B208, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F4, U+B300, U+B3C4, U+B3D9, U+B410, U+B41C, U+B454, U+B4E3-B4E4, U+B514, U+B530, U+B54C, U+B6F0, U+B77C, U+B780, U+B791, U+B7FD, U+B808, U+B824-B825, U+B85C-B85D, U+B86F, U+B8B0, U+B8CC, U+B8E8-B8E9, U+B8EC, U+B93C, U+B959, U+B974, U+B97C, U+B9AC, U+B9B0, U+B9C8, U+B9CC, U+B9CE, U+B9D0, U+B9DD, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BAAC, U+BABB, U+BABD, U+BB36, U+BB38, U+BBF8, U+BBFC, U+BC14, U+BC16, U+BC18, U+BC1B-BC1C, U+BC30, U+BC95, U+BCA1, U+BCA8, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80-BD81, U+BD88, U+BE0C, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C0E4, U+C11C, U+C12C, U+C12F, U+C138, U+C140, U+C148, U+C158, U+C18D, U+C1A1, U+C218, U+C27D, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C4F0, U+C544, U+C548, U+C54C, U+C571, U+C5B4-C5B5, U+C5B8, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C601, U+C624, U+C62C, U+C640, U+C648, U+C654, U+C678, U+C694, U+C6A9, U+C6B4, U+C6C0, U+C6C3, U+C6D0, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C794, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC28, U+CC38, U+CC45, U+CC98, U+CCB4, U+CCD0, U+CD5C, U+CD94-CD95, U+CD9C, U+CE59, U+CE5C, U+CE68, U+CE74, U+CE90, U+CF1C, U+CF54, U+D018, U+D06C, U+D070, U+D0A8, U+D130, U+D1A0, U+D2B8-D2B9, U+D2F0, U+D30C, U+D30E, U+D3B8, U+D3EC, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D611, U+D638, U+D648, U+D654-D655, U+D65C, U+D68C, U+D718, U+D788"
+    "unicodeRange": "U+AC00, U+AC04, U+AC08, U+AC19, U+AC1C, U+AC31, U+AC74, U+AC78, U+AC80, U+AC83, U+AC8C, U+ACA9, U+ACB0, U+ACC4, U+ACE0, U+ACF5, U+ACFC, U+AD00, U+AD6C-AD6D, U+AD8C, U+ADDC, U+ADF8, U+AE09, U+AE30, U+AE4C, U+AED8, U+AF3D, U+B098, U+B0A8, U+B0B4, U+B0C8, U+B108, U+B124, U+B137, U+B178, U+B18D, U+B208, U+B274, U+B294, U+B298, U+B2C8, U+B2E4, U+B2E8, U+B2F4, U+B300, U+B3C4, U+B3D9, U+B410, U+B41C, U+B454, U+B4E3-B4E4, U+B514, U+B530, U+B54C, U+B6F0, U+B77C, U+B780, U+B791, U+B7FD, U+B808, U+B824-B825, U+B85C-B85D, U+B86F, U+B8B0, U+B8CC, U+B8E8-B8E9, U+B8EC, U+B93C, U+B959, U+B974, U+B97C, U+B9AC, U+B9B0, U+B9C8, U+B9CC, U+B9CE, U+B9D0, U+B9DD, U+BA54, U+BA70, U+BA74, U+BA85, U+BAA8, U+BAAC, U+BABB, U+BABD, U+BB36, U+BB38, U+BBF8, U+BBFC, U+BC14, U+BC16, U+BC18, U+BC1B-BC1C, U+BC29, U+BC30, U+BC95, U+BCA1, U+BCA8, U+BCC4, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80-BD81, U+BD88, U+BE0C, U+BE44, U+C0AC, U+C0B0, U+C0BC, U+C0C1, U+C0C9, U+C0DD, U+C0E4, U+C11C, U+C12C, U+C12F, U+C138, U+C140, U+C148, U+C158, U+C18D, U+C1A1, U+C218, U+C27D, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C2E0, U+C4F0, U+C544, U+C548, U+C54C, U+C571, U+C57D, U+C5B4-C5B5, U+C5B8, U+C5C5, U+C5D0, U+C5EC-C5ED, U+C5F0, U+C601, U+C624, U+C62C, U+C640, U+C648, U+C654, U+C678, U+C694, U+C6A9, U+C6B4, U+C6C0, U+C6C3, U+C6D0, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C74C, U+C758, U+C774, U+C778, U+C77C-C77D, U+C784, U+C788, U+C790, U+C794, U+C7A5, U+C7AC, U+C800-C801, U+C804, U+C815, U+C81C, U+C838, U+C870, U+C885, U+C8FC, U+C900, U+C911, U+C99D, U+C9C0, U+C9C4, U+C9D1, U+C9D5, U+CC28, U+CC38, U+CC45, U+CC98, U+CCB4, U+CCD0, U+CD5C, U+CD94-CD95, U+CD9C, U+CE59, U+CE5C, U+CE68, U+CE74, U+CE90, U+CF1C, U+CF54, U+D018, U+D06C, U+D070, U+D0A8, U+D130, U+D1A0, U+D2B8-D2B9, U+D2F0, U+D30C, U+D30E, U+D3B8, U+D3EC, U+D504, U+D544, U+D558-D559, U+D55C, U+D560, U+D568-D569, U+D574, U+D588-D589, U+D611, U+D638, U+D648, U+D654-D655, U+D65C, U+D68C, U+D718, U+D788"
    },
    "head": {
     "chars": "계공권는니다대도동들라란랑럽륙리메밖벡불섬섯세스아어언웃유의이지체카코퀘포프",
@@ -580,6 +1091,26 @@
      "bytes": 4048
     },
     "unicodeRange": "U+ACC4, U+ACF5, U+AD8C, U+B294, U+B2C8, U+B2E4, U+B300, U+B3C4, U+B3D9, U+B4E4, U+B77C, U+B780, U+B791, U+B7FD, U+B959, U+B9AC, U+BA54, U+BC16, U+BCA1, U+BD88, U+C12C, U+C12F, U+C138, U+C2A4, U+C544, U+C5B4, U+C5B8, U+C6C3, U+C720, U+C758, U+C774, U+C9C0, U+CCB4, U+CE74, U+CF54, U+D018, U+D3EC, U+D504"
+   },
+   "rest400": {
+    "chars": "「」각거교날널넘누능더독되드든등랍래랙른무범살섞선설성셸순심앙우육작절존질층치칼커콩큐통튀페폴표향헤현황후",
+    "count": 53,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-francophonie-rest400.b0f549f63d473f11.woff2",
+     "sha256": "b0f549f63d473f1118bf1818ba251f039b38f7ff81042008f30cd966101e5997",
+     "bytes": 5404
+    },
+    "unicodeRange": "U+300C-300D, U+AC01, U+AC70, U+AD50, U+B0A0, U+B110, U+B118, U+B204, U+B2A5, U+B354, U+B3C5, U+B418, U+B4DC, U+B4E0, U+B4F1, U+B78D, U+B798-B799, U+B978, U+BB34, U+BC94, U+C0B4, U+C11E, U+C120, U+C124, U+C131, U+C178, U+C21C, U+C2EC, U+C559, U+C6B0, U+C721, U+C791, U+C808, U+C874, U+C9C8, U+CE35, U+CE58, U+CE7C, U+CEE4, U+CF69, U+D050, U+D1B5, U+D280, U+D398, U+D3F4, U+D45C, U+D5A5, U+D5E4, U+D604, U+D669, U+D6C4"
+   },
+   "rest700": {
+    "chars": "검게고과구국그기나너노료머무보서선속습심역요임자제주줄중증징처청출캐통트특표학한",
+    "count": 40,
+    "woff2": {
+     "href": "/fonts/kr-viewer/noto-sans-kr-studies-fr-francophonie-rest700.adca9910f724456b.woff2",
+     "sha256": "adca9910f724456be047c2db059f76dc295a7348dbeee3904a0b1fab75920f90",
+     "bytes": 4276
+    },
+    "unicodeRange": "U+AC80, U+AC8C, U+ACE0, U+ACFC, U+AD6C-AD6D, U+ADF8, U+AE30, U+B098, U+B108, U+B178, U+B8CC, U+BA38, U+BB34, U+BCF4, U+C11C, U+C120, U+C18D, U+C2B5, U+C2EC, U+C5ED, U+C694, U+C784, U+C790, U+C81C, U+C8FC, U+C904, U+C911, U+C99D, U+C9D5, U+CC98, U+CCAD, U+CD9C, U+CE90, U+D1B5, U+D2B8-D2B9, U+D45C, U+D559, U+D55C"
    }
   }
  }

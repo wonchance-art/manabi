@@ -2,7 +2,7 @@
 // 오너 방향(2026-07-18): 챕터·게임 적용은 보류, 전용 페이지의 전문 레퍼런스 문서가 1기 스코프.
 // 구조: 나라 → 도메인(개관/역사/경제/사회/문화/생활) → 문서(slug). 언어 트랙 슬러그와 무충돌
 // 접두(jp-, kr-, …). 문서 스키마 계약은 __tests__/studiesRegistry.test.js 가 고정한다.
-// 문서의 제목 · 요약 · 앞 절(약 700자)을 크게 고치거나 문서를 더하면 첫 화면 글꼴 하위 집합을 다시 만든다(STUDIES-CLS-001 — 계약이 포함률 95% 미만에서 실패):
+// 문서 문구를 크게 고치거나 문서를 더하면 글꼴 하위 집합(첫 화면 · 나머지)을 다시 만든다(STUDIES-CLS-001 · STUDIES-REST-001 — 계약이 포함률 95% 미만에서 실패):
 //   python3 -m pip install fonttools brotli && python3 scripts/fonts/kr-viewer-subset.py
 
 import JP_OVERVIEW from './japan/overview.js';
