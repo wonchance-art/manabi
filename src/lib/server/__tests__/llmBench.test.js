@@ -50,10 +50,11 @@ describe('고정 입력 — 제품 함수 결과 그대로', () => {
 
 describe('응답 처리 — 운영 disambiguateZhPos와 같은 pick', () => {
   it('같은 응답에서 채점 대상 단어의 pick이 운영 함수와 같다', async () => {
-    vi.stubEnv('GEMINI_API_KEY', 'test-key');
+    // 운영 판별은 사용자 내용 경로라 Claude만(LLM-PROVIDER-POLICY-001) — 같은 응답 본문을 Claude 요청에 잇는다.
+    vi.stubEnv('ANTHROPIC_API_KEY', 'test-key'); vi.stubEnv('ANTHROPIC_BASE_URL', '');
     for (const p of fixture.zhSense.slice(0, 4)) {
       const text = goldText(p);
-      vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text }] } }] }) })));
+      sdk.create.mockResolvedValue({ id: 'msg', type: 'message', role: 'assistant', model: 'claude-haiku-5-5', content: [{ type: 'text', text }], stop_reason: 'end_turn', usage: { input_tokens: 1, output_tokens: 1 } });
       const prod = await disambiguateZhPos(p.lines, p.marks);
       const { picks, lengthOk } = zhPicksFromText(text, p.marks);
       expect(lengthOk).toBe(true);

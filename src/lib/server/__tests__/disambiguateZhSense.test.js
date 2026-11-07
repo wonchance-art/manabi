@@ -1,4 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { claudeViaGeminiMock } from './helpers/claudeViaGeminiMock.js';
+
+// 사용자 내용 경로(문장 문맥 품사 판별)는 Claude만(LLM-PROVIDER-POLICY-001) — Gemini 모양 목을 Claude 요청에 잇는다.
+const stubFetch = (fn) => vi.stubGlobal('fetch', claudeViaGeminiMock(fn));
 import {
   ZH_SENSE_REVIEW, buildZhPosWriteback, disambiguateZhPos, pickZhMeaning, resolveZhTokenPos, zhPosMarkKey,
 } from '../disambiguateZhPos.js';
@@ -147,7 +151,7 @@ describe('프롬프트 — 후보 있는 단어만 「뜻 후보」 줄', () => 
 });
 
 describe('disambiguateZhPos — 켜짐 마크의 응답 처리·호출 수·실패', () => {
-  beforeEach(() => vi.stubEnv('GEMINI_API_KEY', 'test-key'));
+  beforeEach(() => { vi.stubEnv('ANTHROPIC_API_KEY', 'test-key'); vi.stubEnv('ANTHROPIC_BASE_URL', ''); vi.stubEnv('GEMINI_API_KEY', 'test-key'); });
   afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
   const lines = ['我给妈妈打了一个电话。', '他吃醋了。'];
   const cu = [{ meaning: '식초를 먹다', pos: '동사' }, { meaning: '시샘하다', pos: '동사' }];
@@ -163,7 +167,7 @@ describe('disambiguateZhPos — 켜짐 마크의 응답 처리·호출 수·실�
       { all: ['명사'], pos: '명사', sense: 1 },
       { all: ['동사'], pos: '동사', sense: 0, ctx: '질투하다' },
     ]));
-    vi.stubGlobal('fetch', fetchMock);
+    stubFetch(fetchMock);
     const stats = createZhSenseStats(marks);
     const picks = await disambiguateZhPos(lines, marks, { senseStats: stats });
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -174,7 +178,7 @@ describe('disambiguateZhPos — 켜짐 마크의 응답 처리·호출 수·실�
   });
 
   it('pos 위반·sense 위반은 그 단어만 버리고 discarded로 센다. sense 0 + 나쁜 ctx는 doubt 표식만 남긴다', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+    stubFetch(vi.fn(async () => geminiText([
       { all: ['동사'], pos: '명사', sense: 2 },
       { all: ['명사'], pos: '명사' },
       { all: ['동사'], pos: '동사', sense: 0, ctx: '아주아주아주아주긴뜻이다' },
@@ -187,7 +191,7 @@ describe('disambiguateZhPos — 켜짐 마크의 응답 처리·호출 수·실�
   });
 
   it('묶음 판정만을 위해 더한 마크(pairOnly)는 join만 남기고 품사 결과는 pick이 없는 것과 같게 처리된다', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+    stubFetch(vi.fn(async () => geminiText([
       { all: ['동사'], pos: '동사', sense: 2 },
       { all: ['양사'], pos: '양사', join: true },
     ])));
@@ -202,7 +206,7 @@ describe('disambiguateZhPos — 켜짐 마크의 응답 처리·호출 수·실�
 
   it('마크가 없으면 호출 0', async () => {
     const fetchMock = vi.fn();
-    vi.stubGlobal('fetch', fetchMock);
+    stubFetch(fetchMock);
     expect((await disambiguateZhPos(lines, [])).size).toBe(0);
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -212,7 +216,7 @@ describe('disambiguateZhPos — 켜짐 마크의 응답 처리·호출 수·실�
     ['길이 불일치', () => geminiText([{ all: ['동사'], pos: '동사', sense: 2 }])],
     ['파싱 실패', () => geminiText('not json at all')],
   ])('%s면 결과가 후보 없는 마크로 돈 결과와 같다(빈 결과 → 현행 뜻)', async (_name, respond) => {
-    vi.stubGlobal('fetch', vi.fn(async () => respond()));
+    stubFetch(vi.fn(async () => respond()));
     const on = await disambiguateZhPos(lines, marks, { senseStats: createZhSenseStats(marks) });
     const off = await disambiguateZhPos(lines, marks.map(({ candidates, ...m }) => m));
     expect([...on]).toEqual([...off]);

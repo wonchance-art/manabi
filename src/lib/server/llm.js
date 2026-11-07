@@ -31,6 +31,7 @@
 
 // 「서비스 설정」 판정의 정본은 errorMessage.js 한 곳(서버 · 클라 · 안내 문구가 같이 쓴다 — GEMINI-402-GUARD).
 import { isServiceConfigError } from '../errorMessage.js';
+import { providersFor } from './llmProviderPolicy.js';
 export { isServiceConfigError };
 
 /** 티어 표 — 호출부는 이 이름만 안다. 폴백 모델 출력 단가는 본선 이하여야 한다(R3에서 확정). */
@@ -656,9 +657,11 @@ export async function callLLM(tier, input, opts = {}) {
 async function callLLMInner(tier, input, opts, started) {
   const spec = TIERS[tier];
   if (!spec) throw new LLMError(`unknown tier: ${tier}`, { code: 'unknown_tier', status: 400 });
+  // 경로별 제공자 허용 목록(LLM-PROVIDER-POLICY-001) — 사용자 내용 경로는 Claude만, 단어 뜻(분석 사전)만 Gemini · Groq 대체.
+  const allowed = providersFor(opts.route || null);
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const apiKey = process.env.GEMINI_API_KEY;
-  const groqKey = opts.groq === false ? '' : process.env.GROQ_API_KEY;
+  const apiKey = allowed.includes('gemini') ? process.env.GEMINI_API_KEY : '';
+  const groqKey = opts.groq === false || !allowed.includes('groq') ? '' : process.env.GROQ_API_KEY;
   if (!anthropicKey && !apiKey && !groqKey) throw new LLMError('LLM API key missing', { code: 'no_key', status: 500 });
 
   const contents = toContents(input);

@@ -68,7 +68,8 @@ describe('키 유무 — Claude 본선 / 현행 그대로', () => {
     const spy = vi.fn(async () => geminiOk('ok'));
     vi.stubGlobal('fetch', spy);
     const { callLLM } = await fresh();
-    const { meta } = await callLLM('standard', '프롬프트', { temperature: 0.2, responseMimeType: 'application/json', responseSchema: { type: 'OBJECT' }, route: 'writing-feedback' });
+    // Gemini 대체는 단어 뜻(분석 사전) 경로에만 남는다(LLM-PROVIDER-POLICY-001) — 사용자 내용 경로의 키 없음은 llmProviderPolicy.test.js.
+    const { meta } = await callLLM('standard', '프롬프트', { temperature: 0.2, responseMimeType: 'application/json', responseSchema: { type: 'OBJECT' }, route: 'verifyMeanings' });
     expect(meta).toMatchObject({ provider: 'gemini', model: 'gemini-3.6-flash', fallbackDepth: 0 }); // Claude가 후보에 끼면 깊이 1
     expect(claudeCalls(spy)).toHaveLength(0);
     expect(spy).toHaveBeenCalledTimes(1);
@@ -185,7 +186,8 @@ describe('오류 분류 — isServiceConfigError와 같은 축', () => {
     vi.stubEnv('GROQ_API_KEY', 'g');
     const spy = vi.fn(async (url) => (isGroq(url) ? groqOk('groq 답') : claudeFail(400, 'invalid_request_error', CREDIT)));
     vi.stubGlobal('fetch', spy);
-    const { text, meta } = await callLLM('standard', 'p', { route: 'conversation-turn' });
+    // Groq 대체도 단어 뜻(분석 사전) 경로에만 — 뜻 검증은 Sonnet 품질 경로라 Sonnet → (Haiku 건너뜀) → Groq.
+    const { text, meta } = await callLLM('standard', 'p', { route: 'verifyMeanings' });
     expect([text, meta.provider, meta.fallbackDepth]).toEqual(['groq 답', 'groq', 2]);
     expect(spy).toHaveBeenCalledTimes(2); // Sonnet 1 + Groq 1 — Haiku는 건너뜀
   });
