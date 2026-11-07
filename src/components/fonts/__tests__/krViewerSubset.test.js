@@ -69,7 +69,8 @@ describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', ()
   });
 
   it('public/fonts/kr-viewer에는 하위 집합마다 지금 판 하나씩만 있다(옛 판이 남지 않는다)', () => {
-    const files = fs.readdirSync(PUBLIC).filter((f) => f.endsWith('.woff2')).sort();
+    // 지역학 문서별 하위 집합(noto-sans-kr-studies-*)은 krStudiesSubset.test.js가 본다.
+    const files = fs.readdirSync(PUBLIC).filter((f) => f.endsWith('.woff2') && !f.startsWith('noto-sans-kr-studies-')).sort();
     expect(files).toEqual(NAMES.map((n) => path.basename(metaOf(n).woff2.href)).sort());
   });
 
