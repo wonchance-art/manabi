@@ -762,12 +762,16 @@ test('AE-R3 390 첫 화면 우선: 3줄 문장 + 体育场(안 2) — 표제어�
    const meaning=card.querySelector('.word-detail-card__meaning').getBoundingClientRect();
    const below=card.querySelector('.reader-card-glyph--below');
    const beside=card.querySelector('.word-fit-wrap > .reader-card-glyph');
-   return {tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),
+   // 간헐 실패(CI 1/6 — 단계 1만 오르고 2가 안 오름) 진단: 실패하면 카드 본문 예산을 그대로 남긴다.
+   const body=card.querySelector('.reader-card-body'),br=body?.getBoundingClientRect(),gl=card.querySelector('.reader-card-glyph');
+   const budget=body&&{limit:br.top+body.clientHeight,meaningBottom:meaning.bottom,scrollTop:body.scrollTop,headScroll:body.dataset.headScroll??null,clientHeight:body.clientHeight,
+    layout:gl?.dataset.layout??null,names:gl?.dataset.names??null,sheet:card.closest('.viewer-inspector')?.getBoundingClientRect().height??null,compact:card.closest('.viewer-inspector')?.dataset.compact??null};
+   return {budget,tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),
     below:below?{top:below.getBoundingClientRect().top,text:below.textContent,layout:below.dataset.layout}:null,meaningBottom:meaning.bottom,
     beside:beside?{layout:beside.dataset.layout,text:beside.textContent}:null,details:card.querySelectorAll('details,[aria-expanded="false"]:not([data-inspect-key])').length};
   });
   assert.equal(s.tight,true,'step 1: the sentence line drops to the 2-line budget');
-  assert.ok(s.below,'step 2: the glyph rows move below the meaning line');
+  assert.ok(s.below,`step 2: the glyph rows move below the meaning line — ${JSON.stringify(s.budget)}`);
   assert.ok(s.below.top>=s.meaningBottom-.5,'below block is under the meaning line');
   assert.ok(s.below.text.includes('体育場')&&s.below.text.includes('たいいくじょう'),s.below.text);
   if(s.beside){assert.equal(s.beside.layout,'side');assert.match(s.beside.text,/^正(대만)?體育場$/,'beside the headword: the 正 row only (正 + its name 「대만」 when it fits — 목업 CrsGiHf5bS4tmQk3n2HVBx ①)');assert.ok(!s.below.text.includes('體育場'));}
