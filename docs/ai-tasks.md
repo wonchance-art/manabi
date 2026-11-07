@@ -1145,6 +1145,12 @@
     재분석 안 함 ④ review_events 'zh'(레벨 · 쓰기 읽기 일관) · 'ja' 11(7/9 독해 퀴즈) — 읽기 경로 영향 0 ② 처리방침 대조 — 문구 4곳은 WEB에
     넘김(IP 보관 · Gemini 음성 · 손글씨 · 대체 처리). ACCOUNT-DELETE-004(이번 PR, 20261107020000): 탈퇴 때 하루 상한 사용량 u:<uid> 줄도 즉시 삭제
     (forget_ai_daily_usage, service_role 전용 · 실패해도 탈퇴는 진행 — 30일 자동 정리).
+    #1722 병합(f3681068) · 운영 확인(함수 service_role만 · 지문 그대로). 오너 승인 3건(11/7 11:35 KST, 오케스트레이터 경유 「권장안대로」):
+    ① 사용자 내용 경로 Gemini 대체 끄기 ② 주인 없는 비공개 10행 백업 뒤 삭제 ③ 중국어 공개 시드 HSK1–3 6–10편.
+    ORPHAN-MATERIALS-001(이번 PR, 20261107030000): ②의 백업 — id 1 · 5 · 7 · 13 · 14 · 15 · 16 · 17 · 18 · 30(owner NULL · 비공개) 재실측: FK 19개
+    전부 0 · 저장소 0 · 묶음 · PDF 없음 · 전체 304편. backup_private.reading_materials_orphans_20261107(모든 열 · anon/authenticated 닫힘).
+    삭제는 docs/sql/orphan-private-materials-20261107-delete.sql(백업 md5 · 카탈로그의 모든 FK · 행 수 10을 스스로 확인) — 실행 확인 창은
+    오너가 직접 승인. 복원 = docs/sql/orphan-private-materials-20261107-restore.sql(같은 id). 계약 PGlite 5 · vitest 3.
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
