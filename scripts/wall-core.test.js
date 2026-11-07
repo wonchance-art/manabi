@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import {
-  aggregateParts, coverage, discoverRoutes, expandScenes, judgeShot, loadRegistry, mergeVerdicts, missingValueLines, offTokenColors, rgbToHex, routeFromPageFile, validateRegistry,
+  aggregateParts, coverage, DATA_GAP, discoverRoutes, ENV_NOISE_ROUTES, expandScenes, judgeShot, loadRegistry, mergeVerdicts, missingValueLines, offTokenColors, rgbToHex, routeFromPageFile, splitEnvNoise, validateRegistry,
 } from './wall-core.mjs';
 
 const root = join(import.meta.dirname, '..');
@@ -171,5 +171,25 @@ describe('화면 크기별 주소', () => {
     expect(expandScenes(reg)[0].pathByViewport).toEqual({ mobile: '/v/1', desktop: '/v/2' });
     reg.routes[0].scenes[0].pathByViewport = { tablet: '/v/3' };
     expect(validateRegistry(reg).join('\n')).toMatch(/pathByViewport/);
+  });
+});
+
+describe('합성 서버 환경 소음 — AI 키 없는 벽 서버의 AI 경로 500(2026-11-07 KST)', () => {
+  const R500 = 'Failed to load resource: the server responded with a status of 500 (Internal Server Error)';
+  it('AI 경로 500의 콘솔 줄만 envNoise로 옮기고 사유를 붙인다', () => {
+    const r = splitEnvNoise([R500, R500], ['500 POST /api/gemini', '500 POST /api/gemini']);
+    expect(r.consoleErrors).toEqual([]);
+    expect(r.envNoise).toEqual(['500 POST /api/gemini — 합성 서버에 AI 키 없음(운영은 키가 있어 정상 응답)']);
+    expect(splitEnvNoise([R500], ['500 POST /api/study-paragraph']).consoleErrors).toEqual([]);
+  });
+  it('다른 경로의 500 · 다른 콘솔 오류 · 남는 500 줄은 그대로 센다', () => {
+    expect(splitEnvNoise([R500], ['500 GET /api/vocab']).consoleErrors).toEqual([R500]);
+    expect(splitEnvNoise(['pageerror: boom', R500, R500], ['500 POST /api/gemini']).consoleErrors).toEqual(['pageerror: boom', R500]);
+    expect(splitEnvNoise([R500], ['502 POST /api/gemini']).consoleErrors).toEqual([R500]);
+    expect(ENV_NOISE_ROUTES.map(r => r.path.source)).toEqual(['^\\/api\\/(?:gemini|study-paragraph)$']);
+  });
+  it('데이터 빈칸 문구는 지금 404 문구로(옛 「길을 잃으셨군요」 없음)', () => {
+    expect(DATA_GAP.test('페이지를 찾을 수 없어요')).toBe(true);
+    expect(DATA_GAP.source).not.toContain('길을 잃');
   });
 });

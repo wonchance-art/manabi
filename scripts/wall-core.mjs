@@ -128,7 +128,33 @@ export const RAW_ERROR = /Server Components render|Application error|Unhandled R
 // 값 누락 노출 — 영문 낱말 경계로 잰다(「Annulled」 속 null은 세지 않고, 「NaN개」처럼 한국어가 바로 붙은 것은 센다).
 export const MISSING_VALUE = /(?<![A-Za-z0-9_])(?:undefined|null|NaN|\[object Object\])(?![A-Za-z0-9_])|\{\{[^}]*\}\}|(?<![A-Za-z0-9])%s(?![A-Za-z0-9])/;
 // 합성 데이터가 응답하지 않아 찍힌 화면의 흔한 문구 — 판정하지 않고 보완 요청으로 돌린다(§4 「판정 안 함」).
-export const DATA_GAP = /불러오지 못했어요|찾을 수 없어요|문제가 발생했어요|길을 잃으셨군요/;
+export const DATA_GAP = /불러오지 못했어요|찾을 수 없어요|문제가 발생했어요/;
+
+/**
+ * 합성 서버 환경 소음 — 벽 서버는 AI 키 없이 뜨므로 AI 경로가 500(「서버에 AI 키가 설정되지 않았어요」)을 낸다. 운영은 키가 있어
+ * 정상 응답이라 화면 품질 문제가 아니다(2026-11-07 KST 오케스트레이터 지시: 테스트 자체의 소음은 벽 스크립트에서 정리).
+ * 그 응답이 브라우저에 남기는 「Failed to load resource … 500」 콘솔 줄만 envNoise로 옮겨 사유와 함께 따로 적는다 — 다른 오류는 그대로 센다.
+ */
+export const ENV_NOISE_ROUTES = Object.freeze([
+  Object.freeze({ path: /^\/api\/(?:gemini|study-paragraph)$/, status: 500, reason: '합성 서버에 AI 키 없음(운영은 키가 있어 정상 응답)' }),
+]);
+const RESOURCE_500 = /^Failed to load resource: the server responded with a status of 500\b/;
+
+/** failed = 이 장면의 5xx 응답 줄(「500 POST /api/gemini」 모양, 중복 포함). → { consoleErrors(남김), envNoise(사유 붙인 줄) } */
+export function splitEnvNoise(consoleErrors = [], failed = []) {
+  const noise = failed.map((line) => {
+    const m = String(line).match(/^(\d{3}) \S+ (\S+)/);
+    const rule = m && ENV_NOISE_ROUTES.find(r => r.status === Number(m[1]) && r.path.test(m[2].split('?')[0]));
+    return rule ? `${line} — ${rule.reason}` : null;
+  }).filter(Boolean);
+  let budget = noise.length;
+  const kept = [];
+  for (const e of consoleErrors) {
+    if (budget > 0 && RESOURCE_500.test(e)) { budget -= 1; continue; }
+    kept.push(e);
+  }
+  return { consoleErrors: kept, envNoise: [...new Set(noise)] };
+}
 const AXE_RULES = Object.freeze({ 'color-contrast': '대비 AA', 'button-name': '이름 없는 버튼', 'link-name': '이름 없는 링크', 'image-alt': '대체 글 없는 이미지' });
 export const AXE_RULE_IDS = Object.freeze(Object.keys(AXE_RULES));
 
