@@ -283,6 +283,7 @@ function fakeService(tables) {
         eq: (...a) => { call.filters.push(['eq', ...a]); return chain; },
         in: (...a) => { call.filters.push(['in', a[0], [...a[1]]]); return chain; },
         not: (...a) => { call.filters.push(['not', ...a]); return chain; },
+        is: (...a) => { call.filters.push(['is', ...a]); return chain; },
         order: () => chain,
         abortSignal: () => Promise.resolve(result()),
       };
@@ -381,7 +382,8 @@ describe('뷰어 자료 — 우리가 만든 공개 자료만 검색에 싣는�
     expect(await materialEntries()).toEqual([{ url: canonicalFor('/viewer/3') }, { url: canonicalFor('/viewer/45') }]);
     const list = service.calls.find((c) => c.table === 'reading_materials');
     expect(list.select).toBe('id');
-    expect(list.filters).toEqual([['eq', 'visibility', 'public'], ['in', 'owner_id', ['admin-1', 'admin-2']],
+    expect(list.filters).toEqual([['is', 'processed_json->metadata->>retired_series', null], // 은퇴 표식 자료는 색인에서도 뺀다(SEED-EXPOSE-001)
+      ['eq', 'visibility', 'public'], ['in', 'owner_id', ['admin-1', 'admin-2']],
       ['in', 'processed_json->>status', ['completed', 'partial']], ['not', 'processed_json->sequence->0', 'is', null]]);
     __setCuratorClient(null);
     expect(await curatedMaterialIds()).toEqual([]);

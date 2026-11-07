@@ -147,6 +147,16 @@ export function levelRank(language, level) {
   return i < 0 ? null : i;
 }
 
-/** 시리즈 패턴 제목([… #N] — 문법 예문 연재)은 /lessons 소속이라 공개 목록 · 공개 글 수에서 뺀다(PostgREST ilike 패턴).
- *  자료실 목록 · 스터디 그룹 · 발견 서가가 같은 조건을 쓴다 — 셋이 어긋나면 「123편」이라 세고 열면 0편이 된다(2026-10-16 실측). */
+/** 시리즈 패턴 제목([… #N] — 레벨 · 주제 연재). 같은 연재의 앞뒤 글 찾기(useSeriesNeighbors) · 개인 서재 편입 규칙(library-v4)에서 쓴다.
+ *  **공개 목록에서 숨기는 판정이 아니다**(SEED-EXPOSE-001 · 2026-11-08 KST): 제목 모양으로 숨기면 새 자료가 실수로 사라진다
+ *  (중국어 시드 9편 실측). 숨김은 아래 명시 표식(retired_series)만 본다. */
 export const SERIES_TITLE_ILIKE = '[%#%]%';
+
+/** 은퇴 표식 — processed_json.metadata.retired_series에 값이 있으면(보통 true) 공개 목록 · 공개 글 수 · 스터디 그룹 후보 · 사이트맵에서 뺀다.
+ *  정본 판정은 withoutRetiredSeries 하나다(네 곳이 어긋나면 「N편」이라 세고 열면 0편이 된다 — 2026-10-16 실측). 대상은 0편에서 시작한다. */
+export const RETIRED_SERIES_PATH = 'processed_json->metadata->>retired_series';
+
+/** PostgREST 질의에 은퇴 제외 조건을 붙인다(표식이 없는 행만). */
+export function withoutRetiredSeries(query) {
+  return query.is(RETIRED_SERIES_PATH, null);
+}
