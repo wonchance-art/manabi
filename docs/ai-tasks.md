@@ -878,6 +878,13 @@
 
 ## Claude (claude/*)
 ### doing
+- **VOCAB-SUBSET-SMALL-001 복습실 미리 받기 52 → 17.5KB — FCP 비용 +0.26 → +0.13s (2026-11-07 KST)** PR `claude/vocab-subset-small`(오케스트레이터 지시 · #1725 후속, 화면 무변경):
+  #1725 병합 뒤 운영 /vocab FCP가 오른 것을 교대 측정 — 뷰어 하위 집합 52KB 미리 받기가 렌더 차단 CSS와 h2 대역을 나눠 FCP−TTFB 1.67 → 1.99s(+0.26s, 1.6Mbps).
+  미리 받기를 빼거나(B) 낮추면(D, fetchpriority low) 하위 집합이 첫 그림 뒤에 와 CLS 0.07이 돌아온다 → 같은 바이트로는 맞바꿈이라 바이트를 줄인다.
+  고침: 하위 집합을 화면마다 따로(scripts/fonts/kr-viewer-chars.mjs SUBSETS) — 복습실 = 셸 + VocabPage 손님 블록(「// kr-subset:vocab-guest:begin/end」 표식) 121자 17.5KB,
+  뷰어 = VocabPage를 뺀 408자 50.9KB(#1723 판과 같은 바이트). 생성기는 하위 집합 전부를 한 번에, 계약은 하위 집합마다 추출 ⊆ 목록 · sha · 범위 · 싣는 레이아웃 짝 · 크기 상한.
+  측정 정정: #1725 병합 전 A/B의 FCP 열은 woff2를 route.fulfill로 채워 대역 제한을 안 탄 값이었다 — **PERF-AB-001**: 같은 출처 앞단 도구(scripts/perf/) ·
+  규칙 문서(docs/perf-measurement.md) · 계약(scripts/perf 코드에 route · fulfill 금지)을 같은 PR에 둔다. 벽: vocab 손님 · 빈 · 채움 · 카드 + 뷰어 2 × 390 · 1280 × 기기 밝음 · 어두움 24장 픽셀 차 0.
 - **VOCAB-GUEST-CLS-001 복습실 손님 화면 자리 이동 0.07 → 0 (2026-11-07 KST)** PR `claude/vocab-guest-cls`(오케스트레이터 지시 · 버그 수정, 최종 화면 무변경):
   원인 = 글꼴 교체로 줄 수가 바뀜 — 손님 안내 문단이 첫 그림에선 시스템 글꼴(대체 「Noto Sans KR Fallback」 = Arial에 한글 없음)로 4줄, 4.15s에 KR 조각이 와 3줄로
   줄며 단추 줄이 25px 올라감(컨테이너 500 → 424px). 하이드레이션 · 클라이언트 상태 · 손님 판정과 무관(손님 분기는 정적 마크업).

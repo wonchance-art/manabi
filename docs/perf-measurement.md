@@ -1,0 +1,42 @@
+# 첫 그림 성능 측정 — 규칙과 함정 (PERF-AB-001, 2026-11-07 KST)
+
+글꼴 · 첫 그림 PR(렌더 차단 CSS, 미리 받기, 하위 집합, 서버 그림)은 병합 전에 **교대 A/B 수치**를 PR 본문에 싣는다(오케스트레이터 게이트 2026-11-07).
+이 문서는 그 수치를 믿을 수 있게 재는 방법이다. 도구는 `scripts/perf/`에 있고, 아래 ①은 계약(`scripts/perf/perfTools.test.js`)이 지킨다.
+
+## 규칙
+
+1. **바이트를 바꾸는 비교는 같은 출처 앞단에서만 한다.** 운영 HTML에 무언가를 넣거나 빼거나, 파일을 다른 것으로 바꾸는 팔은
+   `scripts/perf/same-origin-proxy.mjs`가 진짜 HTTPS 응답으로 돌려준다. 브라우저는 운영 주소를 그대로 열고 연결만 앞단으로 간다.
+   - **Playwright `route.fulfill`(또는 `route.fetch` 뒤 fulfill)로 채운 응답은 DevTools 대역 제한을 타지 않는다.** 그 바이트가 대역을 쓰지 않으니
+     「미리 받기 비용」 같은 대역 경합이 통째로 사라진다.
+     - 실측: #1725 병합 전 A/B의 FCP 1.94 · 1.95s가 이 방식이었다. 실제로는 52KB 미리 받기가 FCP를 +0.26s 늦췄다.
+   - `route`는 CLS · 최종 높이처럼 **대역과 무관한 값**을 볼 때만 쓴다. 그 결과로 FCP · LCP를 말하지 않는다.
+   - localhost의 다른 출처 서버로 파일을 주는 것도 안 된다. 연결이 따로라 운영의 같은 h2 연결 경합이 재현되지 않는다(실측: 52KB 대조군도 FCP가 안 늦었다).
+2. **FCP−TTFB · LCP−TTFB로 비교한다.** 운영 TTFB 편차가 ±0.3s라 FCP 절대값의 차이는 잡음에 묻힌다.
+3. **팔을 교대로 잰다.** 판마다 순서를 뒤집고(A B C / C B A …), 팔마다 5회 이상 잰 뒤 중앙값을 쓴다.
+4. **앞단의 절대값은 운영과 다르다** — 팔 사이 차이만 본다. 앞단은 HTTP/1.1이다.
+   - 앞단 검증: 운영 그대로(A) · 미리 받기 없음(N)이 운영 직접 측정(1.99 · 1.67s)과 비슷하게(2.0 · 1.6s) 나와야 한다.
+   - 알려진 차이: 연결 수 제한 때문에 next/font의 Manrope가 늦게 와서, 복습실 단추 줄에 0.0172 이동이 생긴다. 운영 A는 10/10 모두 0이다.
+     앞단에만 있는 이동은 **병합 뒤 운영 측정으로 확인한다.**
+5. **실험실 대체 글꼴은 실기기와 다르다.** 이 컨테이너에서 한글 시스템 글꼴은 WenQuanYi Zen Hei다(실기기는 iOS Apple SD Gothic Neo · Android Noto Sans CJK).
+   - 「글꼴 교체로 줄바꿈이 바뀌는가」는 기기마다 다르다. 실험실 CLS는 「바뀔 수 있다」의 증거일 뿐이다.
+   - 고친 결과는 「첫 그림 전에 실제 글꼴이 와 있다(교체 자체가 없다)」로 확인한다.
+6. **공통 조건**: iPhone 13 · 지연 150ms · 내려받기 1.6Mbps · 올리기 750kbps · CPU 4배.
+   - 대역에 비례하는 비용은 조건을 함께 적는다. 예: 52KB는 1.6Mbps에서 ≈0.26s, 10Mbps에서 ≈0.04s.
+
+## 쓰는 법
+
+```sh
+# 팔 파일 = { 이름: { html?, link?, files?, block? } } (scripts/perf/same-origin-proxy.mjs 머리말)
+NODE_USE_ENV_PROXY=1 node scripts/perf/first-paint-ab.mjs --arms scripts/perf/arms/kr-subset-preload.example.mjs --path /vocab --rounds 5
+```
+
+- 출력: 판마다 `{ arm, fcpMinusTtfb, lcpMinusTtfb, cls, shifts(출처), woff2 }`, 끝에 팔별 중앙값.
+- 문서가 앞단에서 오지 않으면 멈춘다(`serverAddr` 확인).
+- 병합 뒤에는 운영을 직접 같은 조건으로 잰다(팔 없이 — 운영 그대로가 「뒤」).
+
+## 기록
+
+- 2026-11-07 VOCAB-SUBSET-SMALL-001: 복습실 미리 받기 52KB → 17.5KB.
+  - FCP−TTFB: 1.88s(52KB) → 1.74s(17.5KB). 미리 받기 없음은 1.62s다.
+  - 손님 안내 문단 이동: 0.07 → 0.
