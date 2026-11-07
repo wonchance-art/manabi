@@ -38,3 +38,20 @@ describe('JA-PUNCT-001 — 기호만으로 된 토큰은 기호', () => {
     expect(pos['。']).toBe('기호');
   });
 });
+
+// 같은 유형 점검(오케스트레이터 11/8 03:50 ②): 영어 · 중국어 분석기는 이미 반각 · 전각 기호를 기호로 낸다 — 회귀를 막는다.
+describe('JA-PUNCT-001 — 영어 · 중국어 분석기도 기호는 기호(회귀 고정)', () => {
+  const P = /^[\p{P}\p{S}]+$/u;
+  it('영어 — ( ) / — ! ~ [ ] " ? - $ % .', async () => {
+    const { tokenizeEnLine } = await import('../tokenizeEn');
+    const marks = tokenizeEnLine('Hello (world) / test — ok! ~ [a] "q"? 1-2 $5 50% x...').filter((t) => P.test(t.text));
+    expect(marks.length).toBeGreaterThanOrEqual(15);
+    for (const t of marks) expect(t.pos).toBe('기호');
+  });
+  it('중국어 — 반각 ( ) / — ! ~ [ ] " ? · 전각 （）／…、。', async () => {
+    const { tokenizeZhLine } = await import('../tokenizeZh');
+    const marks = tokenizeZhLine('你好(nǐ hǎo)/再见—好!~[a]"啊"?（全角）／…、。').filter((t) => P.test(t.text));
+    expect(marks.length).toBeGreaterThanOrEqual(15);
+    for (const t of marks) expect(t.pos).toBe('기호');
+  });
+});
