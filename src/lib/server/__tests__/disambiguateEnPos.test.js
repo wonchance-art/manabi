@@ -1,4 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { claudeViaGeminiMock } from './helpers/claudeViaGeminiMock.js';
+
+// 사용자 내용 경로(문장 문맥 품사 판별)는 Claude만(LLM-PROVIDER-POLICY-001) — Gemini 모양 목을 Claude 요청에 잇는다.
+const stubFetch = (fn) => vi.stubGlobal('fetch', claudeViaGeminiMock(fn));
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -52,7 +56,7 @@ describe('영어 marker·mark 수집', () => {
 });
 
 describe('disambiguateEnPos — 검증·fallback', () => {
-  beforeEach(() => vi.stubEnv('GEMINI_API_KEY', 'test-key'));
+  beforeEach(() => { vi.stubEnv('ANTHROPIC_API_KEY', 'test-key'); vi.stubEnv('ANTHROPIC_BASE_URL', ''); vi.stubEnv('GEMINI_API_KEY', 'test-key'); });
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
@@ -62,7 +66,7 @@ describe('disambiguateEnPos — 검증·fallback', () => {
   const mark = collectEnPosMarks([{ tokens: [token] }], new Map())[0];
 
   it('유효한 occurrence 판정만 Map에 넣고 HTTP 횟수를 분리한다', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
+    stubFetch(vi.fn(async () => ({
       ok: true,
       status: 200,
       json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify([
@@ -85,7 +89,7 @@ describe('disambiguateEnPos — 검증·fallback', () => {
       ])],
     ]);
     const marks = collectEnPosMarks([{ tokens }], cache);
-    vi.stubGlobal('fetch', vi.fn(async () => ({
+    stubFetch(vi.fn(async () => ({
       ok: true,
       status: 200,
       json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify([
@@ -100,7 +104,7 @@ describe('disambiguateEnPos — 검증·fallback', () => {
   });
 
   it('pos 후보와 맞지 않는 lemma는 모델 위반으로 폐기한다', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
+    stubFetch(vi.fn(async () => ({
       ok: true,
       status: 200,
       json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify([
@@ -112,7 +116,7 @@ describe('disambiguateEnPos — 검증·fallback', () => {
   });
 
   it('허용 목록 밖 품사가 all에 섞여도 행 전체를 폐기한다', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
+    stubFetch(vi.fn(async () => ({
       ok: true,
       status: 200,
       json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify([
@@ -124,7 +128,7 @@ describe('disambiguateEnPos — 검증·fallback', () => {
   });
 
   it('키 없음·판별 실패는 호출 없이 빈 결과로 수렴한다', async () => {
-    vi.stubEnv('GEMINI_API_KEY', '');
+    vi.stubEnv('GEMINI_API_KEY', ''); vi.stubEnv('ANTHROPIC_API_KEY', '');
     const { picks, httpCalls } = await disambiguateEnPos(['I used a saw.'], [mark]);
     expect(picks.size).toBe(0);
     expect(httpCalls).toBe(0);

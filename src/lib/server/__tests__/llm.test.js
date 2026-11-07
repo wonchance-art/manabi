@@ -175,9 +175,10 @@ describe('AA R1 — callLLM 동작 계약', () => {
     const fetchSpy = vi.fn(async (url) => (isGemini(url, 'gemini-3.6-flash') ? geminiFail(503) : geminiOk('답')));
     vi.stubGlobal('fetch', fetchSpy);
     const { callLLM } = await fresh();
-    const { text, meta } = await callLLM('standard', '질문', { route: 'x' });
+    // Gemini 대체는 단어 뜻(분석 사전) 경로에만 남는다(LLM-PROVIDER-POLICY-001) — 대체 동작은 그 경로로 본다.
+    const { text, meta } = await callLLM('standard', '질문', { route: 'verifyMeanings' });
     expect(text).toBe('답');
-    expect(meta).toMatchObject({ tier: 'standard', model: 'gemini-3.5-flash-lite', provider: 'gemini', fallbackDepth: 1, route: 'x' });
+    expect(meta).toMatchObject({ tier: 'standard', model: 'gemini-3.5-flash-lite', provider: 'gemini', fallbackDepth: 1, route: 'verifyMeanings' });
     expect(fetchSpy).toHaveBeenCalledTimes(2);
     expect(isGemini(fetchSpy.mock.calls[0][0], 'gemini-3.6-flash')).toBe(true);
     expect(isGemini(fetchSpy.mock.calls[1][0], 'gemini-3.5-flash-lite')).toBe(true);
@@ -485,12 +486,12 @@ describe('AA R2 — 텔레메트리', () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
     vi.stubGlobal('fetch', vi.fn(async (url) => (isGemini(url, 'gemini-3.6-flash') ? geminiFail(503) : geminiOk('ok', usage))));
     const { callLLM, LLM_LOG_KEYS } = await fresh();
-    await callLLM('standard', '비밀 프롬프트 본문', { route: 'explain' });
+    await callLLM('standard', '비밀 프롬프트 본문', { route: 'verifyMeanings' });
     expect(llmLines(info)).toHaveLength(1);
     const rec = JSON.parse(llmLines(info)[0]);
     expect(Object.keys(rec)).toEqual([...LLM_LOG_KEYS]);
     expect(rec).toMatchObject({
-      route: 'explain', tier: 'standard', model: 'gemini-3.5-flash-lite', provider: 'gemini', fallbackDepth: 1,
+      route: 'verifyMeanings', tier: 'standard', model: 'gemini-3.5-flash-lite', provider: 'gemini', fallbackDepth: 1,
       in: 10, out: 5, thinking: 2, ok: true, status: 200,
     });
     expect(typeof rec.ms).toBe('number');
@@ -557,7 +558,7 @@ describe('AA R2 — 텔레메트리', () => {
     vi.stubGlobal('fetch', vi.fn(async (url) => (isGroq(url) ? groqOk('g') : geminiFail(503))));
     const { callLLM, getLLMStats, resetLLMStats, GROQ_MODEL } = await fresh();
     resetLLMStats();
-    await callLLM('light', 'p', { route: 'x' });
+    await callLLM('light', 'p', { route: 'fetchMeanings' });
     expect(JSON.parse(llmLines(info)[0])).toMatchObject({ provider: 'groq', model: GROQ_MODEL, in: 7, out: 3, thinking: 0, ok: true, fallbackDepth: 1 });
     expect(getLLMStats().tiers.light[GROQ_MODEL]).toMatchObject({ calls: 1, ok: 1, in: 7, out: 3, thinking: 0, fallbackUsed: 1 });
   });

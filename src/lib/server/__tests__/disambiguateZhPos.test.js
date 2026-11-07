@@ -1,4 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { claudeViaGeminiMock } from './helpers/claudeViaGeminiMock.js';
+
+// 사용자 내용 경로(문장 문맥 품사 판별)는 Claude만(LLM-PROVIDER-POLICY-001) — Gemini 모양 목을 Claude 요청에 잇는다.
+const stubFetch = (fn) => vi.stubGlobal('fetch', claudeViaGeminiMock(fn));
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -82,7 +86,7 @@ describe('collectZhPosMarks — 판별 대상 수집', () => {
 });
 
 describe('disambiguateZhPos — Gemini 문맥 판별', () => {
-  beforeEach(() => vi.stubEnv('GEMINI_API_KEY', 'test-key'));
+  beforeEach(() => { vi.stubEnv('ANTHROPIC_API_KEY', 'test-key'); vi.stubEnv('ANTHROPIC_BASE_URL', ''); vi.stubEnv('GEMINI_API_KEY', 'test-key'); });
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
@@ -101,7 +105,7 @@ describe('disambiguateZhPos — Gemini 문맥 판별', () => {
   });
 
   it('정상 응답을 mark key로 매핑한다', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+    stubFetch(vi.fn(async () => geminiText([
       { all: ['동사', '명사'], pos: '동사' },
       { all: ['동사', '명사'], pos: '명사' },
     ])));
@@ -112,7 +116,7 @@ describe('disambiguateZhPos — Gemini 문맥 판별', () => {
 
   it('프롬프트에 문장과 단어 목록이 실린다', async () => {
     let sentPrompt = '';
-    vi.stubGlobal('fetch', vi.fn(async (url, opts) => {
+    stubFetch(vi.fn(async (url, opts) => {
       sentPrompt = JSON.parse(opts.body).contents[0].parts[0].text;
       return geminiText([{ all: ['동사'], pos: '동사' }, { all: ['명사'], pos: '명사' }]);
     }));
@@ -131,7 +135,7 @@ describe('disambiguateZhPos — Gemini 문맥 판별', () => {
 
     it('oov 마크에만 [단어성 판정] 표시가 붙는다', async () => {
       let sentPrompt = '';
-      vi.stubGlobal('fetch', vi.fn(async (url, opts) => {
+      stubFetch(vi.fn(async (url, opts) => {
         sentPrompt = JSON.parse(opts.body).contents[0].parts[0].text;
         return geminiText([{ all: [], pos: null }, { all: ['명사'], pos: '명사' }]);
       }));
@@ -141,7 +145,7 @@ describe('disambiguateZhPos — Gemini 문맥 판별', () => {
     });
 
     it('유효한 분해는 parts로 저장, 실단어 verdict는 pos 경로로 저장한다', async () => {
-      vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+      stubFetch(vi.fn(async () => geminiText([
         { all: [], pos: null, split: [{ t: '笔', pos: '명사' }, { t: '在', pos: '전치사' }] },
         { all: ['명사'], pos: '명사' },
       ])));
@@ -153,7 +157,7 @@ describe('disambiguateZhPos — Gemini 문맥 판별', () => {
     });
 
     it('부분 연결이 원 표기와 다르면 분해를 버린다(모델 위반 방어)', async () => {
-      vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+      stubFetch(vi.fn(async () => geminiText([
         { all: ['명사'], pos: '명사', split: [{ t: '笔', pos: '명사' }, { t: '存', pos: '동사' }] },
         { all: ['명사'], pos: '명사' },
       ])));
@@ -163,7 +167,7 @@ describe('disambiguateZhPos — Gemini 문맥 판별', () => {
     });
 
     it('oov 아닌 마크의 split은 무시한다', async () => {
-      vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+      stubFetch(vi.fn(async () => geminiText([
         { all: ['동사', '명사'], pos: '동사', split: [{ t: '计', pos: '동사' }, { t: '划', pos: '동사' }] },
         { all: ['동사', '명사'], pos: '명사' },
       ])));
@@ -174,7 +178,7 @@ describe('disambiguateZhPos — Gemini 문맥 판별', () => {
   });
 
   it('pos가 all에 없는 항목은 버린다(모델 위반 — 해당 단어만 폴백)', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+    stubFetch(vi.fn(async () => geminiText([
       { all: ['명사'], pos: '동사' },          // 위반 — 버림
       { all: ['동사', '명사'], pos: '동사' },   // 정상
     ])));
@@ -184,19 +188,19 @@ describe('disambiguateZhPos — Gemini 문맥 판별', () => {
   });
 
   it('길이 불일치 응답은 전량 버린다', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => geminiText([{ all: ['동사'], pos: '동사' }])));
+    stubFetch(vi.fn(async () => geminiText([{ all: ['동사'], pos: '동사' }])));
     expect((await disambiguateZhPos(lines, marks)).size).toBe(0);
   });
 
   it('HTTP 실패·예외에도 빈 결과로 수렴한다(throw 금지)', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 503, json: async () => ({}) })));
+    stubFetch(vi.fn(async () => ({ ok: false, status: 503, json: async () => ({}) })));
     expect((await disambiguateZhPos(lines, marks)).size).toBe(0);
-    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('network'); }));
+    stubFetch(vi.fn(async () => { throw new Error('network'); }));
     expect((await disambiguateZhPos(lines, marks)).size).toBe(0);
   });
 
   it('API 키가 없으면 호출 없이 빈 결과', async () => {
-    vi.stubEnv('GEMINI_API_KEY', '');
+    vi.stubEnv('GEMINI_API_KEY', ''); vi.stubEnv('ANTHROPIC_API_KEY', '');
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
     expect((await disambiguateZhPos(lines, marks)).size).toBe(0);

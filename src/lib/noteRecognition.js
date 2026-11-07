@@ -3,11 +3,11 @@
 export const RECOGNITION_IMAGE_LIMIT = 1500000;
 export const RECOGNITION_ELEMENT_LIMIT = 500;
 // INK-CONSENT-001 — 선택한 필기를 받는 처리자와 그 순서. 서버(server/selectedInkRecognition.js)는 callLLM('standard', groq:false)로
-// 보내므로 Claude 키가 있으면 Anthropic Claude가 먼저, 실패하면 Google Gemini다(server/llm.js 후보 순서). 안내 문구와 동의 값은 이
-// 목록에서 나온다 — 처리자가 바뀌면 inkRecognitionProviders.test.js가 실제 요청 순서와 대조해 잡는다. 동의 값에 순서를 넣어,
-// 예전 안내(Gemini만)를 본 화면이 보낸 요청은 서버가 받지 않는다.
-export const INK_RECOGNITION_PROVIDERS = Object.freeze(['anthropic','gemini']);
-export const INK_RECOGNITION_PROVIDER_LABEL = 'AI(Anthropic Claude, 안 되면 Google Gemini)';
+// 보내고, 손글씨는 사용자 내용 경로라 Anthropic Claude에만 간다(LLM-PROVIDER-POLICY-001, 오너 승인 2026-11-07 — Gemini 대체 끔).
+// 안내 문구와 동의 값은 이 목록에서 나온다 — 처리자가 바뀌면 inkRecognitionProviders.test.js가 실제 요청과 대조해 잡는다. 동의 값에
+// 처리자를 넣어, 예전 안내(Claude → Gemini · Gemini만)를 본 화면이 보낸 요청은 서버가 받지 않는다.
+export const INK_RECOGNITION_PROVIDERS = Object.freeze(['anthropic']);
+export const INK_RECOGNITION_PROVIDER_LABEL = 'AI(Anthropic Claude)';
 export const INK_RECOGNITION_CONSENT = `selected-ink-to-${INK_RECOGNITION_PROVIDERS.join('-then-')}`;
 // 동의 값이 없거나 예전 값(열려 있던 옛 화면)일 때 — 지금 안내를 보고 다시 누르게 한다.
 export const INK_RECOGNITION_CONSENT_MESSAGE = '필기 인식 안내가 바뀌었어요. 새로고침한 뒤 다시 인식해 주세요.';

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { claudeViaGeminiMock } from '../server/__tests__/helpers/claudeViaGeminiMock.js';
 import {
   SNAPSHOT_SOURCE, baselineB0, buildParagraphs, buildZhSensePromptDraft, collectPairCandidates, evaluateRelease, matchCandidate,
   pendingCandidateForms, scoreCase, senseFragments, summarize, validateHoldout, validateSensePickDraft,
@@ -248,12 +249,13 @@ describe('N 시안 프롬프트 — 현행 프롬프트 + 추가분', () => {
   ];
 
   it('추가분이 없으면 현행 buildZhPosPrompt와 바이트 단위로 같다', async () => {
-    vi.stubEnv('GEMINI_API_KEY', 'test-key');
+    // 운영 판별은 사용자 내용 경로라 Claude만(LLM-PROVIDER-POLICY-001) — Claude 요청의 프롬프트를 같은 모양으로 받아 본다.
+    vi.stubEnv('ANTHROPIC_API_KEY', 'test-key'); vi.stubEnv('ANTHROPIC_BASE_URL', '');
     let sent = '';
-    vi.stubGlobal('fetch', vi.fn(async (url, opts) => {
+    vi.stubGlobal('fetch', claudeViaGeminiMock(vi.fn(async (url, opts) => {
       sent = JSON.parse(opts.body).contents[0].parts[0].text;
       return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: '[]' }] } }] }) };
-    }));
+    })));
     await disambiguateZhPos(lines, marks);
     expect(sent).not.toBe('');
     expect(buildZhSensePromptDraft(lines, marks)).toBe(sent);
