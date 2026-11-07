@@ -1163,6 +1163,10 @@
     손글씨 · 문단 · 문장 설명 · 한국어 분석 · 문맥 품사 판별 · 교사 조회 · 클라 프록시)과 처음 보는 route는 Claude만. TTS 그대로. 실패 문구 =
     각 경로 기존 안내. 화면 변화 1줄: 손글씨 안내 「AI(Anthropic Claude, 안 되면 Google Gemini)」 → 「AI(Anthropic Claude)」. 계약
     llmProviderPolicy.test.js(경로마다 Claude 실패 → Gemini · Groq 요청 0 · 모든 callLLM 호출부 route 분류). WEB에 route 표 전달(처리방침).
+    #1730 병합(c35693f8). ② 삭제 SQL 실행 확인 창은 230초 무응답으로 시간 초과 — 실행 안 됨(304편 · 10행 그대로 확인), 오너 「이어서」 대기.
+    ZH-SEED-001(이번 PR, 20261107040000): ③ 중국어 공개 시드 9편(H1 기초 · H2 초급 · H3 중급 각 3, 124~136자, 간체 정본, 생활 · 여행 · 대만/중국
+    생활, 정치 0 · 실존 상호 텍스트만). 관리자 소유 공개 idle로 넣고 starter 작업 끝에 붙임(11/8 02:45 실행이 분석, analyze 상한 +9). 검수
+    docs/verification/zh-seeds-20261107.md: HSK 1~3 어휘 85.1% · 토큰 이음 = 원문 9/9 · 운영 분석기 병음 확인(오독 4곳은 문장을 고쳐 피함).
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
