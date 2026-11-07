@@ -37,7 +37,7 @@ export default function NoteRecognition({noteId,capture,sync,current,onApply,onC
     if(!items.length)return;
     event.preventDefault();const index=items.indexOf(document.activeElement);items[(index+(event.shiftKey?-1:1)+items.length)%items.length].focus();
   }}>
-    <header><div><small>HANDWRITING → WORDS</small><h2 id="note-recognition-title">선택한 필기 읽기<span>.</span></h2></div><button className="note-icon" aria-label={busy?'필기 인식 취소':'필기 인식 닫기'} onClick={onClose}><BoardIcon name="close"/></button></header>
+    <header><div><small>필기 → 단어</small><h2 id="note-recognition-title">선택한 필기 읽기<span>.</span></h2></div><button className="note-icon" aria-label={busy?'필기 인식 취소':'필기 인식 닫기'} onClick={onClose}><BoardIcon name="close"/></button></header>
     <div className="note-recognition-body"><p>아래에 보이는 부분만 <strong>{INK_RECOGNITION_PROVIDER_LABEL}</strong>로 보내요.</p>
       {/* Local PNG generated from the explicitly selected elements. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}

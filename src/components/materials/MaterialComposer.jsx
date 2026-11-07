@@ -27,7 +27,7 @@ export default function MaterialComposer({ sessionHint = null } = {}) {
   const params=useSearchParams();
   // 서버가 세션 쿠키를 못 봤으면(sessionHint === false) 확인을 기다리지 않고 손님 안내를 바로 그린다(VOCAB-GUEST-FIRST-001과 같은 규칙).
   if (loading && sessionHint !== false) return <div className="page-container" role="status">계정을 확인하고 있어요…</div>;
-  if (!user) return <section className="composer-gate"><p className="manabi-eyebrow">YOUR LIBRARY</p><h1>내 서재에 담아 두세요.</h1><p>글과 파일, 링크를 한곳에서 읽을 수 있어요.</p><Link className="manabi-button" href="/auth?from=/materials/add">로그인하고 작성하기 ↗</Link></section>;
+  if (!user) return <section className="composer-gate"><p className="manabi-eyebrow">내 서재</p><h1>내 서재에 담아 두세요.</h1><p>글과 파일, 링크를 한곳에서 읽을 수 있어요.</p><Link className="manabi-button" href="/auth?from=/materials/add">로그인하고 작성하기 ↗</Link></section>;
   return <ComposerForm key={user.id} ownerId={user.id} collection={collectionId(params.get('collection'))} returnTo={safeLibraryReturn(params.get('returnTo'))} note={params.get('direction') === MATERIAL_DIRECTION.WRITE} />;
 }
 
@@ -281,11 +281,11 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
 
   if (anotherTab) return <section className="composer-gate"><h1>다른 탭에서 작성 중이에요.</h1><p>초안이 서로 덮어써지지 않도록 한 탭에서 작성해 주세요.</p><button className="manabi-button" onClick={() => window.location.reload()}>다른 편집기를 닫고 다시 열기</button><Link className="manabi-link" href="/materials?view=owned">내 서재로</Link></section>;
   if (!draft) return <div className="composer-gate" role="status">{draftStatus}</div>;
-  if (draft.savedId) return <section className="composer-gate"><p className="manabi-eyebrow">SAVED TO YOUR LIBRARY</p><h1>{composerTitle(draft)}</h1><p>서재에 저장된 자료예요.</p>{error&&<p role="alert">{error}</p>}{draft.collectionId&&<button className="manabi-button" disabled={busy} onClick={retryMembership}>{busy?'담는 중…':'모음집에 담기 다시 시도'}</button>}<Link className="manabi-button" href={`/viewer/${draft.savedId}?returnTo=${encodeURIComponent(returnTo)}`}>자료 열기 ↗</Link><button className="manabi-link" onClick={startNew}>자료 추가</button></section>;
+  if (draft.savedId) return <section className="composer-gate"><p className="manabi-eyebrow">내 서재 / 저장됨</p><h1>{composerTitle(draft)}</h1><p>서재에 저장된 자료예요.</p>{error&&<p role="alert">{error}</p>}{draft.collectionId&&<button className="manabi-button" disabled={busy} onClick={retryMembership}>{busy?'담는 중…':'모음집에 담기 다시 시도'}</button>}<Link className="manabi-button" href={`/viewer/${draft.savedId}?returnTo=${encodeURIComponent(returnTo)}`}>자료 열기 ↗</Link><button className="manabi-link" onClick={startNew}>자료 추가</button></section>;
   const locked = busy || draft.frozen;
   return <section className="material-composer" aria-labelledby="composer-heading">
-    <div className="composer-top"><Link href={editing ? `/viewer/${scope}?returnTo=${encodeURIComponent(returnTo)}` : returnTo}>{editing ? '← 자료로 돌아가기' : '← 내 서재'}</Link><span>PRIVATE / 나만 보기</span></div>
-    <header className="composer-heading"><p className="manabi-eyebrow">A PAGE OF YOUR OWN</p><h1 id="composer-heading">{editing ? '자료 수정' : '새 자료'}</h1><p>{editing ? '글과 첨부를 고쳐도 전에 저장한 표현의 출처는 남아 있어요.' : '글과 원본을 함께 담아 두세요.'}</p></header>
+    <div className="composer-top"><Link href={editing ? `/viewer/${scope}?returnTo=${encodeURIComponent(returnTo)}` : returnTo}>{editing ? '← 자료로 돌아가기' : '← 내 서재'}</Link><span>나만 보기</span></div>
+    <header className="composer-heading"><p className="manabi-eyebrow">내 서재 / 직접 쓰기</p><h1 id="composer-heading">{editing ? '자료 수정' : '새 자료'}</h1><p>{editing ? '글과 첨부를 고쳐도 전에 저장한 표현의 출처는 남아 있어요.' : '글과 원본을 함께 담아 두세요.'}</p></header>
     <form onSubmit={submit} className="composer-paper" onDragOver={e => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); }} onDrop={e => { if (e.dataTransfer.files.length) { e.preventDefault(); addFiles([...e.dataTransfer.files]); } }}>
       <label className="sr-only" htmlFor="composer-title">제목</label>
       <textarea ref={titleField} id="composer-title" className="composer-title" rows={1} placeholder="제목" value={draft.title} maxLength={240} disabled={locked} onChange={e => change({ title: e.target.value.replace(/[\r\n]+/g, ' ') })} autoComplete="off" />

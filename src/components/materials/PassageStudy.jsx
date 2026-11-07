@@ -102,13 +102,13 @@ export default function PassageStudy({ material, sources, preferredKey, primary 
   const openerButton = <button ref={opener} className={primary ? 'passage-toolbar__secondary' : 'manabi-button'} disabled={!sources.length} onPointerDown={() => { frozen.current = selection; }} onClick={open}>{selection ? '선택한 부분 공부하기' : openerLabel}</button>;
   return <>
     <div className={`passage-toolbar${selection ? ' passage-toolbar--selected' : ''}`}>
-      <div><span className="manabi-eyebrow">READ INTO LEARNING</span><p>{selectionNotice || (selection ? '고른 문장을 학습으로 이어가세요.' : idleText || (preferred ? `${passageLocation(preferred.source)}에서 필요한 부분만 골라 보세요.` : '원본이 열리면 학습할 부분을 고를 수 있어요.'))}</p></div>
+      <div><span className="manabi-eyebrow">학습으로 잇기</span><p>{selectionNotice || (selection ? '고른 문장을 학습으로 이어가세요.' : idleText || (preferred ? `${passageLocation(preferred.source)}에서 필요한 부분만 골라 보세요.` : '원본이 열리면 학습할 부분을 고를 수 있어요.'))}</p></div>
       {primary ? <div className="passage-toolbar__actions">{primary}{openerButton}</div> : openerButton}
       {children}
     </div>
     <dialog ref={dialog} className="passage-dialog" aria-labelledby="passage-heading" onCancel={event => { event.preventDefault(); close(); }}>
       {draft && <div className="passage-panel" data-language={chosen}>
-        <header><div><span className="manabi-eyebrow">A PASSAGE TO KEEP</span><h2 id="passage-heading">이 부분 공부하기</h2></div><button type="button" aria-label="구간 선택 닫기" disabled={busy} onClick={close}>닫기</button></header>
+        <header><div><span className="manabi-eyebrow">고른 구간</span><h2 id="passage-heading">이 부분 공부하기</h2></div><button type="button" aria-label="구간 선택 닫기" disabled={busy} onClick={close}>닫기</button></header>
         <p className="passage-origin">{material.title}<span>{draft.item.title ? `${draft.item.title} · ` : ''}{passageLocation(draft.item.source)}</span></p>
         {!draft.quote && sourceChoices.length > 1 && <div className="passage-source-choice"><label htmlFor="passage-source">구간을 고를 위치</label><select id="passage-source" value={draft.item.key} disabled={busy} onChange={event => chooseSource(event.target.value)}>{sourceChoices.map(item => <option key={item.key} value={item.key}>{item.title ? `${item.title} · ` : ''}{passageLocation(item.source)}</option>)}</select></div>}
         {!draft.quote && !draft.manual && <div className="passage-picker">

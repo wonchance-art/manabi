@@ -8,14 +8,14 @@ export function ClassroomShell({ lang='Japanese', children, board=false, teamHom
 }
 // `/class` 학생 · 손님 머리글 — 경로 진입(ClassHub)과 오너 허브(ClassHubPage)의 학생 분기가 함께 쓴다(ClassHubLearner).
 export function ClassroomLearnerHeader() {
-  return <header className="classroom-header"><div><span className="classroom-eyebrow">MANABI / CLASS</span><h1>함께 배우고,<br/>나의 언어로.</h1><p>수업에서 만난 표현을 다시 읽고, 오래 기억하세요.</p></div></header>;
+  return <header className="classroom-header"><div><span className="classroom-eyebrow">manabi / 수업</span><h1>함께 배우고,<br/>나의 언어로.</h1><p>수업에서 만난 표현을 다시 읽고, 오래 기억하세요.</p></div></header>;
 }
 export function ClassroomState({title,children,retry}) {
-  return <ClassroomShell><section className="classroom-state"><span className="classroom-eyebrow">MANABI / CLASS</span><h1>{title}</h1>{children}{retry&&<button className="classroom-button" onClick={retry}>다시 시도</button>}</section></ClassroomShell>;
+  return <ClassroomShell><section className="classroom-state"><span className="classroom-eyebrow">manabi / 수업</span><h1>{title}</h1>{children}{retry&&<button className="classroom-button" onClick={retry}>다시 시도</button>}</section></ClassroomShell>;
 }
 export function ClassCover({team,small=false}) {
   const lang=classLanguage(team.lang);
-  return <div className={`classroom-cover${small?' classroom-cover--small':''}`} aria-hidden="true" data-language={team.lang}><span>manabi / class</span><b lang={lang.code}>{lang.glyph}</b><span>{lang.label} · {team.name}</span></div>;
+  return <div className={`classroom-cover${small?' classroom-cover--small':''}`} aria-hidden="true" data-language={team.lang}><span>manabi / 수업</span><b lang={lang.code}>{lang.glyph}</b><span>{lang.label} · {team.name}</span></div>;
 }
 export function ClassEntryDisplay({entry,lang,hidden=false}) {
   return <div className="classroom-expression">

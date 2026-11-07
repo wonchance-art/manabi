@@ -104,7 +104,7 @@ describe('화면 보존', () => {
     const { default: ClassroomJoin } = await import('../../components/classroom/ClassroomJoin.jsx');
     const h = createElement;
     expect(html).toBe(renderToStaticMarkup(h(ClassroomShell, null,
-      h('header', { className: 'classroom-header' }, h('div', null, h('span', { className: 'classroom-eyebrow' }, 'MANABI / CLASS'),
+      h('header', { className: 'classroom-header' }, h('div', null, h('span', { className: 'classroom-eyebrow' }, 'manabi / 수업'),
         h('h1', null, '함께 배우고,', h('br'), '나의 언어로.'), h('p', null, '수업에서 만난 표현을 다시 읽고, 오래 기억하세요.'))),
       h(ClassroomJoin))));
     expect(html).toContain('함께 배우고,<br/>나의 언어로.');

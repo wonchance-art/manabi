@@ -54,7 +54,7 @@ export default function BoardInkRecognition({rootId,team,capture,isCurrent,onPla
     event.stopPropagation();if(event.key==='Escape'){event.preventDefault();onClose();}
   }}>
     {collapsed?<div className="board-ink-collapsed"><button aria-label="인식 결과 다시 열기" onClick={()=>setCollapsed(false)}>판에 놓음 · 결과 열기</button><BoardIconButton icon="close" label="필기 인식 닫기" onClick={onClose}/></div>:<>
-    <header><div><small>INK → WORDS</small><h2>필기에서 표현<span>.</span></h2></div><BoardIconButton icon="close" label={busy?'필기 인식 취소':'필기 인식 닫기'} onClick={onClose}/></header>
+    <header><div><small>필기 → 표현</small><h2>필기에서 표현<span>.</span></h2></div><BoardIconButton icon="close" label={busy?'필기 인식 취소':'필기 인식 닫기'} onClick={onClose}/></header>
     <div className="board-ink-body">
       <details open={!rows} className="board-ink-preview"><summary>선택한 필기</summary>
         {/* Explicit local selection, raster only. No embedded scene or source. */}

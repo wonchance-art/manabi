@@ -585,8 +585,9 @@ export default function GroupsPage() {
 
   return (
     <div className="page-container groups-page">
-      {/* 지금 디자인의 머리(새 자료 · 고급 가져오기와 같은 영문 머리 줄 + 큰 제목 + 보조 줄) — 오너 「승인 및 수용」 2026-11-04 KST. */}
-      <p className="manabi-eyebrow groups-page__eyebrow">TOGETHER / 서재</p>
+      {/* 지금 디자인의 머리(새 자료 · 고급 가져오기와 같은 머리 줄 + 큰 제목 + 보조 줄) — 오너 「승인 및 수용」 2026-11-04 KST.
+          머리 줄은 「내 서재 / 소그룹」 — 영어 머리 줄 한국어화(오너 승인 2026-11-07 KST, 목업 CrsGiHf5bS4tmQk3n2HVBx ②). */}
+      <p className="manabi-eyebrow groups-page__eyebrow">내 서재 / 소그룹</p>
       <h1 className="groups-page__title">함께 읽기</h1>
       <p className="groups-page__lede">
         같은 자료를 함께 읽는 소그룹 — 토론은 각자 읽은 데까지만, 주간 기록은 합계로만.

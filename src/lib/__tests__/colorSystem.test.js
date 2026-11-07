@@ -154,7 +154,7 @@ describe('단계 3 · 옛 화면 이전 (오너 「승인 및 수용」 2026-11-
   it('함께 읽기 · 고급 가져오기는 지금 디자인의 부품 — 머리 그림 글자 없음 · 각진 면 · 선 입력칸', () => {
     const groups = read('src/views/GroupsPage.jsx');
     expect(groups).not.toContain('👥');
-    expect(groups).toContain('<p className="manabi-eyebrow groups-page__eyebrow">TOGETHER / 서재</p>');
+    expect(groups).toContain('<p className="manabi-eyebrow groups-page__eyebrow">내 서재 / 소그룹</p>');
     const gcss = read('src/views/groups.css');
     expect(sliceBetween(gcss, '.groups-page .card {', '}')).toContain('border-radius: 0;');
     expect(sliceBetween(gcss, '.groups-page .group-field {', '}')).toContain('border-bottom: 1px solid var(--rule);');

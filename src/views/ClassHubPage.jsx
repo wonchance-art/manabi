@@ -148,7 +148,7 @@ export default function ClassHubPage() {
   if (!isAdmin) return <ClassHubLearner/>;
   return (
     <ClassroomShell>
-      <header className="classroom-header"><div><span className="classroom-eyebrow">MANABI / CLASS</span><h1>오늘, 함께 배울 것들.</h1><p>한 표현에서 시작해 한 편의 수업 노트로.</p></div>
+      <header className="classroom-header"><div><span className="classroom-eyebrow">manabi / 수업</span><h1>오늘, 함께 배울 것들.</h1><p>한 표현에서 시작해 한 편의 수업 노트로.</p></div>
       <button className="classroom-button" onClick={()=>{if(!creating&&!draft.key)setDraft(d=>({...d,key:'c'+crypto.randomUUID().replaceAll('-','').slice(0,12),password:crypto.randomUUID().replaceAll('-','').slice(0,10)}));setCreating(v=>!v);}}>{creating?'닫기':'+ 새 수업'}</button></header>
       {revealed && (
         <div className="card" role="status" style={{ padding: '14px 16px', marginBottom: 14, border: '1px solid var(--primary)' }}>
