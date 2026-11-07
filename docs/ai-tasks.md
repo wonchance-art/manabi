@@ -878,6 +878,9 @@
 
 ## Claude (claude/*)
 ### doing
+- **SEC-CSP-002 2단계 — CSP Report-Only를 출처 허용 목록으로 넓힘 (2026-11-07 KST)** PR `claude/csp-report-only-wide`(오케스트레이터 승인 — 관측만):
+  src/lib/cspPolicy.js 정본(default/script/style/img/font/connect(Supabase https·wss)/media/frame(youtube-nocookie)/worker/manifest + 네 지시어) · Report-Only에만 · 강제 · nonce는 오너 결정 그대로.
+  보고 지시어에 세분 이름(-elem · -attr). 배포 전 시뮬 17경로 위반 0. **11/14 KST 집계 보고 예정**.
 - **ERROR-HARVEST-001 · SEC-CSP-002 운영 오류 수확 · CSP 강제 전환 초안 (2026-11-07 KST)** PR `claude/csp-allowlist`(오케스트레이터 지시 ① · 문서만):
   수확: observe.error_events 30일 = 탐침 2건뿐(실제 0) · Vercel 런타임 오류 7일 0 · Supabase API 4xx/5xx 24시간 0 · Postgres 오류는 개발 세션 직접 SQL뿐 — 관측이 11/6부터 · 계정 9개라 「0」은 「쓰임 적음」과 구별 안 됨.
   CSP: 운영 17경로 순회(출처 = 같은 출처 + Supabase뿐, 인라인 스크립트 257 · style 속성 429) + 코드 훑기(wss Realtime · youtube-nocookie · blob 오디오 · data 이미지 · PDF 워커)로
