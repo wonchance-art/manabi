@@ -10,7 +10,7 @@
 --   status · 소유권 · 다른 자료는 그대로. LLM 재분석 없음. 고치기 전 항목은 backup_private.punct_tokens_private_20261108에 남긴다.
 -- 트리거: guard_source_passage_write(passage 없음) · protect_composer_source(원문 · composer · importAttempt 불변) · library_book_preserve_metadata
 --   (book 없음) — 7편에서 작동하지 않는다.
--- 사전 검사: 대상 = 정확히 위 7편 · 자료별 항목 수(43 · 1 · 2 · 2 · 2 · 27 · 27) · furigana 전부 null. 이미 적용(대상 0 · 백업 104)이면 무변경.
+-- 사전 검사: 대상 = 정확히 위 7편 · 자료별 항목 수(43 · 1 · 2 · 2 · 2 · 27 · 27) · furigana 전부 null. 이미 적용(대상 0 · 백업 104) 또는 고칠 것이 없는 환경(대상 0 · 백업 0)이면 무변경.
 -- 사후 검사(같은 트랜잭션): 대상 0 · 바뀐 항목 = 백업 + {pos 기호} · 7편의 sequence · 다른 항목 · dictionary 밖 칸 불변 · 지문 넷 불변.
 -- 복원: docs/sql/punct-pos-private-20261108-rollback.sql(오너 확인 뒤에만).
 
@@ -67,8 +67,9 @@ DECLARE n_tok int; n_backup int; per jsonb;
 BEGIN
   SELECT count(*) INTO n_tok FROM pg_temp.pp_target;
   SELECT count(*) INTO n_backup FROM backup_private.punct_tokens_private_20261108;
-  IF n_tok = 0 AND n_backup = 104 THEN
-    RAISE NOTICE 'punct private: already applied — no change';
+  IF n_tok = 0 AND n_backup IN (0, 104) THEN
+    -- 이미 적용(백업 104) 또는 고칠 것이 없는 환경(대상 자료가 없는 fixture 사슬 — post-observation-migrations) — 무변경.
+    RAISE NOTICE 'punct private: nothing to change (targets 0, backup %)', n_backup;
     RETURN;
   END IF;
   SELECT jsonb_object_agg(material_id::text, n) INTO per FROM (SELECT material_id, count(*) n FROM pg_temp.pp_target GROUP BY 1) x;
@@ -93,7 +94,7 @@ BEGIN
   IF (SELECT count(*) FROM pg_temp.pp_target) <> 0 THEN
     RAISE EXCEPTION 'punct private: targets remain after update';
   END IF;
-  IF (SELECT count(*) FROM backup_private.punct_tokens_private_20261108) <> 104 OR EXISTS (
+  IF (SELECT count(*) FROM backup_private.punct_tokens_private_20261108) NOT IN (0, 104) OR EXISTS (
        SELECT 1 FROM backup_private.punct_tokens_private_20261108 b JOIN public.reading_materials m ON m.id = b.material_id
        WHERE m.processed_json->'dictionary'->b.token_key IS DISTINCT FROM (b.token || jsonb_build_object('pos', '기호'))) THEN
     RAISE EXCEPTION 'punct private: changed tokens differ from backup + {pos 기호}';

@@ -97,4 +97,15 @@ for (const [name, overrides] of [
   });
   await d.close();
 }
+{
+  // 고칠 것이 없는 환경(대상 자료가 없는 fixture 사슬 — post-observation-migrations): 무변경 · 백업 0 · 통과.
+  const d = await fresh(Object.fromEntries(Object.keys(COUNTS).map((id) => [id, ['private', material(Number(id), 0)]])));
+  const snap = await snapshot(d);
+  await check('대상 0 · 백업 0 — 무변경으로 통과', async () => {
+    await d.exec(migration);
+    assert.deepEqual(await snapshot(d), snap);
+    assert.equal((await d.query('select count(*)::int n from backup_private.punct_tokens_private_20261108')).rows[0].n, 0);
+  });
+  await d.close();
+}
 console.log(`punct-pos-private: ${checks} checks passed`);
