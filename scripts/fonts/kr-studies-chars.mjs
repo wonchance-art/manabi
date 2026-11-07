@@ -11,6 +11,9 @@
 // 본문 약 600–700자다(실측: kr-culture는 1 · 2절이 짧아 3절 앞부분까지 보이고, jp-culture는 2절에서 끝난다).
 // 계약(src/components/fonts/__tests__/krViewerSubset.test.js)은 문서마다 「추출 글자 중 커밋된 목록에 있는 비율」을 본다 — 95% 이상이면 통과(빠진 글자 수와
 // 재생성 명령을 경고로), 미만이면 실패. 작은 문구 수정은 막지 않고, 앞부분을 크게 고친 문서만 잡는다. 재생성: python3 scripts/fonts/kr-viewer-subset.py
+//
+// 나머지(STUDIES-REST-001, 2026-11-07 KST 오케스트레이터 승인): 첫 화면 밖 한글 · 한자 · 가나 · CJK 기호를 문서마다 400 · 700 파일로 — 미리 받지 않는다.
+// jp-culture는 한자 17자가 Noto Sans KR 조각 12개 · 495KB를 끌어와 글꼴이 31개 · 824KB였다 → 13개 · 195KB(같은 글꼴, 화면 그대로).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -21,15 +24,23 @@ export const FIRST_SCREEN_TEXT = 700;
 export const STUDIES_STEM = 'noto-sans-kr-studies';
 /** 굵기별 파일 — 본문 400 · 제목 700(StudiesDocPage의 h1 · h2 · 절 번호 800은 가장 가까운 700으로 맞춰진다). */
 export const STUDIES_WEIGHTS = Object.freeze({ body: 400, head: 700 });
+/** 나머지 파일(미리 받지 않음) — 부분 이름 → 굵기(STUDIES-REST-001). */
+export const STUDIES_REST_WEIGHTS = Object.freeze({ rest400: 400, rest700: 700 });
 /** 문서 하위 집합 목록 파일(src/components/fonts/kr-viewer/ 아래) — 생성기가 쓰고, 문서 쪽이 읽는다. */
 export const STUDIES_MANIFEST = 'studies-subsets.json';
 /** 계약의 통과 기준 — 첫 화면 추출 글자 중 목록에 든 비율. */
 export const MIN_COVERAGE = 0.95;
 
-const CHROME_FILES = Object.freeze(['src/components/Layout.jsx', 'src/lib/webNavigation.js', 'src/views/StudiesDocPage.jsx']);
+// 공통 푸터(SiteFooter)는 지역학 문서 끝에 보인다 — 빠지면 「약 · 침 · 말」 세 글자 때문에 조각을 받았다(STUDIES-REST-001 실측).
+const CHROME_FILES = Object.freeze(['src/components/Layout.jsx', 'src/lib/webNavigation.js', 'src/views/StudiesDocPage.jsx', 'src/components/web/SiteFooter.jsx']);
 const HANGUL = /[가-힣]/gu;
+/** 나머지 파일에 담는 글자 — 한글 · 한자 · 가나(Noto Sans KR이 그리는 CJK). 한자 17자가 조각 12개 · 495KB를 끌어왔다(jp-culture 실측). */
+const WIDE = /[가-힣\u3000-\u303f\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uff00-\uffef]/gu; // + CJK 기호(「」 등) · 전각 — Manrope에 없어 Noto Sans KR 조각을 끌어왔다
+/** 문서 화면 틀의 700 굵기 글자(StudiesDocPage 출처 절 제목). */
+const CHROME_BOLD = '출처·검증 노트';
 
 const hangulOf = (text, set) => { for (const ch of String(text || '').match(HANGUL) || []) set.add(ch); };
+const wideOf = (text, set) => { for (const ch of String(text || '').match(WIDE) || []) set.add(ch); };
 
 /** 지역학 레지스트리 — 나라 · 문서 · 분야 이름. */
 export async function loadStudies(root = ROOT) {
@@ -68,13 +79,47 @@ export function docFirstScreenHangul(studies, country, doc, chrome) {
   return { body: [...body].sort(), head: [...head].sort() };
 }
 
-/** 모든 문서 — [{ key: '<나라>/<slug>', slug, body, head }] (body · head는 글자 문자열). */
+/**
+ * 문서 전체의 나머지 글자 — { rest400, rest700 } (정렬 · 중복 없음). 첫 화면 파일(body · head)에 없는 것만 담아 unicode-range가 겹치지 않는다
+ * (겹치면 같은 글자에 두 파일을 다 받는다). 미리 받지 않는다 — 첫 화면 밖이라 첫 그림 대역을 나누지 않는다(STUDIES-REST-001).
+ * 700 = 문서 제목 · 모든 절 제목 · 표 머리칸 · 출처 이름(strong) · 「출처·검증 노트」, 400 = 그 밖의 화면 글자 전부.
+ */
+export function docRestHangul(studies, country, doc, chrome, firstScreen) {
+  const all400 = new Set();
+  const all700 = new Set();
+  for (const ch of chrome) all400.add(ch);
+  wideOf(country.nameKo, all400);
+  wideOf(studies.studyDomainLabel(doc.domain), all400);
+  wideOf(doc.summary, all400);
+  wideOf(doc.verification, all400);
+  wideOf(doc.title, all700);
+  wideOf(CHROME_BOLD, all700);
+  for (const section of doc.sections) {
+    wideOf(section.heading, all700);
+    for (const para of section.paras || []) wideOf(para, all400);
+    for (const cell of section.table?.head || []) wideOf(String(cell), all700);
+    for (const cell of (section.table?.rows || []).flat()) wideOf(String(cell), all400);
+  }
+  for (const source of doc.sources || []) {
+    wideOf(source.label, all700);
+    wideOf(source.scope, all400);
+  }
+  const body = new Set(firstScreen.body);
+  const head = new Set(firstScreen.head);
+  return {
+    rest400: [...all400].filter((ch) => !body.has(ch)).sort(),
+    rest700: [...all700].filter((ch) => !head.has(ch)).sort(),
+  };
+}
+
+/** 모든 문서 — [{ key: '<나라>/<slug>', slug, body, head, rest400, rest700 }] (모두 글자 문자열). */
 export async function studiesDocSubsets(root = ROOT) {
   const studies = await loadStudies(root);
   const chrome = chromeHangul(root);
   return studies.STUDY_COUNTRIES.flatMap((country) => country.docs.map((doc) => {
-    const { body, head } = docFirstScreenHangul(studies, country, doc, chrome);
-    return { key: `${country.id}/${doc.slug}`, slug: doc.slug, body: body.join(''), head: head.join('') };
+    const first = docFirstScreenHangul(studies, country, doc, chrome);
+    const { rest400, rest700 } = docRestHangul(studies, country, doc, chrome, first);
+    return { key: `${country.id}/${doc.slug}`, slug: doc.slug, body: first.body.join(''), head: first.head.join(''), rest400: rest400.join(''), rest700: rest700.join('') };
   }));
 }
 

@@ -32,6 +32,7 @@ PUBLIC_HREF = '/fonts/kr-viewer'
 STUDIES_STEM = 'noto-sans-kr-studies'  # scripts/fonts/kr-studies-chars.mjs와 같은 값(계약이 대조)
 STUDIES_MANIFEST = 'studies-subsets.json'
 STUDIES_WEIGHTS = {'body': 400, 'head': 700}  # kr-studies-chars.mjs STUDIES_WEIGHTS와 같다(계약이 대조)
+STUDIES_REST_WEIGHTS = {'rest400': 400, 'rest700': 700}  # 나머지 파일 — 미리 받지 않는다(STUDIES-REST-001)
 # src/app/layout.jsx Noto_Sans_KR({ weight: ['400', '500', '700'] })와 같은 셋 — 계약이 대조한다.
 NEXT_FONT_WEIGHTS = ('400', '500', '700')
 CACHE = os.path.join(os.environ.get('MANABI_FONT_CACHE') or tempfile.gettempdir(), 'manabi-font-src')
@@ -155,30 +156,42 @@ def build(name, spec, src):
 
 
 def build_studies(src):
-    """지역학 문서별 첫 화면 하위 집합(STUDIES-CLS-001) — 문서마다 본문 400 · 제목 700 정적 woff2 두 개, 목록은 studies-subsets.json 한 파일.
+    from fontTools.ttLib import TTFont
+    """지역학 문서별 하위 집합 — 첫 화면(본문 400 · 제목 700, 미리 받기, STUDIES-CLS-001)과 나머지(400 · 700, 미리 받지 않음, STUDIES-REST-001)
+    정적 woff2, 목록은 studies-subsets.json 한 파일.
     CSS는 문서 쪽(KrStudiesSubset)이 목록의 unicodeRange로 그 자리에서 만든다(문서 26개의 CSS 파일을 따로 두지 않는다)."""
     docs = json.loads(subprocess.run(['node', os.path.join(ROOT, 'scripts', 'fonts', 'kr-studies-chars.mjs')], check=True, capture_output=True, text=True).stdout)
     manifest = {
         'note': 'STUDIES-CLS-001 — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다. 문서 앞부분 문구를 크게 고치면 다시 돌린다.',
         'source': {'url': SOURCE_URL, 'sha256': SOURCE_SHA256, 'version': SOURCE_VERSION},
         'weights': STUDIES_WEIGHTS,
+        'restWeights': STUDIES_REST_WEIGHTS,
         'docs': {},
     }
     stems = set()
     for d in docs:
         entry = {}
-        for part, wght in STUDIES_WEIGHTS.items():
-            stem = f"{STUDIES_STEM}-{d['slug']}-{wght}"
+        for part, wght in list(STUDIES_WEIGHTS.items()) + list(STUDIES_REST_WEIGHTS.items()):
+            stem = f"{STUDIES_STEM}-{d['slug']}-{part if part.startswith('rest') else wght}"
             chars = d[part]
+            skipped = ''
+            if part.startswith('rest'):
+                # 나머지에는 한자 · 가나가 든다 — Noto Sans KR에 없는 글자(예: 일본 신자체 縄)는 원래도 다음 글꼴(Noto Sans JP 등)이 그린다.
+                # 파일에서 빼고 목록에 skipped로 남긴다(계약이 「덮은 글자」로 센다).
+                cmap = TTFont(src).getBestCmap()
+                skipped = ''.join(c for c in chars if ord(c) not in cmap)
+                chars = ''.join(c for c in chars if ord(c) in cmap)
+            if not chars:  # 나머지가 없으면 파일도 없다
+                continue
             href, digest, size = make_woff2(stem, chars, src, wght=wght)
             stems.add(stem)
             entry[part] = {
-                'chars': chars, 'count': len(chars),
+                'chars': chars, 'count': len(chars), **({'skipped': skipped} if skipped else {}),
                 'woff2': {'href': href, 'sha256': digest, 'bytes': size},
                 'unicodeRange': ranges(sorted(ord(c) for c in chars)),
             }
         manifest['docs'][d['key']] = entry
-        print(f"studies {d['key']}: 본문 {entry['body']['count']}자 {entry['body']['woff2']['bytes']}B · 제목 {entry['head']['count']}자 {entry['head']['woff2']['bytes']}B")
+        print(f"studies {d['key']}: " + ' · '.join(f"{p} {e['count']}자 {e['woff2']['bytes']}B" for p, e in entry.items()))
     # 사라진 문서의 파일을 지운다
     for old in os.listdir(PUBLIC_DIR):
         if old.startswith(STUDIES_STEM + '-') and old.endswith('.woff2') and old.split('.')[0] not in stems:

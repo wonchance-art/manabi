@@ -166,7 +166,7 @@ MIME만 있으면 JSON 꼬리 한 줄 + 추출. Claude 4.6+ 계열은 temperatur
 
 ### 4.9-3 첫 화면 한글 하위 집합 — 화면 문구 · 지역학 앞부분을 바꾸면 재생성 (KR-VIEWER-SUBSET-001 · VOCAB-SUBSET-SMALL-001 · STUDIES-CLS-001, 2026-11-07 KST)
 뷰어 · 복습실 손님 화면 · 지역학 문서는 첫 화면 한글만 담은 작은 Noto Sans KR 파일(`public/fonts/kr-viewer/`)을 첫 그림 전에 미리 받는다 — 늦게 오면 대체 글꼴(한글 폭 1.0em) → Noto Sans KR(0.92em)로 바뀌며 줄이 다시 흐른다(CLS).
-글자 출처는 `scripts/fonts/kr-viewer-chars.mjs`(뷰어 · 복습실) · `scripts/fonts/kr-studies-chars.mjs`(지역학 — 문서 제목 · 요약 · 앞 절 700자). 문구가 바뀌면 계약이 알린다:
+글자 출처는 `scripts/fonts/kr-viewer-chars.mjs`(뷰어 · 복습실) · `scripts/fonts/kr-studies-chars.mjs`(지역학 — 첫 화면 = 제목 · 요약 · 앞 절 700자, 미리 받기 / 나머지 = 문서 전체의 한글 · 한자 · 가나 · CJK 기호, 미리 받지 않음 — 한자 몇 자가 조각 수백 KB를 끌어오던 것을 막는다). 문구가 바뀌면 계약이 알린다:
 뷰어 · 복습실은 추출 ⊆ 목록(엄격), 지역학은 문서마다 포함률 95% 이상 통과(빠진 글자는 경고), 미만이면 실패.
 **재생성 한 줄**: `python3 -m pip install fonttools brotli && python3 scripts/fonts/kr-viewer-subset.py` (원본은 저장소 밖 캐시로 받아 sha256 확인). 성능 측정 규칙은 `docs/perf-measurement.md`.
 
