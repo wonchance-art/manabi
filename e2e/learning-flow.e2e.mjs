@@ -1020,8 +1020,8 @@ test('chapter 404: 매니페스트에 없는 slug는 HTTP 404로 응답한다', 
     });
     assert.ok(response, 'the direct navigation should return a document response');
     assert.equal(response.status(), 404, `missing chapter returned ${response.status()}\n${serverOutput}`);
-    await assertVisible(page.getByRole('heading', { name: '404', exact: true }), 'not-found heading');
-    await assertVisible(page.getByRole('heading', { name: '길을 잃으셨군요', exact: true }), 'not-found guidance');
+    await assertVisible(page.getByRole('heading', { name: '페이지를 찾을 수 없어요', exact: true }), 'not-found heading');
+    await assertVisible(page.getByText('주소가 바뀌었거나 지워진 페이지예요.', { exact: false }), 'not-found guidance');
     await sampleHeap(page, 'hard 404');
   }, { allowErrors: [/Failed to load resource: the server responded with a status of 404/] });
 });

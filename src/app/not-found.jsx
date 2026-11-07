@@ -22,12 +22,10 @@ export default function NotFound() {
       justifyContent: 'center', minHeight: '70vh', padding: '40px 24px',
       color: 'var(--text-primary)', textAlign: 'center',
     }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 800, margin: '0 0 8px' }}>404</h1>
-      <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: '0 0 10px', color: 'var(--text-secondary)' }}>
-        길을 잃으셨군요
-      </h2>
-      <p style={{ color: 'var(--text-muted)', marginBottom: 28, maxWidth: 360, lineHeight: 1.6 }}>
-        주소가 잘못됐거나, 삭제된 페이지일 수 있어요. 아래로 돌아가서 계속 학습해보세요.
+      {/* 화면 문구 표준 §1 — HTTP 번호(404)를 화면에 쓰지 않는다. 제목은 탭 제목과 같은 말(오너 승인 2026-11-07 KST, 목업 CrsGiHf5bS4tmQk3n2HVBx ③-2). */}
+      <h1 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '0 0 8px' }}>페이지를 찾을 수 없어요</h1>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: 28, maxWidth: 360, lineHeight: 1.6 }}>
+        주소가 바뀌었거나 지워진 페이지예요. 아래에서 다시 시작해 주세요.
       </p>
       <nav aria-label="돌아갈 곳" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
         {MAIN_NAV.map((item, index) => (
