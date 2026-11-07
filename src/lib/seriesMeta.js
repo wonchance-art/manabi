@@ -25,6 +25,37 @@ export function parseTitle(title) {
 }
 
 /**
+ * 같은 레벨 안의 학습 경로 자연 순서: 시리즈 → 번호 → 최신순. 시리즈 없는 자료는 뒤로.
+ * 자료 목록의 쉬운순과, 최신순에서 같은 시각을 나눠 가진 묶음이 함께 쓴다(SERIES-ORDER-001).
+ */
+export function compareSeriesPath(a, b) {
+  const ma = parseTitle(a?.title);
+  const mb = parseTitle(b?.title);
+  const sa = ma.series || '\uffff';
+  const sb = mb.series || '\uffff';
+  if (sa !== sb) return sa.localeCompare(sb);
+  if (ma.num != null && mb.num != null) return ma.num - mb.num;
+  if (ma.num != null) return -1;
+  if (mb.num != null) return 1;
+  return new Date(b?.created_at) - new Date(a?.created_at);
+}
+
+/**
+ * 시리즈별 총 편수(카드의 「#5/23」) — `level|series` → 가장 큰 번호.
+ * 편수를 세면 빠진 번호가 있을 때 「2/1」이 된다(운영 실측 2026-11-08 KST: [H3 여행 #2]만 공개, SERIES-ORDER-001).
+ */
+export function seriesTotalsOf(items) {
+  const totals = new Map();
+  for (const item of items || []) {
+    const m = parseTitle(item?.title);
+    if (!m.level || !m.series || m.num == null) continue;
+    const key = `${m.level}|${m.series}`;
+    totals.set(key, Math.max(totals.get(key) || 0, m.num));
+  }
+  return totals;
+}
+
+/**
  * 같은 (level, series)에서 다음 번호 찾기. nextNum = currentNum + 1
  * 없으면 null.
  */

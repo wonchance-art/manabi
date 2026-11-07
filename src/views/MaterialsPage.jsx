@@ -18,7 +18,7 @@ import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial } from '../lib/vocabularyDueIndex';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
-import { parseTitle } from '../lib/seriesMeta';
+import { parseTitle, compareSeriesPath, seriesTotalsOf } from '../lib/seriesMeta';
 import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
@@ -522,8 +522,24 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
     return map;
   }, [materials, remetWordSet]);
 
+  const levelOrderOf = (m) => {
+    const meta = m.processed_json?.metadata;
+    return levelRank(meta?.language, meta?.level) ?? 99;
+  };
+
   const sorted = (() => {
-    if (sortBy === 'newest') return materials;
+    // 최신순(SERIES-ORDER-001): 서버는 created_at만으로 줄 세운다. 한 번에 넣은 시드는 같은 시각을 나눠 가져(운영 실측
+    // 2026-11-08 KST: 공개 132편이 시각 3개) 그 안의 순서가 DB 임의 순서였다 — 「B1 #6 · A1 #5 · B1 #10 …」.
+    // 같은 시각끼리만 언어 → 레벨 → 시리즈 → 번호로 잇는다. 시각이 다르면 지금 그대로다.
+    if (sortBy === 'newest') return [...materials].sort((a, b) => {
+      const ta = Date.parse(a.created_at) || 0;
+      const tb = Date.parse(b.created_at) || 0;
+      if (ta !== tb) return tb - ta;
+      const la = a.processed_json?.metadata?.language || '';
+      const lb = b.processed_json?.metadata?.language || '';
+      if (la !== lb) return la.localeCompare(lb);
+      return (levelOrderOf(a) - levelOrderOf(b)) || compareSeriesPath(a, b);
+    });
     if (sortBy === 'words') return sortByWordHits(materials, (m) => wordHitsById.get(m.id));
     if (sortBy === 'fit') return sortByFit(materials, (m) => fitById.get(m.id)?.band ?? null);
     const arr = [...materials];
@@ -539,16 +555,8 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
         const oa = rank(a);
         const ob = rank(b);
         if (oa !== ob) return oa - ob;
-        // 같은 레벨: 시리즈 → 번호 → 최신순 (학습 경로 자연 정렬)
-        const ma = parseTitle(a.title);
-        const mb = parseTitle(b.title);
-        const sa = ma.series || '￿'; // 시리즈 없는 자료는 뒤로
-        const sb = mb.series || '￿';
-        if (sa !== sb) return sa.localeCompare(sb);
-        if (ma.num != null && mb.num != null) return ma.num - mb.num;
-        if (ma.num != null) return -1;
-        if (mb.num != null) return 1;
-        return new Date(b.created_at) - new Date(a.created_at);
+        // 같은 레벨: 시리즈 → 번호 → 최신순 (학습 경로 자연 정렬 — compareSeriesPath가 parseTitle(a.title)로 읽는다)
+        return compareSeriesPath(a, b);
       });
     } else if (sortBy === 'title') {
       arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ko'));
@@ -760,13 +768,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
         <div className="feature-grid">
           {(() => {
             // 시리즈별 총 편수 사전 계산 (자료 카드에 #5/23 표시용)
-            const seriesTotals = new Map();
-            for (const x of materials) {
-              const xm = parseTitle(x.title);
-              if (!xm.level || !xm.series || xm.num == null) continue;
-              const k = `${xm.level}|${xm.series}`;
-              seriesTotals.set(k, (seriesTotals.get(k) || 0) + 1);
-            }
+            const seriesTotals = seriesTotalsOf(materials);
             // 책 묶음(P1) — metadata.book이 있는 자료는 책 카드 하나로 묶어 챕터 목록을 보여준다.
             // PDF 묶음(v2-P)은 그 다음 — 손으로 매긴 `metadata.book`이 자동 파생인
             // `source_pdf_id`를 이기도록 **호출 순서로** 우선순위를 세운다.
