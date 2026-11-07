@@ -7,7 +7,7 @@
 -- 이 파일이 하는 것: 그 60개 사전 항목만 pos → '기호', furigana → null. 원문 · sequence · 다른 사전 항목 · 뜻 · status · 다른 자료는 그대로.
 --   LLM 재분석 없음. 고치기 전 항목은 backup_private.ja_punct_tokens_20261108에 남긴다(anon · authenticated 권한 없음 · RLS 켜짐).
 -- 사전 검사: 대상 = 공개 · completed · 기호만으로 된 표면 · pos가 기호/개행이 아님 → 정확히 자료 8편(60~67) · 항목 60개 · 전부 pos 명사 · 뜻 빈칸.
---   이미 적용된 상태(대상 0 · 백업 60행)면 아무것도 바꾸지 않는다. 그 밖의 상태는 RAISE.
+--   이미 적용된 상태(대상 0 · 백업 60행) 또는 고칠 것이 없는 환경(대상 0 · 백업 0 — fixture 사슬)이면 아무것도 바꾸지 않는다. 그 밖의 상태는 RAISE.
 -- 사후 검사(같은 트랜잭션): 대상 0 · 바뀐 항목 = 백업 60개(pos 기호 · furigana null, 나머지 칸 그대로) · 8편의 sequence와 다른 사전 항목 불변 ·
 --   학습 계약 지문 넷(_live) 불변.
 -- 복원: docs/sql/ja-punct-pos-20261108-rollback.sql(백업 항목을 그대로 되돌린다 — 오너 확인 뒤에만).
@@ -64,8 +64,9 @@ DECLARE n_tok int; n_mat int; ids bigint[]; n_backup int;
 BEGIN
   SELECT count(*), count(DISTINCT material_id), array_agg(DISTINCT material_id ORDER BY material_id) INTO n_tok, n_mat, ids FROM pg_temp.jp_target;
   SELECT count(*) INTO n_backup FROM backup_private.ja_punct_tokens_20261108;
-  IF n_tok = 0 AND n_backup = 60 THEN
-    RAISE NOTICE 'ja punct: already applied — no change';
+  IF n_tok = 0 AND n_backup IN (0, 60) THEN
+    -- 이미 적용(백업 60) 또는 고칠 것이 없는 환경(공개 시드 60~67이 없는 fixture 사슬 — post-observation-migrations) — 무변경.
+    RAISE NOTICE 'ja punct: nothing to change (targets 0, backup %)', n_backup;
     RETURN;
   END IF;
   IF n_backup <> 0 OR n_tok <> 60 OR n_mat <> 8 OR ids IS DISTINCT FROM ARRAY[60, 61, 62, 63, 64, 65, 66, 67]::bigint[]
@@ -88,7 +89,7 @@ BEGIN
   IF (SELECT count(*) FROM pg_temp.jp_target) <> 0 THEN
     RAISE EXCEPTION 'ja punct: targets remain after update';
   END IF;
-  IF (SELECT count(*) FROM backup_private.ja_punct_tokens_20261108) <> 60 OR EXISTS (
+  IF (SELECT count(*) FROM backup_private.ja_punct_tokens_20261108) NOT IN (0, 60) OR EXISTS (
        SELECT 1 FROM backup_private.ja_punct_tokens_20261108 b JOIN public.reading_materials m ON m.id = b.material_id
        WHERE m.processed_json->'dictionary'->b.token_key IS DISTINCT FROM (b.token || jsonb_build_object('pos', '기호', 'furigana', NULL))) THEN
     RAISE EXCEPTION 'ja punct: changed tokens differ from backup + {pos 기호, furigana null}';
