@@ -175,3 +175,14 @@ describe('새 문구 — viewerMessages ko · zh-CN · zh-TW', () => {
     expect(VIEWER_MESSAGES['zh-CN'][key]).not.toBe(key);
   });
 });
+
+describe('첫 화면 예산 — 카드 본문 스크롤은 앱이 정한다(GLYPH-BUDGET-ANCHOR-001)', () => {
+  // 브라우저 스크롤 고정이 문장 줄 2줄 예산(위 내용 24px 감소)에 scrollTop을 몰래 옮기면(66 → 42) data-head-scroll과 어긋나
+  // checkBudget이 「사람이 움직였다」로 읽고 단계 2를 건너뛰었다(e2e 体育场 단계 2 간헐 실패, 시트 자리 판정이 늦게 오는 순서에서 재현).
+  it('.reader-card-body는 overflow-anchor:none — 앱의 자동 스크롤 표식(headScrolled)이 늘 맞는다', () => {
+    const css = read('src/components/viewer/reader-controls.css');
+    const rule = css.match(/^\.reader-card-body \{[^}]*\}/m)?.[0] || '';
+    expect(rule).toMatch(/overflow:auto/);
+    expect(rule).toMatch(/overflow-anchor:none/);
+  });
+});

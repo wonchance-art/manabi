@@ -46,8 +46,11 @@ const dictRows={
 
 const SENTENCE_PREFETCH='viewer-sentence-prefetch';
 const notPrefetch=r=>r.purpose!==SENTENCE_PREFETCH;
-async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoSpeakOnClick:false},common=null,width=390,height=844,saved=null,own=false,rows:rowOverride=null,details={}}={}) {
+async function open(material,{guest=false,dict='ok',prefs={focusMode:false,autoSpeakOnClick:false},common=null,width=390,height=844,saved=null,own=false,rows:rowOverride=null,details={},lateSheetMs=0}={}) {
  const f=await fixture({width,guest});
+ // 시트 첫 자리 판정(useReaderLayout placeOnShow — data-selected를 보는 MutationObserver)을 늦춰 CI에서 드물게 나던 순서를 고정한다:
+ // 첫 화면 예산 단계가 먼저 돌고 시트 자리가 뒤에 온다(GLYPH-BUDGET-ANCHOR-001).
+ if(lateSheetMs)await f.context.addInitScript(ms=>{const M=window.MutationObserver;window.MutationObserver=class extends M{constructor(cb){let late=false;super((r,o)=>late?setTimeout(()=>cb(r,o),ms):cb(r,o));this.__late=()=>{late=true;};}observe(t,o){if(o?.attributeFilter?.includes('data-selected'))this.__late();return super.observe(t,o);}};},lateSheetMs);
  await f.page.setViewportSize({width,height});
  await f.context.addInitScript(({language,prefs,common})=>{
   if(!localStorage.getItem('viewer_preferences_v2'))localStorage.setItem('viewer_preferences_v2',JSON.stringify({version:2,...(common?{common}:{}),languages:{[language]:prefs}}));
@@ -785,6 +788,31 @@ test('AE-R3 390 첫 화면 우선: 3줄 문장 + 体育场(안 2) — 표제어�
   assertFirstScreen(await measure(f.page),{label:'1-line + 体育场 table 390'});
   assert.equal(await f.page.locator('#inspector-word .reader-card-glyph--below').filter({visible:true}).count(),0);
   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/glyph-budget-390.png`});
+  assert.deepEqual(f.errors,[]);
+ }finally{await f.context.close();}
+});
+
+// GLYPH-BUDGET-ANCHOR-001: 브라우저 스크롤 고정이 문장 줄 2줄 예산에 카드 본문 scrollTop을 몰래 옮기면(66 → 42) 앱의 자동 스크롤 표식과
+// 어긋나 「사람이 움직였다」로 읽혀 단계 2가 멈췄다 — 시트 자리 판정이 늦게 오는 순서에서 4번 중 3번. 그 순서를 고정해 늘 잰다.
+for(const late of [8,100])test(`AE-R3 390 첫 화면 우선: 시트 자리 판정이 ${late}ms 늦게 와도 단계 2까지 오른다(스크롤 고정 0)`,{timeout:180000},async()=>{
+ const m=cardMaterial();
+ const f=await open(m,{prefs:zhPrefs,rows:glyphRows,lateSheetMs:late});
+ try{
+  await until(()=>f.bulk.length>=1);
+  const longId=m.sequence.find(id=>id.startsWith('id_2_')&&m.dictionary[id].text==='体育场');
+  await tap(f,longId,'경기장');
+  await f.page.waitForTimeout(400+late);
+  const s=await f.page.evaluate(()=>{
+   const card=[...document.querySelectorAll('#inspector-word')].find(el=>el.getClientRects().length);
+   const body=card.querySelector('.reader-card-body');
+   return {tight:card.querySelector('.reader-card-sentence')?.hasAttribute('data-tight'),below:!!card.querySelector('.reader-card-glyph--below'),
+    scrollTop:body.scrollTop,headScroll:body.dataset.headScroll??null,anchor:getComputedStyle(body).overflowAnchor};
+  });
+  assert.equal(s.anchor,'none');
+  assert.equal(s.tight,true,'step 1');
+  assert.ok(s.below,`step 2 — ${JSON.stringify(s)}`);
+  assert.ok(!s.headScroll||Math.abs(s.scrollTop-Number(s.headScroll))<1,`the app's head-scroll mark matches the body scroll — ${JSON.stringify(s)}`);
+  assertFirstScreen(await measure(f.page),{label:`3-line + 体育场 late sheet ${late}ms`});
   assert.deepEqual(f.errors,[]);
  }finally{await f.context.close();}
 });
