@@ -66,6 +66,7 @@ jobs:
       - run: node supabase/tests/starter-analysis-jobs.mjs
       - run: node supabase/tests/orphan-private-materials.mjs
       - run: node supabase/tests/advisor-notifications-fk-indexes.mjs
+      - run: node supabase/tests/ja-punct-pos.mjs
       - run: node scripts/verification/n4-book-support.mjs
       - run: node scripts/verification/n3-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs

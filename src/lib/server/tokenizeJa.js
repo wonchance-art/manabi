@@ -66,6 +66,13 @@ function isSymbolOnly(str) {
 }
 
 /**
+ * 문장부호 · 기호만으로 된 표면(숫자 · 글자 · 장음 ー · 々 제외) — JA-PUNCT-001(2026-11-08 KST).
+ * kuromoji는 반각 ( ) / ~ 와 대시 — 를 미등록어 名詞로 낸다(전각 （）／「」…는 記号). 그대로 두면 읽기 화면에서 뜻 없는
+ * 「명사」로 눌리고 단어장에 담길 수 있다(운영 공개 N5 문법 시드 8편 60토큰 실측) → 품사를 기호로 고정한다.
+ */
+const PUNCT_ONLY = /^[\p{P}\p{S}]+$/u;
+
+/**
  * 한 줄을 kuromoji로 분석해 토큰 배열 반환
  * 반환 형식은 processed_json의 dictionary 항목과 호환
  */
@@ -81,8 +88,8 @@ export async function tokenizeJaLine(line) {
   return tokens.map((t) => {
     const baseForm = (t.basic_form && t.basic_form !== '*') ? t.basic_form : t.surface_form;
     const reading = katakanaToHiragana(t.reading || '');
-    const pos = posToKorean(t.pos);
     const surface = t.surface_form;
+    const pos = PUNCT_ONLY.test(surface) ? '기호' : posToKorean(t.pos);
 
     // 불필요한 후리가나 제거:
     // 1) 히라가나 → 후리가나가 본문과 동일 (중복)
