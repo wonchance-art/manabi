@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { buildReleaseVersion } from './src/lib/releaseVersion.js';
+import { cspReportOnly as buildCspReportOnly } from './src/lib/cspPolicy.js';
 
 // 화면별 글꼴 미리 받기 주소(FONT-HINT-001) — 이번 빌드의 글꼴 입력(NEXT_FONT_GOOGLE_MOCKED_RESPONSES)에서
 // next/font 산출 파일 이름을 다시 계산한다. 쓰는 곳: src/components/fonts/fontHints.js.
@@ -111,18 +112,10 @@ const nextConfig = {
       },
     ];
 
-    // 최소 CSP — 먼저 보고만(Report-Only, SEC-HEADERS-001 · 2026-11-07 KST 발매 점검 「개선」). 스크립트를 건드리지 않는 네 지시어만:
-    // 플러그인 객체 금지 · <base> 바꿔치기 금지 · 같은 출처만 프레이밍(X-Frame-Options SAMEORIGIN과 같은 뜻) · 폼은 같은 출처로만.
-    // 엄격한 script-src(nonce)는 정적/ISR 판을 깨므로 넣지 않는다(오너 결정 항목). 보고는 /api/csp-report → 운영 오류 기록(csp.*)으로 모은다 —
-    // 위반이 없는 것을 확인한 뒤 강제(Content-Security-Policy)로 옮긴다.
-    const cspReportOnly = [
-      "object-src 'none'",
-      "base-uri 'self'",
-      "frame-ancestors 'self'",
-      "form-action 'self'",
-      'report-uri /api/csp-report',
-      'report-to csp',
-    ].join('; ');
+    // CSP는 보고만(Report-Only, SEC-HEADERS-001 → SEC-CSP-002 출처 허용 목록 · 2026-11-07 KST 오케스트레이터 승인 — 관측을 늘리는 일).
+    // 정책 정본은 src/lib/cspPolicy.js · 근거와 단계는 docs/security-csp.md. 강제(Content-Security-Policy) 전환과 nonce 기반 엄격한 script-src는
+    // 오너 결정 항목이다(정적/ISR 판 · 막힌 기능 노출). 보고는 /api/csp-report → 운영 오류 기록(csp.*)으로 모은다.
+    const cspReportOnly = buildCspReportOnly(process.env);
 
     return [
       {

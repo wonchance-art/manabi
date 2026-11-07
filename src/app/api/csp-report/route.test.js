@@ -59,7 +59,7 @@ describe('/api/csp-report', () => {
     ['JSON이 아님', 'nope'],
     ['빈 본문', ''],
     ['모르는 모양', { hello: 1 }],
-    ['우리 정책 밖 지시어(script-src)', { 'csp-report': { 'effective-directive': 'script-src', 'blocked-uri': 'inline' } }],
+    ['우리 정책 밖 지시어(require-trusted-types-for)', { 'csp-report': { 'effective-directive': 'require-trusted-types-for', 'blocked-uri': 'trusted-types-sink' } }],
     ['csp-violation 아닌 보고만', [{ type: 'deprecation', body: {} }]],
   ])('저장하지 않는다(%s) → 204', async (_, body) => {
     await expectNoContent(await POST(post(body)));
@@ -84,10 +84,13 @@ describe('/api/csp-report', () => {
 });
 
 describe('lib/cspReport', () => {
-  it('지시어 — 우리 정책의 넷만, 옛 violated-directive의 값은 뗀다', () => {
-    expect(CSP_DIRECTIVES).toEqual(['object-src', 'base-uri', 'frame-ancestors', 'form-action']);
+  it('지시어 — 우리 정책의 지시어 · 세분 이름만, 옛 violated-directive의 값은 뗀다', () => {
+    for (const name of ['object-src', 'base-uri', 'frame-ancestors', 'form-action', 'script-src-elem', 'style-src-attr', 'connect-src', 'frame-src']) expect(CSP_DIRECTIVES).toContain(name);
     expect(directiveOf("base-uri 'self'")).toBe('base-uri');
-    expect(directiveOf('script-src-elem')).toBeNull();
+    expect(directiveOf('script-src-elem')).toBe('script-src-elem');
+    expect(directiveOf("img-src 'self' data: blob:")).toBe('img-src');
+    expect(directiveOf('require-trusted-types-for')).toBeNull(); // 우리 정책 밖 — 버린다
+    expect(directiveOf('sandbox')).toBeNull();
   });
 
   it('막힌 것 — 출처 · 낱말만', () => {
