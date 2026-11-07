@@ -1,0 +1,90 @@
+name: e2e flake repeat (임시)
+
+# 임시 반복 실행(오케스트레이터 제안 2026-11-07 16:40 KST) — CI e2e 잡과 같은 러너 · 빌드 · 서버로 간헐 실패 두 건을
+# 반복해 표본을 모은다: viewer-word-card(体育场 단계 2 — GLYPH-BUDGET-ANCHOR-001 고친 뒤 0/N 확인) ·
+# viewer-boundary-edit(드래그 → 「한 단어로 묶기」 간헐 — BOUNDARY-DRAG-DIAG 진단 수집). 결과를 본 뒤 이 파일은 PR에서 뺀다.
+# CI의 concurrency(cancel-in-progress)에 걸리지 않도록 별도 워크플로 · 별도 그룹.
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/e2e-flake-repeat.yml
+
+concurrency:
+  group: e2e-flake-repeat-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  repeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: 테스트 env로 빌드
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://e2e.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: e2e-anon-key
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+          E2E_PUBLISHED_EDITION: 8a8c1c1fd452773810abaf8c
+          NODE_OPTIONS: --import=./e2e/server-fetch-mock.mjs
+        run: npm run e2e:build
+
+      - name: 러너 CJK 글꼴(fc-list)
+        if: matrix.shard == 1
+        run: |
+          echo '### fc-list :lang=zh / :lang=ja' >> "$GITHUB_STEP_SUMMARY"
+          { echo '```'; fc-list :lang=zh family | sort -u; echo '---'; fc-list :lang=ja family | sort -u; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: 5회 반복 (word-card → en-card → boundary-edit, CI와 같은 순서 · 같은 서버)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://e2e.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: e2e-anon-key
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+          COMPOSER_BASE_URL: http://127.0.0.1:8878
+          E2E_FAILURE_DIR: /tmp/e2e-failures
+        run: |
+          mkdir -p "$E2E_FAILURE_DIR"
+          export NODE_OPTIONS="--import=$PWD/e2e/server-fetch-mock.mjs"
+          export COMPOSER_TEST_MODULES="$PWD/node_modules"
+          E2E_PUBLISHED_EDITION=8a8c1c1fd452773810abaf8c node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 8878 > /tmp/repeat-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8878/manifest.webmanifest > /dev/null; then break; fi
+            sleep 1
+          done
+          unset NODE_OPTIONS
+          failed=0
+          for i in 1 2 3 4 5; do
+            log="$E2E_FAILURE_DIR/run-${{ matrix.shard }}-$i.log"
+            if QA_BASE=http://127.0.0.1:8878 node --test --test-concurrency=1 e2e/viewer-word-card.e2e.mjs e2e/viewer-en-card.e2e.mjs e2e/viewer-boundary-edit.e2e.mjs > "$log" 2>&1; then
+              echo "shard ${{ matrix.shard }} run $i: pass" | tee -a "$GITHUB_STEP_SUMMARY"
+              rm -f "$log"
+            else
+              failed=$((failed+1))
+              echo "shard ${{ matrix.shard }} run $i: FAIL" | tee -a "$GITHUB_STEP_SUMMARY"
+              grep -E '^✖|AssertionError|TimeoutError|DRAGDIAG|step 2 —' "$log" | head -20 | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          echo "shard ${{ matrix.shard }}: $failed failed of 5" | tee -a "$GITHUB_STEP_SUMMARY"
+          test "$failed" -eq 0
+
+      - name: 실패 자료 올리기
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-flake-repeat-shard-${{ matrix.shard }}
+          path: /tmp/e2e-failures
+          retention-days: 7
