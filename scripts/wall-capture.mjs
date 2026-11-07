@@ -28,7 +28,7 @@ import { VIEWPORTS, kstStamp } from './ux-audit.mjs';
 import { builtForE2E } from './ux-audit-auth-core.mjs';
 import {
   AXE_RULE_IDS, DATA_GAP, PERSONAS, TOUCH_EXCEPTIONS, aggregateParts, offTokenColors, RAW_ERROR, VIEWPORT_KEYS, coverage, discoverRoutes, expandScenes, hash, judgeShot, loadRegistry,
-  mergeVerdicts, missingValueLines, summaryLine, validateRegistry,
+  mergeVerdicts, missingValueLines, splitEnvNoise, summaryLine, validateRegistry,
 } from './wall-core.mjs';
 import { createHeavyBackend, HEAVY_UID, HEAVY_SERVICE_KEY } from '../e2e/fixtures/heavy-account.mjs';
 import { SUGGESTION_FIXTURE } from '../e2e/fixtures/suggestion-fixture.mjs';
@@ -396,7 +396,8 @@ async function captureScene(context, scene, viewportKey, out, partSeen = new Map
     const height = viewportOnly ? vp.height : Math.min(m.scrollHeight, vp.height * SHOT_SCREENS);
     await page.screenshot({ path: join(out, file), type: 'jpeg', quality: 72, ...(viewportOnly ? {} : { fullPage: true, clip: { x: 0, y: 0, width: vp.width, height } }) });
     const { text, boxes, ...rest } = m;
-    return { ...rest, ms: Date.now() - t0, consoleErrors: consoleErrors.slice(0, 5), failedResponses: [...new Set(failed)].slice(0, 6), textHash: hash(text), lmHash: hash(boxes), text, shot: file, shotHeight: height };
+    const split = splitEnvNoise(consoleErrors, failed); // AI 키 없는 합성 서버의 AI 경로 500은 envNoise로(사유 포함) — 화면 오류로 세지 않는다
+    return { ...rest, ms: Date.now() - t0, consoleErrors: split.consoleErrors.slice(0, 5), envNoise: split.envNoise.slice(0, 4), failedResponses: [...new Set(failed)].slice(0, 6), textHash: hash(text), lmHash: hash(boxes), text, shot: file, shotHeight: height };
   } catch (error) {
     return { error: String(error.message).split('\n')[0].slice(0, 200), ms: Date.now() - t0, consoleErrors: consoleErrors.slice(0, 5) };
   } finally {
