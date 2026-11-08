@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 import { startWallEnv } from '../scripts/wall-capture.mjs';
+import { choiceLabels, choiceMeaning } from '../src/lib/meaningClean.js';
 
 let env;
 before(async () => { env = await startWallEnv({ out: await mkdtemp(join(tmpdir(), 'touch-auth-')), port: Number(process.env.TOUCH_AUTH_E2E_PORT || 3173) }); });
@@ -45,7 +46,8 @@ for (const viewportKey of ['mobile', 'desktop']) {
     try {
       const page = await context.newPage();
       await page.goto(`${env.baseURL}/study`, { waitUntil: 'domcontentloaded', timeout: 120000 });
-      // 첫 몸풀기 문항에서 틀린 보기를 고른다 — 정답은 합성 계정의 단어 행 뜻(item.word.meaning)이다.
+      // 첫 몸풀기 문항에서 틀린 보기를 고른다 — 정답 보기는 합성 계정 단어 행 뜻을 앱과 같은 규칙(choiceMeaning → 문제 낱말이 새면
+      // 괄호를 뺀 choiceLabels)으로 다듬은 글자다(「투입(投入)」 → 「투입」). 두 꼴 모두와 글자가 같은 보기를 뺀다.
       // 예전에는 아무 보기나 누르고 맞으면 다음 문항으로 넘어갔는데, 두 가지로 깨졌다(로컬 반복 50회 중 5회 실측, Data #1782 CI 1회):
       //  ① 보기 수를 센 순간 하이드레이션이 보기를 다시 그리는 중이라 0개 → nth(i % 0) = nth(NaN)이 되어 모든 누름이 빗나갔다.
       //  ② 몸풀기 둘을 다 맞히면 셋째 문항은 보기가 없는 유형이라 기다림이 끝나지 않았다.
@@ -53,9 +55,11 @@ for (const viewportKey of ['mobile', 'desktop']) {
       const head = page.locator('.study-item [data-item-head]').first();
       await head.waitFor({ timeout: 60000 });
       const word = (await head.textContent()).trim();
-      const answer = env.backend.state.account.tables.user_vocabulary.find((row) => row.word_text === word)?.meaning;
-      assert.ok(answer, `첫 몸풀기 단어(${word})의 뜻이 합성 계정에 있다`);
-      const wrong = page.locator('.study-item .fr-quiz__opt:enabled').filter({ hasNotText: answer }).first();
+      const meaning = env.backend.state.account.tables.user_vocabulary.find((row) => row.word_text === word)?.meaning;
+      assert.ok(meaning, `첫 몸풀기 단어(${word})의 뜻이 합성 계정에 있다`);
+      const shown = choiceMeaning(meaning, word);
+      const answers = [...new Set([shown, choiceLabels([shown], shown)[0]])].map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const wrong = page.locator('.study-item .fr-quiz__opt:enabled').filter({ hasNotText: new RegExp(`^\\s*(${answers.join('|')})\\s*$`) }).first();
       await wrong.waitFor({ timeout: 60000 });
       // 첫 화면은 서버가 그린 보기라 하이드레이션 전에 누르면 아무 일도 없다(3번 중 1번 실측) — 채점 표시가 뜰 때까지 다시 누른다.
       const graded = page.locator('.study-item .fr-quiz__opt.is-correct');
