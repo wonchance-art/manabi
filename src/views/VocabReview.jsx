@@ -1,3 +1,4 @@
+import { REVIEW_PREP_FAILED } from './vocabReviewCopy';
 import { useEffect, useId, useRef } from 'react';
 import { focusIfFree } from '../lib/focusAfterAction';
 import Link from 'next/link';
@@ -50,7 +51,7 @@ function PracticeButtons({ onResult, armed = true }) {
  * 채점 저장 실패 문구(「복습 저장 실패 … 이 단어는 다음에 다시 나와요」)는 저장할 채점이 있을 때만
  * 맞는 말이라, 저장 전 단계인 준비 실패에 쓰지 않는다.
  */
-export const REVIEW_PREP_FAILED = '복습을 준비하지 못했어요. 연결을 확인하고 다시 시도해 주세요.';
+export { REVIEW_PREP_FAILED } from './vocabReviewCopy'; // 문구 정본은 vocabReviewCopy.js — 단어장 첫 화면이 이 화면을 정적으로 끌어오지 않게(BUNDLE-AUTH-001)
 
 /**
  * 문맥 퀴즈 보기의 상태 클래스 (v2-K 잔여).

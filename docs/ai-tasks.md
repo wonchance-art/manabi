@@ -878,6 +878,23 @@
 
 ## Claude (claude/*)
 ### doing
+- **BUNDLE-AUTH-001 로그인 경로 첫 화면 JS 측정 · 분리 (2026-11-08 KST)** 로컬 브랜치 `claude/wip/bundle-auth`(오케스트레이터 지시 · push는 11/9 오전 묶음 — 화면 무변화):
+  합성 무거운 계정 · 발행판, 문서 스크립트(HTML이 싣는 첫 화면 몫, brotli) /home 222 · /study 197 · /vocab 255 · /profile 191 · /progress 207 · 뷰어 249KB(공통 148 —
+  react-dom · Next 83 고정). 큰 덩어리: Supabase 43KB(뒤에 받음 · realtime · storage를 써서 못 걷음) · 뷰어 한자 표 107KB(HANJA-LAZY-001 유휴 받기) ·
+  /vocab 복습 화면 둘 → 분리 −11KB · /home 작성기 저장 모듈 → 저장 때만 −5KB · /profile reviewScope 한 줄 함수 분리 −8KB · 온보딩 창 동적 −1KB(전 경로).
+  /study 문항 엔진 분리는 −2KB라 되돌림. 받아 둔 조각은 멈춤 없이 그리는 warmable(React.lazy 한 틱 멈춤 · 대기 골격 방지) — 「복습 시작」 바로 · 유휴 뒤 ·
+  400ms 지연 모두 빈 본문 0 · 초점 「정답 확인하기」. 기준표 `docs/perf-measurement.md` 「로그인 경로 첫 화면 JS」, 도구 `e2e/bundle-auth.perf.mjs`.
+  같은 PR(오케스트레이터 11/8 21:00): e2e:build도 scripts/next-build.mjs 경유(힙 4GB — 맨 next build는 이 컨테이너 기본 2GB에서 OOM, CI 글꼴 대역 그대로) ·
+  E2E-RACE-001 비CI 51곳 문맥 판정 → 실제 경합 9곳(5파일: 지연 마운트 · 로그인 의존 4등급 · 비동기 후보 · 지연 한자 표 · 저장 등급 줄)만 대상 대기 한 줄씩(기대값 · timeout · 재시도 불변).
+  로컬 3회(기본 e2e 서버 — 처음 판은 서버에 E2E_PUBLISHED_EDITION을 잘못 줘 교재가 안 열렸다): teaching-word-canvas · book-reading 3/3 통과(기대값 그대로).
+  study-notes 3/3 — 181행 동의 값만 #1730(LLM-PROVIDER-POLICY-001, 사용자 내용 경로 Gemini 대체 끔 · INK_RECOGNITION_PROVIDERS = ['anthropic'])을 따라
+  'selected-ink-to-anthropic'(같은 엄격 비교). 남은 실패 둘(고치지 않음): class-study:87 — 「수업 노트에 추가 +」는 이 테스트를 넣은 #1303(9/12)에서도 src에 없었다
+  (그때부터 「오늘 표현에 추가」 — 처음부터 어긋난 테스트). 같은 기능(ClassroomReader add() → session.add, 저장 뒤 「수업에 추가됨 ✓」)이라
+  단추 이름만 실제 문구로(6곳, 오케스트레이터 11/8 21:15) — 87–95행(저장 원자성 · 11개 순서 · 중복 없음 · 4등급) 3/3 통과. 96행(직접 찾기)은 낱말을 고른 뒤
+  「표현 찾기」 칸이 접혀(toolsOpen||!current — #1303부터) 「표현 찾기 열기」 누르기를 더함(오케스트레이터 21:18 허용) — 체크 8개(320–1440 넘침 포함) 3/3.
+  104행 「수업용 뜻 확인·수정」 글자도 src에 한 번도 없었다(#1303부터 테스트에만) → 11/9 파일 전체 대조(오케스트레이터 21:21): 교재 낱말의 수업용 뜻은
+  「수정」 단추(aria-label 「수업용 뜻 수정」)로 열고 「수업용 뜻」 칸에 적는다 — 이름만 맞추고 검증(선택 바꿔도 초안 유지 · 수업용 뜻만 저장)은 그대로, 끝까지 통과.
+  viewer-reading-controls:275 — #1558(10/25) 읽기 모드 머리 78(폰 66) · 도구줄 top 56 겹침 회귀 → Design #1781(READER-HEADER-001)이 고치고 CI에 편입.
 - **A11Y-AUTH-001 로그인 화면 접근성 훑기 (2026-11-08 KST)** PR `claude/preview/web`(오케스트레이터 지시 · 화면 무변화 고침만):
   화면 벽 환경(합성 무거운 계정) 폰 390 · PC 1280 — /study(몸풀기 · 채점 · 문단 · 어순 · 결과) · /vocab · 복습 카드 · 문법 복습 · 서재 · 현황 · 내 정보(창 여섯) · 뷰어 카드.
   axe WCAG 2.1 A/AA 위반 0(단어 상세 「신규」 배지 4.30:1 1건만 — 디자인 넘김) · 판정 못 한 대비 칸 실측 통과 · Tab 순서/포커스 표시 문제 0.

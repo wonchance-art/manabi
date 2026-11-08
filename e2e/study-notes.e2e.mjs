@@ -120,7 +120,7 @@ try{
  await entry('はし','はし','다리');await entry('復習','ふくしゅう','복습');
  await hud.locator('.board-quick-tools').getByRole('button',{name:'펜',exact:true}).click();const surface=board.locator('canvas.interactive');await page.mouse.move(220,570);await page.mouse.down();await page.mouse.move(560,600,{steps:25});await page.mouse.up();
  await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();
- const review=page.locator('.note-review');await review.waitFor();assert.equal(await review.locator('.note-candidate').count(),2);
+ const review=page.locator('.note-review');await review.waitFor();await review.locator('.note-candidate').first().waitFor();assert.equal(await review.locator('.note-candidate').count(),2);
  await waitFor(async()=>!(await page.locator('.board-hud-status').getAttribute('data-saving'))||await page.locator('.board-hud-status').getAttribute('data-saving')==='false');
  const beforeInk=JSON.stringify((await remote()).document.board.pages[0].elements.find(el=>el.type==='freedraw').points);
  const first=review.locator('.note-candidate').first();await first.getByRole('button',{name:'한자·사전',exact:true}).click();await first.getByRole('button',{name:'橋 다리',exact:true}).click();
@@ -131,8 +131,8 @@ try{
  assert.equal((await db.query('select count(*)::int n from user_vocabulary')).rows[0].n,2);assert.equal((await db.query('select count(*)::int n from vocabulary_contexts')).rows[0].n,2);
  assert.equal(JSON.stringify((await remote()).document.board.pages[0].elements.find(el=>el.type==='freedraw').points),beforeInk);
  check('student account creates private notebook; kanji review, conflict confirmation and failed-item retry preserve original ink and existing SRS');
- await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();assert.equal(await review.locator('.note-candidate').count(),2);
- await page.reload();await board.locator('canvas.interactive').waitFor();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();assert.equal(await review.getByText('저장됨',{exact:true}).count(),2);
+ await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();await review.locator('.note-candidate').first().waitFor();assert.equal(await review.locator('.note-candidate').count(),2);
+ await page.reload();await board.locator('canvas.interactive').waitFor();await hud.getByRole('button',{name:'단어 정리',exact:true}).filter({visible:true}).first().click();await review.getByText('저장됨',{exact:true}).first().waitFor();assert.equal(await review.getByText('저장됨',{exact:true}).count(),2);
  check('reload and repeated organization keep saved corrections without duplicate words or contexts');
  await page.setViewportSize({width:390,height:844});await screen('03-mobile-review');
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
@@ -178,12 +178,12 @@ try{
  recognitionMode='fail';await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await recognition.getByText('검수용 인식 실패',{exact:true}).waitFor();
  recognitionMode='ok';await recognition.getByRole('button',{name:'다시 인식',exact:true}).click();await recognition.waitFor({state:'hidden'});await review.waitFor();
  const inkNote=noteResponse(await noteRow(inkId));const originalStrokes=JSON.stringify(inkNote.document.board.pages[0].elements.filter(el=>el.type==='freedraw'));
- assert.equal(recognitionCalls.length,2);for(const body of recognitionCalls){assert.deepEqual(Object.keys(body).sort(),['consent','elementIds','fingerprint','image','pageId','revision'].sort());assert.equal(body.consent,'selected-ink-to-anthropic-then-gemini');assert(body.image.startsWith('data:image/png;base64,'));assert.equal(body.elementIds.length,1);const selected=inkNote.document.board.pages[0].elements.find(el=>el.id===body.elementIds[0]);assert.equal(selected.type,'freedraw');}
- assert.equal(await review.locator('.note-candidate').count(),1);const recognized=review.locator('.note-candidate').first();assert.equal(await recognized.getByRole('textbox',{name:'표현 표기',exact:true}).inputValue(),'はし');assert.equal(await recognized.getByRole('textbox',{name:'はし 뜻',exact:true}).inputValue(),'');
+ assert.equal(recognitionCalls.length,2);for(const body of recognitionCalls){assert.deepEqual(Object.keys(body).sort(),['consent','elementIds','fingerprint','image','pageId','revision'].sort());assert.equal(body.consent,'selected-ink-to-anthropic');assert(body.image.startsWith('data:image/png;base64,'));assert.equal(body.elementIds.length,1);const selected=inkNote.document.board.pages[0].elements.find(el=>el.id===body.elementIds[0]);assert.equal(selected.type,'freedraw');}
+ await review.locator('.note-candidate').first().waitFor();assert.equal(await review.locator('.note-candidate').count(),1);const recognized=review.locator('.note-candidate').first();assert.equal(await recognized.getByRole('textbox',{name:'표현 표기',exact:true}).inputValue(),'はし');assert.equal(await recognized.getByRole('textbox',{name:'はし 뜻',exact:true}).inputValue(),'');
  await recognized.getByRole('button',{name:'箸 젓가락',exact:true}).click();await recognized.getByRole('textbox',{name:'箸 뜻',exact:true}).fill('젓가락 · 수업 메모');await screen('08-kana-choice-mobile');
  assert.equal((await db.query('select count(*)::int n from user_vocabulary')).rows[0].n,2,'recognition does not save vocabulary automatically');
  await review.getByRole('button',{name:'단어 정리 닫기',exact:true}).click();await page.setViewportSize({width:1440,height:1000});await capture();await recognition.getByRole('button',{name:'이 부분 인식하기',exact:true}).click();await review.waitFor();
- assert.equal(await review.locator('.note-candidate').count(),1);assert.equal(await review.getByRole('textbox',{name:'箸 뜻',exact:true}).inputValue(),'젓가락 · 수업 메모');
+ await review.locator('.note-candidate').first().waitFor();assert.equal(await review.locator('.note-candidate').count(),1);assert.equal(await review.getByRole('textbox',{name:'箸 뜻',exact:true}).inputValue(),'젓가락 · 수업 메모');
  await review.getByRole('button',{name:'뜻 있는 항목 모두 선택',exact:true}).click();await review.getByRole('button',{name:'선택한 1개 담기',exact:true}).click();await review.locator('.note-saved').getByText('새로 담음',{exact:true}).waitFor();
  assert.equal(JSON.stringify(noteResponse(await noteRow(inkId)).document.board.pages[0].elements.filter(el=>el.type==='freedraw')),originalStrokes);
  check('explicit crop preview sends only selected ink; cancel sends nothing; failed recognition retries, kana alternatives preserve edits, deduplicate and save with unchanged strokes');
