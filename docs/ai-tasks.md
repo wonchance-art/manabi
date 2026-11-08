@@ -1245,10 +1245,17 @@
     영어 · 일본어 YouTube 공급원 3/28 이후 0 = youtubei.js 17.2.0의 getBasicInfo가 UNPLAYABLE(「The page needs to be reloaded」) →
     의존성 갱신은 이 세션 권한 판정기가 거절 · 다른 클라이언트 우회도 거절(봇 확인 우회) → 오너 결정(공식 Data API · 갱신 · 끔).
     새 공급원 후보(기록만, 착수 금지 — 오케스트레이터 05:40): rss_text VOA(퍼블릭 도메인) · devto 운영 행.
-    SEED-EXPOSE-001(이번 PR, 오너 「권장대로」 11/8 12:10 KST — B안): 공개 목록 숨김을 제목 패턴([… #N]) 대신 명시 표식
+    SEED-EXPOSE-001([#1760](https://github.com/wonchance-art/manabi/pull/1760) squash 063a8937 · 11/8 12:39 KST · 운영 사후 확인 — 마이그레이션 20261108030000 적용,
+    366 「[H3 여행 #1] 问路」 · 백업 1행 · 공개 노출 판정 통과 132 · 지문 넷 그대로. e2e 가짜 백엔드 JSON 경로 is.null 보정 동봉.
+    material-editing.e2e desktop 1건은 변경 전에도 실패 — CI 목록 밖, 따로 볼 것), 오너 「권장대로」 11/8 12:10 KST — B안: 공개 목록 숨김을 제목 패턴([… #N]) 대신 명시 표식
     processed_json.metadata.retired_series 하나로(withoutRetiredSeries) — 서가 · 목록 · 스터디 그룹 · 사이트맵이 같은 판정, 표식 대상 0편.
     손님 「함께 읽는 글」 0 → 132편(영 60 · 일 63 · 중 9) · 사이트맵 132 그대로. 같은 PR: ZH-SEED-TITLE-001(366 [H3 여행 #2] → #1) ·
     YT-API-001 설계 메모(docs/design/youtube-data-api-20261108.md — 오너 b안 결정, 구현은 다음 PR).
+    MATERIAL-DIFFICULTY-002(이번 PR, 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
+    materialDifficulty(#1743)로 processed_json.metadata.difficulty = { version, scale(HSK · JLPT · null), medianLevel, p90Level, types, listedShare }를
+    미리 셈한다(영어 types만). 쓰기 = RPC material_set_difficulty(service_role 전용 · 그 칸만 · metadata.updated_at 대조). 분석 작업 tick 끝에서
+    한 tick 50편(진척 있으면 다음 tick) · fail-soft. 재분석은 옛 요약을 옮기지 않는다. 첫 백필 = 11/9 02:45 KST(132편 · 50 · 50 · 32) → 03:40 보고.
+    운영 사전 확인: 공개 · completed 132행 전부 updated_at 있음 · difficulty 0행 · 트리거 셋 무관. 복원 docs/sql/material-set-difficulty-20261108-rollback.sql.
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
