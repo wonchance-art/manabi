@@ -14,12 +14,25 @@ import { fetchZhRefShard, zhRefShardOf } from './zhRefShards';
 export { buildVocabIndex } from './zhRefVocabSets';
 
 let zhIndexPromise = null;
+let zhIndexLoaded = null;
 
 /** 언어별 인덱스 로드 — 현재 중국어(승인 범위). 미지원 언어는 null. */
 export function loadRefVocabIndex(language) {
   if (language !== 'Chinese') return Promise.resolve(null);
-  zhIndexPromise ||= loadZhRefVocabSets().then(buildVocabIndex);
+  zhIndexPromise ||= loadZhRefVocabSets().then(buildVocabIndex).then((ix) => { zhIndexLoaded = ix; return ix; });
   return zhIndexPromise;
+}
+
+let zhFullWarmed = false;
+/**
+ * 낱말을 한 번 고른 뒤(읽는 사람) 유휴 시간에 전체 색인을 받는다 — 끊긴 뒤에 처음 고르는 낱말도 예문 · 한자 정보가 뜨게(전에는 열자마자
+ * 전체를 받아 그랬다). 자료 하나가 쓰는 조각은 보통 100개 남짓(brotli 약 800KB)이라 자료 단위 조각 미리 받기는 전체(742KB)보다 크다.
+ * 고르지 않고 나가는 사람은 아무것도 받지 않는다. 한 번만 건다.
+ */
+export function warmZhRefFullIndex(schedule = (fn) => (typeof window !== 'undefined' && window.requestIdleCallback ? window.requestIdleCallback(fn, { timeout: 5000 }) : setTimeout(fn, 2000))) {
+  if (zhFullWarmed) return;
+  zhFullWarmed = true;
+  schedule(() => { loadRefVocabIndex('Chinese').catch(() => { zhFullWarmed = false; }); });
 }
 
 /** 인덱스 자체 훅(한자 창 같은 표제어 밖 조회용, AE-R4) — 같은 1회 로드 캐시를 쓴다. 미지원 언어·로딩 중은 null. */
@@ -42,6 +55,7 @@ const shardPromises = new Map();
 export function loadZhRefShard(text) {
   const shard = zhRefShardOf(text);
   if (shard < 0) return Promise.resolve(null);
+  if (zhIndexLoaded) return Promise.resolve(zhIndexLoaded); // 전체를 이미 받았으면 조각을 따로 받지 않는다
   let pending = shardPromises.get(shard);
   if (!pending) {
     pending = fetchZhRefShard(shard).catch(() => {
@@ -53,7 +67,7 @@ export function loadZhRefShard(text) {
   return pending;
 }
 
-/** 단어의 사전 항목 조회 훅 — 중국어는 낱말을 고를 때 그 조각만 받는다(고르기 전에는 받지 않는다). 미지원 언어 · 빈 낱말은 null. */
+/** 단어의 사전 항목 조회 훅 — 중국어는 낱말을 고를 때 그 조각만 받는다(고르기 전에는 받지 않는다 · 고른 뒤 유휴 시간에 전체). 미지원 언어 · 빈 낱말은 null. */
 export function useRefVocabEntry(language, word) {
   const key = language === 'Chinese' && word ? word : null;
   const [found, setFound] = useState({ key: null, entry: null });
@@ -61,6 +75,7 @@ export function useRefVocabEntry(language, word) {
     if (!key) return undefined;
     let alive = true;
     loadZhRefShard(key).then((map) => { if (alive) setFound({ key, entry: map?.get(key) || null }); }).catch(() => {});
+    warmZhRefFullIndex();
     return () => { alive = false; };
   }, [key]);
   return found.key === key ? found.entry : null;
