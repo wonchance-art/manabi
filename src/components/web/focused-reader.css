@@ -1,6 +1,10 @@
 /* Keep the page still when a word is selected: the side columns retain their width. */
 .manabi-app--reading { --gnb-height: calc(56px + env(safe-area-inset-top,0px)); }
-.manabi-app--reading .gnb { height: var(--gnb-height); gap: 12px; padding-inline: 20px; }
+/* 읽기 모드 머리 = 56px + 상태 표시줄(READER-HEADER-001, 2026-11-08 KST). .gnb는 자기 --gnb-height(78 · 폰 66)와 height(68 · 64)를 따로 지녀
+   위 컨테이너 값(56)을 물려받지 못했다 — 머리만 78px로 커지고 도구줄(sticky top = 56)이 22px(폰 10px) 가려졌다(#1558 뒤 운영 /viewer/45 실측).
+   머리에서 같은 값을 다시 정한다(높이와 변수만). .manabi-app 두 클래스로 셸 · 교재 셸 · 컨테이너 쿼리의 .manabi-app .gnb보다 앞선다(파일 순서와 무관). 계약 readerHeader. */
+.manabi-app.manabi-app--reading .gnb { --gnb-height: calc(56px + env(safe-area-inset-top,0px)); height: var(--gnb-height); }
+.manabi-app--reading .gnb { gap: 12px; padding-inline: 20px; } /* 간격 · 옆 여백은 예전 우선순위 그대로 — 좁은 화면 셸 규칙(web-shell 12px · 4px)이 이긴다 */
 .manabi-app--reading .gnb__logo { font-size: 24px; letter-spacing: -1.6px; margin-right: auto; }
 .manabi-app--reading .gnb__nav,
 .manabi-app--reading .gnb > .gnb__link,
