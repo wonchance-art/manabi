@@ -71,3 +71,17 @@ describe('구조화 데이터(LearningResource)', () => {
     expect(page).toContain('materialDescription(data, { withExcerpt: indexable })');
   });
 });
+
+describe('「함께 읽는 글」 탭 제목 · 설명(오케스트레이터 (나) — 정본은 산책 그대로)', () => {
+  it('제목은 h1과 같은 「함께 읽는 글」, 정본 · og:url은 /discover, 설명은 해요체', async () => {
+    const { metadata } = await import('@/app/(app)/discover/reading/page');
+    expect(metadata.title).toBe('함께 읽는 글');
+    expect(metadata.alternates.canonical).toBe(canonicalFor('/discover'));
+    expect(metadata.openGraph.url).toBe(canonicalFor('/discover'));
+    expect(metadata.description).toMatch(/요\.$/);
+    expect(metadata.description).not.toMatch(/해주세요|하시겠습니까|\.\.\./);
+    const page = fs.readFileSync(path.join(process.cwd(), 'src/app/(app)/discover/reading/page.jsx'), 'utf8');
+    expect(page).toContain('<h1>함께 읽는 글</h1>');
+    expect(page).not.toContain(metadata.description); // 그리지 않는 문구는 첫 화면 글꼴 출처(page.jsx) 밖
+  });
+});
