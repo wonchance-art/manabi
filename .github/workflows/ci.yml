@@ -254,3 +254,23 @@ jobs:
       # 실제로 잡히는지(elementFromPoint) · 이웃 조작을 덮지 않는지 · 뷰어 카드 칸 제목이 h1 다음 h2인지. CSS 모양 계약은 a11yAuthTargets(vitest 단계).
       - name: 로그인 화면 누르는 범위 · 카드 제목 단계 (합성 백엔드)
         run: node --test --test-concurrency=1 e2e/touch-targets-auth.e2e.mjs
+
+      # 뷰어 읽기 조작(READER-HEADER-001에서 편입): 머리와 도구줄이 이어 붙는지 · 단어 카드 첫 화면 · 학습 표시 · 병음 칸 · 테마 · 폭별 배치.
+      # REST · API는 이 파일이 대역으로 답한다(운영 DB · 실계정 · LLM 무관). 같은 프로덕션 빌드, 포트 8898.
+      - name: 뷰어 읽기 조작 (프로덕션 앱 · 대역)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://e2e.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: e2e-anon-key
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3100
+        run: |
+          export NODE_OPTIONS="--import=$PWD/e2e/server-fetch-mock.mjs"
+          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 8898 > /tmp/viewer-controls-server.log 2>&1 &
+          controls_pid=$!
+          trap 'kill "$controls_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8898/manifest.webmanifest > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8898/manifest.webmanifest > /dev/null
+          unset NODE_OPTIONS
+          QA_BASE=http://127.0.0.1:8898 QA_OUT=/tmp/viewer-controls-qa QA_CHROME="$(command -v google-chrome)" node e2e/viewer-reading-controls.e2e.mjs
