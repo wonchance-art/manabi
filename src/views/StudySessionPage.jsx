@@ -25,7 +25,7 @@ import { sentenceIncludesWord } from '../lib/skillRung';
 import { recordActivity } from '../lib/streak';
 import { recordLessonCompleted, recordNewWord } from '../lib/learn/progressStore';
 import { recordStudyReviewCompleted } from '../lib/studyExerciseBridge';
-import { gradeTyping, isChapterPassed, grammarDueChapterCounts } from '../lib/studySession';
+import { gradeTyping, isChapterPassed, grammarDueChapterCounts, settleAnnouncement } from '../lib/studySession';
 import { buildWeeklyReport } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { splitSentenceAroundWord } from '../lib/constants';
@@ -113,6 +113,7 @@ export default function StudySessionPage({
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState('answer');   // 'answer' | 'feedback'
   const [picked, setPicked] = useState(null);
+  const [settledOk, setSettledOk] = useState(null); // 이번 채점이 맞았나 — 화면 읽기 알림 한 줄(A11Y-AUTH-001)
   const [typing, setTyping] = useState('');
   const [orderPicks, setOrderPicks] = useState([]);
   const [matchState, setMatchState] = useState({ selectedId: null, matches: {} });
@@ -713,6 +714,7 @@ export default function StudySessionPage({
     if (!item || phase === 'feedback') return;
     if (isTapLocked()) return;
     setPicked(pickedValue);
+    setSettledOk(!!ok);
     setPhase('feedback');
     const orig = baseUid(item.uid);
     const isRetryItem = String(item.uid).endsWith('-r');
@@ -1243,6 +1245,8 @@ export default function StudySessionPage({
     <div className="page-container" style={{ maxWidth: 640 }}>
       {grammarNotice}
       {authBanner}
+      {/* 화면 제목 — 진행 화면은 보이는 제목 없이 문항만 둔다. 화면 읽기의 제목 탐색 · 화면 이동 초점(routeFocus)이 닿을 자리(A11Y-AUTH-001). */}
+      <h1 className="sr-only">오늘 학습</h1>
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
         <Link href="/home" prefetch={false} aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
@@ -1699,6 +1703,11 @@ export default function StudySessionPage({
 
       {/* 서버에도 기기 큐에도 못 담은 기록 — 그 문항 첫 시도에만 한 줄(세션은 막지 않는다). 재출제(-r)는 uid가 달라 다시 띄우지 않는다.
           알림 영역은 문항마다 먼저 그려 두고 내용만 넣는다 — 내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다. */}
+      {/* 채점 결과 한 줄 — 보기는 색(is-correct · is-wrong)으로만 맞고 틀림을 보여 주고 잠긴 뒤 초점이 「계속 →」으로 가서 화면 읽기는 결과를 듣지 못했다
+          (A11Y-AUTH-001, 2026-11-08 KST). 화면에는 그리지 않는다. 알림 영역은 문항마다 먼저 그려 두고 내용만 넣는다 — 산출 문항은 자체 알림(첨삭 확인 중…). */}
+      <span className="sr-only" role="status" data-settle-announce="">
+        {phase === 'feedback' && item.type !== 'produce-writing' && settledOk !== null ? settleAnnouncement(settledOk, item) : ''}
+      </span>
       <div role="status" aria-live="polite">
         {phase === 'feedback' && lostRecordUid === item.uid && (
           <p className="study-record-lost">이 문항 기록을 저장하지 못했어요. 세션은 계속할 수 있어요.</p>

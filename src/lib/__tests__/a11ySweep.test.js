@@ -93,7 +93,8 @@ describe('② 글자 없는 아이콘 버튼에는 이름이 있다', () => {
 describe('③ 가벼운 팝업 — 열면 안으로 · Esc로 닫기 · 닫으면 연 자리로(useDialogReturn)', () => {
   const hook = read('src/lib/useDialogReturn.js');
   it('훅: Esc · 첫 조작 요소로 포커스 · 연 요소가 살아 있고 포커스가 body일 때만 돌려준다 · onClose는 ref', () => {
-    expect(hook).toContain("if (e.key === 'Escape' && !e.defaultPrevented) { e.preventDefault(); close.current?.(); }");
+    expect(hook).toContain("if (e.key === 'Escape' && !e.defaultPrevented) { e.preventDefault(); close.current?.(); return; }");
+    expect(hook).toContain("if (e.key === 'Tab' && !e.defaultPrevented) trapTab(e, ref.current);"); // Tab 가둠(A11Y-AUTH-001 — 동작은 a11yAuth.test.js)
     expect(hook).toContain("document.addEventListener('keydown', onKey);");
     expect(hook).toContain("document.removeEventListener('keydown', onKey);");
     expect(hook).toContain('if (opener?.isConnected && document.activeElement === document.body) opener.focus({ preventScroll: true });');
@@ -150,6 +151,8 @@ describe('⑤ 상시 알림 영역의 보이는 사본 — aria-hidden + 이름 
     ['src/views/StudySessionPage.jsx', "<span className=\"sr-only\" role=\"status\">{phase === 'feedback' && produceState?.status === 'grading'", '<p className="study-produce__error" aria-hidden="true"'],
     // /study 오프라인 한 줄(STUDY-OFFLINE-LINE — studyUnavailable.test.jsx)
     ['src/views/StudySessionPage.jsx', "<span className=\"sr-only\" role=\"status\">{offline ? STUDY_OFFLINE_LINE : ''}</span>", '<p className="study-offline-line" aria-hidden="true">{STUDY_OFFLINE_LINE}</p>'],
+    // /study 채점 결과(A11Y-AUTH-001 — a11yAuth.test.js) — 보이는 쪽은 보기의 색(is-correct · is-wrong)이라 글 사본이 없다
+    ['src/views/StudySessionPage.jsx', '<span className="sr-only" role="status" data-settle-announce="">', null],
     // 연습 화면의 긴 작업(QUICK-FOCUS-001 · WRITING-FOCUS-001 — practiceFocus.test.js) — 보이는 사본은 단추 글자라 따로 없다
     ['src/views/QuickPage.jsx', "<span className=\"sr-only\" role=\"status\">{analyzing ?", null],
     ['src/views/WritingStudioPage.jsx', "<span className=\"sr-only\" role=\"status\">{loading ?", null],

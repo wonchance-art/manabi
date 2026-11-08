@@ -878,6 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **A11Y-AUTH-001 로그인 화면 접근성 훑기 (2026-11-08 KST)** PR `claude/preview/web`(오케스트레이터 지시 · 화면 무변화 고침만):
+  화면 벽 환경(합성 무거운 계정) 폰 390 · PC 1280 — /study(몸풀기 · 채점 · 문단 · 어순 · 결과) · /vocab · 복습 카드 · 문법 복습 · 서재 · 현황 · 내 정보(창 여섯) · 뷰어 카드.
+  axe WCAG 2.1 A/AA 위반 0(단어 상세 「신규」 배지 4.30:1 1건만 — 디자인 넘김) · 판정 못 한 대비 칸 실측 통과 · Tab 순서/포커스 표시 문제 0.
+  고침: ① 공용 창 훅 useDialogReturn에 Tab 가둠(창 10곳에서 Tab이 뒤 화면으로 빠지고 8곳은 닫은 뒤 포커스가 푸터 · 머리 메뉴에 남음 → 창 12곳 모두 가둠 · 복귀)
+  ② /study 채점 결과 알림(색으로만 보이던 맞고 틀림 → 「정답이에요.」 · 「틀렸어요. 정답: …」) ③ /study 진행 · 복습 세션 화면 읽기용 h1.
+  디자인 넘김: 「신규」 배지 대비 · 뷰어 카드 제목 단계 · 24px 미만 글자 조작 6종(③ 터치 영역 결정과 겹침). 기록: `docs/accessibility-audit.md`, 도구: `e2e/a11y-auth.audit.mjs`.
 - **STUDY-PARA-OBSERVE-001 /study 문단 실패 · 폴백 사유 기록 (2026-11-08 KST)** PR `claude/preview/web`(오케스트레이터 (가) 승인 · 화면 변화 0 · DB 변경 0):
   /study 분모가 바뀌는 문단 실패(0/9 → 1/7)는 지금까지 기록이 없었다(라우트는 console.error뿐 · 화면은 조용히 폴백). 브라우저: applyFallback(reason)이
   `study.paragraph_fallback`(client) 한 줄 — 사유 코드 status_NNN · no_paragraph · too_few_items · timeout · network · map_error뿐(계정 · 재료 · 본문 없음,
