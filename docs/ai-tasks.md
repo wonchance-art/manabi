@@ -1251,10 +1251,13 @@
     processed_json.metadata.retired_series 하나로(withoutRetiredSeries) — 서가 · 목록 · 스터디 그룹 · 사이트맵이 같은 판정, 표식 대상 0편.
     손님 「함께 읽는 글」 0 → 132편(영 60 · 일 63 · 중 9) · 사이트맵 132 그대로. 같은 PR: ZH-SEED-TITLE-001(366 [H3 여행 #2] → #1) ·
     YT-API-001 설계 메모(docs/design/youtube-data-api-20261108.md — 오너 b안 결정, 구현은 다음 PR).
-    YT-API-001 구현(이번 PR, 오너 b안 「권장대로」 11/8 12:10 KST): 영상 수집을 공식 Data API v3로(src/lib/server/youtubeDataApi.js).
+    YT-API-001 구현([#1763](https://github.com/wonchance-art/manabi/pull/1763) squash 1a41fa5c · 11/8 13:20 KST, 오너 b안 「권장대로」 11/8 12:10 KST): 영상 수집을 공식 Data API v3로(src/lib/server/youtubeDataApi.js).
     YOUTUBE_DATA_API_KEY 없으면 0건 · 오류 없음(로그 한 줄) — 키 등록만으로 켜진다(환경 변수는 건드리지 않음). 공식 API는 남의 자막 본문을 못 받으므로
     VOA · CC 카드도 「목록만 + 클릭 시 개인 자료」(youtube_ondemand)로 — 공개 본문 자료 경로(F R5)는 닫힘. 하루 쿼터 추정 ~311단위(무료 10,000).
     youtubei.js는 이 PR 뒤 코드에서 쓰는 곳 0 — 패키지 제거는 lockfile 재생성이 필요해 따로(이 세션은 외부 패키지 설치 판정에 걸림).
+    YT-API-002(이번 PR, 오케스트레이터 13:30 KST (b) 승인): Vercel에 3월부터 있던 YOUTUBE_API_KEY(같은 Data API v3 키, 오너 등록 · 값 미열람)를
+    YOUTUBE_DATA_API_KEY 다음 순서로 읽는다 — 환경 변수 변경 없음. 400 · 403이면 그날 나머지 호출 중단 · 0건 · observe.error_events 하루 한 줄(키 흔적 지움).
+    하루 상한 320단위(기본 소스 315 — 채널 4 × 3 + CC 3 × 101) · captions.list 0. 사후 확인 = 11/9 00:06 수집 뒤 영 · 일 영상 행 수 · 오류 줄 → 03:40 보고.
     MATERIAL-DIFFICULTY-002([#1761](https://github.com/wonchance-art/manabi/pull/1761) squash 959fb842 · 11/8 13:00 KST · 운영 사후 확인 — 20261108040000 적용,
     RPC anon · authenticated EXECUTE 닫힘 · service_role만 · SECURITY DEFINER · search_path '' · difficulty 0행(첫 백필 전) · 지문 넷 그대로), 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
     materialDifficulty(#1743)로 processed_json.metadata.difficulty = { version, scale(HSK · JLPT · null), medianLevel, p90Level, types, listedShare }를

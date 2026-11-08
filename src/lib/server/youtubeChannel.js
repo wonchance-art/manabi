@@ -20,7 +20,7 @@
  */
 
 import {
-  MAX_CAPTION_PROBES, channelUploads, listableProbe, playlistVideoIds, probeVideos, youtubeApiKey,
+  MAX_CAPTION_PROBES, channelUploads, listableProbe, playlistVideoIds, probeVideos, reportYoutubeFailure, scrubKey, youtubeApiKey,
 } from './youtubeDataApi.js';
 
 /** 후보를 이만큼까지만 훑는다(videos.list 한 번에 50개까지 — 상한은 쿼터 · 벽시계 여유). */
@@ -75,8 +75,8 @@ export async function fetchYoutubeChannel(count = 2, config = {}, deps = {}) {
   if (!handle) return [];
   const log = deps.log || ((...a) => console.warn('[cron/youtube]', ...a));
   const key = deps.apiKey !== undefined ? deps.apiKey : youtubeApiKey();
-  if (!key) { log(`YOUTUBE_DATA_API_KEY 없음 — 건너뜀: ${handle}`); return []; }
-  const opts = { key, fetch: deps.fetch || fetch };
+  if (!key) { log(`YouTube API 키 없음(YOUTUBE_DATA_API_KEY · YOUTUBE_API_KEY) — 건너뜀: ${handle}`); return []; }
+  const opts = { key, fetch: deps.fetch || fetch, ledger: deps.ledger, now: deps.now };
   try {
     const channel = await channelUploads(handle, opts);
     if (!channel) { log(`핸들 해석 실패: ${handle}`); return []; }
@@ -97,7 +97,9 @@ export async function fetchYoutubeChannel(count = 2, config = {}, deps = {}) {
     if (out.length === 0) log(`자막(${langCode}) 있는 영상 0건: ${handle}`);
     return out;
   } catch (e) {
-    log(`수집 실패 ${handle}: ${e?.message || e}`);
+    // 키 거절(400 · 403)은 그날 나머지 호출을 멈추고(ytApi) 운영 오류 기록에 하루 한 줄. 크론은 0건으로 계속 간다.
+    log(`수집 실패 ${handle}: ${scrubKey(e?.message || e, key)}`);
+    await reportYoutubeFailure(e, { key, ledger: deps.ledger, now: deps.now, record: deps.recordError });
     return [];
   }
 }

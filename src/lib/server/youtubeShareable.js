@@ -12,7 +12,9 @@
  */
 
 import { isListable, probeBudget, toSuggestionArticle } from './youtubeChannel.js';
-import { MAX_CAPTION_PROBES, listableProbe, probeVideos, searchCcVideoIds, youtubeApiKey } from './youtubeDataApi.js';
+import {
+  MAX_CAPTION_PROBES, listableProbe, probeVideos, reportYoutubeFailure, scrubKey, searchCcVideoIds, youtubeApiKey,
+} from './youtubeDataApi.js';
 
 /** 공식 API 라이선스 값 중 CC BY만 통과(fail-closed). */
 export function isCreativeCommonsLicense(license) {
@@ -25,8 +27,8 @@ export async function fetchYoutubeCc(count = 2, config = {}, deps = {}) {
   if (!query) return [];
   const log = deps.log || ((...a) => console.warn('[cron/youtube-cc]', ...a));
   const key = deps.apiKey !== undefined ? deps.apiKey : youtubeApiKey();
-  if (!key) { log(`YOUTUBE_DATA_API_KEY 없음 — 건너뜀: "${query}"`); return []; }
-  const opts = { key, fetch: deps.fetch || fetch };
+  if (!key) { log(`YouTube API 키 없음(YOUTUBE_DATA_API_KEY · YOUTUBE_API_KEY) — 건너뜀: "${query}"`); return []; }
+  const opts = { key, fetch: deps.fetch || fetch, ledger: deps.ledger, now: deps.now };
   try {
     const ids = await searchCcVideoIds(query, langCode, probeBudget(count), opts);
     const videos = await probeVideos(ids, opts);
@@ -41,7 +43,8 @@ export async function fetchYoutubeCc(count = 2, config = {}, deps = {}) {
     if (out.length === 0) log(`CC 자막 영상 0건: "${query}"`);
     return out;
   } catch (e) {
-    log(`수집 실패 "${query}": ${e?.message || e}`);
+    log(`수집 실패 "${query}": ${scrubKey(e?.message || e, key)}`);
+    await reportYoutubeFailure(e, { key, ledger: deps.ledger, now: deps.now, record: deps.recordError });
     return [];
   }
 }
