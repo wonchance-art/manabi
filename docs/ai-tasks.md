@@ -878,6 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **E2E-RACE-001 e2e 경합 패턴 일괄 점검 (2026-11-08 KST)** PR `claude/e2e-race`(오케스트레이터 지시 · 테스트 전용):
+  viewer-exclusion:117이 CI에서 한 번 「0 !== 1」 — 카드 단추 줄은 늘 있고 「아는 단어」 · 4등급은 `user &&` 안이라, 새로 고침 · 첫 낱말 직후(세션 복원 전)에 세면 0.
+  정적 훑기: `.count()` · `isVisible()`를 곧장 단언하는 404곳 중 양(존재 · 보임)이고 같은 테스트에서 그 대상을 먼저 기다리지 않은 곳 112(CI가 돌리는 파일 61) → 문맥 판정.
+  고침 4곳(기대값 그대로, timeout · 재시도 없음): viewer-exclusion:117 · viewer-hun-layout:57(첫 낱말 4등급) · viewer-word-card:670(고정 300ms → 단추 대기) ·
+  account-boundary:577(끊김 안내는 기기 사본과 따로 그려짐). 나머지 CI 후보는 틀 · 대화 상자 · 목록을 기다린 뒤 그 안을 세는 것, 서버 HTML에 이미 있는 칩(learning-flow-clarity) 등 — 안전.
+  반복: CI와 같은 빌드 · 서버(8878 · 발행판 · server-fetch-mock)로 고친 네 파일 10회 — 52 × 10 = 520 통과 · 실패 0.
 - **A11Y-LAUNCH-001 출시 손님 경로 접근성 점검(운영) (2026-11-08 KST)** PR `claude/a11y-landmarks`(오케스트레이터 지시 · 화면 무변경):
   axe 4.10 WCAG 2.1 A/AA — /home · /discover · 함께 읽는 글 · /viewer(일 45 · 영 120 · 중 371) · /books/japanese-n5 · /auth · /privacy · 404, 폰 · PC 20판 **위반 0**.
   axe가 판정 못 한 대비 315칸은 글자를 지운 캡처로 실측 — 장식(aria-hidden) 37 제외 278칸 전부 통과(최저 5.14:1).
