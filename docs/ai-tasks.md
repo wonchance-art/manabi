@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **SMTP-OPTIONS-001 인증 메일 SMTP 후보 조사 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · 조사 · 문서만, 계정 · env 변경 없음):
+  `docs/smtp-options.md` — Resend(월 3,000 · 하루 100, Pro $20) **채택(1안)** · Brevo(하루 300) 예비 · SES(샌드박스 · 심사 96h, $0.10/1,000) 규모 커지면 ·
+  Postmark(월 100) · SendGrid(무료 폐지) 배제 · 네이버클라우드 메일러(사업자 계정) 지금 배제. 도메인 DNS = Vercel DNS(MX · SPF 없음, DMARC p=none).
+  오너 절차: 가입 → Vercel DNS 레코드 → API 키(Sending access) → Supabase SMTP 칸(smtp.resend.com · 465 · resend · noreply@ · manabi) → 한도 30/시간 유지 → Gmail · 네이버 · 다음 수신 시험.
 - **AUTH-MAIL-KO-001 인증 메일 한국어 원고 대조 · 체크리스트 정리 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · docs-only):
   원고는 이미 있다 — `supabase/templates/*.html` 5종(MAIL-KO-001, 오너 「A안」 2026-10-12) · 제목 · 절차 정본 `docs/auth-email-links.md` · 계약 25개 통과.
   대조: 이미지 0 · 인라인 스타일 · `color-scheme: light only` + 명시 배경(다크 모드 렌더 확인) · 해요체 · 링크는 `/auth/confirm` token_hash(다른 기기에서 열기).

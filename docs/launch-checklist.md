@@ -21,6 +21,7 @@
   설정이 보이면 끈다. 없으면 한국어 템플릿만 넣어 둔다(누가 API로 직접 요청해도 영어 메일이 나가지 않게).
 - [ ] **자체 SMTP — 출시 차단 조건**: Supabase 내장 메일은 **조직 팀원 주소로만** 보내고 시간당 30통이다(공식 문서 auth-smtp).
   Authentication → Emails → SMTP Settings에 자체 SMTP가 켜져 있는지 확인한다 — 없으면 일반 가입자는 인증 메일을 받지 못한다.
+  후보 비교 · 권장 1안(Resend) 오너 절차 · Supabase SMTP 칸 입력값은 [`docs/smtp-options.md`](smtp-options.md)(SMTP-OPTIONS-001).
   (운영 이메일 가입 5명은 모두 메일로 인증됐지만, 팀원 주소였는지 자체 SMTP였는지는 DB 집계만으로 가릴 수 없다.)
 - [ ] 발신자 이름 「manabi」 — 자체 SMTP 설정의 Sender name에서 정한다(메일 제목에는 `[manabi]`를 붙이지 않는다 — auth-email-links.md).
 
