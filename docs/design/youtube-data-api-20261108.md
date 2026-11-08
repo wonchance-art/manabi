@@ -39,6 +39,11 @@
 - `YOUTUBE_DATA_API_KEY` — 서버 전용(브라우저 노출 금지, `NEXT_PUBLIC_` 아님).
 - Google Cloud에서 「YouTube Data API v3」만 허용하고, HTTP 리퍼러 대신 **API 제한**을 건다(서버 호출).
 - 키가 없으면 지금처럼 0건 + 로그 한 줄로 끝난다(fail-closed). 크론은 멈추지 않는다.
+- **구현 뒤 보완(YT-API-002 · 2026-11-08 KST, 오케스트레이터 13:30)**:
+  - 키 이름은 `YOUTUBE_DATA_API_KEY` → `YOUTUBE_API_KEY` 순서로 읽는다. 뒤의 것은 3월 첫 「오늘의 추천」이 같은 Data API v3를 부르던, 오너가 이미 등록해 둔 키다(환경 변수는 바꾸지 않는다).
+  - 400 · 403(키 무효 · 리퍼러/IP 제한 · 쿼터 초과)이면 그날 나머지 호출을 보내지 않고 0건으로 끝낸다. `observe.error_events`에 하루 한 줄(`server.youtube-collect`, 키 값 · `AIza…` 모양은 지움).
+  - 하루 상한 `YT_DAILY_UNIT_CAP = 320`(KST 날짜, 호출 전에 셈). 위 합계 311은 channels.list를 첫 회만으로 쳤는데 지금 코드는 매일 4채널을 해석해 기본이 315다.
+  - 그래서 captions.list(50)는 자리가 없어 `MAX_CAPTION_PROBES = 0` — 오디오 언어로 못 가르는 영상은 버린다(fail-closed).
 
 ## 바꿀 자리(디스패처는 그대로)
 - `src/lib/content-sources.js` `fetchFromSource`의 `case 'youtube_channel'` · `case 'youtube_cc'`는 **그대로** 둔다. 동적 import 대상만 바꾼다.
