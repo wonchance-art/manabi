@@ -30,6 +30,7 @@ import {
   sendToSubscription,
 } from '@/lib/server/pushSend';
 import { buildForecast } from '@/lib/forecast';
+import { summarizeSendForecast, withCronRun } from '@/lib/server/cronRuns';
 
 async function handle(request) {
   // CRON_SECRET 미설정 시 "Bearer undefined" 통과 방지 — fail-closed.
@@ -112,5 +113,7 @@ async function handle(request) {
   return Response.json({ checked, sent, silent, cleaned, unavailable });
 }
 
-export async function POST(request) { return handle(request); }
-export async function GET(request) { return handle(request); }
+// OPS-HEALTH-001: 실행 한 줄(observe.cron_runs) — 인증 실패(401)는 남기지 않는다.
+const recorded = withCronRun('send-forecast', handle, summarizeSendForecast);
+export async function POST(request) { return recorded(request); }
+export async function GET(request) { return recorded(request); }
