@@ -45,22 +45,27 @@ for (const viewportKey of ['mobile', 'desktop']) {
     try {
       const page = await context.newPage();
       await page.goto(`${env.baseURL}/study`, { waitUntil: 'domcontentloaded', timeout: 120000 });
-      // 몸풀기 오답이 나올 때까지 — 고른 보기가 맞으면 다음 문항으로 넘어가 다시 고른다(보기 순서는 세션마다 다르다).
-      let why = null;
-      for (let i = 0; i < 6 && !why; i++) {
-        // 열린 보기만 — 「계속」 뒤 새 문항이 그려지기 전에는 앞 문항의 잠긴 보기가 남아 있다(누르면 아무 일도 없어 기다림이 끝나지 않는다 — 실측).
-        const options = page.locator('.study-item .fr-quiz__opt:enabled');
-        await options.first().waitFor({ timeout: 60000 });
-        // 첫 화면은 서버가 그린 보기라 하이드레이션 전에 누르면 아무 일도 없다(3번 중 1번 실측) — 채점 표시가 뜰 때까지 다시 누른다.
-        const pick = options.nth(i % (await options.count()));
-        for (let tries = 0; tries < 10; tries++) {
-          await pick.click().catch(() => {});
-          if (await page.locator('.study-item .fr-quiz__opt.is-correct').first().waitFor({ timeout: 1500 }).then(() => true, () => false)) break;
-        }
-        await page.getByRole('button', { name: /^(계속|결과 보기) →$/ }).waitFor();
-        if (await page.locator('.study-textlink', { hasText: '왜 이게 답이에요?' }).count()) why = await reach(page, '.study-textlink', '왜 이게 답이에요?');
-        else await page.getByRole('button', { name: /^(계속|결과 보기) →$/ }).click();
+      // 첫 몸풀기 문항에서 틀린 보기를 고른다 — 정답은 합성 계정의 단어 행 뜻(item.word.meaning)이다.
+      // 예전에는 아무 보기나 누르고 맞으면 다음 문항으로 넘어갔는데, 두 가지로 깨졌다(로컬 반복 50회 중 5회 실측, Data #1782 CI 1회):
+      //  ① 보기 수를 센 순간 하이드레이션이 보기를 다시 그리는 중이라 0개 → nth(i % 0) = nth(NaN)이 되어 모든 누름이 빗나갔다.
+      //  ② 몸풀기 둘을 다 맞히면 셋째 문항은 보기가 없는 유형이라 기다림이 끝나지 않았다.
+      // 그래서 한 문항 · 보기는 글자로 찾는다(누를 때마다 새로 찾는다).
+      const head = page.locator('.study-item [data-item-head]').first();
+      await head.waitFor({ timeout: 60000 });
+      const word = (await head.textContent()).trim();
+      const answer = env.backend.state.account.tables.user_vocabulary.find((row) => row.word_text === word)?.meaning;
+      assert.ok(answer, `첫 몸풀기 단어(${word})의 뜻이 합성 계정에 있다`);
+      const wrong = page.locator('.study-item .fr-quiz__opt:enabled').filter({ hasNotText: answer }).first();
+      await wrong.waitFor({ timeout: 60000 });
+      // 첫 화면은 서버가 그린 보기라 하이드레이션 전에 누르면 아무 일도 없다(3번 중 1번 실측) — 채점 표시가 뜰 때까지 다시 누른다.
+      const graded = page.locator('.study-item .fr-quiz__opt.is-correct');
+      for (let tries = 0; tries < 10; tries++) {
+        if (await graded.count()) break; // 앞 누름이 하이드레이션 뒤에 처리됐다 — 잠긴 보기를 다시 누르지 않는다
+        await wrong.click().catch(() => {});
+        if (await graded.first().waitFor({ timeout: 1500 }).then(() => true, () => false)) break;
       }
+      await page.getByRole('button', { name: /^(계속|결과 보기) →$/ }).waitFor();
+      const why = await page.locator('.study-textlink', { hasText: '왜 이게 답이에요?' }).count() ? await reach(page, '.study-textlink', '왜 이게 답이에요?') : null;
       assert.ok(why, '오답 뒤 「왜 이게 답이에요?」가 보인다');
       assert.ok(why.box[1] < 24, `보이는 글자 상자는 그대로 작다(${why.box})`);
       assert.ok(why.reach[1] >= 44, `누르는 범위 세로 ${why.reach[1]}px ≥ 44`);
