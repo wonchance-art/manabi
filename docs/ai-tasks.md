@@ -1258,8 +1258,13 @@
     YT-API-002([#1764](https://github.com/wonchance-art/manabi/pull/1764) squash 5714dccf · 11/8 13:46 KST, 오케스트레이터 13:30 KST (b) 승인): Vercel에 3월부터 있던 YOUTUBE_API_KEY(같은 Data API v3 키, 오너 등록 · 값 미열람)를
     YOUTUBE_DATA_API_KEY 다음 순서로 읽는다 — 환경 변수 변경 없음. 400 · 403이면 그날 나머지 호출 중단 · 0건 · observe.error_events 하루 한 줄(키 흔적 지움).
     하루 상한 320단위(기본 소스 315 — 채널 4 × 3 + CC 3 × 101) · captions.list 0. 사후 확인 = 11/9 00:06 수집 뒤 영 · 일 영상 행 수 · 오류 줄 → 03:40 보고.
-    YT-API-003(이번 PR, 의존성만): youtubei.js 제거(+ 그것만 쓰던 @bufbuild/protobuf · fflate · meriyah) — lockfile만 재생성, 코드 무변경.
+    YT-API-003([#1765](https://github.com/wonchance-art/manabi/pull/1765) squash 5040bc68 · 11/8 14:08 KST · 운영 배포 READY, 의존성만): youtubei.js 제거(+ 그것만 쓰던 @bufbuild/protobuf · fflate · meriyah) — lockfile만 재생성, 코드 무변경.
     후보(착수 전): media.js의 youtubei.js 노드 정규화 · 자막 트랙 함수 중 앱에서 안 쓰는 것 정리(import/link가 같은 파일을 씀 — 함수 단위로 확인 뒤).
+    API-ABUSE-001(이번 PR, 오케스트레이터 14:30 KST): 손님이 부를 수 있는 /api/** 80개 전수 표(docs/verification/api-guest-guards-20261108.md).
+    비용 드는 손님 경로는 TTS 하나(IP 분당 + 하루 5000) · LLM 11개는 전부 로그인 + 분당 + 하루 + 입력 상한 · Hobby 한도(300초 · 4.5MB · 월 호출 100만 ·
+    Active CPU 4시간, 넘으면 30일 정지) 범위 안. 막은 것: suggestions/today CDN 60초(찾은 날만) · review/drills IP 분당 30 + 본문 256KB ·
+    class unlock 해시 전 본문 8KB + 암호 1,024자. 계약 apiGuestGuards.test.js(손님 경로 22개 표 — 새 손님 경로는 표에 올려야 CI 통과).
+    남김(기록): 분당 상한은 인스턴스 메모리 · 하루 상한 fail-open · TTS 하루 상한 주체 IP 해시. 실측 함수 사용량은 대시보드 Usage(이 세션 도구 없음).
     MATERIAL-DIFFICULTY-002([#1761](https://github.com/wonchance-art/manabi/pull/1761) squash 959fb842 · 11/8 13:00 KST · 운영 사후 확인 — 20261108040000 적용,
     RPC anon · authenticated EXECUTE 닫힘 · service_role만 · SECURITY DEFINER · search_path '' · difficulty 0행(첫 백필 전) · 지문 넷 그대로), 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
     materialDifficulty(#1743)로 processed_json.metadata.difficulty = { version, scale(HSK · JLPT · null), medianLevel, p90Level, types, listedShare }를
