@@ -87,7 +87,7 @@ export async function fetchQuestReviewRows(userId, { signal } = {}) {
   return selectLegacyReviewRows(learning, { limit: DUE_LIMIT, requireMeaning: true });
 }
 
-export default function QuestReview({ userId, onClose }) {
+export default function QuestReview({ userId, onClose, primaryButton: gbcButtonPrimary = { ...gbcButton, background: GBC.green, color: GBC.creamHi } }) {
   const [phase, setPhase] = useState('loading'); // loading | error | empty | active | done
   const [items, setItems] = useState([]);
   const [idx, setIdx] = useState(0);

@@ -6,9 +6,11 @@ import { canReadSuggestion, TODAY_NEWS_ID } from '@/lib/suggestionReading';
 
 // 산책 큰 칸 셋(DISCOVER-CLASSICS-001, 오너 「산책 세션에 배움의 정사각형 큰 사이즈 세 개를 가로로 · 모바일은 세로로」 → 「권장대로 ㄱㄱ」 2026-10-22 KST).
 // 배움 이어 읽기 칸(ResumeTile)과 같은 몸 — 색 머리(칸 이름 · 큰 글자) · 본문 · 아래 단추. 색은 기존 토큰만(오늘 화제 --fr · 고전 명작 --ja · 매거진 --zh).
-// 아직 열 것이 없는 칸(첫 책 · 첫 호 전)은 누를 수 없는 칸으로 둔다 — 단추 없이 「준비 중」(누르면 빈 화면인 링크를 만들지 않는다).
-// 매거진 칸의 행선지는 매거진 세션이 첫 호를 낼 때 MAGAZINE_HREF에 건다(보드 DISCOVER-CLASSICS-001).
-export const MAGAZINE_HREF = null;
+// 아직 열 것이 없는 칸(첫 책 · 첫 호 전)은 그리지 않는다(발매 점검 M3, 오너 「권장대로」 2026-11-08 KST — 출시 첫날 「준비 중」 칸이 「아직 안 된 곳」으로
+// 읽혔다). 책 · 그림 · 호가 하나라도 생기면 지금 모양으로 다시 나온다. 오늘 화제 칸은 그대로(소식이 없으면 「오늘 소식 준비 중」).
+// 매거진 칸의 행선지는 매거진 세션이 첫 호를 낼 때 MAGAZINE_HREF에 건다(보드 DISCOVER-CLASSICS-001 — 값은 discoverMagazine.js).
+import { MAGAZINE_HREF } from './discoverMagazine';
+export { MAGAZINE_HREF };
 
 /** 「10월 22일」 — KST 날짜 문자열(YYYY-MM-DD)에서. */
 export const shelfDateLabel = (date) => {
@@ -53,17 +55,15 @@ export default function DiscoverTiles({ suggestions = [], classics = [], art = [
         ? <><ZhSlot lang={headlineLang}><strong className="discover-tile__title" lang={headlineLang}>{headline.title}</strong></ZhSlot><span className="discover-tile__sub">{headline.channel_name}</span></>
         : <strong className="discover-tile__title">오늘 소식 준비 중</strong>}
     </Tile>
-    <Tile href={classicsCount ? '/discover/classics' : null} tone="classics" kicker="고전 명작" big={classicsCount || null}
-      bottom={classicsCount ? <><span className="discover-tile__spacer" /><Pill>둘러보기</Pill></> : null}>
+    {classicsCount ? <Tile href="/discover/classics" tone="classics" kicker="고전 명작" big={classicsCount}
+      bottom={<><span className="discover-tile__spacer" /><Pill>둘러보기</Pill></>}>
       {covers.length
         ? <span className="discover-tile__covers" aria-hidden="true">{covers.map((item) => <span key={item.key} className="discover-tile__cover"><ClassicCover provider={item.provider} work={item.work} /></span>)}</span>
-        : paintings.length
-          // eslint-disable-next-line @next/next/no-img-element
-          ? <span className="discover-tile__covers" aria-hidden="true">{paintings.map((item) => <span key={item.key} className="discover-tile__cover discover-tile__cover--art">{item.image && <img src={item.image.url} alt="" loading="lazy" decoding="async" />}</span>)}</span>
-          : <strong className="discover-tile__title">첫 책 준비 중</strong>}
-    </Tile>
-    <Tile href={MAGAZINE_HREF} tone="magazine" kicker="여행 매거진">
+        // eslint-disable-next-line @next/next/no-img-element
+        : <span className="discover-tile__covers" aria-hidden="true">{paintings.map((item) => <span key={item.key} className="discover-tile__cover discover-tile__cover--art">{item.image && <img src={item.image.url} alt="" loading="lazy" decoding="async" />}</span>)}</span>}
+    </Tile> : null}
+    {MAGAZINE_HREF && <Tile href={MAGAZINE_HREF} tone="magazine" kicker="여행 매거진">
       <strong className="discover-tile__title">첫 호 준비 중</strong>
-    </Tile>
+    </Tile>}
   </section>;
 }

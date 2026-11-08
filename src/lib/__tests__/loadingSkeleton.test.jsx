@@ -55,12 +55,13 @@ describe('① 산책 대기 화면 — src/app/(app)/discover/loading.jsx', () =
     expect(read('src/app/(app)/discover/loading.jsx')).not.toContain('Spinner');
     announced(html, '산책 화면');
   });
-  it('실제 화면의 칸: h1 「산책」 · 큰 칸 셋(같은 클래스 · 칸 이름 그대로) · 매거진 「첫 호 준비 중」', () => {
+  it('실제 화면의 칸: h1 「산책」 · 오늘 화제 · 고전 명작(같은 클래스 · 칸 이름 그대로) — 매거진은 첫 호가 걸릴 때만(M3)', () => {
     // 제목은 대기 중 화면 읽기에 숨긴다 — 실제 화면이 들어오며 다시 그리므로 두 번 읽히지 않게(배움 · 서재 대기와 같다).
     expect(html).toContain('<header class="manabi-page-heading" aria-hidden="true"><h1>산책</h1></header>');
-    expect(html.match(/<div class="discover-tile discover-tile--(news|classics|magazine)">/g)).toHaveLength(3);
-    for (const kicker of ['오늘 화제', '고전 명작', '여행 매거진']) expect(html).toContain(`<span class="discover-tile__kicker">${kicker}</span>`);
-    expect(html).toContain('첫 호 준비 중');
+    expect(html.match(/<div class="discover-tile discover-tile--(news|classics|magazine)">/g)).toHaveLength(2);
+    for (const kicker of ['오늘 화제', '고전 명작']) expect(html).toContain(`<span class="discover-tile__kicker">${kicker}</span>`);
+    expect(html).not.toContain('여행 매거진');
+    expect(html).not.toContain('첫 호 준비 중');
     expect(html).not.toMatch(/<a[ >]/); // 자리표 칸은 이동 · 초점이 없다
   });
 });

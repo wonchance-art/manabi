@@ -24,6 +24,22 @@ export function parseTitle(title) {
   };
 }
 
+/** 시리즈 이름의 화면 말(발매 점검 M5, 오너 「권장대로」 2026-11-08 KST) — 한국어 화면에 영어 「grammar」가 보이지 않게. 모르는 이름은 그대로. */
+const SERIES_LABEL_KO = Object.freeze({ grammar: '문법', phrases: '표현' });
+export function seriesLabelKo(series) {
+  if (!series) return '';
+  return SERIES_LABEL_KO[String(series).toLowerCase()] || series;
+}
+
+/**
+ * 카드에 보일 제목(M5) — 시리즈 형식(「[A1 grammar #5] Family & Relationships」)이면 코드 뒤 본문만. 급수는 메타 줄 · 시리즈는 위치 표지가 말한다.
+ * 데이터 제목은 그대로다(숨김 규칙 · 이전 · 다음 편 · 쉬운순이 코드를 읽는다). 시리즈가 아니면(「[N5] …」 · 사용자 제목) 그대로.
+ */
+export function seriesCardTitle(title) {
+  const meta = parseTitle(title);
+  return meta.level && meta.series && meta.display ? meta.display : (title || '');
+}
+
 /**
  * 같은 레벨 안의 학습 경로 자연 순서: 시리즈 → 번호 → 최신순. 시리즈 없는 자료는 뒤로.
  * 자료 목록의 쉬운순과, 최신순에서 같은 시각을 나눠 가진 묶음이 함께 쓴다(SERIES-ORDER-001).

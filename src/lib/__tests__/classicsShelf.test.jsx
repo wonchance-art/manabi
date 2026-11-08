@@ -166,17 +166,21 @@ describe('산책 큰 칸 셋', () => {
     expect(html).toContain('<strong class="discover-tile__title" lang="ja">東京の秋祭り</strong>');
     expect(html).toContain(`<a class="discover-tile discover-tile--classics" href="/discover/classics"><span class="discover-tile__head"><span class="discover-tile__kicker">고전 명작</span><span class="discover-tile__big">${ALL.length}권</span>`);
     expect(html.match(/class="discover-tile__cover"/g)).toHaveLength(CLASSICS_TILE_COVERS);
-    expect(html).toContain('<div class="discover-tile discover-tile--magazine">');
-    expect(html).toContain('첫 호 준비 중');
+    // 발매 점검 M3(오너 「권장대로」 2026-11-08 KST): 열 것이 없는 칸은 그리지 않는다 — 매거진은 첫 호가 걸릴 때(MAGAZINE_HREF) 나온다.
     expect(MAGAZINE_HREF).toBe(null); // 매거진 세션이 첫 호 때 건다
+    expect(html).not.toContain('discover-tile--magazine');
+    expect(html).not.toContain('첫 호 준비 중');
     expect(html).not.toMatch(/소식 \d+편/);
   });
-  it('열 것이 없으면 누를 수 없는 칸 — 단추 없이 「준비 중」', () => {
+  it('열 것이 없으면 — 오늘 화제는 누를 수 없는 「준비 중」 칸, 고전 명작 · 매거진 칸은 그리지 않는다(M3)', () => {
     const html = renderToStaticMarkup(createElement(DiscoverTiles, { suggestions: [], classics: [], date: '2026-10-22' }));
     expect(html).not.toContain('<a ');
     expect(html).toContain('오늘 소식 준비 중');
-    expect(html).toContain('첫 책 준비 중');
+    expect(html).not.toContain('discover-tile--classics');
+    expect(html).not.toContain('첫 책 준비 중');
+    expect(html).not.toContain('discover-tile--magazine');
     expect(html).not.toContain('discover-tile__pill');
+    expect(html.match(/class="discover-tile /g)).toHaveLength(1);
   });
   it('표지 셋은 날마다 한 칸씩 밀린다(같은 날은 같은 셋)', () => {
     const items = ['a', 'b', 'c', 'd'].map((key) => ({ key }));

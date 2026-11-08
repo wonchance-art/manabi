@@ -45,7 +45,7 @@ describe('F R4 — 서버는 자막 본문을 담지 않는다 (이 라운드의
 
   it('수집기가 자막 **본문**을 만지지 않는다 — 트랙 목록만 본다', () => {
     const src = read('src/lib/server/youtubeChannel.js');
-    expect(src, '자막 언어 목록은 본문이 아니다').toContain('extractCaptionLangs');
+    expect(src, '자막 언어 판정은 본문이 아니다(공식 API — YT-API-001)').toContain('listableProbe');
     // 본문 취득 함수들이 여기 들어오면 설계가 뒤집힌 것이다.
     expect(src).not.toContain('getTranscript');
     expect(src).not.toContain('parseCaptionData');

@@ -24,7 +24,8 @@ import bus from '../../../components/world/bus';
 import '../../../views/galmuri9.css';
 
 // 글자를 얹는 주 버튼 — 월드 GBC 초록(#5F9A46)은 크림 글자와 3.26:1이라(화면 벽 WALL-004), 임베드 화면에서만 같은 초록을
-// 잉크 쪽으로 28% 짙게(≈#497A36, 4.9:1) 덮어쓴다. 월드 팔레트 · QuestReview는 그대로 둔다(오너 「월드는 건들지 마」 2026-11-02 KST).
+// 잉크 쪽으로 28% 짙게(≈#497A36, 4.9:1) 덮어쓴다. 월드 팔레트는 그대로 둔다(오너 「월드는 건들지 마」 2026-11-02 KST). QuestReview 안의 초록 단추도
+// 같은 값을 primaryButton으로 넘긴다(EMBED-CONTRAST-001 — 월드 파일 변경은 그 선택 값 한 줄).
 const embedPrimary = { ...gbcButtonPrimary, background: `color-mix(in srgb, ${GBC.green} 72%, ${GBC.greenInk})` };
 
 // 게더 오브젝트는 좁다 — 패널을 작게 잡고 100dvh 다크 배경(GBC 화면 베젤 느낌) 위에 센터링.
@@ -62,7 +63,7 @@ export default function EmbedReviewClient() {
   const [lastDone, setLastDone] = useState(null); // {right,total} 이면 완주, null 이면 그냥 닫음.
 
   // QuestReview의 'quest:done'을 선택적으로 청취 — 대기 화면에서 "완료 vs 닫음"을 구분하기 위한
-  // 순수 부가 용도다(QuestReview는 손대지 않는다). 'quest:scored'는 리스너가 없어 무해한 no-op.
+  // 순수 부가 용도다. 'quest:scored'는 리스너가 없어 무해한 no-op.
   const doneRef = useRef(null);
   useEffect(() => {
     const onDone = (d) => { doneRef.current = d; };
@@ -135,7 +136,9 @@ export default function EmbedReviewClient() {
     return (
       <div style={SCREEN}>
         <div style={{ position: 'relative', width: '100%', height: '100dvh' }}>
-          <QuestReview key={reviewKey} userId={user.id} onClose={handleClose} />
+          {/* 「뒤집기」 · 「알맞음」 · 「쉬움」 · 「닫기」도 임베드 주 단추와 같은 짙은 초록(EMBED-CONTRAST-001, 오너 「권장대로」 2026-11-08 KST —
+              axe 3.26:1 → 4.9:1). QuestReview의 선택 값 하나(primaryButton) — /world는 넘기지 않아 기본값(지금 GBC 초록) 그대로다. */}
+          <QuestReview key={reviewKey} userId={user.id} onClose={handleClose} primaryButton={embedPrimary} />
         </div>
       </div>
     );
