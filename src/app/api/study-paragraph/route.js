@@ -4,6 +4,7 @@ import { assembleStudyMaterials, deriveArc } from '@/lib/studyMaterials';
 import { callLLM } from '@/lib/server/llm';
 import { hasPrimaryLLMKey } from '@/lib/server/llmKeys';
 import { dailyQuotaGate, quotaSubject } from '@/lib/server/dailyQuota';
+import { noteParagraphError } from '@/lib/server/studyParagraphObserve';
 
 /**
  * 오늘의 문단 생성 — 공부 모드의 재료(새 문법·새 어휘·복습 문법·복습 어휘)를
@@ -136,6 +137,7 @@ export async function POST(request) {
   if (overDaily) return overDaily;
 
   if (!hasPrimaryLLMKey() && !process.env.GROQ_API_KEY) {
+    noteParagraphError('no_llm_key');
     return Response.json(
       { error: { message: '서버에 AI 키가 설정되지 않았어요 (GEMINI_API_KEY 또는 GROQ_API_KEY).' } },
       { status: 500 }
@@ -168,6 +170,7 @@ export async function POST(request) {
       materials = assembled.paragraphMaterials;
     } catch (err) {
       console.error('[study-paragraph] prefetch assemble error', err?.message);
+      noteParagraphError('assemble_error:prefetch');
       return Response.json({ ok: false }, { status: 200 });
     }
   } else {
@@ -207,6 +210,7 @@ export async function POST(request) {
     }
     if (!paragraph) {
       console.error('[study-paragraph] unusable model output after retry');
+      noteParagraphError(`unusable_output:${isPrefetch ? 'prefetch' : 'live'}`);
       if (isPrefetch) return Response.json({ ok: false }, { status: 200 });
       return Response.json({ error: { message: '문단을 만들지 못했어요.' } }, { status: 502 });
     }
@@ -237,6 +241,7 @@ export async function POST(request) {
     return Response.json({ paragraph }, { status: 200 });
   } catch (err) {
     console.error('[study-paragraph] error', err?.message);
+    noteParagraphError(`exception:${isPrefetch ? 'prefetch' : 'live'}`);
     if (isPrefetch) return Response.json({ ok: false }, { status: 200 });
     return Response.json({ error: { message: 'Internal Server Error' } }, { status: 500 });
   }
