@@ -39,9 +39,12 @@ describe('① 서버가 본문까지 그리는 문서', () => {
     ['작성기', seed({ row: withMeta({ composer: { version: 1 } }) })],
     ['학습 노트', seed({ row: withMeta({ studyNote: { version: 1 } }) })],
     ['행 없음', seed({ row: null })],
-    ['중국어(병음 칸 폭을 붙은 뒤 잰다)', seed({ row: withMeta({ language: 'Chinese' }) })],
     ['seed 없음', null],
   ])('%s → 지금처럼(불러오기 그림)', (_, s) => { expect(viewerSsrRow(s, '45')).toBeNull(); });
+  it('중국어도 그린다(ZH-SSR-001 — 병음 칸은 글꼴 상수 식이라 서버 · 하이드레이션이 같은 값)', () => {
+    const row = withMeta({ language: 'Chinese' });
+    expect(viewerSsrRow(seed({ row }), '45')).toBe(row);
+  });
   it('returnTo 말고 다른 질의가 있으면(문장 찾아가기 · 수업 · 작성기 원본) 그리지 않는다', () => {
     for (const q of ['sourceEntry=1', 'study=1', 'original=1', 'team=x', 'returnTo=%2Fa&sourceQuote=b']) expect(viewerSsrRow(seed(), '45', new URLSearchParams(q))).toBeNull();
     expect(viewerSsrRow(seed(), '45', { study: '1' })).toBeNull();

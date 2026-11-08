@@ -40,12 +40,16 @@ describe('⑵ 쪽 높이 변수는 상속하지 않는다', () => {
   });
 });
 
-describe('⑴ 병음 칸은 본문을 처음 그리는 렌더에서 잰다', () => {
-  it('하이드레이션이 끝난 뒤의 렌더에서만, 글자 · 병음 크기마다 한 번, 같은 measurePinyinCell로', () => {
+describe('⑴ 병음 칸은 본문을 처음 그리는 렌더에서 정한다', () => {
+  it('하이드레이션이 끝난 뒤의 렌더에서만, 글자 · 병음 크기마다 한 번, 글꼴 상수 식(pinyinCellFormula)으로(ZH-SSR-001)', () => {
     expect(viewer).toContain("const pinyinPrimeKey = materialLang === 'Chinese' && hydrated.current ? `${fontSize}|${pinyinSize}` : '';");
     expect(viewer).toContain('useEffect(() => { hydrated.current = true; }, []);');
-    expect(viewer).toContain('const cell = measurePinyinCell({win:window,doc:document,root:()=>readerRef.current,pinyinRem:pinyinSize,fontRem:fontSize});');
-    expect(viewer).toContain('if (cell != null && cell !== pinyinCell) setPinyinCell(cell);');
+    // 서버 그림 · 하이드레이션 첫 렌더 = 기본 설정 · 뿌리 16px의 식 값(서버도 같은 식).
+    expect(viewer).toContain('const [pinyinCell,setPinyinCell] = useState(() => pinyinCellFormula(fontSize, pinyinSize));');
+    expect(viewer).toContain('const cell = pinyinCellFormula(fontSize, pinyinSize, rootFontPx(window, document));');
+    expect(viewer).toContain('if (cell !== pinyinCell) setPinyinCell(cell);');
+    // 잰 값은 안전망 — 병음 글꼴이 다 온 뒤 식과 1px 넘게 다를 때만.
+    expect(viewer).toMatch(/onCell:cell => setPinyinCell\(settlePinyinCell\(cell,/);
     // 다시 재는 때(글꼴 조각 · 창 크기)는 그대로 watchPinyinCell.
     expect(viewer).toContain('watchPinyinCell({win:window,doc:document,root:()=>readerRef.current');
     expect(read('src/lib/pinyinLayout.js')).toContain('const cell = measurePinyinCell({ win, doc, root, pinyinRem, fontRem });');

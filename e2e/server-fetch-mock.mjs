@@ -78,9 +78,15 @@ function boundaryResponse(url, claims) {
   return null;
 }
 
+// 중국어 뷰어 서버 렌더 e2e(e2e/viewer-zh-ssr.e2e.mjs, ZH-SSR-001) 전용 공개 행 — 운영 공개 시드(/viewer/368) 사본, id만 바꿨다.
+// 다른 e2e는 이 id를 쓰지 않으므로 기존 응답은 바뀌지 않는다.
+export const ZH_SSR_MATERIAL_ID = 93680;
+const zhSsrRow = JSON.parse(readFileSync(new URL('./fixtures/zh-public-viewer.json', import.meta.url), 'utf8'));
+
 function mockResponse(url, claims) {
   const boundary = boundaryResponse(url, claims);
   if (boundary) return boundary;
+  if (url.pathname.endsWith('/rest/v1/reading_materials') && url.searchParams.get('id') === `eq.${ZH_SSR_MATERIAL_ID}`) return json(zhSsrRow);
   // Archive rendering resolves published overrides on the server. Do not let that
   // request escape to the nonexistent fixture host and wait on DNS/network retries.
   if (url.pathname.endsWith('/rest/v1/content_overrides')) return json([]);
