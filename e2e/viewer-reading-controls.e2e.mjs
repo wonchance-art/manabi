@@ -26,6 +26,9 @@ await context.route(base+'/**',async route=>{
  try {const response=await route.fetch({headers:{...route.request().headers(),cookie:''},timeout:180000});await route.fulfill({response});}catch(e){if(!/closed|disposed/.test(e.message))throw e;}
 });
 await context.route('**/api/**', r=>r.fulfill({json:{}}));
+// 제외 목록은 {items}를 돌려준다 — {}이면 조회가 undefined로 끝나 오류 상태가 되고, 단어 카드에 「다시 시도」(약 44px)가 끼어
+// 590 폭에서 뜻 줄이 첫 화면 밖으로 밀렸다(운영에는 없는 상태 — READER-HEADER-001에서 확인).
+await context.route('**/api/learning/exclusions', r=>r.fulfill({json:{items:[]}}));
 await context.route('**/auth/v1/**',r=>r.fulfill({status:r.request().method()==='OPTIONS'?204:200,headers:cors,json:r.request().url().includes('/user')?user:session}));
 await context.route('**/rest/v1/**',async r=>{
  const req=r.request(),url=new URL(req.url()),table=url.pathname.split('/').pop(),method=req.method(),object=req.headers().accept?.includes('vnd.pgrst.object');
