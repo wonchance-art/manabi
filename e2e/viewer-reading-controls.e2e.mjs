@@ -91,6 +91,9 @@ await context.route('**/api/gemini',r=>r.fulfill({json:{text:'검수용 설명'}
 await context.route('**/api/learning/**',r=>{
  const learningUrl=new URL(r.request().url());
  // 뷰어의 단어 상태 색은 /api/learning/vocabulary?view=learning(fetchVocabularyLearningRows) snapshot에서 온다 — REST user_vocabulary 직접 조회가 아니다.
+ // 제외 목록은 운영처럼 {items}를 돌려준다 — 아래 contexts 답을 받으면 조회가 undefined로 끝나 오류 상태가 되고, 단어 카드에
+ // 「다시 시도」(44px)가 끼어 590 폭에서 뜻 줄이 첫 화면 밖으로 밀렸다(운영에는 없는 상태 — READER-HEADER-001에서 확인).
+ if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/exclusions')return r.fulfill({json:{items:[]}});
  if(r.request().method()==='GET'&&learningUrl.pathname==='/api/learning/vocabulary'&&learningUrl.searchParams.get('view')==='learning')
   return r.fulfill({json:legacyLearningSnapshot({actorId:uid,rows:vocab,known,fields:learningUrl.searchParams.get('fields'),ids:learningUrl.searchParams.get('ids')})});
  if(r.request().method()==='POST'){
@@ -300,7 +303,9 @@ try {
  assert.equal(await panel().locator('footer').count(),0,'no repeated footer rail');
  assert.equal(await panel().locator('#inspector-word details').count(),0,'AE-R1: no folds in the word tab');
  // 저장 등급 줄의 안내는 「얼마나 알겠어요?」 + 오른쪽 「아는 단어」(AD-R3 확정 목업 · docs/manabi-viewer-v2-ad-r3.md §단어창).
- assert(await panel().locator('.save-grade__guide').getByText('얼마나 알겠어요?',{exact:true}).isVisible());
+ // 아직 담지 않은 단어는 뒤에 「 · 고르면 단어장에 저장돼요」가 붙는다(발매 점검 #4, #1708) — 안내 줄이 보이고 그 말로 시작하는지 본다.
+ assert(await panel().locator('.save-grade__guide').isVisible());
+ assert.match(await panel().locator('.save-grade__guide').innerText(),/^얼마나 알겠어요\?/);
  await shotAt('minimal-mobile-default');
  assert(await panel().locator('.reader-card-sentence').isVisible(),'AE-R1: the sentence line replaces the quoted line');
  await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();assert(await panel().locator('input').first().isVisible());await panel().getByRole('button',{name:'뜻·발음 수정',exact:true}).click();
@@ -357,7 +362,9 @@ try {
  // 빌드에서는 DOM = canvas = 56.2px · 칸 59px로 넘침 0. 대역 빌드에서 이 단언이 실패하면 제품 결함이 아니라 빌드 글꼴을 먼저 본다.
  await fresh(390,844);await aa('글자·배경');await range('본문 크기',.8);await range('병음 크기',1);await closeAa();
  const metrics=await page.locator('.reader-area ruby[data-pinyin]').evaluateAll(nodes=>nodes.map(n=>{const a=n.querySelector('.rt-an'),r=n.getBoundingClientRect(),ar=a.getBoundingClientRect();return {cell:r.width,font:parseFloat(getComputedStyle(a).fontSize),width:ar.width};}));
- assert(metrics.length>20);assert(metrics.every(m=>m.font>=15.9&&m.width<=m.cell+1));assert.equal(new Set(metrics.map(m=>Math.round(m.cell))).size,1);await shotAt('mobile-pinyin-large');pass('16px pinyin stays uniform and contained with minimum body size');
+ // 병음 글자 = min(설정 1rem, 본문의 0.6배) — 뷰어 점검 F4(오너 승인 2026-10-23 KST, reader-controls.css 「최소 글자 크기」): 가장 작은 본문(0.8rem = 12.8px)이면 7.68px.
+ // 칸 폭(--pinyin-cell)은 설정값(1rem)으로 재므로 줄어든 병음은 칸 안에 든다. 옛 단언(16px)은 F4 전 기준이었다.
+ assert(metrics.length>20);assert(metrics.every(m=>Math.abs(m.font-Math.min(16,12.8*.6))<0.1&&m.width<=m.cell+1),JSON.stringify(metrics.slice(0,3)));assert.equal(new Set(metrics.map(m=>Math.round(m.cell))).size,1);await shotAt('mobile-pinyin-large');pass('16px pinyin stays uniform and contained with minimum body size');
  await aa('학습 표시');await page.getByRole('button',{name:'숨김',exact:true}).click();assert.equal(await page.getByRole('checkbox',{name:/탭하면 발음 보기/}).count(),0);await closeAa();
  // Y 설계 ③(#1077 5548350811, 오너 확정 2026-09-05): 발음 공개 단계는 없다 — 가려진 단어도 첫 탭에 카드, 폭은 그대로.
  const widthBefore=await wordA().evaluate(e=>e.getBoundingClientRect().width);await tap(wordA());assert(await panel().isVisible());const widthAfter=await wordA().evaluate(e=>e.getBoundingClientRect().width);assert(Math.abs(widthBefore-widthAfter)<1);pass('hidden reading opens the card on first tap without reflow');
