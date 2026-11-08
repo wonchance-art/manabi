@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import SpeechUnavailableNotice from '@/components/SpeechUnavailableNotice';
 import { useEffect, useState } from 'react';
 import { installGlobalErrorHooks } from '@/lib/reportError';
+import ClsReporter from '@/components/observe/ClsReporter';
 import { QUERY_CLIENT_DEFAULTS } from '@/lib/queryClientDefaults';
 
 export default function Providers({ children }) {
@@ -23,6 +24,8 @@ export default function Providers({ children }) {
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
         <SpeechUnavailableNotice />
+        {/* 실사용자 화면 밀림 기록(RUM-CLS-001) — 0.1 초과 방문만 · 그리는 것 없음 */}
+        <ClsReporter />
         {/* 계정이 바뀌면 캐시(queryClient)와 서버 렌더(router.refresh)를 같은 관문에서 버린다(AUTH-ROUTER-REFRESH-001). */}
         <AuthProvider queryClient={queryClient} onAccountLeft={() => router.refresh()}>{children}</AuthProvider>
       </ToastProvider>
