@@ -8162,6 +8162,8 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 
 /* 팀 사본 담기 CTA(v2-AB R2) — 비로그인 학생의 카드 액션 줄 자리 */
 .save-grade__guest { padding: 10px 12px; border-radius: var(--radius-md); background: var(--primary-glow); border: 1px solid var(--primary); }
+/* 공개 자료 카드 난이도 한 줄(발매 점검 M2) — 제목 아래 보조 글. */
+.mat-card__difficulty { margin: 6px 0 0; font-size: 0.8125rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 /* 손님 담기 단추(발매 점검 M1) — 로그인한 사람의 네 칸과 같은 자리 · 같은 누름 높이(44px). */
 .save-grade__login { display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; }
 
