@@ -15,6 +15,7 @@ import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
 import { addRefRead, setRefCheck } from '../lib/refReadStore';
 import { clearStudySource, readStudySource } from '../lib/studySourceHandoff';
+import { fallbackReasonFromError, fallbackReasonFromResponse, reportParagraphFallback } from '../lib/studyParagraphFallback';
 import { useToast } from '../lib/ToastContext';
 import { createGrammarRetry, gradeGrammarReview, ratingFromScore, sendGrammarGradeKeepalive } from '../lib/grammarSrs';
 import { sessionTokenFor, keepaliveTokenUsable } from '../lib/keepalive';
@@ -182,13 +183,14 @@ export default function StudySessionPage({
       sourceText = readStudySource(lang, user?.id ?? null); // 이 계정이 30분 안에 넘긴 글만(lib/studySourceHandoff)
     }
     (async () => {
+      let res, data;
       try {
         let authHeader = {};
         try {
           const { data: { session: s } } = await supabase.auth.getSession();
           if (s?.access_token) authHeader = { Authorization: `Bearer ${s.access_token}` };
         } catch {}
-        const res = await fetch('/api/study-paragraph', {
+        res = await fetch('/api/study-paragraph', {
           method: 'POST',
           signal: AbortSignal.timeout(20000), // 20초 넘으면 abort → catch → 폴백 세션으로 합류
           headers: { 'Content-Type': 'application/json', ...authHeader },
@@ -206,22 +208,27 @@ export default function StudySessionPage({
             ...(sourceText.trim() ? { sourceText } : {}),
           }),
         });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.paragraph) {
-          // 생성 성공 → 내 자료 소재는 1회용이므로 즉시 소거(재사용·다음 세션 오염 방지).
-          if (sourceText) clearStudySource(lang);
-          const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
-          if (mapped.gradedCount >= 3) {
-            // 워밍업 뒤에 문단 문항 + 만남 인지 문항을 이어붙이고 집계 기준을 갱신
-            setQueue(prev => [...prev, ...mapped.items, ...encounterItems]);
-            setGradedBase(prev => prev + mapped.gradedCount + encounterItems.length);
-            setGenStatus('ready');
-            return;
-          }
+        data = await res.json().catch(() => ({}));
+      } catch (error) {
+        applyFallback(fallbackReasonFromError(error));
+        return;
+      }
+      const failed = fallbackReasonFromResponse(res, data);
+      if (failed) { applyFallback(failed); return; }
+      try {
+        // 생성 성공 → 내 자료 소재는 1회용이므로 즉시 소거(재사용·다음 세션 오염 방지).
+        if (sourceText) clearStudySource(lang);
+        const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
+        if (mapped.gradedCount >= 3) {
+          // 워밍업 뒤에 문단 문항 + 만남 인지 문항을 이어붙이고 집계 기준을 갱신
+          setQueue(prev => [...prev, ...mapped.items, ...encounterItems]);
+          setGradedBase(prev => prev + mapped.gradedCount + encounterItems.length);
+          setGenStatus('ready');
+          return;
         }
-        applyFallback();
+        applyFallback('too_few_items');
       } catch {
-        applyFallback();
+        applyFallback('map_error');
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -230,8 +237,10 @@ export default function StudySessionPage({
   /**
    * 문단 생성 실패 — 폴백 세션 문항을 워밍업 뒤에 이어붙인다.
    * 워밍업과 겹치는 어휘 문항은 폴백 쪽에서 제외(중복 출제 방지).
+   * reason — 폴백 사유 코드(lib/studyParagraphFallback). 운영 기록에 한 줄만 남기고 화면은 바꾸지 않는다.
    */
-  function applyFallback() {
+  function applyFallback(reason) {
+    reportParagraphFallback(reason);
     const warmupWords = new Set(warmupItems.map(w => w.word?.word_text).filter(Boolean));
     const fb = (session?.items || []).filter(it => !(it.word && warmupWords.has(it.word.word_text)));
     setQueue(prev => [...prev, ...fb, ...encounterItems]);
@@ -349,13 +358,14 @@ export default function StudySessionPage({
     if (!finished || prefetchRan.current || !user?.id) return;
     prefetchRan.current = true;
     (async () => {
+      let res, data;
       try {
         let authHeader = {};
         try {
           const { data: { session: s } } = await supabase.auth.getSession();
           if (s?.access_token) authHeader = { Authorization: `Bearer ${s.access_token}` };
         } catch {}
-        const res = await fetch('/api/study-paragraph', {
+        res = await fetch('/api/study-paragraph', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...authHeader },
           body: JSON.stringify({ prefetch: true, language: lang }),
