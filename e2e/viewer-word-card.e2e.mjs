@@ -667,7 +667,8 @@ test('「자세한 설명」: shared detail_text is read once per card when 더 
   await tap(f,'id_0_2','경기장');
   await learn.scrollIntoViewIfNeeded();
   await until(()=>f.detail.length===2);
-  await f.page.waitForTimeout(300);
+  // 조회 응답을 처리한 뒤에 단추가 다시 선다 — 고정 300ms 대신 그 단추를 기다린 뒤 센다(E2E-RACE-001).
+  await learn.getByRole('button',{name:'✦ 자세한 설명',exact:true}).waitFor();
   assert.equal(await learn.getByRole('button',{name:'✦ 자세한 설명',exact:true}).count(),1);
   // 같은 단어 재열람 = 메모리 캐시, 0요청.
   await tap(f,'id_0_7','웅장하다, 장관이다');

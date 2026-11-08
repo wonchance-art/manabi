@@ -54,6 +54,8 @@ async function checkGeometry(f) {
  }
  assert.equal(data.overflow,0);
  const actions=f.page.locator('.reader-card-actions').filter({visible:true}).first();
+ // 4등급은 로그인 사용자 몫이라 세션 복원 뒤에 그려진다 — 첫 낱말은 페이지를 연 직후라 세기 전에 기다린다(E2E-RACE-001).
+ await actions.locator('.review-score-btn').first().waitFor();
  for(const grade of ['다시','어려움','알맞음','쉬움'])assert.equal(await actions.getByRole('button',{name:new RegExp(`^${grade}`)}).count(),1);
  assert.equal(await f.page.getByRole('button',{name:'발음 듣기',exact:true}).filter({visible:true}).count(),1);
  assert.deepEqual(f.errors,[]);

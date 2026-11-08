@@ -574,6 +574,8 @@ test('⑩ 끊긴 서재(Supabase 끊김) — 「이 기기에 받아 둔 자료�
     await row.waitFor();
     assert.ok(await row.getByText('일본어 · 받아둠').isVisible(), 'A: 받아 둔 표시');
     assert.equal(await threeFailures(page).count(), 0, 'A 끊김: 세 칸 실패 안내 대신 기기 사본');
+    // 끊김 안내는 기기 사본 줄(IndexedDB)과 따로 — 실패한 목록 조회 뒤에 그려진다. 순서가 정해져 있지 않아 기다린 뒤 본다(E2E-RACE-001).
+    await page.getByText('서재 목록을 불러오지 못했어요. 연결되면 다시 불러와요.').waitFor();
     assert.ok(await page.getByText('서재 목록을 불러오지 못했어요. 연결되면 다시 불러와요.').isVisible());
     // 누르면 같은 여는 길(서재 링크 → 뷰어의 기기 사본 폴백)로 본문이 선다.
     await row.click();

@@ -114,6 +114,9 @@ test('이전 제외는 별도 접힌 목록에서 해제하고 아는 단어 토
  try {
   f.exclusions.push({ id: entryId, language: 'Japanese', word_text: '猫', vocabulary_id: cardId }, { id: '20000000-0000-4000-8000-000000000002', language: 'Japanese', word_text: '猫', vocabulary_id: null });
   await f.page.reload({ waitUntil: 'domcontentloaded' }); await f.select(0);
+  // 새로 고침 직후에는 로그인 세션이 아직 복원 전(user null)이라 카드 단추 줄(.reader-card-actions)만 있고 「아는 단어」는 없다 —
+  // select()는 그 줄까지만 기다린다. 세기 전에 그려질 때까지 기다린다(E2E-RACE-001, CI 실측 2026-11-08 KST 「0 !== 1」 1회).
+  await f.toggle('아는 단어').waitFor();
   assert.equal(await f.toggle('아는 단어').count(),1);
   assert.equal(await f.toggle('제외').count(),0);
   await f.page.goto('/vocab',{waitUntil:'domcontentloaded'});
