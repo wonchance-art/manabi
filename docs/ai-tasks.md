@@ -1251,7 +1251,12 @@
     processed_json.metadata.retired_series 하나로(withoutRetiredSeries) — 서가 · 목록 · 스터디 그룹 · 사이트맵이 같은 판정, 표식 대상 0편.
     손님 「함께 읽는 글」 0 → 132편(영 60 · 일 63 · 중 9) · 사이트맵 132 그대로. 같은 PR: ZH-SEED-TITLE-001(366 [H3 여행 #2] → #1) ·
     YT-API-001 설계 메모(docs/design/youtube-data-api-20261108.md — 오너 b안 결정, 구현은 다음 PR).
-    MATERIAL-DIFFICULTY-002(이번 PR, 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
+    YT-API-001 구현(이번 PR, 오너 b안 「권장대로」 11/8 12:10 KST): 영상 수집을 공식 Data API v3로(src/lib/server/youtubeDataApi.js).
+    YOUTUBE_DATA_API_KEY 없으면 0건 · 오류 없음(로그 한 줄) — 키 등록만으로 켜진다(환경 변수는 건드리지 않음). 공식 API는 남의 자막 본문을 못 받으므로
+    VOA · CC 카드도 「목록만 + 클릭 시 개인 자료」(youtube_ondemand)로 — 공개 본문 자료 경로(F R5)는 닫힘. 하루 쿼터 추정 ~311단위(무료 10,000).
+    youtubei.js는 이 PR 뒤 코드에서 쓰는 곳 0 — 패키지 제거는 lockfile 재생성이 필요해 따로(이 세션은 외부 패키지 설치 판정에 걸림).
+    MATERIAL-DIFFICULTY-002([#1761](https://github.com/wonchance-art/manabi/pull/1761) squash 959fb842 · 11/8 13:00 KST · 운영 사후 확인 — 20261108040000 적용,
+    RPC anon · authenticated EXECUTE 닫힘 · service_role만 · SECURITY DEFINER · search_path '' · difficulty 0행(첫 백필 전) · 지문 넷 그대로), 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
     materialDifficulty(#1743)로 processed_json.metadata.difficulty = { version, scale(HSK · JLPT · null), medianLevel, p90Level, types, listedShare }를
     미리 셈한다(영어 types만). 쓰기 = RPC material_set_difficulty(service_role 전용 · 그 칸만 · metadata.updated_at 대조). 분석 작업 tick 끝에서
     한 tick 50편(진척 있으면 다음 tick) · fail-soft. 재분석은 옛 요약을 옮기지 않는다. 첫 백필 = 11/9 02:45 KST(132편 · 50 · 50 · 32) → 03:40 보고.
