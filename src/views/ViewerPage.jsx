@@ -181,7 +181,7 @@ import { isLocalId, parseLocalId, chaptersForLocalNav, isTeamRoot, viewerRouteId
 import { adoptViewerSeed, discardEarlyMaterial, loadMaterial, notFoundRetryKey, startEarlyMaterial, viewerSeedAdopted } from '../lib/viewerMaterial';
 import { releaseViewerSsrHold, viewerSsrHeld, viewerSsrPaintDone, viewerSsrRow, viewerSsrStale } from '../lib/viewerSsr';
 import { readIndexCache } from '../lib/classClient';
-import { useRefVocabEntry, useRefVocabIndex } from '../lib/refVocabIndex';
+import { useRefVocabEntry, useZhRefPopoverIndex } from '../lib/refVocabIndex';
 import { zhHskLevelOf, zhHskLevelLabel } from '../lib/zhHskLevel';
 import { useZhHskLevels } from '../lib/useZhHskLevels';
 import { loadHanjaPanelTable, onIdle, prefetchHanjaPanel, pinyinPerChar } from '../lib/viewerHanjaPanel';
@@ -2778,7 +2778,8 @@ export default function ViewerPage({ seed } = {}) {
   const kinsokuMarks = useMemo(() => (hasKinsoku(materialLang)
     ? zhKinsokuMarks(material?.processed_json?.sequence || [], id => material?.processed_json?.dictionary?.[id], materialLang)
     : null), [material?.processed_json?.sequence, material?.processed_json?.dictionary, materialLang]);
-  const refVocabIndex = useRefVocabIndex(hanjaPopoverMode ? materialLang : null);
+  // 한자 창이 열릴 때만 받는다 — 그 글자의 조각 먼저, 전체 색인은 뒤에서(ZH-REFVOCAB-SHARD-001). 전에는 중국어 자료를 열자마자 전체를 받았다.
+  const refVocabIndex = useZhRefPopoverIndex(hanjaPopoverMode && inspectChar ? inspectChar.ch : null);
   const hanjaHunOf = (text) => (
     materialLang === 'Chinese' && showHanjaKo && hanjaKoTable && hanjaHunTable && hanjaTradTable
       ? hunRubyCells(text, { koTable: hanjaKoTable, hunTable: hanjaHunTable, tradTable: hanjaTradTable }, HUN_RUBY_CELL)

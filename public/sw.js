@@ -42,7 +42,9 @@ const STATIC_EXTENSIONS = /\.(js|css|woff2?|ttf|otf|svg|png|jpg|ico|webp)$/;
 // 받아 둔 문서만으로는 끊긴 채 열면 「다시 시도」였다(전에는 문서에 항목이 들어 있어 그대로 열렸다). 이 주소만 /api/ 건너뛰기의 예외로
 // network-first · 성공한 같은 출처 응답만 남기고, 끊기면 남긴 것을 돌려준다. 열쇠는 질의 없는 경로 — 레벨마다 한 칸(배포 판 ?v=가 쌓이지 않는다).
 // 공개 묶음이다: 쿠키 · 세션으로 달라지지 않는 정적 응답(middleware matcher 밖, Set-Cookie 없음)이라 계정 경계 규칙과 겹치지 않는다.
-const LEVEL_WORDS_PATH = /^\/api\/level-words\/[a-z]+\/[a-z0-9]+$/;
+// 중국어 참고 사전 조각(ZH-REFVOCAB-SHARD-001, 2026-11-08 KST — /api/zh-ref/<0–255>?v=판)도 같은 길이다: 뷰어가 사전 전체(JS 청크)를 받지 않고
+// 고른 글자의 조각만 받게 되어, 끊긴 채 다시 열면 받아 둔 조각으로 카드 예문 · 한자 정보를 그린다.
+const LEVEL_WORDS_PATH = /^\/api\/(?:level-words\/[a-z]+\/[a-z0-9]+|zh-ref\/\d{1,3})$/;
 const levelWordsKey = (url) => `${url.origin}${url.pathname}`;
 
 // Next 앱 라우터의 화면 조각(RSC) 요청 — 화면 이동 · 미리 받기가 ?_rsc= 주소와 RSC: 1 머리로 보낸다.

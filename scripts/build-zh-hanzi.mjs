@@ -25,9 +25,9 @@ const Z = await import(pathToFileURL(path.join(root, 'src/lib/zhHanzi.js')).href
  * @returns {Promise<Map<string, object>>} 표제어 → 사전 항목
  */
 export async function readZhDictionary() {
-  const src = fs.readFileSync(path.join(root, 'src/lib/refVocabIndex.js'), 'utf8');
+  const src = fs.readFileSync(path.join(root, 'src/lib/zhRefVocabSets.js'), 'utf8');
   const files = [...src.matchAll(/import\('\.\.\/content\/chinese\/vocab\/([\w-]+)'\)\.then\(\(m\) => \(\{ level: '(\w+)'/g)].map((m) => ({ file: m[1], level: m[2] }));
-  if (files.length < 30) throw new Error(`refVocabIndex 파일 목록을 읽지 못했다(${files.length})`);
+  if (files.length < 30) throw new Error(`zhRefVocabSets 파일 목록을 읽지 못했다(${files.length})`);
   const sets = [];
   // HSK 7–9 보강(level H7, LEVEL-HSK79-001)은 넣지 않는다 — 「한자」 탭(HSK 1 · 2 글자)의 단어 · 조어력은 그 전 사전 그대로.
   for (const { file, level } of files) if (level !== 'H7') sets.push({ level, mod: await import(pathToFileURL(path.join(root, `src/content/chinese/vocab/${file}.js`)).href) });
