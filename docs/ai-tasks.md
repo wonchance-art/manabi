@@ -886,8 +886,11 @@
   400ms 지연 모두 빈 본문 0 · 초점 「정답 확인하기」. 기준표 `docs/perf-measurement.md` 「로그인 경로 첫 화면 JS」, 도구 `e2e/bundle-auth.perf.mjs`.
   같은 PR(오케스트레이터 11/8 21:00): e2e:build도 scripts/next-build.mjs 경유(힙 4GB — 맨 next build는 이 컨테이너 기본 2GB에서 OOM, CI 글꼴 대역 그대로) ·
   E2E-RACE-001 비CI 51곳 문맥 판정 → 실제 경합 9곳(5파일: 지연 마운트 · 로그인 의존 4등급 · 비동기 후보 · 지연 한자 표 · 저장 등급 줄)만 대상 대기 한 줄씩(기대값 · timeout · 재시도 불변).
-  로컬 3회: teaching-word-canvas 3/3. 나머지 넷은 고친 줄과 무관한 기존 낡은 단언에서 매번 같은 곳 실패 — book-reading:48(문화 쪽 이동) ·
-  class-study:87(「수업 노트에 추가 +」 문구 없음) · study-notes:181(인식 경로 기대 then-gemini) · viewer-reading-controls:275(도구줄 배치) — 별도 판단 대기.
+  로컬 3회(기본 e2e 서버 — 처음 판은 서버에 E2E_PUBLISHED_EDITION을 잘못 줘 교재가 안 열렸다): teaching-word-canvas · book-reading 3/3 통과(기대값 그대로).
+  study-notes 3/3 — 181행 동의 값만 #1730(LLM-PROVIDER-POLICY-001, 사용자 내용 경로 Gemini 대체 끔 · INK_RECOGNITION_PROVIDERS = ['anthropic'])을 따라
+  'selected-ink-to-anthropic'(같은 엄격 비교). 남은 실패 둘(고치지 않음): class-study:87 — 「수업 노트에 추가 +」는 이 테스트를 넣은 #1303(9/12)에서도 src에 없었다
+  (그때부터 「오늘 표현에 추가」 — 처음부터 어긋난 테스트, 의도 변경 아님). viewer-reading-controls:275 — #1558(10/25, 상태 표시줄 겹침)이 읽기 모드 머리 높이를
+  56px 고정 → var(--gnb-height)로 바꿨는데 .gnb 자신의 --gnb-height가 78이라 머리가 78(폰 66)로 커지고 도구줄 sticky top은 56 그대로 — 22px 겹침 회귀(운영 실측 같음).
 - **A11Y-AUTH-001 로그인 화면 접근성 훑기 (2026-11-08 KST)** PR `claude/preview/web`(오케스트레이터 지시 · 화면 무변화 고침만):
   화면 벽 환경(합성 무거운 계정) 폰 390 · PC 1280 — /study(몸풀기 · 채점 · 문단 · 어순 · 결과) · /vocab · 복습 카드 · 문법 복습 · 서재 · 현황 · 내 정보(창 여섯) · 뷰어 카드.
   axe WCAG 2.1 A/AA 위반 0(단어 상세 「신규」 배지 4.30:1 1건만 — 디자인 넘김) · 판정 못 한 대비 칸 실측 통과 · Tab 순서/포커스 표시 문제 0.
