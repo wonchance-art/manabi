@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **RUM-CLS-001 실사용자 화면 밀림 기록 — CLS 0.1 초과 방문만 (2026-11-08 KST)** PR `claude/rum-cls`(오케스트레이터 승인 · 관측성 연장 · 화면 무변경):
+  /home 첫 방문 푸터 0.20을 측정 앞단 36회(빈 캐시 · SW 차단/허용 · 배포 직후)로 재현하지 못해 실제 방문에서 잡는다. PerformanceObserver(새 패키지 없음)로
+  CLS 정의대로 계산 · 경로마다 끊어 /api/vitals → observe.error_events kind vitals.cls(경로 틀 · 값 · 출처 선택자 · 시각 · 폰/PC · 연결 유형 · 판 · 브라우저 계열).
+  상한은 CSP 보고와 같음(20/분 · 120/분 · DB 한 시간 한 줄 · 30일). 계약: 0.1 이하 전송 0 · 상한 · 칸 정리. 처리방침 초안에 「화면 성능 기록」 한 줄. 11/15 KST 집계 보고.
 - **HOME-KR-SUBSET-001 배움(/home) 한글 하위 집합 — Noto Sans KR 200 → 114KB (2026-11-08 KST)** PR `claude/home-subset`(오케스트레이터 지시 · 화면 무변경):
   /home 페이지 전체 한글이 107자인데 KR 조각 12개 · 200KB를 받았다. 셸 + HomePage + 배움 부품 + 푸터 213자 · 28KB 하위 집합을 레이아웃이 미리 받는다.
   게이트(같은 출처 앞단 교대 · 폰 5 · PC 3판): KR 6개 · 114KB · woff2 642 → 556KB · FCP−TTFB 폰 1.716 → 1.703 · PC 1.814 → 1.763s · CLS 0 · 벽 8장 픽셀 0.
