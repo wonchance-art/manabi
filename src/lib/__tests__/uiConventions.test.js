@@ -259,6 +259,27 @@ describe('⑤ 접근성 하한 — 줄어들면 잡는다', () => {
     expect(count(/focus-visible/g)).toBeGreaterThanOrEqual(159);
     expect(count(/prefers-reduced-motion/g)).toBeGreaterThanOrEqual(47);
   });
+
+  // TRANSITION-ALL-001(2026-11-08 KST): transition: all은 :focus-visible 고리(outline)까지 애니메이션해, Tab 직후 0.15–0.3초 동안
+  // 고리가 「3px · 글자색 · 간격 0」에서 넘어갔다 — 선택 칩(흰 글자)의 첫 프레임 고리가 종이 대비 1.10:1(운영 실측, A11Y-LAUNCH-001).
+  // 상태 전환은 --transition-state(색 · 테두리 · 그림자 · 움직임)만 적는다. 속성 없이 시간만 적은 transition 줄임말도 all과 같다.
+  it('transition: all 0곳 — 포커스 고리는 전환 없이 바로 다 그려진다', () => {
+    const offenders = [];
+    for (const f of cssFiles()) {
+      const body = read(f).replace(/\/\*[\s\S]*?\*\//g, '');
+      for (const [, decls] of body.matchAll(/\{([^{}]*)\}/g)) {
+        // 시간만 적은 줄임말은 같은 규칙 안에 transition-property가 따로 있을 때만 허용한다.
+        const hasProperty = /transition-property\s*:/.test(decls);
+        for (const m of decls.matchAll(/transition(-property)?\s*:\s*([^;]+)/g)) {
+          const v = m[2].trim();
+          const implicitAll = !m[1] && !hasProperty && /^(var\(--transition-[\w-]+\)|[\d.]+m?s)(\s|$)/.test(v);
+          if (/^all\b/.test(v) || /,\s*all\b/.test(v) || implicitAll) offenders.push(`${f}: ${m[0].slice(0, 60)}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+    expect(read('src/index.css')).toMatch(/--transition-state:\s*color, background-color, border-color, box-shadow, transform, opacity;/);
+  });
 });
 
 describe('테마 — 저장값이 없을 때만 OS를 따른다', () => {
