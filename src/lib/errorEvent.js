@@ -131,7 +131,7 @@ export function parseClientErrorBody(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
   const pick = (name) => (typeof body[name] === 'string' ? body[name] : undefined);
   if (!pick('kind') || !pick('message')) return null;
-  if (Object.hasOwn(CLIENT_SIGNALS, pick('kind'))) {
+  if (Object.prototype.hasOwnProperty.call(CLIENT_SIGNALS, pick('kind'))) { // Object.hasOwn은 옛 Safari(15.4 미만)에 없다
     if (!CLIENT_SIGNALS[pick('kind')].test(pick('message'))) return null;
     return buildErrorEvent({ kind: pick('kind'), message: pick('message'), route: pick('route'), release: pick('release') });
   }
