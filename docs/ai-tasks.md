@@ -883,6 +883,10 @@
   원인 = 언어 칩이 시스템 글꼴(한글 1.0em)로 두 줄 → Noto Sans KR 조각(4.7s) 뒤 0.92em로 줄며 「프랑스어」가 첫 줄로. 고침: /discover/reading 레이아웃이 첫 화면 한글 하위 집합(155자 · 22KB) 미리 받기.
   게이트: 폰 CLS 0.0367 → 0 · FCP−TTFB 2.73 → 2.71s · 벽 6장 픽셀 차이 0. NHK 다이제스트 썸네일(공용 아이콘 · 핫링크 403) → null(카드는 이미 언어 그림으로 대체되던 것).
   디자인 넘김: PC 푸터 0.0023(소식이 늦게 와 푸터를 민다 — 자리 잡기는 화면 변화). 다음 후보: 중국어 뷰어가 열자마자 HSK 사전 24청크를 받는다(JS 4.2MB · LCP 6.6s).
+- **ZH-REFVOCAB-SHARD-001 중국어 뷰어가 참고 사전 전체를 열자마자 받지 않는다 (2026-11-08 KST)** PR `claude/zh-ref-shards`(오케스트레이터 지시 · 화면 무변경):
+  /viewer/363이 열자마자 우리 사전 전체(JS 청크 39개)를 받았다. 낱말 · 한자 창은 그 글자 조각(/api/zh-ref/<n>, 빌드 때 256개 · brotli 중앙값 7.5KB)만,
+  고른 뒤 유휴 시간에 전체. 프리뷰 실측: 열 때 JS 96 · 2,029KB → 57 · 831KB · 첫 선택 카드 129 → 126ms · 예문 129 → 248ms(+119) · 끊긴 뒤 새 낱말도 예문.
+  디자인 세션 중국어 SSR(viewerSsr · pinyinLayout)과 겹침 없음 — WEB 먼저 병합, 사후 /viewer/363 측정을 SSR 기준선으로 넘김.
 - **DEPLOY-BUDGET-001 Vercel 일일 배포 한도 — claude/** Git 배포 닫고 claude/preview/**만 (2026-11-07 KST)** PR `claude/deploy-budget`(오너 「ㄱㄱ」 · ⓑ안):
   실측: 최근 24시간 배포 기록 146건(빌드를 건너뛴 프리뷰 97 · 운영 49)으로 한도 소진, 세션 지정 브랜치 두 개가 프리뷰의 63%. [preview] 규칙은 빌드만 막고 기록은 못 막는다.
   고침: vercel.json `claude/**` false + `claude/preview/**` true(Vercel 규칙 — 하나라도 true면 배포), vercel-ignore.sh는 프리뷰 브랜치를 커밋마다 빌드.
