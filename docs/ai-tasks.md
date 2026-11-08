@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **INP-001 상호작용 지연 기준 측정 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · 측정 · 문서 · 도구만, 앱 코드 변경 없음):
+  폰 390 · CPU 4× · Event Timing + LoAF 출처. 운영 손님: 뷰어 낱말 → 카드 EN 88 · JA 120 · ZH 144ms(ResizeObserver · 병음 칸 그리기 몫) · 칩 112 · 정렬 64ms.
+  합성 로그인(발행판): 낱말 88 · 4등급 저장 전 48 · 복습 차례 64ms. **200ms 넘는 것 없음 → 고칠 것 없음.** /study 답 제출은 서버 세션 조립 표를
+  server-fetch-mock이 흉내 내지 않아 못 잼(고정물 필요 — 별도 판단). 도구: `scripts/perf/inp-guest.mjs` · `e2e/inp-grades.perf.mjs`, 기준표: `docs/perf-measurement.md`.
 - **SMTP-OPTIONS-001 인증 메일 SMTP 후보 조사 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · 조사 · 문서만, 계정 · env 변경 없음):
   `docs/smtp-options.md` — **현행 Resend 유지**(10/12 Verified), 문서는 교체 · 증설 때 참고: Resend(월 3,000 · 하루 100, Pro $20) · Brevo(하루 300) 예비 ·
   SES(샌드박스 · 심사 96h, $0.10/1,000) 규모 커지면 · Postmark(월 100) · SendGrid(무료 폐지) 배제 · 네이버클라우드 메일러(사업자 계정) 지금 배제.

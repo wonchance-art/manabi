@@ -54,3 +54,32 @@ NODE_USE_ENV_PROXY=1 node scripts/perf/first-paint-ab.mjs --arms scripts/perf/ar
 - 2026-11-07 VOCAB-SUBSET-SMALL-001: 복습실 미리 받기 52KB → 17.5KB.
   - 운영 직접 교대 9쌍: FCP−TTFB 1.99s(52KB, #1725) → 1.85s(17.5KB) · #1725 이전 근사 1.86s · 손님 안내 문단 이동 0.07 → 0.
   - (첫 판 앞단의 1.88 → 1.74s · 미리 받기 없음 1.62s는 위 정정표 참고.)
+
+## 상호작용 지연(INP 근사) — INP-001 (2026-11-08 KST)
+
+**재는 법.** Event Timing(`PerformanceObserver` `type: 'event'`, `durationThreshold: 16`)으로 상호작용 id마다 가장 긴 항목을 고른다.
+그 duration을 셋으로 나눈다: 입력 지연(`processingStart − startTime`), 처리(`processingEnd − processingStart`), 그리기(나머지).
+같은 시간대의 Long Animation Frame(`long-animation-frame`)에서 스크립트 출처(파일 · 함수)를 붙인다. 조건은 iPhone 13(폭 390) · **CPU 4×**다.
+웹 바이탈 기준은 200ms 이하가 「좋음」이다.
+- 손님(운영 그대로): `node scripts/perf/inp-guest.mjs` (`BASE` · `ROUNDS`). 낱말마다 Esc로 카드를 닫고 다음 낱말을 누른다(열린 시트가 아래 낱말을 가린다).
+  정렬은 키보드로 바꾼다. `selectOption`은 합성 change라 상호작용으로 잡히지 않는다.
+- 로그인(합성 고정물): e2e 빌드와 server-fetch-mock 서버(8878)를 띄운 뒤 `COMPOSER_BASE_URL=http://127.0.0.1:8878 node --test e2e/inp-grades.perf.mjs`.
+  응답은 바로 돌려준다(붙잡지 않음). 이 파일은 CI가 돌리지 않는 측정 도구다.
+
+**기준 수치(2026-11-08 KST, 상호작용별 최댓값 — 판마다 3회)**
+
+| 상호작용 | 어디서 | 최대 | 구성(대표) | 판정 |
+|---|---|---|---|---|
+| 뷰어 낱말 탭 → 카드 · EN(/viewer/120) | 운영 · 손님 | 88ms | 지연 28 · 처리 53 · 그리기 7 | 좋음 |
+| 뷰어 낱말 탭 → 카드 · JA(/viewer/45) | 운영 · 손님 | 120ms(첫 탭) · 이후 ≤56 | 지연 40 · 처리 74 | 좋음 |
+| 뷰어 낱말 탭 → 카드 · ZH(/viewer/371) | 운영 · 손님 | 144ms | 지연 21–31 · 처리 61–64 · 그리기 37–62 | 좋음(가장 김) |
+| 「함께 읽는 글」 언어 칩 | 운영 · 손님 | 112ms | 지연 33 · 처리 26 · 그리기 54 | 좋음 |
+| 「함께 읽는 글」 정렬(키보드) | 운영 · 손님 | 64ms | 처리 47 | 좋음 |
+| 뷰어 낱말 탭(로그인) | 합성 · 발행판 | 88ms | 그리기 52–77 | 좋음 |
+| 4등급 누름 — 저장 전 | 합성 · 발행판 | 48ms | | 좋음 |
+| 4등급 누름 — 복습 차례(인라인) | 합성 · 발행판 | 64ms | | 좋음 |
+| /study 답 제출 | — | **재지 못함** | 서버가 세션을 조립할 때 쓰는 표를 server-fetch-mock이 흉내 내지 않아 「오늘 학습을 불러오지 못했어요」 | 고정물 필요 |
+
+- 긴 프레임의 출처는 대개 React 공통 청크(`4bd1b696-…js` / e2e 빌드 `f5a4b7d4-…js`, 함수 `ci` — 렌더 커밋)였다.
+- 중국어 카드는 추가로 `page-…js`의 `ResizeObserverCallback`(병음 칸 · 카드 높이)과 `31255-…js`/`88279-…js`(낱말 카드 청크)가 같은 프레임에 붙어 그리기 몫이 길다(최대 62ms).
+- 200ms를 넘는 상호작용은 없어 이번에는 고치지 않았다. 다시 잴 때 이 표와 같은 조건으로 비교한다.
