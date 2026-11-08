@@ -878,6 +878,16 @@
 
 ## Claude (claude/*)
 ### doing
+- **AUTH-MAIL-KO-001 인증 메일 한국어 원고 대조 · 체크리스트 정리 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · docs-only):
+  원고는 이미 있다 — `supabase/templates/*.html` 5종(MAIL-KO-001, 오너 「A안」 2026-10-12) · 제목 · 절차 정본 `docs/auth-email-links.md` · 계약 25개 통과.
+  대조: 이미지 0 · 인라인 스타일 · `color-scheme: light only` + 명시 배경(다크 모드 렌더 확인) · 해요체 · 링크는 `/auth/confirm` token_hash(다른 기기에서 열기).
+  고침: launch-checklist §1의 낡은 「ConfirmationURL 그대로」를 정본 문서로 · Site URL www · 앱이 보내는 메일은 둘(가입 확인 · 재설정 — 초대는 대시보드,
+  이메일 변경 · 매직 링크 경로 없음, `signInWithOtp` 0 → Magic Link 끔 권장). **출시 차단 조건 추가**: Supabase 내장 메일은 조직 팀원 주소로만(시간당 30통) —
+  자체 SMTP가 없으면 일반 가입자는 인증 메일을 못 받는다. 발신자명 「manabi」도 자체 SMTP에서. 오너 확인 대기.
+- **LAUNCH-VERIFY-001 출시 점검(읽기 전용) (2026-11-08 KST)** — 조치 없음:
+  robots · sitemap(200건) · opengraph-image 200, sitemap 호스트는 apex(오너 env 삭제 대기). 폰(iPhone 13 · Pixel 7) 손님 경로 20판: 가로 스크롤 · 깨진 이미지 · 실패 응답 0,
+  CLS 0(Pixel 7 함께 읽는 글 0.0013만). Vercel 런타임 오류 7일 0. observe 상위: vercel.live CSP 보고 23(프리뷰 측정 · bot), NHK img 6(#1752 이전), ChunkLoadError
+  timeout 4(운영 1명 · 같은 분 · 연결 문제 추정). /library · /login은 없는 주소(404) — 별칭은 오너 제안 목록.
 - **E2E-RACE-001 e2e 경합 패턴 일괄 점검 (2026-11-08 KST)** PR `claude/e2e-race`(오케스트레이터 지시 · 테스트 전용):
   viewer-exclusion:117이 CI에서 한 번 「0 !== 1」 — 카드 단추 줄은 늘 있고 「아는 단어」 · 4등급은 `user &&` 안이라, 새로 고침 · 첫 낱말 직후(세션 복원 전)에 세면 0.
   정적 훑기: `.count()` · `isVisible()`를 곧장 단언하는 404곳 중 양(존재 · 보임)이고 같은 테스트에서 그 대상을 먼저 기다리지 않은 곳 112(CI가 돌리는 파일 61) → 문맥 판정.
