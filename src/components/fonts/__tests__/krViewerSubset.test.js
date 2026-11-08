@@ -16,9 +16,10 @@ const HELPERS = {
   viewer: { module: 'KrUiSubset', fn: 'preloadKrUiSubset' },
   vocab: { module: 'KrVocabSubset', fn: 'preloadKrVocabSubset' },
   reading: { module: 'KrReadingSubset', fn: 'preloadKrReadingSubset' },
+  home: { module: 'KrHomeSubset', fn: 'preloadKrHomeSubset' },
 };
 // 미리 받는 바이트는 첫 그림 전 대역을 렌더 차단 CSS와 나눈다(1.6Mbps에서 52KB ≈ FCP +0.26s) — 크기 상한으로 묶는다.
-const MAX_BYTES = { viewer: 80 * 1024, vocab: 24 * 1024, reading: 24 * 1024 };
+const MAX_BYTES = { viewer: 80 * 1024, vocab: 24 * 1024, reading: 24 * 1024, home: 32 * 1024 };
 const NAMES = Object.keys(SUBSETS);
 const metaOf = (name) => JSON.parse(fs.readFileSync(path.join(DIR, SUBSETS[name].json), 'utf8'));
 const cssOf = (name) => fs.readFileSync(path.join(DIR, SUBSETS[name].css), 'utf8');
@@ -29,7 +30,7 @@ const expandRange = (text) => text.split(',').flatMap((part) => {
 });
 
 describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', () => {
-  it('하위 집합은 뷰어 · 복습실 · 함께 읽는 글 셋이고, 싣는 모듈이 하나씩 있다', () => {
+  it('하위 집합은 뷰어 · 복습실 · 함께 읽는 글 · 배움 넷이고, 싣는 모듈이 하나씩 있다', () => {
     expect(NAMES.sort()).toEqual(Object.keys(HELPERS).sort());
   });
 
@@ -56,6 +57,14 @@ describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', ()
     expect(block).toContain('로그인하고 단어장 쓰기');
     expect(block).not.toContain('<VocabList'); // 로그인 복습실(클라이언트 그림)은 밖
     expect(() => sliceBlock(`${page}\n// kr-subset:vocab-guest:begin`, 'vocab-guest')).toThrow(); // 표식은 정확히 한 쌍
+  });
+
+  it('배움 출처는 셸 + HomePage + 배움 부품 전부 + 푸터(HOME-KR-SUBSET-001)', () => {
+    const files = sourceFiles(ROOT, 'home');
+    expect(files.slice(0, 3)).toEqual(['src/components/Layout.jsx', 'src/lib/webNavigation.js', 'src/views/HomePage.jsx']);
+    expect(files).toContain('src/components/learn/LearnTiles.jsx');
+    expect(files).toContain('src/components/learn/ResumeTile.jsx');
+    expect(files[files.length - 1]).toBe('src/components/web/SiteFooter.jsx');
   });
 
   it('「함께 읽는 글」 출처는 셸 + 머리 + 언어 칩 + 손님 빈 상태 블록 + 푸터 — 로그인 서재 · 자료 카드 글자는 넣지 않는다(READING-CHIP-CLS-001)', () => {
