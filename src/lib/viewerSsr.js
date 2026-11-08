@@ -33,9 +33,8 @@ export function viewerSsrRow(seed, id, query = null) {
   const json = row.processed_json;
   if (!SSR_STATUSES.has(json?.status || row.status) || !Array.isArray(json?.sequence) || !json.sequence.length) return null;
   if (conversationOf(row) || composerOf(row) || isStudyNote(row) || getBook(json?.metadata)) return null;
-  // 중국어는 지금 그대로 — 병음 칸 폭(--pinyin-cell)을 붙은 뒤에 재서(watchPinyinCell) 서버 값 44px과 달라지면 본문이 다시 흐른다
-  // (390 실측: 첫 낱말 폭 132 → 117px · 40 → 34쪽). 그 칸을 첫 그림 전에 재는 길은 뷰어 요소의 인라인 스타일이라 따로 설계한다.
-  if (json?.metadata?.language === 'Chinese') return null;
+  // 중국어도 그린다(ZH-SSR-001, 2026-11-08 KST) — 병음 칸 폭은 재지 않고 글꼴 상수 식(pinyinLayout pinyinCellFormula)으로 서버 · 하이드레이션이
+  // 같은 값을 낸다. 예전에는 붙은 뒤에 재서(서버 값 44px → 실측 47px) 본문이 다시 흘러 중국어를 여기서 뺐다.
   return row;
 }
 

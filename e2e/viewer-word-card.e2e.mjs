@@ -717,7 +717,10 @@ const glyphGeometry=page=>page.evaluate(()=>{
 const overlaps=(a,b)=>a.left<b.right-.5&&b.left<a.right-.5&&a.top<b.bottom-.5&&b.top<a.bottom-.5;
 
 test('AE-R3 390 · 1440: 壮观 안 1 — 正 壯觀 · 日 壮観 そうかん, 세로 가운데 ±2px, 표제어·훈음·병음과 겹침 0, JMdict 출처 줄 · 「AI」 0 · 대조 블록 0',{timeout:180000},async()=>{
- for(const [width,height] of [[390,844],[1440,900]]){
+ // 390은 높이 900(ZH-SSR-001, 2026-11-08 KST): 병음 칸이 이제 글꼴 상수 식(운영과 같은 47px)이다 — 예전 e2e는 대역 글꼴로 잰 39px라
+ // 한 줄에 7칸이 들어가 壮观이 둘째 줄에 섰다. 47px면 6칸 · 셋째 줄이라 390×844에서는 첫 화면 예산이 日 줄을 아래로 내린다(그 단계는
+ // 体育场 첫 화면 우선 e2e들이 지킨다). 이 시험의 대상은 안 1(옆 열) 기하라 예산이 걸리지 않는 높이로 본다 — 폭 390 · 줄 나눔은 그대로.
+ for(const [width,height] of [[390,900],[1440,900]]){
   const f=await open(glyphMaterial(),{prefs:zhPrefs,rows:glyphRows,width,height});
   try{
    await until(()=>f.bulk.length>=1);

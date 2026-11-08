@@ -326,9 +326,13 @@ describe('첫 그림 뒤 시트 — 뷰어(Noto Sans SC · TC)', () => {
     expect(src).not.toMatch(/precedence=/); // React precedence 링크는 렌더를 막는다(SC-LINK-001) — 여기서는 쓰지 않는다
   });
 
-  it('전제 ① ② — 뷰어 서버 본문은 중국어 자료 · ko가 아닌 UI/해설 언어에서 그리지 않는다', () => {
+  it('전제 ① ② — 중국어 서버 본문은 대체 글꼴로 먼저 그려도 칸이 움직이지 않는다 · ko가 아닌 UI/해설 언어에서는 그리지 않는다', () => {
     const ssr = read('src/lib/viewerSsr.js');
-    expect(ssr).toContain("if (json?.metadata?.language === 'Chinese') return null;");
+    // ① ZH-SSR-001(2026-11-08 KST): 중국어 자료도 서버 본문을 그린다 — SC 시트는 그대로 첫 그림 뒤에 붙고, 그 전 글자는 zhFontVars.css의
+    // 크기 보정 대체 글꼴이다. 칸 폭이 글꼴과 무관하게 정해져(병음 칸 식 · 한자 1em 격자) 시트가 붙어 글꼴이 바뀌어도 본문이 다시 흐르지 않는다
+    // (e2e viewer-zh-ssr — 읽기 영역 이동 0 · 첫 그림 낱말 제자리).
+    expect(ssr).not.toContain("if (json?.metadata?.language === 'Chinese') return null;");
+    expect(read('src/views/ViewerPage.jsx')).toContain('const [pinyinCell,setPinyinCell] = useState(() => pinyinCellFormula(fontSize, pinyinSize));');
     expect(ssr).toContain("((lang.uiLocale && lang.uiLocale !== 'ko') || (lang.explanationLocale && lang.explanationLocale !== 'ko'))) return 'locale';");
   });
 

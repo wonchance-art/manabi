@@ -104,7 +104,7 @@ import { listenSentenceRanges, listenSentenceTokens } from '../lib/listenFollow'
 import { analysisTokenLine } from '../lib/analysisCoverage';
 import { captureReadingAnchor, anchorCardHead, headScrolled } from '../lib/readingViewport';
 import PageBar, { PageStrips } from '../components/viewer/PageBar';
-import { measurePinyinCell, watchPinyinCell } from '../lib/pinyinLayout';
+import { pinyinCellFormula, pinyinFontReady, rootFontPx, settlePinyinCell, watchPinyinCell } from '../lib/pinyinLayout';
 import { hasKinsoku, zhKinsokuMarks, zhKinsokuStyle } from '../lib/zhGrid';
 import { ZhText, useZhGridRuns } from '../components/viewer/ZhText';
 import ReaderToken from '../components/viewer/ReaderToken';
@@ -968,18 +968,20 @@ export default function ViewerPage({ seed } = {}) {
   const { readerRef, readProgress: scrollReadProgress } = useReadProgress(material, readerEl);
   const attachReader = useCallback(node => { readerRef.current = node; setReaderEl(node); }, [readerRef]);
   const {keepPosition:keepReadingPosition,layoutVersion,cancelPosition:cancelReadingPosition} = useReaderLayout(readerRef, material?.processed_json, readerEl);
-  const [pinyinCell,setPinyinCell] = useState(44);
-  // 본문을 처음 그리는 렌더에서 병음 칸을 미리 잰다(VIEWER-RENDER-001) — 그리고 난 뒤 효과에서 재면 칸 변수(--pinyin-cell, .viewer-layout에서
-  // 상속)가 바뀌어 본문 낱말 전부의 스타일 · 배치를 한 번 더 계산했다(1,280낱말 · CPU×4 실측 약 0.25초). 잰 값 · 다시 재는 때(글꼴 조각 · 창 크기)는
-  // 아래 watchPinyinCell 그대로다(같은 measurePinyinCell). 하이드레이션 렌더(서버가 본문을 실은 문서)는 서버 값(44)과 같아야 하므로 재지 않는다.
+  // 병음 칸(ZH-SSR-001): 재지 않고 글꼴 상수 식(pinyinCellFormula)으로 낸다 — 서버 그림 · 하이드레이션 첫 렌더(둘 다 기본 설정 · 뿌리 16px)가
+  // 같은 값이라 중국어 본문도 서버가 그린다. 예전에는 서버 값 44px을 붙은 뒤에 잰 47px로 바꾸며 본문이 다시 흘렀다(운영 실측 폰 · PC 47px).
+  const [pinyinCell,setPinyinCell] = useState(() => pinyinCellFormula(fontSize, pinyinSize));
+  // 본문을 처음 그리는 렌더에서 병음 칸을 미리 정한다(VIEWER-RENDER-001) — 그리고 난 뒤 효과에서 바꾸면 칸 변수(--pinyin-cell, .viewer-layout에서
+  // 상속)가 바뀌어 본문 낱말 전부의 스타일 · 배치를 한 번 더 계산했다(1,280낱말 · CPU×4 실측 약 0.25초). 다시 보는 때(글꼴 조각 · 창 크기)는
+  // 아래 watchPinyinCell — 잰 값은 안전망이다(settlePinyinCell). 하이드레이션 렌더(서버가 본문을 실은 문서)는 서버 값과 같아야 하므로 건너뛴다.
   const hydrated = useRef(false);
   useEffect(() => { hydrated.current = true; }, []);
   const pinyinPrimed = useRef('');
   const pinyinPrimeKey = materialLang === 'Chinese' && hydrated.current ? `${fontSize}|${pinyinSize}` : '';
   if (pinyinPrimeKey && pinyinPrimed.current !== pinyinPrimeKey) {
     pinyinPrimed.current = pinyinPrimeKey;
-    const cell = measurePinyinCell({win:window,doc:document,root:()=>readerRef.current,pinyinRem:pinyinSize,fontRem:fontSize});
-    if (cell != null && cell !== pinyinCell) setPinyinCell(cell);
+    const cell = pinyinCellFormula(fontSize, pinyinSize, rootFontPx(window, document));
+    if (cell !== pinyinCell) setPinyinCell(cell);
   }
   // 중국어 격자(ZH-GRID-001): 낱말 사이 간격 없이 칸마다 같은 자간, 반각 묶음은 칸 수로 올림.
   const zhGrid = materialLang === 'Chinese';
@@ -993,7 +995,9 @@ export default function ViewerPage({ seed } = {}) {
   // 병음 칸 폭 — 본문이 늦게 붙어도(비공개 안내가 먼저 그려진 판) 재고, 병음 글꼴 조각이 받아지면 다시 잰다(PINYIN-CELL-RACE-001, pinyinLayout.js).
   useEffect(()=>{
     if(materialLang!=='Chinese')return undefined;
-    return watchPinyinCell({win:window,doc:document,root:()=>readerRef.current,pinyinRem:pinyinSize,fontRem:fontSize,onCell:setPinyinCell});
+    const root = () => readerRef.current;
+    return watchPinyinCell({win:window,doc:document,root:()=>readerRef.current,pinyinRem:pinyinSize,fontRem:fontSize,onCell:cell => setPinyinCell(settlePinyinCell(cell,
+      pinyinCellFormula(fontSize, pinyinSize, rootFontPx(window, document)), pinyinFontReady({win:window,doc:document,root,pinyinRem:pinyinSize})))});
   },[materialLang,fontSize,pinyinSize,material?.id,readerRef,readerEl]);
 
   // 아는 단어 표시와 복습 보호 상태는 같은 DB 트랜잭션으로 바뀐다.
