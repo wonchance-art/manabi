@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { groupByLanguage, isVideoSource, planCronRun } from '../suggestionSources';
-import { channelTitleOf, fetchYoutubeChannel } from '../server/youtubeChannel';
+import { fetchYoutubeChannel } from '../server/youtubeChannel';
 
 /**
  * 계약: 유튜브 추천 수집 복구 (2026-10-16, 오너 「권장하는대로 ㄱㄱ」).
@@ -16,48 +16,33 @@ import { channelTitleOf, fetchYoutubeChannel } from '../server/youtubeChannel';
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 
-/** 채널 탭 LockupView 한 장 — 첫 메타 줄이 조회수인 실물 모양. */
-function lockup(id, title) {
-  return {
-    content_type: 'VIDEO',
-    content_id: id,
-    metadata: {
-      title: { text: title },
-      metadata: { metadata_rows: [{ metadata_parts: [{ text: { text: '12K views' } }, { text: { text: '3 days ago' } }] }] },
-    },
-  };
-}
-
-function fakeInnertube({ title = 'innerFrench', captions = ['fr'] } = {}) {
-  return {
-    create: async () => ({
-      resolveURL: async () => ({ payload: { browseId: 'UC123' } }),
-      getChannel: async () => ({
-        metadata: { title },
-        getVideos: async () => ({ videos: [lockup('vid00000001', 'E194'), lockup('vid00000002', 'E193')] }),
-      }),
-      getBasicInfo: async () => ({
-        captions: { caption_tracks: captions.map((c) => ({ language_code: c })) },
-        basic_info: { is_embeddable: true },
-        playability_status: { playable_in_embed: true },
-      }),
-    }),
+/** 공식 Data API(YT-API-001) 가짜 응답 — 영상 카드의 채널명(snippet.channelTitle)과 채널 자신의 제목이 다를 수 있다. */
+function fakeApi({ title = 'innerFrench' } = {}) {
+  return async (url) => {
+    const endpoint = new URL(url).pathname.split('/').pop();
+    const body = {
+      channels: { items: [{ snippet: { title }, contentDetails: { relatedPlaylists: { uploads: 'UU123' } } }] },
+      playlistItems: { items: [{ contentDetails: { videoId: 'vid00000001' } }, { contentDetails: { videoId: 'vid00000002' } }] },
+      videos: { items: ['vid00000001', 'vid00000002'].map((id) => ({
+        id, snippet: { title: id, channelTitle: '12K views', defaultAudioLanguage: 'fr' }, contentDetails: { caption: 'true' }, status: { embeddable: true },
+      })) },
+    }[endpoint];
+    return { ok: true, status: 200, json: async () => body };
   };
 }
 
 describe('① 채널명 — 조회수가 채널명 자리에 들어가지 않는다', () => {
-  it('채널 수집 카드의 channelName은 채널 제목이다', async () => {
+  it('채널 수집 카드의 channelName은 채널 자신의 제목이다(영상 쪽 값이 아니라)', async () => {
     const out = await fetchYoutubeChannel(2, { handle: '@innerFrench', langCode: 'fr' }, {
-      innertube: fakeInnertube(), log: () => {},
+      apiKey: 'test-key', fetch: fakeApi(), log: () => {},
     });
     expect(out.length).toBeGreaterThan(0);
     for (const a of out) expect(a.channelName).toBe('innerFrench');
   });
 
-  it('채널 제목을 못 얻으면 카드 쪽 추정으로 물러선다(빈 값으로 덮지 않는다)', () => {
-    expect(channelTitleOf({})).toBe('');
-    expect(channelTitleOf({ header: { title: { text: ' VOA Learning English ' } } })).toBe('VOA Learning English');
-    expect(channelTitleOf({ metadata: { title: 'Onomappu' } })).toBe('Onomappu');
+  it('채널 제목을 못 얻으면 영상 쪽 채널명으로 물러선다(빈 값으로 덮지 않는다)', async () => {
+    const out = await fetchYoutubeChannel(1, { handle: '@x', langCode: 'fr' }, { apiKey: 'test-key', fetch: fakeApi({ title: '' }), log: () => {} });
+    expect(out[0].channelName).toBe('12K views');
   });
 });
 

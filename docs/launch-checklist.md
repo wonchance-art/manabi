@@ -49,6 +49,7 @@
 | `SHARE_LINK_SECRET` | ✅ (수업) | 수업 팀 암호 해제 토큰 서명(`src/lib/server/classAccess.js`, 16자 이상). **없으면 `/api/class/<팀>/unlock`이 503 `not_configured`** |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` · `VAPID_PRIVATE_KEY` · `VAPID_SUBJECT` | ✅ (알림) | 복습 푸시 알림 |
 | `SUPADATA_API_KEY` | ⚠️ | 링크 가져오기의 YouTube 자막(`/api/import/link`) — 없으면 그 기능만 꺼짐 |
+| `YOUTUBE_DATA_API_KEY` | ⚠️ | 오늘의 소식 영상 수집(공식 YouTube Data API v3 — `src/lib/server/youtubeDataApi.js`, YT-API-001). 서버 전용 · Google Cloud에서 「YouTube Data API v3」만 허용. 없으면 영상 수집만 0건(fail-closed) |
 | `GROQ_API_KEY` | ⚠️ | 단어 뜻 대체의 마지막 순서. 사용자 내용 경로에서는 쓰지 않는다 |
 | `QIITA_TOKEN` | ⚠️ | Qiita 글 가져오기 호출 한도 완화 |
 | `LLM_LOG` | ⚠️ | `on`일 때만 LLM 호출 로그(`src/lib/server/llm.js`) |

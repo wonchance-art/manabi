@@ -440,14 +440,14 @@ export async function fetchFromSource(source, count = 3) {
 
     // 영상(v2-F R4) — **목록만** 긷는다. 자막 본문은 사용자가 카드를 눌러 자기 계정의
     // 비공개 자료를 만들 때 `/api/import/link`(F R1)가 가져온다. 서버는 안 담는다.
-    // 동적 import — youtubei.js는 무겁고 이 분기에서만 필요하다(link 라우트 선례).
+    // 동적 import — 영상 분기에서만 필요하다(공식 Data API 모듈 youtubeDataApi.js — YT-API-001).
     case 'youtube_channel': {
       const { fetchYoutubeChannel } = await import('./server/youtubeChannel.js');
       return fetchYoutubeChannel(count, config);
     }
 
-    // CC BY 영상 검색(v2-F R5) — 재배포가 허용된 자료라 **본문까지 담아 공개 자료**로 둔다.
-    // 라이선스는 검색 필터를 믿지 않고 영상마다 재확인한다(fail-closed).
+    // CC BY 영상 검색(v2-F R5 → YT-API-001) — 공식 API는 남의 자막 본문을 못 받으므로 이것도 **목록만**이다(오너 b안 2026-11-08).
+    // 라이선스는 검색 필터를 믿지 않고 영상마다 status.license로 재확인한다(fail-closed).
     case 'youtube_cc': {
       const { fetchYoutubeCc } = await import('./server/youtubeShareable.js');
       return fetchYoutubeCc(count, config);

@@ -14,14 +14,16 @@
  *
  * ── 그래서 여기서 자막에 손대는 유일한 지점
  *
- * `caption_tracks` **목록**만 읽어 「그 언어 자막이 달려 있나」를 본다(본문은 안 받는다).
+ * 공식 Data API(youtubeDataApi.js — YT-API-001)로 **자막 유무 · 트랙 언어**만 읽어 「그 언어 자막이 달려 있나」를 본다(본문은 안 받는다).
  * 이게 없으면 자막 없는 영상이 카드로 올라가 클릭 시 붙여넣기로 떨어진다 —
  * 「클릭 하나」가 성립하지 않는다. 판정 못 하면 **버린다**(fail-closed).
  */
 
-import { extractCaptionLangs, extractEmbeddable, normalizeVideoList } from './media.js';
+import {
+  MAX_CAPTION_PROBES, channelUploads, listableProbe, playlistVideoIds, probeVideos, youtubeApiKey,
+} from './youtubeDataApi.js';
 
-/** 후보를 이만큼까지만 훑는다. 영상 하나당 getBasicInfo 왕복 1회라 상한이 곧 벽시계다. */
+/** 후보를 이만큼까지만 훑는다(videos.list 한 번에 50개까지 — 상한은 쿼터 · 벽시계 여유). */
 export const PROBE_MULTIPLIER = 6;
 export const MAX_PROBES = 24;
 
@@ -62,66 +64,33 @@ export function toSuggestionArticle(video, { source, channelName, level } = {}) 
   };
 }
 
-/** 채널 제목 — youtubei.js 버전마다 metadata/header 쪽으로 갈려 넓게 받는다. 없으면 ''. */
-export function channelTitleOf(channel) {
-  const t = channel?.metadata?.title
-    ?? channel?.header?.title?.text
-    ?? channel?.header?.page_title
-    ?? channel?.header?.author?.name;
-  return typeof t === 'string' ? t.trim() : '';
-}
-
-/** 채널 노드에서 영상 배열을 꺼낸다 — youtubei.js 버전마다 필드가 갈려 넓게 받는다. */
-export function pickVideoNodes(feed) {
-  return feed?.videos || feed?.contents || feed?.results || [];
-}
-
 /**
- * 채널 최신 영상 중 **그 언어 자막이 달린 것**을 count개까지.
- * 실패는 전부 빈 배열 — 크론 한 소스가 다른 언어 수집을 멈춰 세우면 안 된다.
+ * 채널의 최신 영상 중 「그 언어 자막 · 임베드 가능」인 것을 카드로(공식 Data API — YT-API-001).
+ * 카드는 전부 목록만(transcript 키 없음, source youtube_ondemand) — 본문은 사용자가 누를 때 /api/import/link가 가져온다.
+ * 퍼블릭 도메인 채널(VOA, config.license)도 같다: 공식 API로는 남의 자막 본문을 받을 수 없어 「본문을 담는 공개 자료」 갈래를 닫았다
+ * (오너 b안 결정 2026-11-08 KST — 「목록만 + 클릭 시 개인 자료」). 키가 없으면 0건 · 로그 한 줄(fail-closed, 오류 아님).
  */
 export async function fetchYoutubeChannel(count = 2, config = {}, deps = {}) {
   const { handle, langCode, level } = config;
   if (!handle) return [];
   const log = deps.log || ((...a) => console.warn('[cron/youtube]', ...a));
+  const key = deps.apiKey !== undefined ? deps.apiKey : youtubeApiKey();
+  if (!key) { log(`YOUTUBE_DATA_API_KEY 없음 — 건너뜀: ${handle}`); return []; }
+  const opts = { key, fetch: deps.fetch || fetch };
   try {
-    const { Innertube } = deps.innertube ? { Innertube: deps.innertube } : await import('youtubei.js');
-    const yt = await Innertube.create({ retrieve_player: false });
-
-    const url = `https://www.youtube.com/${String(handle).replace(/^@?/, '@')}`;
-    const nav = await yt.resolveURL(url);
-    const browseId = nav?.payload?.browseId;
-    if (!browseId) { log(`핸들 해석 실패: ${handle}`); return []; }
-
-    const channel = await yt.getChannel(browseId);
-    const feed = await channel.getVideos();
-    // 채널 탭 카드(LockupView)의 첫 메타 줄은 채널명이 아니라 **조회수**다(운영 실측
-    // 2026-10-16: channel_name 「12K views」). 채널 수집에서는 채널 자신의 제목이 정본이다.
-    const channelTitle = channelTitleOf(channel);
-    const videos = normalizeVideoList(pickVideoNodes(feed), probeBudget(count))
-      .map((v) => (channelTitle ? { ...v, channel: channelTitle } : v));
-
-    // 라이선스가 설정에 명시된 채널(VOA = 퍼블릭 도메인)은 **본문까지** 담는다(F R5).
-    // 순환 import를 피하려고 동적으로 가져온다 — youtubeShareable이 이 파일을 쓴다.
-    const shareable = config.license
-      ? (await import('./youtubeShareable.js')).buildShareableArticle
-      : null;
-
+    const channel = await channelUploads(handle, opts);
+    if (!channel) { log(`핸들 해석 실패: ${handle}`); return []; }
+    const ids = await playlistVideoIds(channel.uploads, probeBudget(count), opts);
+    const videos = await probeVideos(ids, opts);
+    const budget = { left: MAX_CAPTION_PROBES };
     const out = [];
     for (const v of videos) {
       if (out.length >= count) break;
-      let info;
-      try { info = await yt.getBasicInfo(v.videoId); } catch { continue; }
-      if (shareable) {
-        const a = await shareable({ video: v, info, config, langCode, level }, deps);
-        if (a) out.push(a);
-        continue;
-      }
-      const probe = { captionLangs: extractCaptionLangs(info), embeddable: extractEmbeddable(info) };
-      if (!isListable(probe, langCode)) continue;
-      out.push(toSuggestionArticle(v, {
+      if (!isListable(await listableProbe(v, langCode, opts, budget), langCode)) continue;
+      // 채널 수집에서는 채널 자신의 제목이 정본이다(옛 채널 탭 카드의 「12K views」가 채널명 자리에 들어갔던 실측 2026-10-16).
+      out.push(toSuggestionArticle({ ...v, channel: channel.title || v.channel }, {
         source: 'youtube_ondemand',
-        channelName: channelTitle,
+        channelName: channel.title,
         level,
       }));
     }

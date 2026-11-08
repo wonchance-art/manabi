@@ -7,13 +7,14 @@ import {
   attributionParts, isCreativeCommonsText, isShareableSource, licenseForSource, materialSource, safeYoutubeUrl,
 } from '../videoAttribution';
 import { createSuggestionSave } from '../suggestionReading';
-import {
-  MIN_BODY_CHARS, buildShareableArticle, readLicenseText, shareableSource,
-} from '../server/youtubeShareable';
 import { DEFAULT_SOURCES } from '../suggestionSources';
 
 /**
  * 계약: v2-F R5 — **공유 가능한 영상**(퍼블릭 도메인 · CC BY). 오너 "A ㄱㄱ", 2026-09-01.
+ *
+ * ⚠ YT-API-001(2026-11-08 KST, 오너 b안): 수집은 공식 Data API로 옮겼고, 공식 API는 남의 자막 본문을 못 받으므로
+ *   「본문을 담는 공개 자료」 갈래(buildShareableArticle · 라이선스 행 읽기)는 닫았다 — 새 수집 카드는 목록만(youtube_ondemand).
+ *   이 파일에 남은 것은 **이미 저장된** CC · PD 공개 자료의 출처 표기와 설정 · 텍스트 판정이다. 새 판정 계약 = youtubeDataApi.test.js.
  *
  * F R4는 「서버는 목록만」이었다. 이 라운드는 **그 제약이 없는 자료**를 연다 —
  * 재배포가 허용된 것은 본문을 담아 공개 자료로 둘 수 있고, 분석도 1회면 된다.
@@ -35,38 +36,8 @@ import { DEFAULT_SOURCES } from '../suggestionSources';
  */
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
-const rows = (list) => ({ secondary_info: { metadata: { rows: list } } });
 
 describe('F R5 — 라이선스 판정은 fail-closed다', () => {
-  it('CC는 **행에서 재확인**돼야 등급을 준다 — 검색 필터만으로는 안 된다', () => {
-    expect(shareableSource({}, 'Creative Commons Attribution license (reuse allowed)')).toBe(CC_SOURCE);
-    expect(shareableSource({}, null), '행을 못 읽으면 공개 불가').toBe(null);
-    expect(shareableSource({}, 'Standard YouTube License')).toBe(null);
-    expect(shareableSource({}, '')).toBe(null);
-  });
-
-  it('퍼블릭 도메인은 **설정이 근거**다 — VOA는 미국법에서 오지 YouTube 표식에서 오지 않는다', () => {
-    // VOA 영상에 CC 표식이 없어도 퍼블릭 도메인이다. 표식만 보면 이 자료를 통째로 놓친다.
-    expect(shareableSource({ license: 'public-domain' }, null)).toBe(PD_SOURCE);
-    expect(shareableSource({ license: 'public-domain' }, 'Standard YouTube License')).toBe(PD_SOURCE);
-  });
-
-  it('License 행만 본다 — 다른 행의 「Creative Commons」에 속지 않는다', () => {
-    // 이게 무너지면 설명·카테고리에 그 말이 있는 영상이 통째로 공개된다. 전체 텍스트를
-    // 훑는 구현이었다면 여기서 바로 새어 나갔을 자리다.
-    expect(readLicenseText(rows([{ title: 'Category', contents: 'Creative Commons 어쩌구' }]))).toBe(null);
-    expect(readLicenseText(rows([
-      { title: 'Category', contents: 'Education' },
-      { title: 'License', contents: 'Creative Commons Attribution license (reuse allowed)' },
-    ]))).toMatch(/Creative Commons/);
-  });
-
-  it('행 자체가 없으면 null — 미확인은 거부다', () => {
-    expect(readLicenseText({})).toBe(null);
-    expect(readLicenseText(rows([]))).toBe(null);
-    expect(readLicenseText(null)).toBe(null);
-  });
-
   it('텍스트 판정이 빈 값·표준 라이선스를 거부한다', () => {
     expect(isCreativeCommonsText('')).toBe(false);
     expect(isCreativeCommonsText(null)).toBe(false);
@@ -84,95 +55,8 @@ describe('F R5 — 라이선스 판정은 fail-closed다', () => {
   });
 });
 
-describe('F R5 — 본문을 담는 조건', () => {
-  const info = (license, langs = ['en']) => ({
-    ...rows([{ title: 'License', contents: license }]),
-    captions: { caption_tracks: langs.map((c) => ({ language_code: c, base_url: 'https://x/y' })) },
-    playability_status: { embeddable: true },
-  });
-  const video = { videoId: 'v1', title: 'T', channel: 'C', thumbnailUrl: 'u' };
-  const okFetch = async () => ({
-    ok: true,
-    text: async () => JSON.stringify({
-      events: Array.from({ length: 40 }, (_, i) => ({ tStartMs: i * 1000, dDurationMs: 900, segs: [{ utf8: `line ${i} of the transcript body` }] })),
-    }),
-  });
-
-  it('라이선스가 미확인이면 자막이 있어도 안 담는다', async () => {
-    const a = await buildShareableArticle(
-      { video, info: info('Standard YouTube License'), config: {}, langCode: 'en' },
-      { fetch: okFetch },
-    );
-    expect(a).toBe(null);
-  });
-
-  it('통과하면 본문과 라이선스를 함께 싣는다', async () => {
-    const a = await buildShareableArticle(
-      { video, info: info('Creative Commons Attribution license'), config: {}, langCode: 'en', level: 'B1 중급' },
-      { fetch: okFetch },
-    );
-    expect(a?.source).toBe(CC_SOURCE);
-    expect(a?.license).toBe(LICENSE_CC_BY);
-    expect(a?.transcript?.length).toBeGreaterThan(MIN_BODY_CHARS);
-    expect(a?.videoId, '실제 유튜브 id 그대로').toBe('v1');
-  });
-
-  it('그 언어 자막이 없으면 안 담는다', async () => {
-    const a = await buildShareableArticle(
-      { video, info: info('Creative Commons Attribution license', ['de']), config: {}, langCode: 'ja' },
-      { fetch: okFetch },
-    );
-    expect(a).toBe(null);
-  });
-
-  it('임베드 불가 영상은 안 담는다 — isListable의 **고유** 역할이 여기다', async () => {
-    // 자막 언어 요건은 selectCaptionTrack이 어차피 막는다(돌연변이 M5가 그래서 살아남았다).
-    // isListable을 여기 두는 값은 임베드 판정 하나뿐이라, 그걸 직접 고정한다.
-    const blocked = {
-      ...info('Creative Commons Attribution license'),
-      playability_status: { embeddable: false },
-    };
-    const a = await buildShareableArticle(
-      { video, info: blocked, config: {}, langCode: 'en' },
-      { fetch: okFetch },
-    );
-    expect(a).toBe(null);
-  });
-
-  it('본문이 짧으면 안 담는다 — 자막 조각은 학습 자료가 아니다', async () => {
-    const shortFetch = async () => ({
-      ok: true, text: async () => JSON.stringify({ events: [{ tStartMs: 0, dDurationMs: 900, segs: [{ utf8: '짧다' }] }] }),
-    });
-    const a = await buildShareableArticle(
-      { video, info: info('Creative Commons Attribution license'), config: {}, langCode: 'en' },
-      { fetch: shortFetch },
-    );
-    expect(a).toBe(null);
-  });
-
-  it('자막 요청이 실패(ok:false)하면 본문이 와도 안 담는다', async () => {
-    // 처음엔 `{ ok: false }`만 준 픽스처였는데, 그러면 `res.text()`가 없어 **예외로** 죽는다 —
-    // `if (!res.ok)` 가드를 지워도 통과했다(돌연변이 M8 생존). 본문이 멀쩡히 오는데도
-    // 상태 코드만으로 버리는지를 봐야 가드가 판별력을 갖는다.
-    const bodyOk = (await okFetch()).text;
-    const a = await buildShareableArticle(
-      { video, info: info('Creative Commons Attribution license'), config: {}, langCode: 'en' },
-      { fetch: async () => ({ ok: false, text: bodyOk }) },
-    );
-    expect(a).toBe(null);
-  });
-
-  it('본문 정리는 F R1과 **같은 정본**을 탄다 — 두 문으로 들어온 같은 영상이 갈리면 안 된다', () => {
-    const src = read('src/lib/server/youtubeShareable.js');
-    expect(src).toContain("from '../linkImport.js'");
-    expect(src).toContain('stripCueNoise');
-    expect(src).toContain('paragraphize');
-    expect(src, '자막 파서를 새로 짜지 않는다').toContain('parseCaptionData');
-  });
-});
-
 describe('F R5 — 배선', () => {
-  it('VOA가 퍼블릭 도메인으로 표시돼 본문을 담는다', () => {
+  it('VOA가 퍼블릭 도메인으로 표시돼 있다(이미 저장된 공개 자료의 출처 표기 근거 — 새 수집은 목록만, YT-API-001)', () => {
     const voa = DEFAULT_SOURCES.find((s) => s.config?.handle?.includes('VOA'));
     expect(voa?.config?.license).toBe('public-domain');
   });
@@ -186,15 +70,7 @@ describe('F R5 — 배선', () => {
     }
   });
 
-  it('검색이 CC·자막 필터를 실제로 건다', () => {
-    const src = read('src/lib/server/youtubeShareable.js');
-    expect(src).toContain("features: ['subtitles', 'creative_commons']");
-  });
 
-  it('세션 언어를 en으로 고정한다 — 판정이 지역화 문자열에 걸려 있다', () => {
-    // 언어가 흔들리면 License 행 제목을 못 찾아 전부 fail-closed로 떨어진다(수확 0).
-    expect(read('src/lib/server/youtubeShareable.js')).toMatch(/Innertube\.create\(\{[^}]*lang: 'en'/);
-  });
 
   it('디스패처가 youtube_cc를 받고 무거운 모듈은 동적 import다', () => {
     const cs = read('src/lib/content-sources.js');
@@ -202,9 +78,6 @@ describe('F R5 — 배선', () => {
     expect(cs).toContain("await import('./server/youtubeShareable.js')");
   });
 
-  it('채널 수집이 license 설정을 만나면 공유 경로로 간다', () => {
-    expect(read('src/lib/server/youtubeChannel.js')).toContain("config.license");
-  });
 });
 
 describe('F R5 — 표기는 저장이 아니라 **표시**다', () => {
