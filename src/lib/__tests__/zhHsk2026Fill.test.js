@@ -81,7 +81,7 @@ describe('HSK 2026 1~6급 — 우리 사전 빠짐 0', () => {
 
   it('사전 파일은 전부 두 색인(레퍼런스 레지스트리 · 단어 색인)에 등록돼 있다 — 빠진 파일은 화면에 안 나온다', () => {
     const registry = fs.readFileSync(path.join(ROOT, 'src/content/chinese/index.js'), 'utf8');
-    const index = fs.readFileSync(path.join(ROOT, 'src/lib/refVocabIndex.js'), 'utf8');
+    const index = fs.readFileSync(path.join(ROOT, 'src/lib/zhRefVocabSets.js'), 'utf8');
     for (const f of files) {
       const name = f.replace(/\.js$/, '');
       expect(registry, f).toContain(`'./vocab/${name}'`);
@@ -141,7 +141,7 @@ describe('HSK 2026 7–9급 — 우리 사전 빠짐 0', () => {
     expect(zh.ZH_HSK79_VOCAB.flatMap((m) => m.themes.flatMap((t) => t.words)).length).toBe(FILL79_COUNT);
     const registryWords = new Set(zh.ZH_LEVEL_META.flatMap((m) => (zh.getVocab(m.key)?.themes || []).flatMap((t) => t.words.map((w) => w.zh))));
     expect(fill79.flatMap(([, words]) => words).filter((w) => registryWords.has(w.zh))).toEqual([]);
-    const index = fs.readFileSync(path.join(ROOT, 'src/lib/refVocabIndex.js'), 'utf8');
+    const index = fs.readFileSync(path.join(ROOT, 'src/lib/zhRefVocabSets.js'), 'utf8');
     for (const x of 'abcde') expect(index).toContain(`import('../content/chinese/vocab/h7_hsk2026_${x}').then((m) => ({ level: 'H7', mod: m }))`);
   });
 });
