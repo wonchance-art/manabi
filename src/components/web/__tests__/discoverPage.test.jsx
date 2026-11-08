@@ -61,7 +61,8 @@ describe('산책 화면 배선', () => {
     const src = read('src/views/MaterialsPage.jsx');
     expect(src).toContain('const signInPending = authLoading && sessionHint === true;');
     // 목록 골격 · 추천 칸의 조건(!tab || isLoading — LIBRARY-GUEST-CLS-001 계약)이 확인 중도 「아직 정해지지 않음」으로 본다.
-    expect(src).toContain('const isLoading = materialsLoading || signInPending;');
+    // LIBRARY-LOAD-CLS-001: 한 번도 안 받은 목록 · 아직 안 온 추천(그 칸을 그리는 화면)도 「아직」이다.
+    expect(src).toContain('const isLoading = materialsLoading || signInPending || !materialsFetched || (suggestionsShown && !suggestionsFetched);');
     expect(src).toMatch(/isLoading: materialsLoading, isFetched: materialsFetched/);
     // 서재 도구: 확인 뒤 PDF 조회 줄이 골격 위에 끼지 않게 확인 중에도 같은 줄을 미리 둔다.
     expect(src).toContain('{showPdfs && (pdfsLoading || signInPending) && <p aria-busy="true">PDF 목록 확인 중…</p>}');
