@@ -878,6 +878,13 @@
 
 ## Claude (claude/*)
 ### doing
+- **READING-LIST-FONT-001 「함께 읽는 글」 목록 글꼴 — woff2 59 → 32개 · 1,787 → 1,045KB (2026-11-08 KST)** PR `claude/reading-list-font`(오케스트레이터 지시 · 화면 무변경):
+  공개 자료 132편 노출(#1760) 뒤 목록이 Noto Sans KR 조각 30개 · 855KB를 불렀다(화면 한글 96자). 원인 둘 — 카드 · 정렬 · 「더 보기」 · 제목 괄호 풀이의 한글,
+  그리고 일본어 · 중국어 제목 줄이 JP · SC 조각을 기다리는 동안 다음 글꼴(KR)로 그리려고 받은 한자 · 가나 KR 조각(店 · 游 · 算 등 17개).
+  고침: 미리 받지 않는 목록 묶음 1개(254자 · 67KB, 같은 원본 Noto Sans KR 2.004 — 시드 제목은 starter-content · 마이그레이션 리터럴에서) + 첫 화면 묶음에
+  정렬 선택지 · 「←」(166자 · 23.5KB). 게이트(같은 출처 앞단 교대 · 1.6Mbps · CPU 4×): CLS 폰 · PC 0(첫 화면 · 스크롤 · 「더 보기」 끝까지) · LCP 폰 3.27 → 3.06s ·
+  FCP−TTFB 10판 2.599 → 2.605s · 콘솔 오류 0. 캡처 4장(폰 · PC × 밝게 · 어둡게): 크기 · 배치 같음, ko 줄 가나 · 한자 1,221px만 서브픽셀 위치(±0.4–0.7px) 차이 —
+  여러 조각으로 쪼개 조판하던 줄이 한 파일로 합쳐진 탓(윤곽 · 너비 동일 확인). 남은 것: SC 9 · 426KB, JP 14개(제목 본문 — 별도 판단).
 - **DOMAIN-CANONICAL-001 대표 도메인 = www (2026-11-08 KST)** PR `claude/canonical-www`(오너 승인 (가) · 오케스트레이터 전달):
   `seo.js` DEFAULT_SITE_URL = `https://www.manabi.co.kr`(Vercel이 www 서빙 · apex→www 308) · 계약 seoMeta · launch-checklist §1 Site URL/Redirect URLs · §2 env 표 · §3 결정 · 사후 확인 8개.
   **운영 반영 조건 = 오너가 Vercel `NEXT_PUBLIC_SITE_URL`(Production)을 지운 뒤 운영 배포 1회**(운영 값이 기본값보다 먼저 — 지우기 전엔 정본이 apex 그대로). 환경 변수는 건드리지 않음.
