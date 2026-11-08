@@ -304,7 +304,7 @@ try {
  assert.equal(await panel().locator('#inspector-word details').count(),0,'AE-R1: no folds in the word tab');
  // 저장 등급 줄의 안내는 「얼마나 알겠어요?」 + 오른쪽 「아는 단어」(AD-R3 확정 목업 · docs/manabi-viewer-v2-ad-r3.md §단어창).
  // 아직 담지 않은 단어는 뒤에 「 · 고르면 단어장에 저장돼요」가 붙는다(발매 점검 #4, #1708) — 안내 줄이 보이고 그 말로 시작하는지 본다.
- assert(await panel().locator('.save-grade__guide').isVisible());
+ await panel().locator('.save-grade__guide').waitFor();assert(await panel().locator('.save-grade__guide').isVisible()); // 저장 등급 줄은 로그인 뒤에 선다(E2E-RACE-001)
  assert.match(await panel().locator('.save-grade__guide').innerText(),/^얼마나 알겠어요\?/);
  await shotAt('minimal-mobile-default');
  assert(await panel().locator('.reader-card-sentence').isVisible(),'AE-R1: the sentence line replaces the quoted line');

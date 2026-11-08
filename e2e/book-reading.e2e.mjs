@@ -24,7 +24,7 @@ fs.mkdirSync(out, {recursive:true});
  assert.equal(await page.locator('.manabi-toc-group li').count(),42);report.flows.push('all-42-table-of-contents');
  await page.goto(base+'/books/japanese-n5#u29-patterns');await page.locator('.book-reading-content #u29-patterns').waitFor();await page.evaluate(()=>document.fonts.ready);await page.waitForFunction(()=>document.getElementById('u29-patterns')?.getBoundingClientRect().top < 220);
  const pos=await page.locator('#u29-patterns').boundingBox();assert(pos.y>=0&&pos.y<220,`source anchor not reached ${pos.y}`);report.flows.push('direct-source-anchor');
- assert((await page.locator('.book-example-save a').count())>0);report.flows.push('example-save-controls');await check('u29-patterns-desktop');await page.screenshot({path:out+'/reader-examples-desktop.png'});
+ await page.locator('.book-example-save a').first().waitFor();assert((await page.locator('.book-example-save a').count())>0);report.flows.push('example-save-controls');await check('u29-patterns-desktop');await page.screenshot({path:out+'/reader-examples-desktop.png'});
  await page.locator('.manabi-reader-toolbar').getByRole('button',{name:'집중 읽기'}).click();assert.equal(await page.locator('.gnb').isVisible(),false);await page.getByRole('button',{name:'기본 보기'}).click();assert.equal(await page.locator('.gnb').isVisible(),true);report.flows.push('focus-and-return');
  await page.goto(base+'/books/japanese-n5#u01-practice');await page.locator('#u01-practice').waitFor();
  const radio=page.locator('input[type=radio]').first();await radio.check();const radioKey=await radio.getAttribute('data-save');const radioValue=await radio.getAttribute('value');

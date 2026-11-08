@@ -68,6 +68,9 @@ describe('next-build: Google Fonts를 저장소 사본에서 읽는다', () => {
     const { scripts } = JSON.parse(fs.readFileSync('package.json', 'utf8'));
     expect(scripts.build).toBe('node scripts/next-build.mjs');
     expect(scripts['e2e:build']).toContain('e2e/fixtures/google-fonts-mock.cjs');
+    // e2e 빌드도 같은 진입점 — 힙 상한을 받고(맨 next build는 기본 힙 2GB에서 OOM), 글꼴 대역은 buildEnv가 덮지 않는다.
+    for (const name of ['e2e:build', 'wall:build']) expect(scripts[name], name).toMatch(/ node scripts\/next-build\.mjs$/);
+    expect(buildEnv({ NEXT_FONT_GOOGLE_MOCKED_RESPONSES: '/x/google-fonts-mock.cjs' }).NEXT_FONT_GOOGLE_MOCKED_RESPONSES).toBe('/x/google-fonts-mock.cjs');
   });
 
   it('src의 모든 next/font/google 호출이 사본에 있다 — 없으면 Vercel 빌드가 멈춘다', () => {

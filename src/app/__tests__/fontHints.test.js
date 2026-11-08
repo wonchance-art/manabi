@@ -122,7 +122,8 @@ describe('글꼴 힌트 — Noto Sans 라틴 조각', () => {
     const check = ci.indexOf('NEXT_FONT_GOOGLE_MOCKED_RESPONSES="$PWD/e2e/fixtures/google-fonts-mock.cjs" node scripts/fonts/check-font-hints.mjs');
     expect(build).toBeGreaterThan(0);
     expect(check).toBeGreaterThan(build);
-    expect(read('package.json')).toContain('NEXT_FONT_GOOGLE_MOCKED_RESPONSES=\\"$PWD/e2e/fixtures/google-fonts-mock.cjs\\" next build');
+    // e2e 빌드는 힙 상한 진입점(scripts/next-build.mjs)을 지나며, 그 진입점은 넘긴 글꼴 대역을 덮지 않는다(next-build.test.js).
+    expect(read('package.json')).toContain('NEXT_FONT_GOOGLE_MOCKED_RESPONSES=\\"$PWD/e2e/fixtures/google-fonts-mock.cjs\\" node scripts/next-build.mjs');
   });
 
   it('② @font-face 파서는 family 이름을 정확히 가른다(Noto Sans ≠ Noto Sans KR)', () => {

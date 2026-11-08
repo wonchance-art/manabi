@@ -86,7 +86,7 @@ check('teacher book opens classroom dock in existing viewer');
 await page.locator('[data-tid="id_0_word"]').click();
 await dock.getByRole('button',{name:'수업 노트에 추가 +',exact:true}).waitFor();
 await page.screenshot({path:out+'/book-first-desktop.png'});report.screens.push('book-first-desktop.png');
-assert.equal(await dock.locator('.review-score-btn').count(),4);check('existing personal vocabulary grades remain separate');
+await dock.locator('.review-score-btn').first().waitFor();assert.equal(await dock.locator('.review-score-btn').count(),4);check('existing personal vocabulary grades remain separate');
 const location=page.url();await dock.getByRole('button',{name:'수업 노트에 추가 +',exact:true}).click();
 await dock.getByRole('button',{name:'수업에 추가됨 ✓',exact:true}).waitFor();assert.equal(page.url(),location);
 let stored=await current();assert.equal(stored.raw_text.split('图书馆').length-1,1);assert(Object.values(stored.processed_json.metadata.classMeanings).some(v=>v.text==='图书馆'&&v.meaning==='뜻 1'));assert.equal(analyzedLines.length,0);check('selected word and meaning commit atomically without reanalysis or navigation');
