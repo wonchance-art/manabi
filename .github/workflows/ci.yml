@@ -73,6 +73,7 @@ jobs:
       - run: node supabase/tests/material-set-difficulty.mjs
       - run: node supabase/tests/observe-daily-health.mjs
       - run: node supabase/tests/en-meaning-fill.mjs
+      - run: node supabase/tests/en-dictionary-reviewed.mjs
       - run: node scripts/verification/n4-book-support.mjs
       - run: node scripts/verification/n3-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs
