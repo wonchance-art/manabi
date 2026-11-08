@@ -124,7 +124,7 @@ describe('라우트 배선', () => {
 
   it('해제: 틀린 암호·없는 팀·6자 미만이 같은 404 — 팀이 없어도 해시 비용을 치른다 · IP 분당 10회 · 비밀 없으면 503', () => {
     expect(unlock).toContain("const notFound = () => Response.json({ error: 'not_found' }, { status: 404, headers: NO_STORE });");
-    expect(unlock).toContain('pw.trim().length < TEAM_PW_MIN) return notFound();');
+    expect(unlock).toContain('pw.trim().length < TEAM_PW_MIN || pw.length > MAX_PW_CHARS) return notFound();'); // 너무 긴 암호도 같은 404(API-ABUSE-001)
     expect(unlock).toContain('const ok = await verifyPassword(pw, loaded?.team || null);');
     expect(unlock).toContain('if (!loaded || !ok) return notFound();');
     expect(unlock).toContain("rateLimit(`class-unlock:${getClientKey(request)}`, { limit: 10, windowMs: 60_000 })");
