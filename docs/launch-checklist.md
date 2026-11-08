@@ -98,7 +98,7 @@
   - (C) Supabase Dashboard에서 `reading_materials`에 `visibility='public'` 한 건
 
 ## 5. 런칭 후 24시간
-- [ ] 운영 오류 기록: `observe.error_events`(브라우저 · 서버 오류와 CSP 보고 `csp.*`, ERROR-OBSERVE-001 · SEC-HEADERS-001)
+- [ ] 운영 오류 기록: `observe.error_events`(브라우저 · 서버 오류와 CSP 보고 `csp.*`, /study 문단 실패 `study.paragraph_fallback` · `study.paragraph_error`, ERROR-OBSERVE-001 · SEC-HEADERS-001 · STUDY-PARA-OBSERVE-001)
 - [ ] Vercel 런타임 오류(Hobby는 런타임 로그를 1시간만 보관 — 오류 묶음은 7일) · Supabase Logs(API 4xx/5xx · Postgres)
 - [ ] LLM 사용량 · 오류율(관리자 화면)
 - [ ] 첫 실제 가입자 의견을 받을 창구(이메일/디스코드 등)

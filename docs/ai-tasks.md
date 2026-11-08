@@ -878,6 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **STUDY-PARA-OBSERVE-001 /study 문단 실패 · 폴백 사유 기록 (2026-11-08 KST)** PR `claude/preview/web`(오케스트레이터 (가) 승인 · 화면 변화 0 · DB 변경 0):
+  /study 분모가 바뀌는 문단 실패(0/9 → 1/7)는 지금까지 기록이 없었다(라우트는 console.error뿐 · 화면은 조용히 폴백). 브라우저: applyFallback(reason)이
+  `study.paragraph_fallback`(client) 한 줄 — 사유 코드 status_NNN · no_paragraph · too_few_items · timeout · network · map_error뿐(계정 · 재료 · 본문 없음,
+  수신 parseClientErrorBody가 CLIENT_SIGNALS 코드만 받음). 서버: `/api/study-paragraph`의 no_llm_key(500) · unusable_output(502 · 프리페치 ok:false) ·
+  exception(500) · 프리페치 assemble_error를 `study.paragraph_error`(server)로 after() 뒤에. 실빌드(합성 백엔드): 문단 500 → 신호 1건 정확한 모양 · pageerror 0,
+  study-session e2e 3/3. 영향: server 줄이라 observe_daily_health의 server_errors 이상에 잡힌다(실패는 실제 이상 — 잦으면 제외 후속).
 - **STUDY-FIXTURE-001 /study 세션 e2e · 답 제출 INP (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 승인 · 테스트 전용, 앱 코드 변경 0):
   새 고정물을 만들지 않았다 — 화면 벽 환경(`scripts/wall-capture.mjs` startWallEnv: heavy-account 합성 백엔드 + server-fetch-mock next start)으로 /study가
   실제 서버 조립 세션을 띄운다(몸풀기 0/N · 4지선다). e2e `e2e/study-session.e2e.mjs`: 열기 → 답 1개 → 정답 표시 하나 · 보기 잠김 · 답한 수 1 · review_events 기록 →
