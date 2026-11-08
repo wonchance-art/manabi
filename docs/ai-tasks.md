@@ -1255,9 +1255,11 @@
     YOUTUBE_DATA_API_KEY 없으면 0건 · 오류 없음(로그 한 줄) — 키 등록만으로 켜진다(환경 변수는 건드리지 않음). 공식 API는 남의 자막 본문을 못 받으므로
     VOA · CC 카드도 「목록만 + 클릭 시 개인 자료」(youtube_ondemand)로 — 공개 본문 자료 경로(F R5)는 닫힘. 하루 쿼터 추정 ~311단위(무료 10,000).
     youtubei.js는 이 PR 뒤 코드에서 쓰는 곳 0 — 패키지 제거는 lockfile 재생성이 필요해 따로(이 세션은 외부 패키지 설치 판정에 걸림).
-    YT-API-002(이번 PR, 오케스트레이터 13:30 KST (b) 승인): Vercel에 3월부터 있던 YOUTUBE_API_KEY(같은 Data API v3 키, 오너 등록 · 값 미열람)를
+    YT-API-002([#1764](https://github.com/wonchance-art/manabi/pull/1764) squash 5714dccf · 11/8 13:46 KST, 오케스트레이터 13:30 KST (b) 승인): Vercel에 3월부터 있던 YOUTUBE_API_KEY(같은 Data API v3 키, 오너 등록 · 값 미열람)를
     YOUTUBE_DATA_API_KEY 다음 순서로 읽는다 — 환경 변수 변경 없음. 400 · 403이면 그날 나머지 호출 중단 · 0건 · observe.error_events 하루 한 줄(키 흔적 지움).
     하루 상한 320단위(기본 소스 315 — 채널 4 × 3 + CC 3 × 101) · captions.list 0. 사후 확인 = 11/9 00:06 수집 뒤 영 · 일 영상 행 수 · 오류 줄 → 03:40 보고.
+    YT-API-003(이번 PR, 의존성만): youtubei.js 제거(+ 그것만 쓰던 @bufbuild/protobuf · fflate · meriyah) — lockfile만 재생성, 코드 무변경.
+    후보(착수 전): media.js의 youtubei.js 노드 정규화 · 자막 트랙 함수 중 앱에서 안 쓰는 것 정리(import/link가 같은 파일을 씀 — 함수 단위로 확인 뒤).
     MATERIAL-DIFFICULTY-002([#1761](https://github.com/wonchance-art/manabi/pull/1761) squash 959fb842 · 11/8 13:00 KST · 운영 사후 확인 — 20261108040000 적용,
     RPC anon · authenticated EXECUTE 닫힘 · service_role만 · SECURITY DEFINER · search_path '' · difficulty 0행(첫 백필 전) · 지문 넷 그대로), 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
     materialDifficulty(#1743)로 processed_json.metadata.difficulty = { version, scale(HSK · JLPT · null), medianLevel, p90Level, types, listedShare }를
