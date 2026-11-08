@@ -32,7 +32,9 @@ test('desktop: current document edits, same address, old source intact, new stud
   assert.equal(f.rows.length,2);assert.equal(f.rows[1].raw_text,'Bonjour.\n\nUn nouveau départ.');
   await f.page.goto(`/viewer/${id}?study=1&sourceToken=id_0_0&sourceText=Hello`);await f.page.getByRole('link',{name:'현재 글과 첨부 원본 ↗'}).waitFor();
   assert.equal(await f.page.locator('.original-reader').count(),0);assert.equal(f.rows[0].raw_text,original);
-  await f.page.goto('/materials?view=owned&lang=French');await f.page.locator('.mat-card').waitFor();assert.equal(await f.page.locator('.mat-card').count(),1);
+  // 서재 기본(/materials?view=owned)은 #1592부터 서가(LibraryShelf)라 .mat-card 목록이 없다 — 같은 목록 · ⋯ 메뉴 「수정」 · 언어 거르기는
+  // 서재 도구(?tools=1, LibraryPage → MaterialsPage allOwned)에 있다(2026-11-08 KST, 판정 기준 그대로: 카드 1장 · 제목 · 분석 0 · 돌아올 주소 lang).
+  await f.page.goto('/materials?tools=1&lang=French');await f.page.locator('.mat-card').waitFor();assert.equal(await f.page.locator('.mat-card').count(),1);
   assert.ok((await f.page.locator('.mat-card').innerText()).includes('비 오는 오후, 다시 읽는 문장'));assert.equal(f.analysisCalls,0);
   await f.page.locator('.mat-card .mat-menu summary').click();await f.page.getByRole('menuitem',{name:'수정',exact:true}).click();await f.page.locator('#composer-title').waitFor();
   await f.page.locator('#composer-title').fill('수정하고 돌아오는 글');await save(f);
