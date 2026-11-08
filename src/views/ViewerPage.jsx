@@ -4162,6 +4162,14 @@ export default function ViewerPage({ seed } = {}) {
         </div>
         );
       })()}
+      {!user && !material?.__local && learningStorageSupported && !noWordSave && !koreanPieceSelected && (
+        // 손님 담기 줄(발매 점검 M1, 오너 「권장대로」 2026-11-08 KST) — 로그인한 사람의 「얼마나 알겠어요?」 · 네 칸이 서는 자리가 손님에게 비어 있어
+        // 저장 길은 맨 위 띠에만 있었다. 같은 자리에 한 줄 + 단추. 로그인 뒤 이 자료 · 위치로 돌아온다(signInHref — 띠와 같은 길).
+        <>
+          <div className="save-grade__header"><p className="save-grade__guide">{vt('담아 두면 잊을 때쯤 다시 만나요')}</p></div>
+          <Link href={signInHref} className="btn btn--primary btn--md save-grade__login">{vt('로그인하고 단어장에 담기')}</Link>
+        </>
+      )}
       {!user && material?.__local && !noWordSave && (
         // 팀 사본(v2-AB R2 S2) — 담기 CTA. 「로그인이 필요합니다」 토스트 대신 돌아올 길이 있는 시트.
         <div className="save-grade__guest">

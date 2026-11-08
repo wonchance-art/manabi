@@ -1,9 +1,10 @@
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
+import { MAGAZINE_HREF } from '@/components/web/discoverMagazine';
 
 /**
  * 산책 대기 화면(LOADING-SKELETON-001 — 오너 승인 2026-10-17 KST · 큰 칸 셋 DISCOVER-CLASSICS-001 2026-10-22 KST). 탭을 누르면 서버가
  * 소식 · 고전 명작을 모으는 동안 「화면 불러오는 중…」 스피너가 0.25~0.4초 보이던 자리다. 실제 화면(page.jsx · DiscoverTiles)의 **같은 클래스**로
- * 골격을 그린다 — 늘 같은 글(제목 「산책」 · 칸 이름 · 「첫 호 준비 중」)은 글자 그대로, 바뀌는 글만 회색 줄.
+ * 골격을 그린다 — 늘 같은 글(제목 「산책」 · 칸 이름)은 글자 그대로, 바뀌는 글만 회색 줄.
  * 칸은 누를 수 없는 div(초점 · 이동 없음)라 실제 칸 스타일(`.discover-tile`)을 그대로 받는다.
  * 「함께 읽는 글」 줄은 그리지 않는다 — 실제 화면은 공개 글이 1편 이상일 때만 그 줄을 둔다(publicCount > 0).
  */
@@ -21,10 +22,11 @@ export default function Loading() {
           <span className="discover-tile__head"><span className="discover-tile__kicker">고전 명작</span><span className="discover-tile__big"><SkeletonLine width="2.5em" /></span></span>
           <span className="discover-tile__body"><span className="discover-tile__covers">{[0, 1, 2].map(i => <span key={i} className="discover-tile__cover discover-tile__cover--blank" />)}</span></span>
         </div>
-        <div className="discover-tile discover-tile--magazine">
+        {/* 매거진 칸은 첫 호가 걸릴 때만(MAGAZINE_HREF — 발매 점검 M3). 고전 명작은 서가가 받는 값이라 대기 화면에서는 자리를 그대로 둔다. */}
+        {MAGAZINE_HREF && <div className="discover-tile discover-tile--magazine">
           <span className="discover-tile__head"><span className="discover-tile__kicker">여행 매거진</span></span>
           <span className="discover-tile__body"><strong className="discover-tile__title">첫 호 준비 중</strong></span>
-        </div>
+        </div>}
       </section>
     </SkeletonRegion>
   );
