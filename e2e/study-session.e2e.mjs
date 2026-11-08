@@ -51,6 +51,10 @@ test('/study: 세션을 열고 답 하나를 내면 채점이 보이고 다음 �
     const picked = await options.first().getAttribute('class');
     assert.match(picked, /\bis-(correct|wrong)\b/, 'the picked choice shows its grade');
     assert.equal(await doneOf(page), 1, 'progress counts the answer');
+    // 채점 결과는 화면 읽기에도 한 줄(A11Y-AUTH-001) — 보기 색과 같은 판정이어야 한다
+    const announced = (await page.locator('[data-settle-announce]').innerText()).trim();
+    assert.match(announced, /^(정답이에요\.|틀렸어요\.( 정답: .+)?)$/, `settle announcement: ${announced}`);
+    assert.equal(announced.startsWith('정답'), /\bis-correct\b/.test(picked), 'announcement agrees with the picked choice grade');
     await recorded;
     assert.ok(reviewWrites.length >= 1, 'the answer is recorded as a review event');
 
