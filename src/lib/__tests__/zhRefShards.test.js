@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { describe, expect, it, vi } from 'vitest';
-import { loadRefVocabIndex, loadZhRefShard } from '../refVocabIndex';
+import { loadRefVocabIndex, loadZhRefShard, warmZhRefFullIndex } from '../refVocabIndex';
 import { ZH_REF_CACHE, ZH_REF_SHARDS, ZH_REF_VERSION, fetchZhRefShard, zhRefShardEntries, zhRefShardOf, zhRefShardUrl } from '../zhRefShards';
 import { GET, dynamic, dynamicParams, generateStaticParams } from '../../app/api/zh-ref/[shard]/route.js';
 
@@ -67,6 +67,22 @@ describe('뷰어 배선 — 고르기 전에는 받지 않는다', () => {
     const hooks = read('src/lib/refVocabIndex.js');
     expect(hooks).toMatch(/const key = language === 'Chinese' && word \? word : null;/); // 빈 낱말이면 받지 않는다
   });
+
+  it('낱말을 고른 뒤 유휴 시간에 전체 색인을 한 번 받는다(끊긴 뒤 처음 고르는 낱말에도 예문) · 받은 뒤에는 조각을 따로 받지 않는다', async () => {
+    const hooks = read('src/lib/refVocabIndex.js');
+    expect(hooks).toMatch(/loadZhRefShard\(key\)[\s\S]{0,160}warmZhRefFullIndex\(\);/); // 고른 뒤에만
+    const jobs = [];
+    warmZhRefFullIndex((fn) => jobs.push(fn));
+    warmZhRefFullIndex((fn) => jobs.push(fn)); // 두 번째는 걸지 않는다
+    expect(jobs).toHaveLength(1);
+    jobs[0]();
+    const full = await loadRefVocabIndex('Chinese');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    try {
+      expect(await loadZhRefShard('今天')).toBe(full);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally { fetchSpy.mockRestore(); }
+  }, 60_000);
 
   it('조각을 못 받으면 전체 색인으로 물러난다(끊김 · 옛 배포)', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
