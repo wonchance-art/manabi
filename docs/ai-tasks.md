@@ -1335,10 +1335,12 @@
     최대값 7.6–7.9s 일제 천장(계획 아님 · 과거 정체 흔적), 지금 실측 snapshot 284ms · 서재 135ms · capabilities 따뜻하면 2ms. 24h API 5xx 0 · upstream p50 2–5ms.
     temp 60GB는 앱 역할 0바이트 — 통계 뷰를 읽는 모니터링 쪽. 기록 뒤 pg_stat_statements_reset()(승인 17:48) · 어드바이저 INFO(FK 38 · 미사용 25) 보류.
     같은 날 판정: teaching-board-pages DELETE = 앱 경로 없음(클라우드 판서 미병합 — 올릴 때 자기 폴더 DELETE 동봉) · SMTP-PROBE-001 = custom SMTP(Resend) 사용 중(대시보드 토글 · 발송 한도만 확인 몫).
-    SEED-QA-002(이번 PR, 오케스트레이터 17:55 · 20:32 KST): 공개 132편 품질 점검(읽기 전용) — 원문 커버리지 · 후리가나 · 병음 · 제목 · 언어 판정 이상 0,
+    SEED-QA-002([#1774](https://github.com/wonchance-art/manabi/pull/1774) squash 0e7cc676 · [#1778](https://github.com/wonchance-art/manabi/pull/1778) squash fa1723c4, 오케스트레이터 17:55 · 20:32 · 20:45 KST): 공개 132편 품질 점검(읽기 전용) — 원문 커버리지 · 후리가나 · 병음 · 제목 · 언어 판정 이상 0,
     영어 33편 내용어 50토큰이 pos null · 뜻 빈칸(analyzeCore 「다음 요청 백필」이 시드에선 안 일어남). A 마이그레이션 20261108060000(공유 사전으로 25토큰 · 15편,
     백업 backup_private.en_meaning_fill_20261108 · 복원 docs/sql/en-meaning-fill-20261108-rollback.sql) + C 함수 material_fill_empty_meanings(service_role) ·
-    분석 작업 크론 사슬 끝 tick당 50편 · 실행 줄 detail.meaningFill. B(사전에도 없는 23표제어)는 뜻 생성 뒤 오케스트레이터 검수 — 이 세션엔 LLM 키 없음.
+    분석 작업 크론 사슬 끝 tick당 50편 · 실행 줄 detail.meaningFill. B(20261108070000): 오케스트레이터 원고 22행 user_verified · it's 첫 뜻 · 문맥 보정 6토큰(curated) ·
+    남은 22 채움 → 공개 영어 빈 뜻 0(백업 · 복원 docs/sql/en-dictionary-reviewed-20261108-rollback.sql).
+    EN-ORDINAL-001(이번 PR): tokenizeEnLine이 1st · 25th를 수사 한 토큰으로(새 분석부터, 기존 자료 재분석 없음) — 비공개 2편 「…th」 3곳은 사용자 자료라 그대로.
     MATERIAL-DIFFICULTY-002([#1761](https://github.com/wonchance-art/manabi/pull/1761) squash 959fb842 · 11/8 13:00 KST · 운영 사후 확인 — 20261108040000 적용,
     RPC anon · authenticated EXECUTE 닫힘 · service_role만 · SECURITY DEFINER · search_path '' · difficulty 0행(첫 백필 전) · 지문 넷 그대로), 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
     materialDifficulty(#1743)로 processed_json.metadata.difficulty = { version, scale(HSK · JLPT · null), medianLevel, p90Level, types, listedShare }를
