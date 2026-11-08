@@ -50,6 +50,17 @@ export const SUBSETS = Object.freeze({
       { file: 'src/components/web/SiteFooter.jsx' },
     ]),
   }),
+  // 배움(/home) — 셸 + HomePage + 배움 부품(src/components/learn) + 공통 푸터(HOME-KR-SUBSET-001). 페이지 전체 한글이 107자뿐인데
+  // Noto Sans KR 조각 12개 · 200KB를 받았다(운영 실측 2026-11-08 KST). 교재 제목 같은 데이터 글자는 원래 조각으로 넘어간다.
+  home: Object.freeze({
+    stem: 'noto-sans-kr-home', json: 'subset-home.json', css: 'krHomeSubset.css', segment: 'home',
+    sources: Object.freeze([
+      ...SHELL,
+      { file: 'src/views/HomePage.jsx' },
+      { dir: 'src/components/learn', pick: /\.(jsx|js)$/ },
+      { file: 'src/components/web/SiteFooter.jsx' },
+    ]),
+  }),
   // 「함께 읽는 글」(/discover?view=reading → /discover/reading) 손님 첫 화면 — 셸 + 머리 + 언어 칩 + 빈 상태 · 「오늘의 소식」 제목 + 공통 푸터
   // (READING-CHIP-CLS-001): 칩이 첫 그림에선 시스템 글꼴(한글 1.0em)로 두 줄, Noto Sans KR 조각이 4.7s에 온 뒤 0.92em로 줄며 「프랑스어」가
   // 첫 줄로 올라갔다(운영 폰 CLS 0.035). 푸터는 PC 첫 화면에서 목록이 정해지기 전에 보인다.
