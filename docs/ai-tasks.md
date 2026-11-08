@@ -1327,10 +1327,18 @@
     Active CPU 4시간, 넘으면 30일 정지) 범위 안. 막은 것: suggestions/today CDN 60초(찾은 날만) · review/drills IP 분당 30 + 본문 256KB ·
     class unlock 해시 전 본문 8KB + 암호 1,024자. 계약 apiGuestGuards.test.js(손님 경로 22개 표 — 새 손님 경로는 표에 올려야 CI 통과).
     남김(기록): 분당 상한은 인스턴스 메모리 · 하루 상한 fail-open · TTS 하루 상한 주체 IP 해시. 실측 함수 사용량은 대시보드 Usage(이 세션 도구 없음).
-    OPS-HEALTH-001(이번 PR, 오케스트레이터 16:25 KST): 운영 일일 상태 점검 — 크론 넷이 끝에 observe.cron_runs 한 줄, 분석 작업 크론(02:45 KST) 사슬 끝이
+    OPS-HEALTH-001([#1771](https://github.com/wonchance-art/manabi/pull/1771) squash 69069907 · 11/8 KST, 오케스트레이터 16:25 KST): 운영 일일 상태 점검 — 크론 넷이 끝에 observe.cron_runs 한 줄, 분석 작업 크론(02:45 KST) 사슬 끝이
     public.observe_daily_health(p_record true)로 그날 점검을 observe.health_checks에 남기고 이상이면 health.alert 하루 한 줄. 새 크론 · 새 환경 변수 없음.
     보고 한 번에: `select public.observe_daily_health();`(service_role — 읽기만, 기록 없음). 이상 기준 = cron_missing · cron_failed · fingerprint_missing/changed(전날 점검 대비) ·
     server_errors · suggestions_empty · difficulty_unfilled. 화면(관리자)은 목업 대상 — 데이터 · 계약까지만.
+    DB-PERF-001(이번 PR, 오케스트레이터 17:40 · 17:48 KST): 상위 10 · 24시간 로그 기록 = docs/verification/db-perf-20261108.md — 비파괴로 손댈 실익 없음.
+    최대값 7.6–7.9s 일제 천장(계획 아님 · 과거 정체 흔적), 지금 실측 snapshot 284ms · 서재 135ms · capabilities 따뜻하면 2ms. 24h API 5xx 0 · upstream p50 2–5ms.
+    temp 60GB는 앱 역할 0바이트 — 통계 뷰를 읽는 모니터링 쪽. 기록 뒤 pg_stat_statements_reset()(승인 17:48) · 어드바이저 INFO(FK 38 · 미사용 25) 보류.
+    같은 날 판정: teaching-board-pages DELETE = 앱 경로 없음(클라우드 판서 미병합 — 올릴 때 자기 폴더 DELETE 동봉) · SMTP-PROBE-001 = custom SMTP(Resend) 사용 중(대시보드 토글 · 발송 한도만 확인 몫).
+    SEED-QA-002(이번 PR, 오케스트레이터 17:55 · 20:32 KST): 공개 132편 품질 점검(읽기 전용) — 원문 커버리지 · 후리가나 · 병음 · 제목 · 언어 판정 이상 0,
+    영어 33편 내용어 50토큰이 pos null · 뜻 빈칸(analyzeCore 「다음 요청 백필」이 시드에선 안 일어남). A 마이그레이션 20261108060000(공유 사전으로 25토큰 · 15편,
+    백업 backup_private.en_meaning_fill_20261108 · 복원 docs/sql/en-meaning-fill-20261108-rollback.sql) + C 함수 material_fill_empty_meanings(service_role) ·
+    분석 작업 크론 사슬 끝 tick당 50편 · 실행 줄 detail.meaningFill. B(사전에도 없는 23표제어)는 뜻 생성 뒤 오케스트레이터 검수 — 이 세션엔 LLM 키 없음.
     MATERIAL-DIFFICULTY-002([#1761](https://github.com/wonchance-art/manabi/pull/1761) squash 959fb842 · 11/8 13:00 KST · 운영 사후 확인 — 20261108040000 적용,
     RPC anon · authenticated EXECUTE 닫힘 · service_role만 · SECURITY DEFINER · search_path '' · difficulty 0행(첫 백필 전) · 지문 넷 그대로), 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
     materialDifficulty(#1743)로 processed_json.metadata.difficulty = { version, scale(HSK · JLPT · null), medianLevel, p90Level, types, listedShare }를
