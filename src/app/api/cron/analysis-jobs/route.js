@@ -5,6 +5,7 @@ import { after } from 'next/server';
 import { SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
 import { kickAnalysisTick, runAnalysisTick, serviceClient } from '@/lib/server/analysisJobs';
 import { refreshPublicDifficulty } from '@/lib/server/materialDifficultyRefresh';
+import { fillPublicEmptyMeanings } from '@/lib/server/materialMeaningFill';
 import { recordCronRun, recordDailyHealth } from '@/lib/server/cronRuns';
 
 export const runtime = 'nodejs';
@@ -44,6 +45,12 @@ async function analysisTick(supabase, origin, run) {
     run.ok = false;
     run.detail.tickError = String(error?.message || error).slice(0, 200);
   }
+  // SEED-QA-002 C: 사슬 끝에서 공개 영어 자료의 빈 뜻 토큰을 공유 사전으로 채운다(한 번에 50편 · LLM 없음 · 실패는 줄에만 남긴다).
+  // 난이도 앞에 둔다 — 채운 품사가 같은 tick의 난이도 셈에 들어가게.
+  const meaningFill = await fillPublicEmptyMeanings(supabase);
+  run.detail.meaningFill = meaningFill;
+  if (meaningFill.error) { console.error('[analysis-jobs] meaning fill failed', meaningFill.error); run.ok = false; }
+  else if (meaningFill.tokens) console.warn('[analysis-jobs] meaning fill', JSON.stringify(meaningFill));
   // MATERIAL-DIFFICULTY-002: 사슬 끝(또는 할 작업 없는 예약 실행)에서 공개 자료 난이도 요약을 채운다 — 한 tick 50편 상한,
   // 남았고 이번에 하나라도 썼으면 다음 tick을 부른다(진척 없으면 멈춘다 — 다음 예약 실행이 다시 본다). 실패는 분석과 무관하게 삼킨다.
   try {
