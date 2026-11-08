@@ -119,7 +119,7 @@ describe('정본 주소 한 곳 — siteUrl / canonicalFor', () => {
     expect(siteUrl('')).toBe(DEFAULT_SITE_URL);
     expect(siteUrl(undefined)).toBe(DEFAULT_SITE_URL);
     expect(siteUrl('not a url')).toBe(DEFAULT_SITE_URL);
-    expect(DEFAULT_SITE_URL).toBe('https://manabi.co.kr');
+    expect(DEFAULT_SITE_URL).toBe('https://www.manabi.co.kr'); // 대표 도메인 = www(DOMAIN-CANONICAL-001) — Vercel 서빙 호스트와 같다
   });
 
   it('경로만 정본 — 질의 · 조각 · 끝 / 를 버린다', () => {

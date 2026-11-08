@@ -6,10 +6,10 @@
 ## 1. Supabase 프로젝트 설정 (Dashboard)
 
 ### Authentication → URL Configuration
-- [ ] **Site URL** = 대표 도메인 — 오너 결정 대기(www · apex, DOMAIN-CANONICAL-001). 정해지면 `NEXT_PUBLIC_SITE_URL`과 같은 값으로 맞춘다.
+- [ ] **Site URL** = 대표 도메인 `https://www.manabi.co.kr` (DOMAIN-CANONICAL-001 — 오너 결정 (가) www, 2026-11-08 KST).
 - [ ] **Redirect URLs**: 로그인 복귀는 모두 `/auth/callback`으로 온다(`src/lib/authRedirect.js` `authCallbackUrl` — OAuth · 이메일 확인 · 비밀번호 재설정은 `?next=`로 갈 곳을 싣는다).
-  - `https://<대표 도메인>/auth/callback` (와 `?next=` 붙은 꼴 — 패턴 `https://<대표 도메인>/auth/**`)
-  - 서빙 호스트가 둘(www · apex)인 동안은 두 호스트 모두
+  - `https://www.manabi.co.kr/auth/callback` (와 `?next=` 붙은 꼴 — 패턴 `https://www.manabi.co.kr/auth/**`)
+  - apex(`manabi.co.kr`)는 www로 308이라 복귀 주소에 없어도 되지만, 옛 메일 링크를 위해 `https://manabi.co.kr/auth/**`도 남겨 둔다
   - `http://localhost:3000/**` (로컬 개발용, 런칭 뒤 제거 권장)
 
 ### Authentication → Email Templates
@@ -42,7 +42,7 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase 프로젝트 URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | 공개 키(#1673 뒤 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ | 서버 전용 — 계정 삭제 · 큐레이터 목록 등(#1673 뒤 `SUPABASE_SECRET_KEY`) |
-| `NEXT_PUBLIC_SITE_URL` | ✅ | 정본 주소 — canonical · og:url · sitemap · robots(`src/lib/seo.js` `siteUrl()`가 기본값보다 먼저 쓴다). 대표 도메인과 같아야 한다 |
+| `NEXT_PUBLIC_SITE_URL` | ⚠️ | 정본 주소 — canonical · og:url · sitemap · robots(`src/lib/seo.js` `siteUrl()`가 기본값보다 먼저 쓴다). **비워 두면 기본값 `https://www.manabi.co.kr`**(대표 도메인). 두려면 대표 도메인과 같아야 한다 — 운영 값은 지금 apex라 지워야 한다(§3) |
 | `ANTHROPIC_API_KEY` | ✅ | 텍스트 LLM — 사용자 내용 경로는 Claude만(LLM-PROVIDER-POLICY-001) |
 | `GEMINI_API_KEY` | ✅ | 문장 음성(TTS) 전용 · 단어 뜻 풀이 대체 |
 | `CRON_SECRET` | ✅ | 예약 작업 라우트(`/api/cron/*`) 인증 |
@@ -59,7 +59,22 @@
 - **런타임은 Node 24**(`package.json` `engines: 24.x` · CI도 24). `npm test`는 Node 24 Web Locks를 전제한 검사가 있어 22에서는 실패한다.
 
 ## 3. 도메인 / DNS
-- 대표 도메인(www · apex) **오너 결정 대기**(DOMAIN-CANONICAL-001). 결정이 나면 이 절과 §1 Site URL · §2 `NEXT_PUBLIC_SITE_URL`을 함께 채운다.
+- [x] HTTPS 강제 (Vercel 기본 — http 두 호스트 모두 같은 호스트 https로 308, 2026-11-07 KST 실측)
+- [x] 대표 도메인 = **www** (`https://www.manabi.co.kr`, DOMAIN-CANONICAL-001 — 오너 결정 (가) 2026-11-08 KST)
+  - Vercel 프로젝트 도메인: `www.manabi.co.kr` 서빙 · `manabi.co.kr` → www 308(2026-10 연결 때부터 이 방향)
+  - 코드 정본: `src/lib/seo.js` `DEFAULT_SITE_URL` = www(이 PR)
+  - apex로 옮기려면 사용자 비용이 있다 — 쿠키 · 이 기기 기록(손님 문법 복습 · 오프라인 큐) · 설치 앱이 호스트 단위라 전원 재로그인 · 기기 기록 안 보임 · 앱 재설치
+- [ ] **운영 반영 조건 — 오너 작업**: Vercel 환경 변수 `NEXT_PUBLIC_SITE_URL`(Production)을 **지운다**(또는 `https://www.manabi.co.kr`로 바꾼다).
+  운영 값이 코드 기본값보다 먼저라, 지우기 전에는 정본이 그대로 apex다. 지운 뒤 운영 배포가 한 번 나가야 반영된다(환경 변수는 빌드 때 읽는다).
+- [ ] **사후 확인 8개**(env 삭제 → 운영 배포 READY 뒤):
+  1. `/home` `<link rel="canonical">` = `https://www.manabi.co.kr/home`
+  2. `/home` `og:url` = www
+  3. `/robots.txt`의 `Sitemap:` = `https://www.manabi.co.kr/sitemap.xml`
+  4. `/sitemap.xml`의 `<loc>`가 모두 www(apex 0개)
+  5. 손님 `/home` JSON-LD(WebSite)의 `url` = www
+  6. 동적 화면(`/studies/japan/jp-culture` · 공개 `/viewer/<id>`) canonical = www
+  7. `https://manabi.co.kr/<경로>` → `https://www.manabi.co.kr/<같은 경로>` 308 그대로
+  8. 로그인 왕복(이메일 · Google)이 `https://www.manabi.co.kr/auth/callback`으로 돌아와 www에 머문다(Supabase Site URL · Redirect URLs 반영 확인)
 - [ ] `robots.txt` · `sitemap.xml` · `opengraph-image` 접근 확인
 
 ## 4. 런칭 직전 점검

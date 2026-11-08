@@ -878,6 +878,9 @@
 
 ## Claude (claude/*)
 ### doing
+- **DOMAIN-CANONICAL-001 대표 도메인 = www (2026-11-08 KST)** PR `claude/canonical-www`(오너 승인 (가) · 오케스트레이터 전달):
+  `seo.js` DEFAULT_SITE_URL = `https://www.manabi.co.kr`(Vercel이 www 서빙 · apex→www 308) · 계약 seoMeta · launch-checklist §1 Site URL/Redirect URLs · §2 env 표 · §3 결정 · 사후 확인 8개.
+  **운영 반영 조건 = 오너가 Vercel `NEXT_PUBLIC_SITE_URL`(Production)을 지운 뒤 운영 배포 1회**(운영 값이 기본값보다 먼저 — 지우기 전엔 정본이 apex 그대로). 환경 변수는 건드리지 않음.
 - **RUM-CLS-001 실사용자 화면 밀림 기록 — CLS 0.1 초과 방문만 (2026-11-08 KST)** PR `claude/rum-cls`(오케스트레이터 승인 · 관측성 연장 · 화면 무변경):
   /home 첫 방문 푸터 0.20을 측정 앞단 36회(빈 캐시 · SW 차단/허용 · 배포 직후)로 재현하지 못해 실제 방문에서 잡는다. PerformanceObserver(새 패키지 없음)로
   CLS 정의대로 계산 · 경로마다 끊어 /api/vitals → observe.error_events kind vitals.cls(경로 틀 · 값 · 출처 선택자 · 시각 · 폰/PC · 연결 유형 · 판 · 브라우저 계열).

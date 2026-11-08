@@ -6,8 +6,9 @@
 // 비공개 화면(/materials)을 실었다. 이 모듈이 그 넷을 한 곳에서 정한다.
 //
 // 정본 주소(호스트)는 siteUrl() 한 곳이다 — NEXT_PUBLIC_SITE_URL(운영 값 그대로), 없으면 DEFAULT_SITE_URL.
-// www · apex 결정(오너 대기)이 나면 운영 환경 값 또는 아래 한 줄만 바꾼다. 다른 파일에 주소를 적지 않는다(계약 seoMeta.test.js).
-export const DEFAULT_SITE_URL = 'https://manabi.co.kr';
+// 대표 도메인 = www(DOMAIN-CANONICAL-001, 2026-11-08 KST 오너 결정 (가)) — Vercel이 www를 서빙하고 apex를 www로 308 보낸다(운영 실측).
+// 운영 값(NEXT_PUBLIC_SITE_URL)이 이 기본값보다 먼저다 — 운영 값도 같은 www여야 한다. 다른 파일에 주소를 적지 않는다(계약 seoMeta.test.js).
+export const DEFAULT_SITE_URL = 'https://www.manabi.co.kr';
 
 /** 정본 출처(끝 / 없음). 화면 · 사이트 지도 · robots.txt · metadataBase가 모두 이 값을 쓴다. */
 export function siteUrl(value = process.env.NEXT_PUBLIC_SITE_URL) {
