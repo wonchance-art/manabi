@@ -47,7 +47,8 @@ const FAQ = [
 
 export default function HelpPage() {
   return (
-    <div className="manabi-app"><div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 20px 80px' }}>
+    // 본문은 <main> 랜드마크(A11Y-LAUNCH-001 — axe landmark-one-main · region). main은 div와 같은 블록이라 화면은 그대로다.
+    <div className="manabi-app"><main style={{ maxWidth: 760, margin: '0 auto', padding: '40px 20px 80px' }}>
       <h1 style={{ fontSize: '1.8rem', marginBottom: 6 }}>도움말</h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: 32 }}>
         자주 묻는 질문을 모았어요. 여기에 없는 질문은 가입 이메일로 문의해 주세요.
@@ -75,6 +76,6 @@ export default function HelpPage() {
           <Link href="/credits" className="btn btn--ghost btn--sm">자료 출처</Link>
         </div>
       </div>
-    </div></div>
+    </main></div>
   );
 }

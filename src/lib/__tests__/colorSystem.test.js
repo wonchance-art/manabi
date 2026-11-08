@@ -170,7 +170,7 @@ describe('단계 3-② 기기 모드와 상관없이 같은 화면 (오너 「�
       const src = read(`src/app/${p}/page.jsx`);
       expect(src, p).toContain("import '@/components/web/web-shell.css';");
       expect(src, p).toContain("import '@/components/books/reading-shell.css';");
-      expect(src, p).toContain('<div className="manabi-app"><div style={{ maxWidth: 760');
+      expect(src, p).toContain('<div className="manabi-app"><main style={{ maxWidth: 760'); // 본문은 <main> 랜드마크(A11Y-LAUNCH-001)
     }
   });
   it('쪽 제목은 먹색 하나 — 그라데이션 · 밝은 모드 로즈는 학습 월드(data-world)에만 남는다', () => {

@@ -780,6 +780,9 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
         </div>
       ) : (filtered.length > 0 || visiblePdfs.length > 0) ? (
         <>
+        {/* 화면 읽기용 목록 제목(A11Y-LAUNCH-001 — axe heading-order: h1 「함께 읽는 글」 · 「내 서재」 다음 카드 제목이 곧장 h3였다).
+            글자는 이 화면 글꼴 묶음(reading · readingList)에 이미 있는 것만 — 새 글자는 숨긴 글이라도 KR 조각을 부른다. */}
+        <h2 className="sr-only">자료 목록</h2>
         <div className="feature-grid">
           {(() => {
             // 시리즈별 총 편수 사전 계산 (자료 카드에 #5/23 표시용)
