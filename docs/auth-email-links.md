@@ -38,8 +38,8 @@
   (`resetPasswordForEmail`) → Reset password. Invite user는 대시보드에서 사람이 초대할 때만 나가고, 이메일 변경 · 매직 링크는 앱에 그 경로가 없다
   (`updateUser`는 비밀번호 · 표시 이름만, `signInWithOtp` 호출 0 — Magic Link 끔 권장, `docs/launch-checklist.md` §1). 다섯 템플릿 모두 한국어로 넣어 둔다
   (대시보드 · API로 직접 보내도 영어 메일이 나가지 않게).
-- **발신자 이름 「manabi」와 일반 가입자에게 보내기는 자체 SMTP가 있어야 한다** — Supabase 내장 메일은 조직 팀원 주소로만 보낸다(시간당 30통).
-  launch-checklist §1의 출시 차단 조건으로 둔다.
+- 발송은 Custom SMTP = Resend다(2026-10-12 Verified — `docs/deployment-checklist.md`). 발신자 이름 「manabi」는 그 SMTP 설정에서 정한다.
+  Custom SMTP를 끄면 내장 메일로 돌아가 조직 팀원 주소로만 보낸다 — launch-checklist §1 「SMTP 확인」.
 - 대시보드에 「Reauthentication」이나 보안 알림(비밀번호 변경 알림 등) 템플릿이 켜져 있으면 그 메일은 영어로 남는다 — 켜져 있는지
   확인하고, 켜져 있으면 같은 틀로 추가한다(지금 앱은 둘 다 쓰지 않는다).
 

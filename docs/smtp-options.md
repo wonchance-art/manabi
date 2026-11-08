@@ -1,20 +1,26 @@
 # 인증 메일 SMTP 고르기 (SMTP-OPTIONS-001, 2026-11-08 KST)
 
+> **현행: Resend 적용 중** — Supabase Custom SMTP = Resend, 발신 도메인 `manabi.co.kr` Verified(2026-10-12 12:05 KST,
+> [`deployment-checklist.md`](deployment-checklist.md) 도메인 · 메일 표). **이 문서는 발송 서비스를 바꾸거나 늘릴 때 참고하는 비교 · 절차다.**
+> (처음 판에서 「SMTP 없음 · 출시 차단」으로 잘못 적었다 — apex만 조회하고 기존 문서를 찾지 않은 탓. 2026-11-08 KST 정정.)
+>
 > 조사 · 문서만이다. 계정을 만들거나 환경 변수 · Supabase 설정을 바꾸지 않았다. **비밀 값(API 키 · 비밀번호)은 이 문서와 저장소 어디에도 적지 않는다.**
 > 숫자는 2026-11-08 KST에 각 회사 공식 요금 · 문서 페이지에서 읽은 값이다. 요금은 자주 바뀌므로 가입 직전에 한 번 더 확인한다.
 
-## 왜 필요한가
+## 배경
 - Supabase 내장 메일은 **조직 팀원 주소로만** 보낸다(「The built-in service … sends only to the email addresses of your organization's team members」 —
-  [Supabase · Custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp)). 자체 SMTP가 없으면 일반 가입자는 가입 확인 · 비밀번호 재설정 메일을 받지 못한다.
+  [Supabase · Custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp)). 그래서 자체 SMTP(지금은 Resend)가 꺼지면 일반 가입자는 가입 확인 · 비밀번호 재설정 메일을 받지 못한다.
 - 앱이 보내는 메일은 가입 확인 · 비밀번호 재설정 둘이다([`auth-email-links.md`](auth-email-links.md)). 하루 수십 통 규모의 **거래 메일**이라
   마케팅 기능은 필요 없다.
 - 자체 SMTP를 켜면 Supabase가 먼저 시간당 30통으로 묶는다(「a low rate-limit of 30 messages per hour is imposed」, 같은 문서) —
   Authentication → Rate Limits에서 조정한다.
 
-## 지금 도메인 상태(2026-11-08 KST, 공개 DNS 조회)
-- 네임서버: `ns1.vercel-dns.com` · `ns2.vercel-dns.com` → **레코드는 Vercel 대시보드(Domains → manabi.co.kr → DNS Records)에서 더한다.**
-- MX 없음 · SPF(TXT) 없음 · DMARC `_dmarc` TXT `v=DMARC1; p=none;` 있음.
-- 받는 메일(MX)이 없어도 보내기는 된다. 발송 서비스의 반송 처리(Return-Path)는 서비스가 주는 하위 도메인 레코드로 따로 둔다.
+## 지금 도메인 상태(2026-11-08 KST, 공개 DNS 조회 — 이름마다 따로 조회)
+- 네임서버: `ns1.vercel-dns.com` · `ns2.vercel-dns.com` → **레코드는 Vercel 대시보드(Domains → manabi.co.kr → DNS Records)에서 관리한다.**
+- `manabi.co.kr`(apex): MX 없음 · SPF TXT 없음 — 받는 메일을 두지 않았다는 뜻이다(보내기와 무관).
+- `send.manabi.co.kr`(Resend 반송 · Return-Path): MX `feedback.forge.rmta.net`(우선순위 10) · SPF TXT `v=spf1 ip4:… ~all` · CNAME `send.forge.rmta.net` — 살아 있음.
+- `resend._domainkey.manabi.co.kr`: DKIM 공개키 TXT — 살아 있음. `rsend` CNAME(`rsend-apne1.forge.rmta.net`)은 deployment-checklist 기록.
+- `_dmarc.manabi.co.kr`: `v=DMARC1; p=none;`.
 
 ## 후보 비교
 | 서비스 | 무료 한도 | 다음 단계 가격 | SMTP | 도메인 인증 레코드 | 메모 | 판정 |
@@ -35,7 +41,8 @@
 ### 발신자 이름
 - 「manabi」(영문)로 둔다 — 원고 · 사이트 표기와 같다. 한글 이름도 SMTP 표준(RFC 2047 인코딩)으로 보낼 수 있지만 지금은 필요 없다.
 
-## 권장 1안 — Resend: 오너 작업 절차
+## Resend 설정 절차 — 현행 확인 · 다시 설정할 때
+> 1–5는 2026-10-12에 이미 끝났다(deployment-checklist). 지금은 **6 · 7만 확인**하면 되고, 키를 바꾸거나 계정을 옮길 때 1–5를 다시 쓴다.
 > 계정 · 키 · 비밀번호는 오너가 만들고 직접 붙여 넣는다. 키는 채팅 · 문서 · 이슈 · 커밋 어디에도 적지 않는다.
 
 1. **가입**: resend.com에 오너 계정으로 가입하고 2단계 인증을 켠다.

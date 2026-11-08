@@ -19,10 +19,9 @@
     PC에서 가입하고 휴대폰 메일에서 열 때 PKCE 교환이 실패한다(`/auth/confirm`은 운영 배포됨).
 - [ ] **Magic link — 끔 권장**: 앱은 보내지 않는다(코드에 `signInWithOtp` 호출 0, 로그인은 비밀번호 · Google). 대시보드에 매직 링크만 끄는
   설정이 보이면 끈다. 없으면 한국어 템플릿만 넣어 둔다(누가 API로 직접 요청해도 영어 메일이 나가지 않게).
-- [ ] **자체 SMTP — 출시 차단 조건**: Supabase 내장 메일은 **조직 팀원 주소로만** 보내고 시간당 30통이다(공식 문서 auth-smtp).
-  Authentication → Emails → SMTP Settings에 자체 SMTP가 켜져 있는지 확인한다 — 없으면 일반 가입자는 인증 메일을 받지 못한다.
-  후보 비교 · 권장 1안(Resend) 오너 절차 · Supabase SMTP 칸 입력값은 [`docs/smtp-options.md`](smtp-options.md)(SMTP-OPTIONS-001).
-  (운영 이메일 가입 5명은 모두 메일로 인증됐지만, 팀원 주소였는지 자체 SMTP였는지는 DB 집계만으로 가릴 수 없다.)
+- [ ] **SMTP 확인**: 현행 Custom SMTP = Resend(발신 도메인 Verified 2026-10-12 — [`deployment-checklist.md`](deployment-checklist.md) 도메인 · 메일 표).
+  런칭 전 대시보드에서 ⑴ Authentication → Emails → SMTP Settings의 Custom SMTP가 켜져 있는지 ⑵ Auth → Rate Limits의 메일 시간당 값을 확인한다.
+  끄면 내장 메일로 돌아가 **조직 팀원 주소로만** 보낸다(공식 문서 auth-smtp). 교체 · 증설 비교는 [`docs/smtp-options.md`](smtp-options.md).
 - [ ] 발신자 이름 「manabi」 — 자체 SMTP 설정의 Sender name에서 정한다(메일 제목에는 `[manabi]`를 붙이지 않는다 — auth-email-links.md).
 
 ### Authentication → Providers

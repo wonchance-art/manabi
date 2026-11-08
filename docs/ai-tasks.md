@@ -879,15 +879,15 @@
 ## Claude (claude/*)
 ### doing
 - **SMTP-OPTIONS-001 인증 메일 SMTP 후보 조사 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · 조사 · 문서만, 계정 · env 변경 없음):
-  `docs/smtp-options.md` — Resend(월 3,000 · 하루 100, Pro $20) **채택(1안)** · Brevo(하루 300) 예비 · SES(샌드박스 · 심사 96h, $0.10/1,000) 규모 커지면 ·
-  Postmark(월 100) · SendGrid(무료 폐지) 배제 · 네이버클라우드 메일러(사업자 계정) 지금 배제. 도메인 DNS = Vercel DNS(MX · SPF 없음, DMARC p=none).
-  오너 절차: 가입 → Vercel DNS 레코드 → API 키(Sending access) → Supabase SMTP 칸(smtp.resend.com · 465 · resend · noreply@ · manabi) → 한도 30/시간 유지 → Gmail · 네이버 · 다음 수신 시험.
+  `docs/smtp-options.md` — **현행 Resend 유지**(10/12 Verified), 문서는 교체 · 증설 때 참고: Resend(월 3,000 · 하루 100, Pro $20) · Brevo(하루 300) 예비 ·
+  SES(샌드박스 · 심사 96h, $0.10/1,000) 규모 커지면 · Postmark(월 100) · SendGrid(무료 폐지) 배제 · 네이버클라우드 메일러(사업자 계정) 지금 배제.
+  DNS = Vercel DNS: `send.` MX · SPF · `resend._domainkey` DKIM 살아 있음 · apex MX 없음 · DMARC p=none. 지금 확인할 것은 수신 시험 · 한도뿐.
 - **AUTH-MAIL-KO-001 인증 메일 한국어 원고 대조 · 체크리스트 정리 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · docs-only):
   원고는 이미 있다 — `supabase/templates/*.html` 5종(MAIL-KO-001, 오너 「A안」 2026-10-12) · 제목 · 절차 정본 `docs/auth-email-links.md` · 계약 25개 통과.
   대조: 이미지 0 · 인라인 스타일 · `color-scheme: light only` + 명시 배경(다크 모드 렌더 확인) · 해요체 · 링크는 `/auth/confirm` token_hash(다른 기기에서 열기).
   고침: launch-checklist §1의 낡은 「ConfirmationURL 그대로」를 정본 문서로 · Site URL www · 앱이 보내는 메일은 둘(가입 확인 · 재설정 — 초대는 대시보드,
-  이메일 변경 · 매직 링크 경로 없음, `signInWithOtp` 0 → Magic Link 끔 권장). **출시 차단 조건 추가**: Supabase 내장 메일은 조직 팀원 주소로만(시간당 30통) —
-  자체 SMTP가 없으면 일반 가입자는 인증 메일을 못 받는다. 발신자명 「manabi」도 자체 SMTP에서. 오너 확인 대기.
+  이메일 변경 · 매직 링크 경로 없음, `signInWithOtp` 0 → Magic Link 끔 권장). SMTP는 현행 Resend(10/12 Verified, deployment-checklist) — 체크리스트에는
+  「Custom SMTP 켜짐 · 메일 시간당 한도 확인」으로 둔다(처음 판의 「출시 차단」은 기존 문서를 찾지 않은 오판 — 정정).
 - **LAUNCH-VERIFY-001 출시 점검(읽기 전용) (2026-11-08 KST)** — 조치 없음:
   robots · sitemap(200건) · opengraph-image 200, sitemap 호스트는 apex(오너 env 삭제 대기). 폰(iPhone 13 · Pixel 7) 손님 경로 20판: 가로 스크롤 · 깨진 이미지 · 실패 응답 0,
   CLS 0(Pixel 7 함께 읽는 글 0.0013만). Vercel 런타임 오류 7일 0. observe 상위: vercel.live CSP 보고 23(프리뷰 측정 · bot), NHK img 6(#1752 이전), ChunkLoadError
