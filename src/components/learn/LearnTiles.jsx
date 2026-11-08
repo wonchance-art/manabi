@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { isVocabularyReviewAvailable, isVocabularyReviewDue } from '@/lib/vocabularyLearningRead';
 import { streakView, todayGoalPct } from '@/lib/learnDashboard';
-import { wordScopeLanguage } from '@/lib/reviewScope';
+import { wordScopeLanguage } from '@/lib/wordScopeLanguage';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 import { reducedMotion } from '@/lib/reducedMotion';

@@ -878,6 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **BUNDLE-AUTH-001 로그인 경로 첫 화면 JS 측정 · 분리 (2026-11-08 KST)** 로컬 브랜치 `claude/wip/bundle-auth`(오케스트레이터 지시 · push는 11/9 오전 묶음 — 화면 무변화):
+  합성 무거운 계정 · 발행판, 문서 스크립트(HTML이 싣는 첫 화면 몫, brotli) /home 222 · /study 197 · /vocab 255 · /profile 191 · /progress 207 · 뷰어 249KB(공통 148 —
+  react-dom · Next 83 고정). 큰 덩어리: Supabase 43KB(뒤에 받음 · realtime · storage를 써서 못 걷음) · 뷰어 한자 표 107KB(HANJA-LAZY-001 유휴 받기) ·
+  /vocab 복습 화면 둘 → 분리 −11KB · /home 작성기 저장 모듈 → 저장 때만 −5KB · /profile reviewScope 한 줄 함수 분리 −8KB · 온보딩 창 동적 −1KB(전 경로).
+  /study 문항 엔진 분리는 −2KB라 되돌림. 받아 둔 조각은 멈춤 없이 그리는 warmable(React.lazy 한 틱 멈춤 · 대기 골격 방지) — 「복습 시작」 바로 · 유휴 뒤 ·
+  400ms 지연 모두 빈 본문 0 · 초점 「정답 확인하기」. 기준표 `docs/perf-measurement.md` 「로그인 경로 첫 화면 JS」, 도구 `e2e/bundle-auth.perf.mjs`.
 - **A11Y-AUTH-001 로그인 화면 접근성 훑기 (2026-11-08 KST)** PR `claude/preview/web`(오케스트레이터 지시 · 화면 무변화 고침만):
   화면 벽 환경(합성 무거운 계정) 폰 390 · PC 1280 — /study(몸풀기 · 채점 · 문단 · 어순 · 결과) · /vocab · 복습 카드 · 문법 복습 · 서재 · 현황 · 내 정보(창 여섯) · 뷰어 카드.
   axe WCAG 2.1 A/AA 위반 0(단어 상세 「신규」 배지 4.30:1 1건만 — 디자인 넘김) · 판정 못 한 대비 칸 실측 통과 · Tab 순서/포커스 표시 문제 0.

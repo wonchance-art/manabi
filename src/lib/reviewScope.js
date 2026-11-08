@@ -10,7 +10,7 @@
 // 세션 전체가 FSRS」를 없앴다. 순서 · 끼우기 · 띄우기는 reviewQueue.orderReviewQueue, 밀린 복습 규칙(그 언어의
 // 기한 지난 복습 > 하루 평균 × 2면 새 표현 0)과 뜻 없는 표현 제외도 줄과 개수에 함께 건다.
 import { REVIEW_SCOPE_LANGS, STUDY_SOURCE_REF, FRAGILE_RETRIEVABILITY, SCOPE_LANG_LABELS, scopeSourceLabel, scopeStateLabel, scopeTypeLabel } from './reviewScopeUrl.js';
-import { detectLangConfident } from './constants.js';
+import { wordScopeLanguage } from './wordScopeLanguage.js';
 import { zhHskLevelLabel, zhHskLevelOf } from './zhHskLevel.js';
 import { isVocabularyReviewAvailable, isVocabularyReviewDue, isVocabularyUnreviewed, vocabularyRetrievability } from './vocabularyLearningRead.js';
 import { expressionKind, hasMeaning } from './reviewCard.js';
@@ -33,9 +33,7 @@ export function scopeSummaryLabel(scope, { materialTitles } = {}) {
     scope.type && scopeTypeLabel(scope.type)].filter(Boolean).join(' · ');
 }
 
-export function wordScopeLanguage(word) {
-  return word?.language || detectLangConfident(word?.word_text) || null;
-}
+export { wordScopeLanguage };
 
 export function wordZhLevel(word, levels) {
   const level = zhHskLevelOf(word?.word_text, levels);
