@@ -12,7 +12,7 @@ const page = fs.readFileSync(path.join(process.cwd(), 'src/views/MaterialsPage.j
 
 describe('화면 — 추천은 목록이 정해진 뒤에만', () => {
   it('추천 칸은 목록 골격과 같은 조건(!tab || isLoading)이 풀린 뒤에 그린다', () => {
-    expect(page).toContain('{(!tab || isLoading) ? (\n        <CardGridSkeleton />');
+    expect(page).toMatch(/\{\(!tab \|\| isLoading\) \? \(\n(?:\s*\/\/.*\n)?\s*<div className="library-loading" aria-busy="true"><CardGridSkeleton \/><\/div>/);
     const block = sliceBetween(page, '{/* 오늘의 추천(크론 수집)', '<h2 className="suggestions-section__title" id={TODAY_NEWS_ID} tabIndex={-1}>오늘의 소식</h2>');
     expect(block).toContain('{tab && !isLoading && (() => {');
     expect(block).toContain('const filteredSuggestions = filterSuggestionsByProfile(suggestions, profile);');
@@ -53,5 +53,22 @@ describe('guestBookCatalogRows — 같은 응답을 잠시 다시 쓴다(거르�
     const merged = await withGuestBookCatalog(c, [{ id: 1, title: 'x', created_at: '1' }], { catalog });
     expect(merged.map((m) => m.id)).toEqual([2, 1]);
     expect(c.rpc).toHaveBeenCalledTimes(1);
+  });
+});
+
+// 받는 동안의 자리(LIBRARY-LOAD-CLS-001, 2026-11-08 KST). 운영 /discover?view=reading 손님: 서버 그림 「아직 함께 읽는 글이 없어요」(꺼진 조회의
+// isLoading=false) → 청크 받는 동안 작은 스피너 → 골격 → 실제(빈 상태 + 오늘의 소식)로 바뀌며 푸터가 776 → 521 → 877 → 화면 밖으로 세 번 움직였다
+// (1440폭 CLS 0.055 · 390폭 0.12–0.20). 계약 = 한 번도 안 받은 목록은 「아직」 · 추천 칸 화면은 추천까지 · 받는 동안 자리는 한 화면 높이.
+describe('받는 동안의 자리 — 푸터를 첫 화면 밖에', () => {
+  const css = fs.readFileSync(path.join(process.cwd(), 'src/index.css'), 'utf8');
+  const lazy = fs.readFileSync(path.join(process.cwd(), 'src/components/web/LazyMaterialsPage.jsx'), 'utf8');
+  it('꺼진 조회(로그인 확인 전)도 아직 — 서버 그림이 빈 상태로 서지 않는다', () => {
+    expect(page).toContain('!materialsFetched');
+    expect(page).toContain("const suggestionsShown = !libraryView || libraryView === 'public';");
+    expect(page).toMatch(/enabled: !libraryView \|\| libraryView === 'public', \/\/ = suggestionsShown/);
+  });
+  it('목록 골격과 청크 대기 스피너가 같은 한 화면 높이 자리에 선다', () => {
+    expect(css).toMatch(/\.library-loading \{\s*min-height: 100svh;\s*\}/);
+    expect(lazy).toContain('loading: () => <div className="library-loading"><Spinner message="자료 목록 불러오는 중…" /></div>,');
   });
 });

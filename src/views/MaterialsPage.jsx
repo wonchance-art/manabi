@@ -329,7 +329,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
 
   const { data: suggestions = [], isFetched: suggestionsFetched } = useQuery({
     queryKey: TODAY_SUGGESTIONS_KEY,
-    enabled: !libraryView || libraryView === 'public',
+    enabled: !libraryView || libraryView === 'public', // = suggestionsShown(아래 목록 자리 판정이 같은 조건을 본다)
     queryFn: fetchTodaySuggestions,
     staleTime: 60 * 60 * 1000, // 1시간 캐시
   });
@@ -431,7 +431,11 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
     enabled: !!tab && !(libraryView === 'public' && authLoading),
   });
   // 목록 자리가 아직 정해지지 않았다 = 조회 중 또는 세션 쿠키가 있는 사람의 로그인 확인 중(signInPending). 골격 · 추천 칸이 같은 값을 본다.
-  const isLoading = materialsLoading || signInPending;
+  // 한 번도 안 받았으면(!materialsFetched) 아직이다(LIBRARY-LOAD-CLS-001): 꺼진 조회(로그인 확인 전 「함께 읽는 글」)는 isLoading이 false라
+  // 서버 그림이 「아직 함께 읽는 글이 없어요」로 섰다가 골격 → 실제로 바뀌며 푸터를 세 번 옮겼다(운영 1440폭 CLS 0.055 · 390폭 0.12–0.20,
+  // 2026-11-08 KST). 추천 칸을 그리는 화면은 추천도 정해진 뒤에 목록과 함께 그린다 — 늦게 온 추천이 아래 푸터를 밀지 않게.
+  const suggestionsShown = !libraryView || libraryView === 'public';
+  const isLoading = materialsLoading || signInPending || !materialsFetched || (suggestionsShown && !suggestionsFetched);
 
   // 발견 서가 「오늘의 소식 · 전체 보기」(#today-news, B2 A안 — 오너 「권장대로」 2026-10-17 KST): 목록과 소식이 둘 다 들어온 뒤
   // 한 번만 그 칸 제목으로 내려가 초점을 둔다 — 위 목록이 늦게 들어오면 칸이 밀려 먼저 내려간 자리가 어긋난다.
@@ -757,7 +761,8 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
       {/* 확인 중(signInPending)에도 같은 줄을 둔다 — 확인 뒤 PDF 조회가 이 줄을 끼우며 아래 골격을 26px 밀었다(서재 도구 390폭). */}
       {showPdfs && (pdfsLoading || signInPending) && <p aria-busy="true">PDF 목록 확인 중…</p>}
       {(!tab || isLoading) ? (
-        <CardGridSkeleton />
+        // 받는 동안은 한 화면 높이를 잡아 푸터를 첫 화면 밖에 둔다(LIBRARY-LOAD-CLS-001) — 실제 목록이 오면 그 높이로 바뀐다.
+        <div className="library-loading" aria-busy="true"><CardGridSkeleton /></div>
       ) : materialsError ? (
         <div className="empty-state">
           <p className="empty-state__msg">자료 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>

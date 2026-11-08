@@ -1138,6 +1138,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   gap: 16px;
 }
 
+/* 자료 목록을 받는 동안의 자리(LIBRARY-LOAD-CLS-001) — 한 화면 높이를 잡아 푸터가 첫 화면에서 오르내리지 않는다. */
+.library-loading {
+  min-height: 100svh;
+}
+
 /* 골격 글줄(LOADING-SKELETON-001, Skeleton.jsx SkeletonLine) — 감싼 요소의 줄 안에 앉아 줄 높이를 지킨다. */
 .skeleton-line--inline {
   display: inline-block;
