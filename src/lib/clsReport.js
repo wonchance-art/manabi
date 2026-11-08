@@ -125,10 +125,13 @@ export function sendClsEvent(input, { nav = typeof navigator !== 'undefined' ? n
 
 /**
  * 브라우저에 건다(한 번). 경로마다 따로 센다 — 앱 안 이동으로 경로가 바뀌면 앞 경로 몫을 끊어 보내고 새로 센다. 화면을 떠날 때(숨김 · pagehide)도 보낸다.
- * 돌려주는 함수 routeChanged(path)를 경로가 바뀔 때 부른다. 운영 빌드에서만 보낸다(개발 서버는 보내지 않는다).
+ * 돌려주는 함수 routeChanged(path)를 경로가 바뀔 때 부른다. 운영 빌드에서만 보낸다(개발 서버는 보내지 않는다). 자동화 브라우저는 걸지 않는다.
  */
 export function installClsReporter({ win = typeof window !== 'undefined' ? window : null, send = sendClsEvent } = {}) {
   if (!win || typeof win.PerformanceObserver !== 'function') return () => {};
+  // 자동화 브라우저(navigator.webdriver — e2e · 측정 스크립트 · 봇)는 실사용자가 아니다 — 걸지 않는다. 안 빼면 e2e의 「쓰기 0」 감사(/api/** POST)가
+  // 이 보고를 쓰기로 세고(CI 실측 2026-11-08 KST), 측정 판이 실사용자 집계에 섞인다.
+  if (win.navigator?.webdriver) return () => {};
   const tracker = createClsTracker();
   let route = win.location?.pathname || '/';
   const flush = () => {

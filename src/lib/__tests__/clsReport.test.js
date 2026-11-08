@@ -59,6 +59,15 @@ describe('보내기 — 0.1 이하는 전송 0', () => {
     expect(connectionType({ connection: { effectiveType: '3g' } })).toBe('3g');
     expect(connectionType({})).toBe('unknown');
   });
+  it('자동화 브라우저(navigator.webdriver)는 걸지 않는다 — e2e · 측정 · 봇은 실사용자 집계 밖(e2e 「쓰기 0」 감사와도 부딪히지 않게)', () => {
+    let observed = false;
+    class PO { constructor() {} observe() { observed = true; } }
+    const send = vi.fn();
+    const routeChanged = installClsReporter({ win: { PerformanceObserver: PO, location: { pathname: '/home' }, navigator: { webdriver: true }, addEventListener: () => {} }, send });
+    routeChanged('/discover');
+    expect(observed).toBe(false);
+    expect(send).not.toHaveBeenCalled();
+  });
   it('설치: 경로가 바뀌면 앞 경로 몫을 끊어 보낸다 — 0.1 이하 경로는 보내지 않는다', () => {
     let cb; const listeners = {};
     class PO { constructor(fn) { cb = fn; } observe() {} }
