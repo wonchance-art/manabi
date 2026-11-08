@@ -102,3 +102,18 @@ describe('tokenizeEnLine — 서수는 한 토큰(SEED-QA-002 · 2026-11-08 KST)
     expect(inspectAnalysisCoverage(line, json).missingIndices).toEqual([]);
   });
 });
+
+describe('tokenizeEnLine — -ss 낱말은 s를 떼지 않는다(EN-LEMMA-SS · 2026-11-09 KST)', () => {
+  const lemma = (word) => tokenizeEnLine(word)[0];
+  it('pass · boss · glass · class · dress · address · kiss · miss = 그대로(base_form · 명사 후보)', () => {
+    for (const word of ['pass', 'boss', 'glass', 'class', 'dress', 'address', 'kiss', 'miss']) {
+      expect(lemma(word).base_form, word).toBe(word);
+      expect(lemma(word).lemma_candidates['명사'], word).toBe(word);
+    }
+    expect(lemma('Pass').base_form).toBe('pass');
+  });
+  it('-sses 복수는 단수로(passes → pass · bosses → boss · classes → class) · 다른 규칙은 그대로', () => {
+    expect(['passes', 'bosses', 'classes', 'glasses', 'kisses'].map((w) => lemma(w).base_form)).toEqual(['pass', 'boss', 'class', 'glass', 'kiss']);
+    expect(['cats', 'buses', 'was', 'has', 'less'].map((w) => lemma(w).base_form)).toEqual(['cat', 'bus', 'be', 'have', 'little']);
+  });
+});

@@ -29,6 +29,10 @@ const IRREGULARS = {
   ...VERB_IRREGULARS,
 };
 
+// -ss로 끝나는 낱말은 복수가 아니다 — wink noun()이 pass → pas · boss → bos로 s를 떼어 공유 사전의 다른 낱말(pas 「(발레) 걸음」)에
+// 붙던 자리(공개 #127 · #132 · #150 실측, EN-LEMMA-SS · 2026-11-09 KST). passes · bosses(-sses)는 그대로 noun()이 단수로 돌린다.
+const nounLemma = (lower) => (/ss$/.test(lower) ? lower : lemmatizer.noun(lower));
+
 function lemmatize(word) {
   const lower = word.toLowerCase();
   if (lower.length <= 2) return lower;
@@ -37,7 +41,7 @@ function lemmatize(word) {
   // wink-lemmatizer: verb → noun → adjective 순서로 시도
   const asVerb = lemmatizer.verb(lower);
   if (asVerb !== lower) return asVerb;
-  const asNoun = lemmatizer.noun(lower);
+  const asNoun = nounLemma(lower);
   if (asNoun !== lower) return asNoun;
   const asAdj = lemmatizer.adjective(lower);
   if (asAdj !== lower) return asAdj;
@@ -58,7 +62,7 @@ export function buildEnLemmaCandidates(word) {
   }
   return {
     '동사': VERB_IRREGULARS[lower] || lemmatizer.verb(lower),
-    '명사': NOUN_IRREGULARS[lower] || lemmatizer.noun(lower),
+    '명사': NOUN_IRREGULARS[lower] || nounLemma(lower),
     '형용사': ADJECTIVE_IRREGULARS[lower] || lemmatizer.adjective(lower),
     '기본': lower,
   };

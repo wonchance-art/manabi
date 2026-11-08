@@ -89,6 +89,9 @@ async function healthyDay(db) {
   await db.exec(`insert into public.reading_materials values (4,'public','{"status":"completed","metadata":{}}');
     delete from public.daily_suggestions;`);
   await db.query("select public.observe_record_error('server','server.youtube-collect','youtube_api_channels_403_keyInvalid',null,null,'/api/cron/fetch-suggestions',null,null)");
+  // observe_record_error는 실제 now()로 찍는다 — 점검 창(고정 NOW 기준 24시간) 안으로 옮겨야 실행 시각과 무관하게 같은 결과가 난다
+  // (11/9 03:50 KST 이후 CI에서 server_errors가 빠지던 시한폭탄, #1780).
+  await db.exec("update observe.error_events set created_at = '2026-11-08T17:30:00Z', last_seen_at = '2026-11-08T17:30:00Z' where kind = 'server.youtube-collect'");
   await check('이상 기준 — 크론 미실행 · 실패 · 오늘의 소식 0 · 난이도 미채움 · 서버 오류', async () => {
     const r = await health(db);
     assert.equal(r.ok, false);
