@@ -15,6 +15,7 @@ import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
 import { addRefRead, setRefCheck } from '../lib/refReadStore';
 import { clearStudySource, readStudySource } from '../lib/studySourceHandoff';
+import { fallbackReasonFromError, fallbackReasonFromResponse, reportParagraphFallback } from '../lib/studyParagraphFallback';
 import { useToast } from '../lib/ToastContext';
 import { createGrammarRetry, gradeGrammarReview, ratingFromScore, sendGrammarGradeKeepalive } from '../lib/grammarSrs';
 import { sessionTokenFor, keepaliveTokenUsable } from '../lib/keepalive';
@@ -24,7 +25,7 @@ import { sentenceIncludesWord } from '../lib/skillRung';
 import { recordActivity } from '../lib/streak';
 import { recordLessonCompleted, recordNewWord } from '../lib/learn/progressStore';
 import { recordStudyReviewCompleted } from '../lib/studyExerciseBridge';
-import { gradeTyping, isChapterPassed, grammarDueChapterCounts } from '../lib/studySession';
+import { gradeTyping, isChapterPassed, grammarDueChapterCounts, settleAnnouncement } from '../lib/studySession';
 import { buildWeeklyReport } from '../lib/weeklyReport';
 import { fetchWeeklyReportRows } from '../lib/weeklyReportRows';
 import { splitSentenceAroundWord } from '../lib/constants';
@@ -112,6 +113,7 @@ export default function StudySessionPage({
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState('answer');   // 'answer' | 'feedback'
   const [picked, setPicked] = useState(null);
+  const [settledOk, setSettledOk] = useState(null); // 이번 채점이 맞았나 — 화면 읽기 알림 한 줄(A11Y-AUTH-001)
   const [typing, setTyping] = useState('');
   const [orderPicks, setOrderPicks] = useState([]);
   const [matchState, setMatchState] = useState({ selectedId: null, matches: {} });
@@ -182,13 +184,14 @@ export default function StudySessionPage({
       sourceText = readStudySource(lang, user?.id ?? null); // 이 계정이 30분 안에 넘긴 글만(lib/studySourceHandoff)
     }
     (async () => {
+      let res, data;
       try {
         let authHeader = {};
         try {
           const { data: { session: s } } = await supabase.auth.getSession();
           if (s?.access_token) authHeader = { Authorization: `Bearer ${s.access_token}` };
         } catch {}
-        const res = await fetch('/api/study-paragraph', {
+        res = await fetch('/api/study-paragraph', {
           method: 'POST',
           signal: AbortSignal.timeout(20000), // 20초 넘으면 abort → catch → 폴백 세션으로 합류
           headers: { 'Content-Type': 'application/json', ...authHeader },
@@ -206,22 +209,27 @@ export default function StudySessionPage({
             ...(sourceText.trim() ? { sourceText } : {}),
           }),
         });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.paragraph) {
-          // 생성 성공 → 내 자료 소재는 1회용이므로 즉시 소거(재사용·다음 세션 오염 방지).
-          if (sourceText) clearStudySource(lang);
-          const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
-          if (mapped.gradedCount >= 3) {
-            // 워밍업 뒤에 문단 문항 + 만남 인지 문항을 이어붙이고 집계 기준을 갱신
-            setQueue(prev => [...prev, ...mapped.items, ...encounterItems]);
-            setGradedBase(prev => prev + mapped.gradedCount + encounterItems.length);
-            setGenStatus('ready');
-            return;
-          }
+        data = await res.json().catch(() => ({}));
+      } catch (error) {
+        applyFallback(fallbackReasonFromError(error));
+        return;
+      }
+      const failed = fallbackReasonFromResponse(res, data);
+      if (failed) { applyFallback(failed); return; }
+      try {
+        // 생성 성공 → 내 자료 소재는 1회용이므로 즉시 소거(재사용·다음 세션 오염 방지).
+        if (sourceText) clearStudySource(lang);
+        const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
+        if (mapped.gradedCount >= 3) {
+          // 워밍업 뒤에 문단 문항 + 만남 인지 문항을 이어붙이고 집계 기준을 갱신
+          setQueue(prev => [...prev, ...mapped.items, ...encounterItems]);
+          setGradedBase(prev => prev + mapped.gradedCount + encounterItems.length);
+          setGenStatus('ready');
+          return;
         }
-        applyFallback();
+        applyFallback('too_few_items');
       } catch {
-        applyFallback();
+        applyFallback('map_error');
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -230,8 +238,10 @@ export default function StudySessionPage({
   /**
    * 문단 생성 실패 — 폴백 세션 문항을 워밍업 뒤에 이어붙인다.
    * 워밍업과 겹치는 어휘 문항은 폴백 쪽에서 제외(중복 출제 방지).
+   * reason — 폴백 사유 코드(lib/studyParagraphFallback). 운영 기록에 한 줄만 남기고 화면은 바꾸지 않는다.
    */
-  function applyFallback() {
+  function applyFallback(reason) {
+    reportParagraphFallback(reason);
     const warmupWords = new Set(warmupItems.map(w => w.word?.word_text).filter(Boolean));
     const fb = (session?.items || []).filter(it => !(it.word && warmupWords.has(it.word.word_text)));
     setQueue(prev => [...prev, ...fb, ...encounterItems]);
@@ -349,13 +359,14 @@ export default function StudySessionPage({
     if (!finished || prefetchRan.current || !user?.id) return;
     prefetchRan.current = true;
     (async () => {
+      let res, data;
       try {
         let authHeader = {};
         try {
           const { data: { session: s } } = await supabase.auth.getSession();
           if (s?.access_token) authHeader = { Authorization: `Bearer ${s.access_token}` };
         } catch {}
-        const res = await fetch('/api/study-paragraph', {
+        res = await fetch('/api/study-paragraph', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...authHeader },
           body: JSON.stringify({ prefetch: true, language: lang }),
@@ -703,6 +714,7 @@ export default function StudySessionPage({
     if (!item || phase === 'feedback') return;
     if (isTapLocked()) return;
     setPicked(pickedValue);
+    setSettledOk(!!ok);
     setPhase('feedback');
     const orig = baseUid(item.uid);
     const isRetryItem = String(item.uid).endsWith('-r');
@@ -1233,6 +1245,8 @@ export default function StudySessionPage({
     <div className="page-container" style={{ maxWidth: 640 }}>
       {grammarNotice}
       {authBanner}
+      {/* 화면 제목 — 진행 화면은 보이는 제목 없이 문항만 둔다. 화면 읽기의 제목 탐색 · 화면 이동 초점(routeFocus)이 닿을 자리(A11Y-AUTH-001). */}
+      <h1 className="sr-only">오늘 학습</h1>
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
         <Link href="/home" prefetch={false} aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
@@ -1689,6 +1703,11 @@ export default function StudySessionPage({
 
       {/* 서버에도 기기 큐에도 못 담은 기록 — 그 문항 첫 시도에만 한 줄(세션은 막지 않는다). 재출제(-r)는 uid가 달라 다시 띄우지 않는다.
           알림 영역은 문항마다 먼저 그려 두고 내용만 넣는다 — 내용과 함께 생기는 role=status는 화면 낭독기가 놓칠 수 있다. */}
+      {/* 채점 결과 한 줄 — 보기는 색(is-correct · is-wrong)으로만 맞고 틀림을 보여 주고 잠긴 뒤 초점이 「계속 →」으로 가서 화면 읽기는 결과를 듣지 못했다
+          (A11Y-AUTH-001, 2026-11-08 KST). 화면에는 그리지 않는다. 알림 영역은 문항마다 먼저 그려 두고 내용만 넣는다 — 산출 문항은 자체 알림(첨삭 확인 중…). */}
+      <span className="sr-only" role="status" data-settle-announce="">
+        {phase === 'feedback' && item.type !== 'produce-writing' && settledOk !== null ? settleAnnouncement(settledOk, item) : ''}
+      </span>
       <div role="status" aria-live="polite">
         {phase === 'feedback' && lostRecordUid === item.uid && (
           <p className="study-record-lost">이 문항 기록을 저장하지 못했어요. 세션은 계속할 수 있어요.</p>

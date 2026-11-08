@@ -413,3 +413,27 @@ export function grammarDueChapterCounts(items) {
   }
   return counts;
 }
+
+/** 문항의 정답 글(화면 읽기 알림용) — 모양이 확실한 유형만, 모르면 null(짝 맞추기 등). */
+export function answerTextForItem(item) {
+  const pick = (value) => (typeof value === 'string' && value.trim() ? value.trim() : null);
+  switch (item?.type) {
+    case 'vocab-choice': return pick(item.word?.meaning);
+    case 'read-meaning': return pick(item.correct);
+    case 'vocab-cloze': case 'vocab-typing': case 'vocab-listening': return pick(item.word?.word_text);
+    case 'grammar-cloze': return pick(item.quiz?.correct);
+    case 'grammar-order': return pick(item.quiz?.answer);
+    case 'example-order': return pick(item.sentence?.main);
+    default: return null;
+  }
+}
+
+/**
+ * 채점 한 줄(화면 읽기 전용 — A11Y-AUTH-001). 보기는 색으로만 맞고 틀림을 보여 주므로 화면 읽기에는 이 글로 알린다.
+ * 맞음: 「정답이에요.」 · 틀림: 「틀렸어요. 정답: …」(정답 글을 모르는 유형은 「틀렸어요.」만).
+ */
+export function settleAnnouncement(ok, item) {
+  if (ok) return '정답이에요.';
+  const answer = answerTextForItem(item);
+  return answer ? `틀렸어요. 정답: ${answer}` : '틀렸어요.';
+}

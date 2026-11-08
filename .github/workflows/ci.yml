@@ -241,3 +241,9 @@ jobs:
           # 책장 · 교재 첫 화면은 ISR(빌드 때 N5만 발행된 판) — 이 서버의 발행 상태(N3)로 판을 새로 만든다(GUEST-STATIC-001). 없으면 N3가 책장에 없다(실측).
           node scripts/e2e-refresh-isr.mjs http://127.0.0.1:8880 /lessons /books
           node --test --test-concurrency=1 e2e/n3-published-smoke.e2e.mjs
+
+      # /study 일일 세션 한 바퀴(STUDY-FIXTURE-001): 열기 → 답 1개 → 채점 표시 → 다음 문항. 같은 프로덕션 빌드를 쓰고, 합성 무거운 계정 백엔드
+      # (e2e/fixtures/heavy-account.mjs)와 그것을 가리키는 next start를 이 파일이 직접 띄운다(scripts/wall-capture.mjs startWallEnv · 포트 3172).
+      # 운영 DB · 실계정 · LLM과 무관하다. 응답 모양 계약은 src/lib/__tests__/studyFixtureContract.test.js(vitest 단계).
+      - name: /study 세션 한 바퀴 (합성 백엔드)
+        run: node --test --test-concurrency=1 e2e/study-session.e2e.mjs

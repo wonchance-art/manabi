@@ -34,6 +34,12 @@
   값이 없으면 「OO님,」 없이 나간다.
 - 「1시간 동안 쓸 수 있어요」는 Supabase 기본값(Authentication → Providers → Email → Email OTP Expiration 3600초) 기준이다.
   값이 다르면 템플릿 문구를 먼저 고친다.
+- **앱이 보내는 메일은 둘**(AUTH-MAIL-KO-001, 2026-11-08 KST 코드 대조): 가입(`signUp` · `resend`) → Confirm signup, 비밀번호 찾기
+  (`resetPasswordForEmail`) → Reset password. Invite user는 대시보드에서 사람이 초대할 때만 나가고, 이메일 변경 · 매직 링크는 앱에 그 경로가 없다
+  (`updateUser`는 비밀번호 · 표시 이름만, `signInWithOtp` 호출 0 — Magic Link 끔 권장, `docs/launch-checklist.md` §1). 다섯 템플릿 모두 한국어로 넣어 둔다
+  (대시보드 · API로 직접 보내도 영어 메일이 나가지 않게).
+- 발송은 Custom SMTP = Resend다(2026-10-12 Verified — `docs/deployment-checklist.md`). 발신자 이름 「manabi」는 그 SMTP 설정에서 정한다.
+  Custom SMTP를 끄면 내장 메일로 돌아가 조직 팀원 주소로만 보낸다 — launch-checklist §1 「SMTP 확인」.
 - 대시보드에 「Reauthentication」이나 보안 알림(비밀번호 변경 알림 등) 템플릿이 켜져 있으면 그 메일은 영어로 남는다 — 켜져 있는지
   확인하고, 켜져 있으면 같은 틀로 추가한다(지금 앱은 둘 다 쓰지 않는다).
 
@@ -46,7 +52,8 @@
 
 ## 링크만 바꾸는 적용 순서 (기존 영어 본문 유지 — 한국어 템플릿을 쓰면 위 절차로 대체)
 1. `/auth/confirm` 라우트가 **운영에 배포된 뒤** 진행한다(먼저 바꾸면 링크가 404).
-2. Authentication → URL Configuration → **Site URL**이 운영 주소(`https://manabi.co.kr`)인지 확인.
+2. Authentication → URL Configuration → **Site URL**이 대표 주소(`https://www.manabi.co.kr` — DOMAIN-CANONICAL-001, 2026-11-08 KST)인지 확인.
+   링크가 `{{ .SiteURL }}` 기준이라 apex로 두어도 www로 308되어 열리지만, 메일 속 주소가 대표 주소와 같게 둔다.
 3. Authentication → Emails → Templates에서 각 템플릿 본문의 링크 `href`만 아래로 바꾼다. 나머지 문구는 그대로 둔다.
 
 | 템플릿 | 바꿀 링크(href) |

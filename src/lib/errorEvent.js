@@ -118,11 +118,23 @@ export function buildErrorEvent(input = {}) {
   return { kind, message, stack: scrubStack(rawStack), digest, route: sanitizeRoute(input.route), release };
 }
 
+// 브라우저가 보내는 「다른 길로 갔다」 신호(오류가 아니다) — 종류마다 메시지는 정해진 사유 코드 하나뿐이다(자유 글 · 스택 · 오류 ID 없음).
+// study.paragraph_fallback: /study 오늘의 문단 생성이 실패해 기본 세션 문항으로 이어 갔다(STUDY-PARA-OBSERVE-001, 2026-11-08 KST).
+//   status_NNN = 응답 상태 · no_paragraph = 200인데 문단 없음 · too_few_items = 채점 문항 3개 미만 · timeout = 20초 초과 ·
+//   network = 요청 자체 실패 · map_error = 문단을 문항으로 바꾸다 실패.
+export const CLIENT_SIGNALS = Object.freeze({
+  'study.paragraph_fallback': /^(?:status_[1-5]\d\d|no_paragraph|too_few_items|timeout|network|map_error)$/,
+});
+
 /** 수신 경로용 — 받은 JSON에서 FIELDS만 꺼내 다시 정리한다(브라우저가 정리했더라도 믿지 않는다). 모양이 틀리면 null. */
 export function parseClientErrorBody(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
   const pick = (name) => (typeof body[name] === 'string' ? body[name] : undefined);
   if (!pick('kind') || !pick('message')) return null;
+  if (Object.prototype.hasOwnProperty.call(CLIENT_SIGNALS, pick('kind'))) { // Object.hasOwn은 옛 Safari(15.4 미만)에 없다
+    if (!CLIENT_SIGNALS[pick('kind')].test(pick('message'))) return null;
+    return buildErrorEvent({ kind: pick('kind'), message: pick('message'), route: pick('route'), release: pick('release') });
+  }
   if (!pick('kind').startsWith('boundary.') && !pick('kind').startsWith('window.')) return null; // 서버 종류(server.*)는 브라우저가 못 쓴다
   return buildErrorEvent({ kind: pick('kind'), message: pick('message'), stack: pick('stack'), digest: pick('digest'), route: pick('route'), release: pick('release') });
 }

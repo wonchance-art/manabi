@@ -12,11 +12,17 @@
   - apex(`manabi.co.kr`)는 www로 308이라 복귀 주소에 없어도 되지만, 옛 메일 링크를 위해 `https://manabi.co.kr/auth/**`도 남겨 둔다
   - `http://localhost:3000/**` (로컬 개발용, 런칭 뒤 제거 권장)
 
-### Authentication → Email Templates
-- [ ] **Confirm signup** — 한국어 본문(기본은 영어)
-- [ ] **Magic link** — 쓰지 않으면 끈다
-- [ ] **Reset password** — 본문의 `{{ .ConfirmationURL }}`은 그대로, 안내 문구만 한국어로
-- [ ] 발신자 이름 「manabi」
+### Authentication → Email Templates (AUTH-MAIL-KO-001 대조 2026-11-08 KST)
+- [ ] **한국어 템플릿 5종 적용** — 원고는 `supabase/templates/*.html`(MAIL-KO-001, 오너 「A안」 2026-10-12), 제목 · 붙여넣기 절차 정본은
+  [`docs/auth-email-links.md`](auth-email-links.md). Confirm signup · Reset password · Change Email Address · Invite user · Magic Link 모두 본문 전체를 바꾼다.
+  - 링크는 `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=…`(원고에 이미 들어 있음) — `{{ .ConfirmationURL }}`로 두면
+    PC에서 가입하고 휴대폰 메일에서 열 때 PKCE 교환이 실패한다(`/auth/confirm`은 운영 배포됨).
+- [ ] **Magic link — 끔 권장**: 앱은 보내지 않는다(코드에 `signInWithOtp` 호출 0, 로그인은 비밀번호 · Google). 대시보드에 매직 링크만 끄는
+  설정이 보이면 끈다. 없으면 한국어 템플릿만 넣어 둔다(누가 API로 직접 요청해도 영어 메일이 나가지 않게).
+- [ ] **SMTP 확인**: 현행 Custom SMTP = Resend(발신 도메인 Verified 2026-10-12 — [`deployment-checklist.md`](deployment-checklist.md) 도메인 · 메일 표).
+  런칭 전 대시보드에서 ⑴ Authentication → Emails → SMTP Settings의 Custom SMTP가 켜져 있는지 ⑵ Auth → Rate Limits의 메일 시간당 값을 확인한다.
+  끄면 내장 메일로 돌아가 **조직 팀원 주소로만** 보낸다(공식 문서 auth-smtp). 교체 · 증설 비교는 [`docs/smtp-options.md`](smtp-options.md).
+- [ ] 발신자 이름 「manabi」 — 자체 SMTP 설정의 Sender name에서 정한다(메일 제목에는 `[manabi]`를 붙이지 않는다 — auth-email-links.md).
 
 ### Authentication → Providers
 - [ ] **Email** 켬(기본)
@@ -92,7 +98,7 @@
   - (C) Supabase Dashboard에서 `reading_materials`에 `visibility='public'` 한 건
 
 ## 5. 런칭 후 24시간
-- [ ] 운영 오류 기록: `observe.error_events`(브라우저 · 서버 오류와 CSP 보고 `csp.*`, ERROR-OBSERVE-001 · SEC-HEADERS-001)
+- [ ] 운영 오류 기록: `observe.error_events`(브라우저 · 서버 오류와 CSP 보고 `csp.*`, /study 문단 실패 `study.paragraph_fallback` · `study.paragraph_error`, ERROR-OBSERVE-001 · SEC-HEADERS-001 · STUDY-PARA-OBSERVE-001)
 - [ ] Vercel 런타임 오류(Hobby는 런타임 로그를 1시간만 보관 — 오류 묶음은 7일) · Supabase Logs(API 4xx/5xx · Postgres)
 - [ ] LLM 사용량 · 오류율(관리자 화면)
 - [ ] 첫 실제 가입자 의견을 받을 창구(이메일/디스코드 등)

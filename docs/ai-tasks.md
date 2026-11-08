@@ -878,6 +878,42 @@
 
 ## Claude (claude/*)
 ### doing
+- **A11Y-AUTH-001 로그인 화면 접근성 훑기 (2026-11-08 KST)** PR `claude/preview/web`(오케스트레이터 지시 · 화면 무변화 고침만):
+  화면 벽 환경(합성 무거운 계정) 폰 390 · PC 1280 — /study(몸풀기 · 채점 · 문단 · 어순 · 결과) · /vocab · 복습 카드 · 문법 복습 · 서재 · 현황 · 내 정보(창 여섯) · 뷰어 카드.
+  axe WCAG 2.1 A/AA 위반 0(단어 상세 「신규」 배지 4.30:1 1건만 — 디자인 넘김) · 판정 못 한 대비 칸 실측 통과 · Tab 순서/포커스 표시 문제 0.
+  고침: ① 공용 창 훅 useDialogReturn에 Tab 가둠(창 10곳에서 Tab이 뒤 화면으로 빠지고 8곳은 닫은 뒤 포커스가 푸터 · 머리 메뉴에 남음 → 창 12곳 모두 가둠 · 복귀)
+  ② /study 채점 결과 알림(색으로만 보이던 맞고 틀림 → 「정답이에요.」 · 「틀렸어요. 정답: …」) ③ /study 진행 · 복습 세션 화면 읽기용 h1.
+  디자인 넘김: 「신규」 배지 대비 · 뷰어 카드 제목 단계 · 24px 미만 글자 조작 6종(③ 터치 영역 결정과 겹침). 기록: `docs/accessibility-audit.md`, 도구: `e2e/a11y-auth.audit.mjs`.
+- **STUDY-PARA-OBSERVE-001 /study 문단 실패 · 폴백 사유 기록 (2026-11-08 KST)** PR `claude/preview/web`(오케스트레이터 (가) 승인 · 화면 변화 0 · DB 변경 0):
+  /study 분모가 바뀌는 문단 실패(0/9 → 1/7)는 지금까지 기록이 없었다(라우트는 console.error뿐 · 화면은 조용히 폴백). 브라우저: applyFallback(reason)이
+  `study.paragraph_fallback`(client) 한 줄 — 사유 코드 status_NNN · no_paragraph · too_few_items · timeout · network · map_error뿐(계정 · 재료 · 본문 없음,
+  수신 parseClientErrorBody가 CLIENT_SIGNALS 코드만 받음). 서버: `/api/study-paragraph`의 no_llm_key(500) · unusable_output(502 · 프리페치 ok:false) ·
+  exception(500) · 프리페치 assemble_error를 `study.paragraph_error`(server)로 after() 뒤에. 실빌드(합성 백엔드): 문단 500 → 신호 1건 정확한 모양 · pageerror 0,
+  study-session e2e 3/3. 영향: server 줄이라 observe_daily_health의 server_errors 이상에 잡힌다(실패는 실제 이상 — 잦으면 제외 후속).
+- **STUDY-FIXTURE-001 /study 세션 e2e · 답 제출 INP (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 승인 · 테스트 전용, 앱 코드 변경 0):
+  새 고정물을 만들지 않았다 — 화면 벽 환경(`scripts/wall-capture.mjs` startWallEnv: heavy-account 합성 백엔드 + server-fetch-mock next start)으로 /study가
+  실제 서버 조립 세션을 띄운다(몸풀기 0/N · 4지선다). e2e `e2e/study-session.e2e.mjs`: 열기 → 답 1개 → 정답 표시 하나 · 보기 잠김 · 답한 수 1 · review_events 기록 →
+  「계속 →」 → 다른 문항 · 보기 열림 · 답한 수 1. 분모는 고정하지 않는다(문단 생성 실패로 0/9 → 1/7). 기록 응답 대기를 누른 뒤에 걸어 10회 중 4회 실패 →
+  누르기 전에 걸어 12/12 통과. 변이(기대 답한 수 2) 실패 확인. CI 단계 추가(N3 뒤). 계약 `studyFixtureContract.test.js`: 합성 백엔드의
+  fsrs_vocabulary_snapshot_light가 앱 검사(readVocabularyLearningSnapshotLight)를 통과. INP(폰 390 · CPU 4×): 답 누름 최대 136ms · 「계속 →」 88ms.
+- **INP-001 상호작용 지연 기준 측정 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · 측정 · 문서 · 도구만, 앱 코드 변경 없음):
+  폰 390 · CPU 4× · Event Timing + LoAF 출처. 운영 손님: 뷰어 낱말 → 카드 EN 88 · JA 120 · ZH 144ms(ResizeObserver · 병음 칸 그리기 몫) · 칩 112 · 정렬 64ms.
+  합성 로그인(발행판): 낱말 88 · 4등급 저장 전 48 · 복습 차례 64ms. **200ms 넘는 것 없음 → 고칠 것 없음.** /study 답 제출은 서버 세션 조립 표를
+  server-fetch-mock이 흉내 내지 않아 못 잼(고정물 필요 — 별도 판단). 도구: `scripts/perf/inp-guest.mjs` · `e2e/inp-grades.perf.mjs`, 기준표: `docs/perf-measurement.md`.
+- **SMTP-OPTIONS-001 인증 메일 SMTP 후보 조사 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · 조사 · 문서만, 계정 · env 변경 없음):
+  `docs/smtp-options.md` — **현행 Resend 유지**(10/12 Verified), 문서는 교체 · 증설 때 참고: Resend(월 3,000 · 하루 100, Pro $20) · Brevo(하루 300) 예비 ·
+  SES(샌드박스 · 심사 96h, $0.10/1,000) 규모 커지면 · Postmark(월 100) · SendGrid(무료 폐지) 배제 · 네이버클라우드 메일러(사업자 계정) 지금 배제.
+  DNS = Vercel DNS: `send.` MX · SPF · `resend._domainkey` DKIM 살아 있음 · apex MX 없음 · DMARC p=none. 지금 확인할 것은 수신 시험 · 한도뿐.
+- **AUTH-MAIL-KO-001 인증 메일 한국어 원고 대조 · 체크리스트 정리 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · docs-only):
+  원고는 이미 있다 — `supabase/templates/*.html` 5종(MAIL-KO-001, 오너 「A안」 2026-10-12) · 제목 · 절차 정본 `docs/auth-email-links.md` · 계약 25개 통과.
+  대조: 이미지 0 · 인라인 스타일 · `color-scheme: light only` + 명시 배경(다크 모드 렌더 확인) · 해요체 · 링크는 `/auth/confirm` token_hash(다른 기기에서 열기).
+  고침: launch-checklist §1의 낡은 「ConfirmationURL 그대로」를 정본 문서로 · Site URL www · 앱이 보내는 메일은 둘(가입 확인 · 재설정 — 초대는 대시보드,
+  이메일 변경 · 매직 링크 경로 없음, `signInWithOtp` 0 → Magic Link 끔 권장). SMTP는 현행 Resend(10/12 Verified, deployment-checklist) — 체크리스트에는
+  「Custom SMTP 켜짐 · 메일 시간당 한도 확인」으로 둔다(처음 판의 「출시 차단」은 기존 문서를 찾지 않은 오판 — 정정).
+- **LAUNCH-VERIFY-001 출시 점검(읽기 전용) (2026-11-08 KST)** — 조치 없음:
+  robots · sitemap(200건) · opengraph-image 200, sitemap 호스트는 apex(오너 env 삭제 대기). 폰(iPhone 13 · Pixel 7) 손님 경로 20판: 가로 스크롤 · 깨진 이미지 · 실패 응답 0,
+  CLS 0(Pixel 7 함께 읽는 글 0.0013만). Vercel 런타임 오류 7일 0. observe 상위: vercel.live CSP 보고 23(프리뷰 측정 · bot), NHK img 6(#1752 이전), ChunkLoadError
+  timeout 4(운영 1명 · 같은 분 · 연결 문제 추정). /library · /login은 없는 주소(404) — 별칭은 오너 제안 목록.
 - **E2E-RACE-001 e2e 경합 패턴 일괄 점검 (2026-11-08 KST)** PR `claude/e2e-race`(오케스트레이터 지시 · 테스트 전용):
   viewer-exclusion:117이 CI에서 한 번 「0 !== 1」 — 카드 단추 줄은 늘 있고 「아는 단어」 · 4등급은 `user &&` 안이라, 새로 고침 · 첫 낱말 직후(세션 복원 전)에 세면 0.
   정적 훑기: `.count()` · `isVisible()`를 곧장 단언하는 404곳 중 양(존재 · 보임)이고 같은 테스트에서 그 대상을 먼저 기다리지 않은 곳 112(CI가 돌리는 파일 61) → 문맥 판정.

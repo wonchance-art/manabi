@@ -1609,6 +1609,8 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
       </section>}
       {/* 세션 상단바 — 나가기 · 진행(서로 다른 카드 n / N) · 🔈/🔇 · 되돌리기. 카드 안에는 문항만 남긴다.
           끝 화면에도 같은 자리에 남긴다(A). 되돌리기는 끝 화면에서도 쓴다(Ctrl/⌘+Z = onFinishedUndo, reviewFinishedUndoKeyboard 계약) — 되돌릴 것이 없을 때만 잠근다. 빼면 진행 수 · 소리 단추가 옆으로 밀린다(실측 layout-shift 0.0009). */}
+      {/* 세션 중에는 보이는 머리(복습실 제목)를 걷고 카드만 둔다 — 화면 읽기의 제목 탐색이 닿을 자리(A11Y-AUTH-001). */}
+      {sessionChrome && <h1 className="sr-only">{tab === 'practice' ? '집중 연습' : '복습'}</h1>}
       {sessionChrome && (() => {
         const progress = tab === 'practice' ? { done: practice.idx, total: practice.total } : runProgress || { done: 0, total: 0 };
         const total = progress.total || 1;
