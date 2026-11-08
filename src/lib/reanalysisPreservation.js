@@ -267,6 +267,8 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   checkAbort();
   const attempt = crypto.randomUUID();
   const metadata = { ...original?.metadata, viewerRevision: attempt, updated_at: new Date().toISOString() };
+  // MATERIAL-DIFFICULTY-002: 난이도 요약은 옛 분석에서 셈한 값이다 — 새 분석에 옮기지 않는다(다음 분석 작업 tick이 다시 셈한다).
+  delete metadata.difficulty;
   // AD-R3: 경계 기록을 새 원문 줄로 옮겨 분석 요청에 싣는다(analyzeHybrid가 그 줄이 실린 요청에 boundaries로 보낸다). 기록 0이면 무변경.
   const priorBoundaries = metadata.language === 'Korean' ? [] : readBoundaryEdits(original);
   const mappedBoundaries = priorBoundaries.length ? mapBoundaryEdits(material.raw_text || '', rawText, priorBoundaries) : null;

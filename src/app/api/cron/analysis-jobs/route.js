@@ -4,6 +4,7 @@
 import { after } from 'next/server';
 import { SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
 import { kickAnalysisTick, runAnalysisTick, serviceClient } from '@/lib/server/analysisJobs';
+import { refreshPublicDifficulty } from '@/lib/server/materialDifficultyRefresh';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,10 +22,19 @@ async function handle(request) {
   after(async () => {
     try {
       const { more } = await runAnalysisTick({ supabase });
-      if (more) await kickAnalysisTick(origin);
+      if (more) { await kickAnalysisTick(origin); return; }
     } catch (error) {
       // 임대는 runAnalysisTick이 풀고, 작업은 다음 깨우기(관리자 화면 · 예약 실행)에서 잇는다.
       console.error('[analysis-jobs] tick failed', error?.message);
+    }
+    // MATERIAL-DIFFICULTY-002: 사슬 끝(또는 할 작업 없는 예약 실행)에서 공개 자료 난이도 요약을 채운다 — 한 tick 50편 상한,
+    // 남았고 이번에 하나라도 썼으면 다음 tick을 부른다(진척 없으면 멈춘다 — 다음 예약 실행이 다시 본다). 실패는 분석과 무관하게 삼킨다.
+    try {
+      const result = await refreshPublicDifficulty(supabase);
+      if (result.candidates) console.warn('[analysis-jobs] difficulty', JSON.stringify(result));
+      if (result.more && result.written > 0) await kickAnalysisTick(origin);
+    } catch (error) {
+      console.error('[analysis-jobs] difficulty refresh failed', error?.message);
     }
   });
   return Response.json({ ok: true }, { status: 202, headers: { 'Cache-Control': 'no-store' } });
