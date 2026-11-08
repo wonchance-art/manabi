@@ -74,7 +74,11 @@ export function tokenizeEnLine(line) {
   // 마지막 갈래 = 위 어디에도 걸리지 않는 공백 아닌 글자 묶음(— $ % ’ _ 숫자 사이 - · 다른 문자) → 기호 토큰.
   // 버리면 토큰을 이은 값이 원문과 달라 완료 판정(completeAnalysis)이 매번 실패한다 — 공개 시드 134
   // 「010-1234-5678」이 서버 작업에서 3회 재시도 후 포기된 실측(2026-11-07 KST). 토큰을 이으면 공백만 빼고 원문과 같다.
-  const PATTERN = new RegExp(`([${LATIN}][${LATIN}'\\-]*[${LATIN}]?|[${LATIN}]|[.,!?;:"'()\\[\\]]|\\d+|[^\\s${LATIN}\\d.,!?;:"'()\\[\\]]+)`, 'g');
+  // 서수(1st · 2nd · 3rd · 21st · 25th)는 한 토큰 — 숫자와 접미를 쪼개면 「st」 · 「th」가 뜻 없는 낱말로 남는다
+  // (공개 #125 「September 1st」 · #135 「…25th」 실측, SEED-QA-002 · 2026-11-08 KST). 뒤에 라틴 글자가 더 붙으면(2nds) 서수가 아니다.
+  const ORDINAL = `\\d+(?:st|nd|rd|th|ST|ND|RD|TH)(?![${LATIN}])`;
+  const PATTERN = new RegExp(`([${LATIN}][${LATIN}'\\-]*[${LATIN}]?|[${LATIN}]|[.,!?;:"'()\\[\\]]|${ORDINAL}|\\d+|[^\\s${LATIN}\\d.,!?;:"'()\\[\\]]+)`, 'g');
+  const ORDINAL_ONLY = new RegExp(`^${ORDINAL}$`);
   const WORD_OR_NUMBER = new RegExp(`^[${LATIN}\\d]`);
   const tokens = [];
   let match;
@@ -82,13 +86,14 @@ export function tokenizeEnLine(line) {
     const surface = match[0];
     const isPunct = !WORD_OR_NUMBER.test(surface);
     const isNumber = /^\d+$/.test(surface);
+    const isOrdinal = ORDINAL_ONLY.test(surface);
 
     tokens.push({
       text: surface,
-      base_form: isPunct ? surface : lemmatize(surface),
+      base_form: isPunct ? surface : isOrdinal ? surface.toLowerCase() : lemmatize(surface),
       furigana: '',
-      pos: isPunct ? '기호' : isNumber ? '수사' : null,
-      ...(!isPunct && !isNumber ? { lemma_candidates: buildEnLemmaCandidates(surface) } : {}),
+      pos: isPunct ? '기호' : isNumber || isOrdinal ? '수사' : null,
+      ...(!isPunct && !isNumber && !isOrdinal ? { lemma_candidates: buildEnLemmaCandidates(surface) } : {}),
     });
   }
   return tokens;
