@@ -878,6 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **STUDY-FIXTURE-001 /study 세션 e2e · 답 제출 INP (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 승인 · 테스트 전용, 앱 코드 변경 0):
+  새 고정물을 만들지 않았다 — 화면 벽 환경(`scripts/wall-capture.mjs` startWallEnv: heavy-account 합성 백엔드 + server-fetch-mock next start)으로 /study가
+  실제 서버 조립 세션을 띄운다(몸풀기 0/N · 4지선다). e2e `e2e/study-session.e2e.mjs`: 열기 → 답 1개 → 정답 표시 하나 · 보기 잠김 · 답한 수 1 · review_events 기록 →
+  「계속 →」 → 다른 문항 · 보기 열림 · 답한 수 1. 분모는 고정하지 않는다(문단 생성 실패로 0/9 → 1/7). 기록 응답 대기를 누른 뒤에 걸어 10회 중 4회 실패 →
+  누르기 전에 걸어 12/12 통과. 변이(기대 답한 수 2) 실패 확인. CI 단계 추가(N3 뒤). 계약 `studyFixtureContract.test.js`: 합성 백엔드의
+  fsrs_vocabulary_snapshot_light가 앱 검사(readVocabularyLearningSnapshotLight)를 통과. INP(폰 390 · CPU 4×): 답 누름 최대 136ms · 「계속 →」 88ms.
 - **INP-001 상호작용 지연 기준 측정 (2026-11-08 KST)** PR `claude/auth-mail-docs`(오케스트레이터 지시 · 측정 · 문서 · 도구만, 앱 코드 변경 없음):
   폰 390 · CPU 4× · Event Timing + LoAF 출처. 운영 손님: 뷰어 낱말 → 카드 EN 88 · JA 120 · ZH 144ms(ResizeObserver · 병음 칸 그리기 몫) · 칩 112 · 정렬 64ms.
   합성 로그인(발행판): 낱말 88 · 4등급 저장 전 48 · 복습 차례 64ms. **200ms 넘는 것 없음 → 고칠 것 없음.** /study 답 제출은 서버 세션 조립 표를

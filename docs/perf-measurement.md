@@ -65,6 +65,8 @@ NODE_USE_ENV_PROXY=1 node scripts/perf/first-paint-ab.mjs --arms scripts/perf/ar
   정렬은 키보드로 바꾼다. `selectOption`은 합성 change라 상호작용으로 잡히지 않는다.
 - 로그인(합성 고정물): e2e 빌드와 server-fetch-mock 서버(8878)를 띄운 뒤 `COMPOSER_BASE_URL=http://127.0.0.1:8878 node --test e2e/inp-grades.perf.mjs`.
   응답은 바로 돌려준다(붙잡지 않음). 이 파일은 CI가 돌리지 않는 측정 도구다.
+- /study(합성 무거운 계정 — STUDY-FIXTURE-001): `npm run e2e:build` 뒤 `node --test e2e/inp-study.perf.mjs`. 화면 벽 환경(`startWallEnv`)이 heavy-account 백엔드와
+  서버를 직접 띄운다. 몸풀기 보기 문항만 재고, 채점이 바로 서지 않는 유형을 만나면 그 판을 끝낸다.
 
 **기준 수치(2026-11-08 KST, 상호작용별 최댓값 — 판마다 3회)**
 
@@ -78,7 +80,8 @@ NODE_USE_ENV_PROXY=1 node scripts/perf/first-paint-ab.mjs --arms scripts/perf/ar
 | 뷰어 낱말 탭(로그인) | 합성 · 발행판 | 88ms | 그리기 52–77 | 좋음 |
 | 4등급 누름 — 저장 전 | 합성 · 발행판 | 48ms | | 좋음 |
 | 4등급 누름 — 복습 차례(인라인) | 합성 · 발행판 | 64ms | | 좋음 |
-| /study 답 제출 | — | **재지 못함** | 서버가 세션을 조립할 때 쓰는 표를 server-fetch-mock이 흉내 내지 않아 「오늘 학습을 불러오지 못했어요」 | 고정물 필요 |
+| /study 보기 누름(답 제출 → 채점 표시) | 합성 · 발행판(heavy-account) | 136ms(첫 답) · 이후 ≤64 | 그리기 101–118(채점 표시 커밋) | 좋음 |
+| /study 「계속 →」(다음 문항) | 합성 · 발행판(heavy-account) | 88ms | 그리기 57–79 | 좋음 |
 
 - 긴 프레임의 출처는 대개 React 공통 청크(`4bd1b696-…js` / e2e 빌드 `f5a4b7d4-…js`, 함수 `ci` — 렌더 커밋)였다.
 - 중국어 카드는 추가로 `page-…js`의 `ResizeObserverCallback`(병음 칸 · 카드 높이)과 `31255-…js`/`88279-…js`(낱말 카드 청크)가 같은 프레임에 붙어 그리기 몫이 길다(최대 62ms).
