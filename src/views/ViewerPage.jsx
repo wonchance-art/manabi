@@ -4565,7 +4565,7 @@ export default function ViewerPage({ seed } = {}) {
         const at = attributionParts(materialSource(material));
         if (!at) return null;
         return (
-          <p className="viewer-attribution">{vt("출처:")}{at.channel || '유튜브'}
+          <p className="viewer-attribution">{vt("출처:")} {at.channel || '유튜브'}
             {at.license && <> · <span className="viewer-attribution__license">{at.license}</span></>}
             {at.url && <> · <a href={at.url} target="_blank" rel="noopener noreferrer">{vt("원본 보기")}</a></>}
           </p>
