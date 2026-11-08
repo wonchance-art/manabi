@@ -138,10 +138,12 @@ const PAGE_SIZE = 12;
 
 // 언어 칩도 정본에서 파생한다. 손으로 적었더니 **프랑스어가 빠져 있었고**, F R2가
 // 프랑스어 공급을 연 뒤에도 자료실에서 프랑스어만 골라 볼 방법이 없었다.
+// kr-subset:reading-chips:begin — 「전체」 칩(언어 이름은 constants.js 블록).
 const LANG_FILTERS = [
   { key: 'all', label: '전체' },
   ...Object.keys(LEVELS).map((key) => ({ key, label: langNameKo(key) })),
 ];
+// kr-subset:reading-chips:end
 
 
 // 유저 레벨 ±1 범위의 추천만 표시.
@@ -1084,6 +1086,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
         </>
       ) : (showPdfs && (pdfsLoading || pdfsError)) ? null : (
         <div className="empty-state">
+          {/* // kr-subset:reading-guest:begin — 손님 빈 상태 · 「오늘의 소식」 제목(「함께 읽는 글」 첫 화면 하위 집합 글자, READING-CHIP-CLS-001) */}
           <p className="empty-state__msg">
             {anyFilter
               ? '조건에 맞는 자료가 없어요.'
@@ -1137,6 +1140,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
         return (
           <section className="suggestions-section" style={{ marginTop: '40px' }}>
             <h2 className="suggestions-section__title" id={TODAY_NEWS_ID} tabIndex={-1}>오늘의 소식</h2>
+            {/* // kr-subset:reading-guest:end */}
             <div className="suggestions-grid">
               {filteredSuggestions.map(s => (
                 <SuggestionCard key={s.id} suggestion={s} router={router} from={libraryView === 'public' ? 'reading' : 'materials'} />

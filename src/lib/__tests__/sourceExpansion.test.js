@@ -32,6 +32,7 @@ describe('① NHK 카테고리 피드 — URL이 곧 NHK의 분류', () => {
     expect(suggestionSourceLabel(a)).toBe('nhk');
     expect(a.transcript.startsWith('今日のニュース（NHK）')).toBe(true);
     expect(a.channelName).toBe('NHK ニュース');
+    expect(a.thumbnail).toBeNull(); // NHK 공용 아이콘은 핫링크 403 — 카드는 언어 그림으로 그린다(NHK-THUMB-403)
   });
 
   it('feed=cat1 → 社会 피드를 긷고 라벨 nhk_society, id는 cat0과 충돌하지 않는다', async () => {

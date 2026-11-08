@@ -172,7 +172,9 @@ export async function fetchNHKHeadlines(count = 1, config = {}) {
     videoId: meta.topic ? `nhk_${feed}_digest_${date}` : `nhk_digest_${date}`,
     title: meta.topic ? `今日のNHKニュース（${meta.ja}） — ${dateLabel}` : `今日のNHKニュース — ${dateLabel}`,
     channelName: meta.topic ? `NHK ニュース（${meta.ja}）` : 'NHK ニュース',
-    thumbnail: 'https://www3.nhk.or.jp/common/img/common/sns_icon_nhk.png',
+    // 썸네일 없음 — NHK 공용 아이콘 주소는 다른 사이트에서 부르면 403이다(핫링크 차단, 운영 실측 2026-11-08 KST). 카드는 실패 뒤 어차피
+    // 언어 그림(SuggestionArtwork)으로 바꿔 그렸다 — 처음부터 그 그림을 그리고 실패 요청 · 콘솔 오류를 없앤다(NHK-THUMB-403).
+    thumbnail: null,
     transcript,
     level: config?.level || 'N3 중급',
     // 주제 태그 = source 라벨 접미(스키마 0). cat0은 라벨을 안 실어 접두사 체인('nhk')이 그대로 판정한다.
