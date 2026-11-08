@@ -8,7 +8,17 @@ const NOUN_IRREGULARS = {
   teeth: 'tooth', feet: 'foot', mice: 'mouse', geese: 'goose',
   lives: 'life', knives: 'knife', wives: 'wife', leaves: 'leaf',
   wolves: 'wolf', shelves: 'shelf', halves: 'half',
+  lenses: 'lens', // wink noun()은 lense(없는 낱말)로 돌린다
 };
+
+// 복수형이 곧 표제어인 명사 — 단수로 돌리면 다른 낱말(pants → pant 「헐떡이다」 · goods → good · shorts → short ·
+// species → specie 「정화(正貨)」)이거나 없는 낱말(outskirt · crossroad)이 된다(EN-LEMMA-PLURAL · 2026-11-09 KST 로컬 점검,
+// 운영 공개 · 비공개 영어 자료 영향 0 — 새 분석부터). 명사 후보 · 기본 lemma의 명사 단계에서만 그대로 둔다(동사 후보는 wink 그대로).
+const PLURAL_ONLY_NOUNS = new Set([
+  'species', 'physics', 'crossroads', 'outskirts', 'headquarters', 'means', 'series', 'news',
+  'pants', 'trousers', 'jeans', 'shorts', 'pajamas', 'pyjamas', 'scissors', 'clothes',
+  'goods', 'belongings', 'savings', 'surroundings',
+]);
 
 const ADJECTIVE_IRREGULARS = {
   better: 'good', best: 'good', worse: 'bad', worst: 'bad',
@@ -31,7 +41,7 @@ const IRREGULARS = {
 
 // -ss로 끝나는 낱말은 복수가 아니다 — wink noun()이 pass → pas · boss → bos로 s를 떼어 공유 사전의 다른 낱말(pas 「(발레) 걸음」)에
 // 붙던 자리(공개 #127 · #132 · #150 실측, EN-LEMMA-SS · 2026-11-09 KST). passes · bosses(-sses)는 그대로 noun()이 단수로 돌린다.
-const nounLemma = (lower) => (/ss$/.test(lower) ? lower : lemmatizer.noun(lower));
+const nounLemma = (lower) => (/ss$/.test(lower) || PLURAL_ONLY_NOUNS.has(lower) ? lower : lemmatizer.noun(lower));
 
 function lemmatize(word) {
   const lower = word.toLowerCase();
