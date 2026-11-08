@@ -1,0 +1,16 @@
+{
+ "note": "KR-VIEWER-SUBSET-001 (reading) — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다.",
+ "chars": "가간개건검게겠결계고공관교국그글기께내냈너넷노뉴는늘님다단대도돼된둔드떤뛰랑려로록료르를름리말맞메면모목못문바받발방배번보복본볼부블비빈사산상색서성세션소속손송수스습시식아앱약어언업없에연영오올요용움웹위유으은을의이인일읽있자작장재저전정제조좋주중증지직집째책처첫체초추출침칩태터텍트편프필하한할함합해했홈화확",
+ "count": 155,
+ "source": {
+  "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskr/NotoSansKR%5Bwght%5D.ttf",
+  "sha256": "194018e6b2b293a7964f037b25c0249ce1418bc9ab3c971060a03aa57861e252",
+  "version": "Version 2.004-H2;hotconv 1.0.118;makeotfexe 2.5.65603"
+ },
+ "woff2": {
+  "href": "/fonts/kr-viewer/noto-sans-kr-reading.fdba33e61243a360.woff2",
+  "sha256": "fdba33e61243a360d0c78fed074c55168a4922b8f6624ac03d543a40a8061b5b",
+  "bytes": 22204
+ },
+ "unicodeRange": "U+AC00, U+AC04, U+AC1C, U+AC74, U+AC80, U+AC8C, U+ACA0, U+ACB0, U+ACC4, U+ACE0, U+ACF5, U+AD00, U+AD50, U+AD6D, U+ADF8, U+AE00, U+AE30, U+AED8, U+B0B4, U+B0C8, U+B108, U+B137, U+B178, U+B274, U+B294, U+B298, U+B2D8, U+B2E4, U+B2E8, U+B300, U+B3C4, U+B3FC, U+B41C, U+B454, U+B4DC, U+B5A4, U+B6F0, U+B791, U+B824, U+B85C-B85D, U+B8CC, U+B974, U+B97C, U+B984, U+B9AC, U+B9D0, U+B9DE, U+BA54, U+BA74, U+BAA8-BAA9, U+BABB, U+BB38, U+BC14, U+BC1B-BC1C, U+BC29, U+BC30, U+BC88, U+BCF4-BCF5, U+BCF8, U+BCFC, U+BD80, U+BE14, U+BE44, U+BE48, U+C0AC, U+C0B0, U+C0C1, U+C0C9, U+C11C, U+C131, U+C138, U+C158, U+C18C-C18D, U+C190, U+C1A1, U+C218, U+C2A4, U+C2B5, U+C2DC-C2DD, U+C544, U+C571, U+C57D, U+C5B4, U+C5B8, U+C5C5-C5C6, U+C5D0, U+C5F0, U+C601, U+C624, U+C62C, U+C694, U+C6A9, U+C6C0, U+C6F9, U+C704, U+C720, U+C73C, U+C740, U+C744, U+C758, U+C774, U+C778, U+C77C-C77D, U+C788, U+C790-C791, U+C7A5, U+C7AC, U+C800, U+C804, U+C815, U+C81C, U+C870, U+C88B, U+C8FC, U+C911, U+C99D, U+C9C0-C9C1, U+C9D1, U+C9F8, U+CC45, U+CC98, U+CCAB, U+CCB4, U+CD08, U+CD94, U+CD9C, U+CE68-CE69, U+D0DC, U+D130, U+D14D, U+D2B8, U+D3B8, U+D504, U+D544, U+D558, U+D55C, U+D560, U+D568-D569, U+D574, U+D588, U+D648, U+D654-D655"
+}

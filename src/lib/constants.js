@@ -95,7 +95,9 @@ export const FR_LEVELS = ['A0 입문', 'A1 기초', 'A2 초급', 'B1 중급', 'B
 export const ZH_LEVELS = ['OT 입문', 'H1 기초', 'H2 초급', 'H3 중급', 'H4 상급', 'H5 고급', 'H6 마스터'];
 
 /** 언어 키 → 한국어 이름 — AI 프롬프트·라벨 공용. 2트랙 삼항 하드코딩 재발 방지(자가 감사 ⑥). */
+// kr-subset:reading-langs:begin — 언어 칩 이름(「함께 읽는 글」 첫 화면 하위 집합 글자, scripts/fonts/kr-viewer-chars.mjs · READING-CHIP-CLS-001).
 export const LANG_NAME_KO = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
+// kr-subset:reading-langs:end
 
 /**
  * 자료의 「방향」(U R3, #1077 5503520174) — read = 목표어 → 나(지금의 전부), write = 나 → 목표어(내 노트).

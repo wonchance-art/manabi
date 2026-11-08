@@ -15,9 +15,10 @@ const REGEN = 'python3 scripts/fonts/kr-viewer-subset.py 로 다시 만든다(fo
 const HELPERS = {
   viewer: { module: 'KrUiSubset', fn: 'preloadKrUiSubset' },
   vocab: { module: 'KrVocabSubset', fn: 'preloadKrVocabSubset' },
+  reading: { module: 'KrReadingSubset', fn: 'preloadKrReadingSubset' },
 };
 // 미리 받는 바이트는 첫 그림 전 대역을 렌더 차단 CSS와 나눈다(1.6Mbps에서 52KB ≈ FCP +0.26s) — 크기 상한으로 묶는다.
-const MAX_BYTES = { viewer: 80 * 1024, vocab: 24 * 1024 };
+const MAX_BYTES = { viewer: 80 * 1024, vocab: 24 * 1024, reading: 24 * 1024 };
 const NAMES = Object.keys(SUBSETS);
 const metaOf = (name) => JSON.parse(fs.readFileSync(path.join(DIR, SUBSETS[name].json), 'utf8'));
 const cssOf = (name) => fs.readFileSync(path.join(DIR, SUBSETS[name].css), 'utf8');
@@ -28,7 +29,7 @@ const expandRange = (text) => text.split(',').flatMap((part) => {
 });
 
 describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', () => {
-  it('하위 집합은 뷰어 · 복습실 둘이고, 싣는 모듈이 하나씩 있다', () => {
+  it('하위 집합은 뷰어 · 복습실 · 함께 읽는 글 셋이고, 싣는 모듈이 하나씩 있다', () => {
     expect(NAMES.sort()).toEqual(Object.keys(HELPERS).sort());
   });
 
@@ -55,6 +56,19 @@ describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', ()
     expect(block).toContain('로그인하고 단어장 쓰기');
     expect(block).not.toContain('<VocabList'); // 로그인 복습실(클라이언트 그림)은 밖
     expect(() => sliceBlock(`${page}\n// kr-subset:vocab-guest:begin`, 'vocab-guest')).toThrow(); // 표식은 정확히 한 쌍
+  });
+
+  it('「함께 읽는 글」 출처는 셸 + 머리 + 언어 칩 + 손님 빈 상태 블록 + 푸터 — 로그인 서재 · 자료 카드 글자는 넣지 않는다(READING-CHIP-CLS-001)', () => {
+    expect(sourceFiles(ROOT, 'reading')).toEqual(['src/components/Layout.jsx', 'src/lib/webNavigation.js', 'src/app/(app)/discover/reading/page.jsx', 'src/lib/constants.js', 'src/views/MaterialsPage.jsx', 'src/views/MaterialsPage.jsx', 'src/components/web/SiteFooter.jsx']);
+    const page = fs.readFileSync(path.join(ROOT, 'src/views/MaterialsPage.jsx'), 'utf8');
+    const guest = sliceBlock(page, 'reading-guest', 'MaterialsPage.jsx');
+    expect(guest).toContain('아직 함께 읽는 글이 없어요.'); // 손님 빈 상태
+    expect(guest).toContain('로그인하고 자료 올리기 →');
+    expect(guest).toContain('>오늘의 소식<');
+    expect(guest).not.toContain('<SuggestionCard'); // 카드(자료 · 소식 제목)는 밖 — 데이터 글자는 원래 조각
+    expect(sliceBlock(page, 'reading-chips', 'MaterialsPage.jsx')).toContain("label: '전체'");
+    const langs = sliceBlock(fs.readFileSync(path.join(ROOT, 'src/lib/constants.js'), 'utf8'), 'reading-langs', 'constants.js');
+    for (const name of ['일본어', '영어', '프랑스어', '중국어']) expect(langs).toContain(`'${name}'`);
   });
 
   it.each(NAMES)('%s: woff2는 목록과 함께 만든 그 파일이다(sha256 · 크기 · 이름 = 내용 해시 앞 16자) · 작다', (name) => {
