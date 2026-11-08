@@ -122,7 +122,12 @@ def make_woff2(stem, chars, src, wght=None):
 
 def build(name, spec, src):
     """화면 하위 집합 하나(뷰어 · 복습실) — woff2 · 목록 JSON · CSS를 쓴다."""
-    chars = spec['chars']
+    from fontTools.ttLib import TTFont
+    # 가나 · 한자 · 기호를 싣는 묶음(readingList)에는 Noto Sans KR에 없는 글자가 든다(예: ⬇ ✍) — 원래도 다음 글꼴이 그린다.
+    # 파일 · unicode-range에서 빼고 목록에 skipped로 남긴다(계약이 「덮은 글자」로 센다). 한글만 싣는 묶음은 빠지는 글자가 없다.
+    cmap = TTFont(src).getBestCmap()
+    skipped = ''.join(c for c in spec['chars'] if ord(c) not in cmap)
+    chars = ''.join(c for c in spec['chars'] if ord(c) in cmap)
     href, digest, size = make_woff2(spec['stem'], chars, src)
     out = os.path.join(ROOT, 'public', href.lstrip('/'))
     codepoints = sorted(ord(c) for c in chars)
@@ -130,6 +135,7 @@ def build(name, spec, src):
         'note': f'KR-VIEWER-SUBSET-001 ({name}) — scripts/fonts/kr-viewer-subset.py가 만든다. 손으로 고치지 않는다.',
         'chars': chars,
         'count': len(chars),
+        **({'skipped': skipped} if skipped else {}),
         'source': {'url': SOURCE_URL, 'sha256': SOURCE_SHA256, 'version': SOURCE_VERSION},
         'woff2': {'href': href, 'sha256': digest, 'bytes': size},
         'unicodeRange': ranges(codepoints),

@@ -88,11 +88,14 @@ export function splitSentenceAroundWord(sentence, wordText, baseForm) {
   return { parts: [s], term: null };
 }
 
+// 등급 이름(자료 카드 꼬리표) — 「함께 읽는 글」 목록 글자 묶음(READING-LIST-FONT-001).
+// kr-subset:reading-levels:begin
 export const JP_LEVELS = ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'];
 export const EN_LEVELS = ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급', 'C2 마스터'];
 export const FR_LEVELS = ['A0 입문', 'A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급', 'C2 마스터'];
 // 중국어(HSK) — OT(오리엔테이션) + H1~H6. src/content/chinese/index.js ZH_LEVEL_META와 같은 학습 순서.
 export const ZH_LEVELS = ['OT 입문', 'H1 기초', 'H2 초급', 'H3 중급', 'H4 상급', 'H5 고급', 'H6 마스터'];
+// kr-subset:reading-levels:end
 
 /** 언어 키 → 한국어 이름 — AI 프롬프트·라벨 공용. 2트랙 삼항 하드코딩 재발 방지(자가 감사 ⑥). */
 // kr-subset:reading-langs:begin — 언어 칩 이름(「함께 읽는 글」 첫 화면 하위 집합 글자, scripts/fonts/kr-viewer-chars.mjs · READING-CHIP-CLS-001).

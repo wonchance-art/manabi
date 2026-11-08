@@ -1,11 +1,14 @@
 import { BOOK_ID, BOOKS, isBookId, isBookPage } from './textbook/contract';
 // Public reading routes and device-local progress are independent of legacy chapters.
+// 시리즈 글리프 · 원어 이름(소식 카드 그림) — 「함께 읽는 글」 목록 글자 묶음(READING-LIST-FONT-001).
+// kr-subset:reading-series:begin
 export const BOOK_SERIES = [
   { language: 'Japanese', name: '일본어', native: '日本語', glyph: 'あ', color: '#994A5A', level: 'N5', id: 'japanese-n5' },
   { language: 'Chinese', name: '중국어', native: '中文', glyph: '你', color: '#2A7657', level: 'HSK', id: 'chinese' },
   { language: 'English', name: '영어', native: 'English', glyph: 'Aa', color: '#906021', level: 'CEFR', id: 'english' },
   { language: 'French', name: '프랑스어', native: 'Français', glyph: 'é', color: '#3A68A2', level: 'CEFR', id: 'french' },
 ];
+// kr-subset:reading-series:end
 
 export function lessonGroups(lessons) {
   return lessons.reduce((groups, lesson) => {

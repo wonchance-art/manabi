@@ -108,6 +108,8 @@ export async function fetchQiita(count = 3) {
  * 일상 영역이 아니고, 뉴스 정치는 추천 카드에 자동으로 오르면 안 되는 종류다(zh 게이트와 같은 결).
  * cat0(主要)은 현행 다이제스트 그대로 — 주제 없음, 라벨 'nhk' 불변.
  */
+// NHK 분류명(소식 카드 출처 「NHK ニュース（…）」) — 「함께 읽는 글」 목록 글자 묶음(READING-LIST-FONT-001).
+// kr-subset:reading-nhk:begin
 export const NHK_FEEDS = Object.freeze({
   cat0: Object.freeze({ ja: '主要', topic: null }),
   cat1: Object.freeze({ ja: '社会', topic: 'society' }),
@@ -116,6 +118,7 @@ export const NHK_FEEDS = Object.freeze({
   cat5: Object.freeze({ ja: '経済', topic: 'economy' }),
   cat7: Object.freeze({ ja: 'スポーツ', topic: 'sports' }),
 });
+// kr-subset:reading-nhk:end
 
 /** 채널 `<title>`에 NHK 분류명이 실려 있으면 그것이 최우선 — 소스가 스스로 말한 분류다. */
 function nhkTopicFromChannelTitle(channelTitle) {
@@ -170,8 +173,11 @@ export async function fetchNHKHeadlines(count = 1, config = {}) {
   return [{
     // 주제 피드는 id에 피드를 넣는다 — upsert 키(date, video_id)가 cat0 다이제스트와 충돌하지 않게.
     videoId: meta.topic ? `nhk_${feed}_digest_${date}` : `nhk_digest_${date}`,
+    // 소식 카드 제목 · 출처 이름 — 「함께 읽는 글」 목록 글자 묶음(READING-LIST-FONT-001).
+    // kr-subset:reading-nhk-name:begin
     title: meta.topic ? `今日のNHKニュース（${meta.ja}） — ${dateLabel}` : `今日のNHKニュース — ${dateLabel}`,
     channelName: meta.topic ? `NHK ニュース（${meta.ja}）` : 'NHK ニュース',
+    // kr-subset:reading-nhk-name:end
     // 썸네일 없음 — NHK 공용 아이콘 주소는 다른 사이트에서 부르면 403이다(핫링크 차단, 운영 실측 2026-11-08 KST). 카드는 실패 뒤 어차피
     // 언어 그림(SuggestionArtwork)으로 바꿔 그렸다 — 처음부터 그 그림을 그리고 실패 요청 · 콘솔 오류를 없앤다(NHK-THUMB-403).
     thumbnail: null,

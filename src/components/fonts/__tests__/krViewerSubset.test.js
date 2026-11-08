@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { SUBSETS, extractSubsetHangul, sliceBlock, sourceFiles } from '../../../../scripts/fonts/kr-viewer-chars.mjs';
+import { SUBSETS, extractSubsetChars, extractSubsetHangul, sliceBlock, sourceFiles } from '../../../../scripts/fonts/kr-viewer-chars.mjs';
 
 // KR-VIEWER-SUBSET-001 · VOCAB-SUBSET-SMALL-001 — 첫 화면 UI 한글 하위 집합(next/font Noto Sans KR과 같은 판 · 윤곽선). 화면마다 따로다:
 // 뷰어(뷰어 UI 전부) · 복습실(셸 + 손님 블록). CI는 원본 글꼴 없이 커밋된 산출물만 본다.
@@ -17,9 +17,12 @@ const HELPERS = {
   vocab: { module: 'KrVocabSubset', fn: 'preloadKrVocabSubset' },
   reading: { module: 'KrReadingSubset', fn: 'preloadKrReadingSubset' },
   home: { module: 'KrHomeSubset', fn: 'preloadKrHomeSubset' },
+  // 목록 글자 묶음 — 같은 모듈이 CSS만 싣는다(미리 받지 않는다, READING-LIST-FONT-001).
+  readingList: { module: 'KrReadingSubset', fn: null },
 };
 // 미리 받는 바이트는 첫 그림 전 대역을 렌더 차단 CSS와 나눈다(1.6Mbps에서 52KB ≈ FCP +0.26s) — 크기 상한으로 묶는다.
-const MAX_BYTES = { viewer: 80 * 1024, vocab: 24 * 1024, reading: 24 * 1024, home: 32 * 1024 };
+// readingList는 미리 받지 않는다 — 첫 그림 대역과 겨루지 않고, 목록이 부르던 KR 조각 17개 남짓(한자 · 가나 포함)을 한 파일로 바꾼다(READING-LIST-FONT-001).
+const MAX_BYTES = { viewer: 80 * 1024, vocab: 24 * 1024, reading: 24 * 1024, home: 32 * 1024, readingList: 72 * 1024 };
 const NAMES = Object.keys(SUBSETS);
 const metaOf = (name) => JSON.parse(fs.readFileSync(path.join(DIR, SUBSETS[name].json), 'utf8'));
 const cssOf = (name) => fs.readFileSync(path.join(DIR, SUBSETS[name].css), 'utf8');
@@ -30,16 +33,34 @@ const expandRange = (text) => text.split(',').flatMap((part) => {
 });
 
 describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', () => {
-  it('하위 집합은 뷰어 · 복습실 · 함께 읽는 글 · 배움 넷이고, 싣는 모듈이 하나씩 있다', () => {
+  it('하위 집합은 뷰어 · 복습실 · 함께 읽는 글(첫 화면 · 목록) · 배움 다섯이고, 싣는 모듈이 하나씩 있다', () => {
     expect(NAMES.sort()).toEqual(Object.keys(HELPERS).sort());
   });
 
   it.each(NAMES)('%s: 출처 UI 문자열의 한글은 모두 커밋된 목록 안에 있다(문구가 바뀌면 재생성)', (name) => {
     const meta = metaOf(name);
-    const extracted = extractSubsetHangul(name);
-    expect(extracted.length).toBeGreaterThan(name === 'viewer' ? 300 : 80); // 공허 통과 방지
-    const outside = extracted.filter((ch) => !meta.chars.includes(ch));
+    expect(extractSubsetHangul(name).length).toBeGreaterThan(name === 'viewer' ? 300 : 80); // 공허 통과 방지
+    // 가나 · 한자 · 기호(cjk 출처)까지 — Noto Sans KR에 없어 뺀 글자(skipped)는 원래도 다음 글꼴이 그린다.
+    const covered = meta.chars + (meta.skipped || '');
+    const outside = extractSubsetChars(name).filter((ch) => !covered.includes(ch));
     expect(outside, `목록 밖 글자 ${outside.join('')} — ${REGEN}`).toEqual([]);
+  });
+
+  it('「함께 읽는 글」 목록 묶음: 정렬 · 카드 · 「더 보기」 블록 + 등급 이름 + 소식 카드 출처 · 그림 + 시드 제목 — 첫 화면 묶음 글자와 겹치지 않는다(READING-LIST-FONT-001)', () => {
+    const page = fs.readFileSync(path.join(ROOT, 'src/views/MaterialsPage.jsx'), 'utf8');
+    const list = sliceBlock(page, 'reading-list', 'MaterialsPage.jsx');
+    expect(list).toContain('className="materials-sort"'); // 정렬
+    expect(list).toContain('<MaterialGroupCard'); // 시리즈 묶음 카드
+    expect(list).toContain('개 남음)'); // 「더 보기」
+    expect(list).not.toContain('아직 함께 읽는 글이 없어요.'); // 손님 빈 상태는 첫 화면 묶음 몫(표식 밖)
+    expect(sliceBlock(page, 'reading-suggest', 'MaterialsPage.jsx')).toContain('function SuggestionCard(');
+    const meta = metaOf('readingList');
+    const first = metaOf('reading');
+    expect([...meta.chars].filter((ch) => first.chars.includes(ch))).toEqual([]); // 겹치면 같은 글자를 두 파일이 나눠 받는다
+    // 데이터 글자 — 시드 제목 괄호의 한글 풀이(일본어 「(사물 지시)」 · 중국어 「(날짜 · 요일)」 「(길 묻기)」), ko 줄의 가나 · 한자(NHK 출처 · 시리즈 원어 이름).
+    for (const ch of '묻획짜베ニュース社会日本語あ（）') expect(meta.chars, ch).toContain(ch);
+    expect(meta.skipped || '').not.toMatch(/[가-힣]/); // 한글은 하나도 빠지지 않는다
+    expect(SUBSETS.readingList.preload).toBe(false);
   });
 
   it('뷰어 출처는 뷰어 화면 · 부품 · 문구표 · 셸, 복습실 출처는 셸 + VocabPage 손님 블록(로그인 화면 글자는 넣지 않는다)', () => {
@@ -68,7 +89,7 @@ describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', ()
   });
 
   it('「함께 읽는 글」 출처는 셸 + 머리 + 언어 칩 + 손님 빈 상태 블록 + 푸터 — 로그인 서재 · 자료 카드 글자는 넣지 않는다(READING-CHIP-CLS-001)', () => {
-    expect(sourceFiles(ROOT, 'reading')).toEqual(['src/components/Layout.jsx', 'src/lib/webNavigation.js', 'src/app/(app)/discover/reading/page.jsx', 'src/lib/constants.js', 'src/views/MaterialsPage.jsx', 'src/views/MaterialsPage.jsx', 'src/components/web/SiteFooter.jsx']);
+    expect(sourceFiles(ROOT, 'reading')).toEqual(['src/components/Layout.jsx', 'src/lib/webNavigation.js', 'src/app/(app)/discover/reading/page.jsx', 'src/lib/constants.js', 'src/views/MaterialsPage.jsx', 'src/views/MaterialsPage.jsx', 'src/views/MaterialsPage.jsx', 'src/components/web/SiteFooter.jsx']);
     const page = fs.readFileSync(path.join(ROOT, 'src/views/MaterialsPage.jsx'), 'utf8');
     const guest = sliceBlock(page, 'reading-guest', 'MaterialsPage.jsx');
     expect(guest).toContain('아직 함께 읽는 글이 없어요.'); // 손님 빈 상태
@@ -76,6 +97,10 @@ describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', ()
     expect(guest).toContain('>오늘의 소식<');
     expect(guest).not.toContain('<SuggestionCard'); // 카드(자료 · 소식 제목)는 밖 — 데이터 글자는 원래 조각
     expect(sliceBlock(page, 'reading-chips', 'MaterialsPage.jsx')).toContain("label: '전체'");
+    // 정렬 선택지 전부 — 닫힌 상자의 폭은 가장 긴 선택지가 정한다(늦게 오면 상자 폭이 바뀐다, READING-LIST-FONT-001).
+    const sort = sliceBlock(page, 'reading-sort', 'MaterialsPage.jsx');
+    for (const label of ['최신순', '쉬운순', '제목순']) expect(sort).toContain(`>${label}</option>`);
+    expect(sort).not.toContain('</select>');
     const langs = sliceBlock(fs.readFileSync(path.join(ROOT, 'src/lib/constants.js'), 'utf8'), 'reading-langs', 'constants.js');
     for (const name of ['일본어', '영어', '프랑스어', '중국어']) expect(langs).toContain(`'${name}'`);
   });
@@ -133,6 +158,12 @@ describe('첫 화면 한글 하위 집합 — 목록 · 산출물 · 배선', ()
       const { module, fn } = HELPERS[name];
       const helper = fs.readFileSync(path.join(DIR, `${module}.js`), 'utf8');
       expect(helper, module).toContain(`import './${SUBSETS[name].css}';`);
+      if (!fn) {
+        // 미리 받지 않는 묶음 — CSS만 같은 모듈이 싣는다. 목록이 첫 그림 뒤에 차므로 FCP 대역을 나누지 않는다(READING-LIST-FONT-001).
+        expect(SUBSETS[name].preload, name).toBe(false);
+        expect(helper, module).not.toContain(SUBSETS[name].json);
+        continue;
+      }
       expect(helper, module).toContain(`import subset from './${SUBSETS[name].json}';`);
       expect(helper, module).toContain(`export function ${fn}() {\n  preload(subset.woff2.href, { as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' });`);
       const layout = fs.readFileSync(path.join(ROOT, `src/app/(app)/${SUBSETS[name].segment}/layout.jsx`), 'utf8');
