@@ -8,7 +8,8 @@ import { hasSupabaseSessionInJar } from '@/lib/authCookie';
 // 쿼리 갈래를 떼었다). 이 화면은 동적이다 — 세션 쿠키(이름만)를 넘겨 로그인 사람의 고르기 줄을 서버 HTML부터 그린다(DISCOVER-CHIP-CLS-001).
 // 바로 열어도(/discover/reading) 같은 화면이다.
 export const dynamic = 'force-dynamic';
-export { metadata } from '../page';
+// 탭 제목 · 설명은 이 화면의 것 — readingMeta.js(첫 화면 글꼴 묶음이 이 파일의 한글을 세므로 그리지 않는 문구는 옆 파일에 둔다).
+export { metadata } from './readingMeta';
 export default async function Page() {
   return <><ScFontCookieHint /><div className="manabi-page"><header className="manabi-page-heading"><div><Link className="manabi-link" href="/discover">← 산책</Link><h1>함께 읽는 글</h1></div><Link className="manabi-link" href="/materials">내 서재</Link></header><LazyMaterialsPage libraryView="public" sessionHint={hasSupabaseSessionInJar(await cookies())}/></div></>;
 }

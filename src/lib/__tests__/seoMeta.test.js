@@ -326,7 +326,8 @@ describe('뷰어 자료 — 우리가 만든 공개 자료만 검색에 싣는�
     viewer.query = { data: { title: '日記', visibility: 'public', owner_id: 'user-2' }, error: null };
     expect((await meta('46')).robots).toEqual({ index: false, follow: true });
     const page = fs.readFileSync(path.join(ROOT, 'src/app/(app)/viewer/[id]/page.jsx'), 'utf8');
-    expect(page).toContain(".select('title, visibility, owner_id, analysis_status:processed_json->>status')");
+    // 언어 · 레벨은 설명 한 줄(VIEWER-SEO-001)에 쓴다 — 본문은 읽지 않는다(첫머리는 본문을 실은 행에서만).
+    expect(page).toContain(".select('title, visibility, owner_id, analysis_status:processed_json->>status, language:processed_json->metadata->>language, level:processed_json->metadata->>level')");
   });
 
   it('관리자 목록 조회 실패 · 키 없음 = 빼지 않는다(잠깐의 장애로 공개 자료를 빼지 않게)', async () => {
@@ -421,12 +422,12 @@ describe('제목 · 설명 · JSON-LD · favicon.ico', () => {
     for (const description of covers) expect(description).not.toBe(SITE_DESCRIPTION);
   });
 
-  it('사이트 JSON-LD(WebSite)는 손님 배움 판에만 · 정본 호스트 · 「<」는 이스케이프', () => {
+  it('사이트 JSON-LD(WebSite)는 손님 배움 판에만 · 정본 호스트 · 「<」는 이스케이프 — 자료 한 편(LearningResource)은 뷰어 서버 본문(materialSeo.test.js)', () => {
     expect(websiteJsonLd()).toEqual({ '@context': 'https://schema.org', '@type': 'WebSite', name: 'manabi', url: `${siteUrl()}/`, inLanguage: 'ko', description: SITE_DESCRIPTION });
     const guest = fs.readFileSync(path.join(ROOT, 'src/app/(app)/home/(guest)/page.jsx'), 'utf8');
     expect(guest).toContain('<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()).replace(/</g, \'\\\\u003c\') }} />');
     const withLd = Object.keys(MODULES).filter((file) => fs.readFileSync(path.join(ROOT, file), 'utf8').includes('application/ld+json'));
-    expect(withLd).toEqual(['/src/app/(app)/home/(guest)/page.jsx']);
+    expect(withLd).toEqual(['/src/app/(app)/home/(guest)/page.jsx', '/src/app/(app)/viewer/[id]/page.jsx']);
   });
 
   it('/favicon.ico — 16 · 32 · 48 ICO(favicon.svg를 그린 것, 바탕색 #994A5A)', () => {

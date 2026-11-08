@@ -7,6 +7,7 @@ import { ScFontLink } from '@/components/fonts/ScFontLink';
 import ViewerPage from '@/views/ViewerPage';
 import { PRIVATE_ROBOTS, publicMetadata } from '@/lib/seo';
 import { curatorIds, isIndexableMaterial } from '@/lib/server/curatedMaterials';
+import { jsonLdScript, materialDescription, materialJsonLd } from '@/lib/materialSeo';
 
 // 제목 조회가 느려도 페이지를 막지 않는다 — 넘으면 기본 제목(VIEWER-META-TIMEOUT-001).
 // 전에는 운영 주소 · 키를 박아 두어 e2e도 운영 DB로 나갔고, 그쪽이 느려지자 /viewer 서버 렌더가 30초 넘게 멈췄다(2026-10-15 KST CI).
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }) {
     let missing = Boolean(seed) && !seed.row;
     const data = seed ? seed.row : await (await createSupabaseServerClient())
       .from('reading_materials')
-      .select('title, visibility, owner_id, analysis_status:processed_json->>status')
+      .select('title, visibility, owner_id, analysis_status:processed_json->>status, language:processed_json->metadata->>language, level:processed_json->metadata->>level')
       .eq('id', id)
       .abortSignal(AbortSignal.timeout(VIEWER_META_TIMEOUT_MS))
       .single()
@@ -34,15 +35,17 @@ export async function generateMetadata({ params }) {
     // 200 + index라 「빈 뷰어」가 색인될 수 있었다). 조회 실패 · 시간 초과는 없는 자료로 치지 않는다(잠깐의 장애로 공개 자료를 빼지 않게).
     if (missing) return { title: '자료 뷰어', description: 'AI 언어 해부 학습', robots: PRIVATE_ROBOTS };
     const title = data?.title ? `${data.title}` : '자료 뷰어';
-    const description = data?.title ? `AI가 분석한 "${data.title}" 학습 자료` : 'AI 언어 해부 학습';
+    // 우리가 만든 공개 · 분석된 자료만 검색에 싣는다(LAUNCH-META-002 · 003) — 다른 계정이 공개로 돌린 자료 · 비공개 · 분석 전 자료는 화면 그대로, 검색에서만 뺀다.
+    // 정본은 둔다(같은 자료의 다른 주소를 한 곳으로 묶는 신호는 색인 여부와 따로다). 관리자 목록을 모르면 빼지 않는다(curatedMaterials).
+    const indexable = !data || isIndexableMaterial(data, await curatorIds());
+    // 설명 = 언어 · 레벨 · 본문 첫머리(VIEWER-SEO-001). 첫머리는 검색에 싣는 자료이고 본문을 실은 행(문서 요청)일 때만 — 제목 조회 행에는 본문이 없다.
+    const description = data?.title ? materialDescription(data, { withExcerpt: indexable }) : 'AI 언어 해부 학습';
     const meta = publicMetadata(`/viewer/${encodeURIComponent(id)}`, {
       title,
       description,
       openGraph: { title, description },
     });
-    // 우리가 만든 공개 · 분석된 자료만 검색에 싣는다(LAUNCH-META-002 · 003) — 다른 계정이 공개로 돌린 자료 · 비공개 · 분석 전 자료는 화면 그대로, 검색에서만 뺀다.
-    // 정본은 둔다(같은 자료의 다른 주소를 한 곳으로 묶는 신호는 색인 여부와 따로다). 관리자 목록을 모르면 빼지 않는다(curatedMaterials).
-    if (data && !isIndexableMaterial(data, await curatorIds())) return { ...meta, robots: { index: false, follow: true } };
+    if (!indexable) return { ...meta, robots: { index: false, follow: true } };
     return meta;
   } catch {
     return { title: '자료 뷰어' };
@@ -61,8 +64,11 @@ async function SeededViewerPage({ params, searchParams }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const seed = await viewerSeedWithin(id);
   const ssr = viewerSsrRow(seed, id, query);
+  // 구조화 데이터(VIEWER-SEO-001) — 서버가 본문을 그리는 손님 판(검색 로봇이 보는 판) 중 검색에 싣는 자료만. 화면에는 보이지 않는다.
+  const jsonLd = ssr && isIndexableMaterial(ssr, await curatorIds()) ? materialJsonLd(id, ssr) : null;
   return (
     <>
+      {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }} />}
       {ssr && <script dangerouslySetInnerHTML={{ __html: viewerSsrGuardScript({ language: ssr.processed_json?.metadata?.language || 'Japanese', servedAt: seed.servedAt }) }} />}
       {/* 중국어 서버 본문(ZH-SSR-001)은 간체 시트를 본문보다 먼저 건다(ZH-SSR-SC-001, 2026-11-08 KST). 시트가 없으면 한자가 읽기 영역의
           :lang(ko) 스택 끝 'Noto Sans KR'(CJK 한자 조각을 가진 웹폰트)까지 내려가 KR 조각 17개(약 600KB)를 받았다 — 1.6Mbps에서 제목 웹폰트가
