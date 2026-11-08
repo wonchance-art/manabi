@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **HOME-KR-SUBSET-001 배움(/home) 한글 하위 집합 — Noto Sans KR 200 → 114KB (2026-11-08 KST)** PR `claude/home-subset`(오케스트레이터 지시 · 화면 무변경):
+  /home 페이지 전체 한글이 107자인데 KR 조각 12개 · 200KB를 받았다. 셸 + HomePage + 배움 부품 + 푸터 213자 · 28KB 하위 집합을 레이아웃이 미리 받는다.
+  게이트(같은 출처 앞단 교대 · 폰 5 · PC 3판): KR 6개 · 114KB · woff2 642 → 556KB · FCP−TTFB 폰 1.716 → 1.703 · PC 1.814 → 1.763s · CLS 0 · 벽 8장 픽셀 0.
+  미리 받지 않는 판(FCP 더 빠름)은 글꼴 2.5s 지연 때 소개 문단이 한 줄 줄며 0.024 이동 — 미리 받기를 택함.
 - **LAUNCH-GUEST-PERF 출시 손님 경로 점검 → READING-CHIP-CLS-001 · NHK-THUMB-403 (2026-11-08 KST)** PR `claude/reading-cls`(오케스트레이터 지시 · 버그 수정, 최종 화면 무변경):
   운영 측정(같은 출처 앞단 · 1.6Mbps · CPU 4× · 3판): /home · /discover · /materials · /viewer/60·126·363 · /books/japanese-n5 CLS ≤ 0.0004, 「함께 읽는 글」만 폰 0.0363.
   원인 = 언어 칩이 시스템 글꼴(한글 1.0em)로 두 줄 → Noto Sans KR 조각(4.7s) 뒤 0.92em로 줄며 「프랑스어」가 첫 줄로. 고침: /discover/reading 레이아웃이 첫 화면 한글 하위 집합(155자 · 22KB) 미리 받기.
