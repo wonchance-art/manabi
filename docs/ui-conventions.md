@@ -209,6 +209,7 @@ R3에서 `myplan` 격자를 실제로 옮겨 그 차이를 실측했다 — 260p
 | 터치 타깃 `44px` | 504곳 | WCAG 2.5.8 — 단독 아이콘 버튼은 44×44 |
 | `:focus-visible` | 159곳 | 키보드 포커스는 반드시 보이게 |
 | `prefers-reduced-motion` | 47곳 | 애니메이션에는 축소 분기를 함께 둔다 |
+| `transition: all` | 0곳 | 상태 전환은 `--transition-state`(색 · 테두리 · 그림자 · 움직임)만 — `all`은 포커스 고리까지 0.15–0.3초 동안 그려 첫 프레임 대비가 무너졌다(TRANSITION-ALL-001, 2026-11-08 KST) |
 
 숫자는 `src/**/*.css` 전체에서 센 하한이다(2026-11-04 KST 실측 — 계약 `uiConventions.test.js` ⑤와 같은 값). 줄어들면 계약이 잡는다.
 
