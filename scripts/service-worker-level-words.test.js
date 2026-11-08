@@ -88,5 +88,17 @@ describe('서비스 워커 — 레벨 단어 묶음(/api/level-words)', () => {
     expect(route).toContain("export const dynamic = 'force-static';");
     expect(route).not.toMatch(/cookies|headers\(\)|set-cookie|supabase/i);
   });
+
+  it('④ 중국어 참고 사전 조각(/api/zh-ref/<n>, ZH-REFVOCAB-SHARD-001)도 같은 길 — 남긴 조각을 끊겨도 돌려준다 · 다른 /api/는 그대로 건너뛴다', async () => {
+    let online = true;
+    const { dispatch, store } = await loadWorker({ fetchImpl: async (req) => { if (!online) throw new TypeError('Failed to fetch'); return basic(req.url, { version: 1, shard: 42, entries: { '你好': { level: 'H1' } } }); } });
+    await dispatch(`${ORIGIN}/api/zh-ref/42?v=aaaaaaa`);
+    expect([...store.keys()]).toEqual([`${ORIGIN}/api/zh-ref/42`]);
+    online = false;
+    const offline = await dispatch(`${ORIGIN}/api/zh-ref/42?v=bbbbbbb`);
+    expect((await offline.json()).entries['你好'].level).toBe('H1');
+    expect(dispatch(`${ORIGIN}/api/zh-ref/x?v=a`)).toBeNull(); // 숫자가 아닌 조각은 다른 /api/처럼 건너뛴다
+    expect(dispatch(`${ORIGIN}/api/zh-ref/1/2`)).toBeNull();
+  });
 });
 
