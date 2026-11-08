@@ -19,6 +19,7 @@ import { buildVocabularyWordIndex, countVocabularyDueInMaterial } from '../lib/v
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { parseTitle, compareSeriesPath, seriesTotalsOf, seriesCardTitle, seriesLabelKo } from '../lib/seriesMeta';
+import { difficultyLine } from '../lib/difficultyLine';
 import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
@@ -1053,6 +1054,8 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
                     </div>
                   </details>
                 </div>
+                {/* 난이도 한 줄(M2) — 서버가 미리 센 metadata.difficulty가 있을 때만(없으면 지금 화면 그대로). 공개 자료 목록 · 서재 같은 카드. */}
+                {(() => { const line = difficultyLine(m.processed_json?.metadata?.difficulty); return line ? <p className="mat-card__difficulty">{line}</p> : null; })()}
                 <div className="mat-card__meta">
                   <span>{metaLine}</span>
                   {/* 배지 무리 — 있을 때만 붙는 작은 알약 + 상태 하나. 감싸서(wrap) 좁은 폭에서 줄이 늘 뿐 넘치지 않는다. */}
