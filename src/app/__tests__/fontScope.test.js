@@ -336,6 +336,15 @@ describe('첫 그림 뒤 시트 — 뷰어(Noto Sans SC · TC)', () => {
     expect(ssr).toContain("((lang.uiLocale && lang.uiLocale !== 'ko') || (lang.explanationLocale && lang.explanationLocale !== 'ko'))) return 'locale';");
   });
 
+  it('중국어 서버 본문만 간체 시트를 본문보다 먼저 건다(ZH-SSR-SC-001) — 없으면 한자가 :lang(ko) 스택 끝 Noto Sans KR 조각을 받는다', () => {
+    // 운영 실측(2026-11-08 KST, /viewer/363 · 1.6Mbps): 시트 없이 서버 본문을 그리면 KR 조각 17개(약 600KB)를 더 받아 제목 웹폰트가 밀리고 LCP가 14초였다.
+    const page = read('src/app/(app)/viewer/[id]/page.jsx');
+    expect(page).toContain("{ssr && ssr.processed_json?.metadata?.language === 'Chinese' && <ScFontLink />}");
+    expect(read('src/components/viewer/reader-controls.css')).toContain(":lang(ko) {font-family:var(--reader-font), 'Noto Sans KR', sans-serif;}");
+    // 같은 href면 첫 그림 뒤 시트가 다시 붙이지 않는다.
+    expect(read('src/components/fonts/DeferredZhFontSheets.jsx')).toContain("link.getAttribute('href') === href");
+  });
+
   it('SW는 배포를 넘길 때 /_fonts 시트도 옮긴다(받아 둔 뷰어 문서 HTML에 주소가 없다)', () => {
     expect(read('public/sw.js')).toContain('const FONT_ASSET = /^\\/(?:_next\\/static\\/media|_fonts|fonts\\/kr-viewer)\\//;');
   });

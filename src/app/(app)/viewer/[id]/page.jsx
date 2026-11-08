@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { readViewerSeed, viewerSeedWithin } from '@/lib/server/viewerSeed';
 import { viewerSsrGuardScript, viewerSsrRow } from '@/lib/viewerSsr';
 import ViewerLoading from '@/components/viewer/ViewerLoading';
+import { ScFontLink } from '@/components/fonts/ScFontLink';
 import ViewerPage from '@/views/ViewerPage';
 import { PRIVATE_ROBOTS, publicMetadata } from '@/lib/seo';
 import { curatorIds, isIndexableMaterial } from '@/lib/server/curatedMaterials';
@@ -63,6 +64,11 @@ async function SeededViewerPage({ params, searchParams }) {
   return (
     <>
       {ssr && <script dangerouslySetInnerHTML={{ __html: viewerSsrGuardScript({ language: ssr.processed_json?.metadata?.language || 'Japanese', servedAt: seed.servedAt }) }} />}
+      {/* 중국어 서버 본문(ZH-SSR-001)은 간체 시트를 본문보다 먼저 건다(ZH-SSR-SC-001, 2026-11-08 KST). 시트가 없으면 한자가 읽기 영역의
+          :lang(ko) 스택 끝 'Noto Sans KR'(CJK 한자 조각을 가진 웹폰트)까지 내려가 KR 조각 17개(약 600KB)를 받았다 — 1.6Mbps에서 제목 웹폰트가
+          그 뒤로 밀려 LCP가 14초가 됐다(운영 실측, 클라이언트 경로는 시트가 먼저 붙어 KR 0). precedence 링크라 head로 올라가고 이 경계는
+          시트가 온 뒤에 보인다(br 32KB). DeferredZhFontSheets는 같은 href가 있으면 다시 붙이지 않는다. 일본어 · 영어 서버 본문은 그대로. */}
+      {ssr && ssr.processed_json?.metadata?.language === 'Chinese' && <ScFontLink />}
       {ssr && <div className="viewer-ssr-hold"><ViewerLoading /></div>}
       <ViewerPage seed={seed ?? undefined} />
     </>
