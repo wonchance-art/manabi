@@ -1340,7 +1340,14 @@
     백업 backup_private.en_meaning_fill_20261108 · 복원 docs/sql/en-meaning-fill-20261108-rollback.sql) + C 함수 material_fill_empty_meanings(service_role) ·
     분석 작업 크론 사슬 끝 tick당 50편 · 실행 줄 detail.meaningFill. B(20261108070000): 오케스트레이터 원고 22행 user_verified · it's 첫 뜻 · 문맥 보정 6토큰(curated) ·
     남은 22 채움 → 공개 영어 빈 뜻 0(백업 · 복원 docs/sql/en-dictionary-reviewed-20261108-rollback.sql).
-    EN-ORDINAL-001(이번 PR): tokenizeEnLine이 1st · 25th를 수사 한 토큰으로(새 분석부터, 기존 자료 재분석 없음) — 비공개 2편 「…th」 3곳은 사용자 자료라 그대로.
+    EN-ORDINAL-001([#1779](https://github.com/wonchance-art/manabi/pull/1779) squash 669cb45e): tokenizeEnLine이 1st · 25th를 수사 한 토큰으로(새 분석부터, 기존 자료 재분석 없음) — 비공개 2편 「…th」 3곳은 사용자 자료라 그대로.
+    EN-LEMMA-SS([#1780](https://github.com/wonchance-art/manabi/pull/1780) squash 79b599c1): -ss 낱말 lemma 보호(pass → pas 방지) + 공개 3토큰 pass 바로잡음(20261109000000 · 백업 · 복원 SQL) ·
+    observe-daily-health 계약 시한폭탄(고정 NOW vs 실제 now()) 수정 — 같은 유형 grep 다른 곳 0.
+    IPA-DICT-001 · EN-SOURCE-001 ⓐ(이번 PR, 오케스트레이터 03:48 · 04:00 KST 11/9): backfill-ipa 크론 2단계 — 공개 영어 자료에 쓰인 사전 행의 빈 reading만(같은 하루 상한 3×25 공용,
+    실행 줄 detail publicDictTargets · publicDictUpdated) · content_sources에 영어 Wikinews 분류 3행(Culture and entertainment · Sports · Weather, 정치/국제 제외).
+    사후: 11/10 01:05 KST backfill-ipa 실행 줄 · 00:06 KST fetch-suggestions 새 분류 수확 집계 보고.
+    EN-SOURCE-001 ⓒ 1차(준비 — 병합 보류): VOA Learning English 자료실 27편(15.5k 낱말 · A2 17 · B1 10, 제3자 인용 글 제외) 공개 시드 반입 마이그레이션 ·
+    백업 · 복원 SQL · PGlite 12 checks. metadata.source kind 'web'. **선행 조건 = 출처 줄 표시 코드 운영 반영**(「with credit」 — 오케스트레이터 04:47 KST).
     MATERIAL-DIFFICULTY-002([#1761](https://github.com/wonchance-art/manabi/pull/1761) squash 959fb842 · 11/8 13:00 KST · 운영 사후 확인 — 20261108040000 적용,
     RPC anon · authenticated EXECUTE 닫힘 · service_role만 · SECURITY DEFINER · search_path '' · difficulty 0행(첫 백필 전) · 지문 넷 그대로), 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
     materialDifficulty(#1743)로 processed_json.metadata.difficulty = { version, scale(HSK · JLPT · null), medianLevel, p90Level, types, listedShare }를

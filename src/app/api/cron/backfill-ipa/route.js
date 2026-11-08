@@ -5,6 +5,70 @@ import { summarizeBackfillIpa, withCronRun } from '@/lib/server/cronRuns';
 
 export const maxDuration = 60;
 
+const IPA_BATCH = 25;
+const IPA_MAX_BATCHES = 3; // 하루 상한 — 두 단계(단어장 · 공개 자료 사전 행)가 함께 쓴다(25 × 3 = 75낱말)
+
+/** 낱말 묶음 → Map(word → IPA). 실패한 묶음은 건너뛴다(빈 Map). */
+async function fetchIpaBatch(words) {
+  const prompt = `Provide IPA pronunciation for these English words. Output JSON only.
+
+Words:
+${words.map((w, idx) => `${idx + 1}. ${w}`).join('\n')}
+
+Format: {"results":[{"word":"example","ipa":"/ɪɡˈzæm.pəl/"}, ...]}
+Rules:
+- Slash-delimited IPA (American English preference)
+- Same order as input, one entry per word
+- Skip words you cannot confidently transcribe (do not include them in results)
+- Output JSON only, no other text`;
+  try {
+    const raw = await callGemini(prompt);
+    const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '';
+    const out = new Map();
+    for (const entry of parseGeminiJSON(text)?.results || []) {
+      const word = String(entry.word || '').trim();
+      const ipa = String(entry.ipa || '').trim();
+      if (word && ipa) out.set(word, ipa);
+    }
+    return out;
+  } catch {
+    return new Map();
+  }
+}
+
+/**
+ * 공개 영어 자료에 쓰인 낱말의 사전 행 중 reading(IPA)이 빈 것(IPA-DICT-001 · 2026-11-09 KST, 오케스트레이터 03:48 승인).
+ * 로그인 카드의 발음 기호는 공유 사전 reading에서 온다 — 단어장에 담기기 전에는 위 1단계가 그 행을 채우지 않았다
+ * (SEED-QA-002 B로 넣은 22행 실측). reading만 쓴다 — 뜻 · 품사 · source(user_verified 포함)는 그대로.
+ */
+async function publicDictIpaTargets(supabase, limit) {
+  if (limit <= 0) return [];
+  const { data: mats, error } = await supabase.from('reading_materials')
+    .select('processed_json')
+    .eq('visibility', 'public')
+    .eq('processed_json->>status', 'completed')
+    .eq('processed_json->metadata->>language', 'English');
+  if (error || !mats?.length) return [];
+  const forms = new Set();
+  for (const m of mats) {
+    for (const t of Object.values(m.processed_json?.dictionary || {})) {
+      if (!t || t.pos === '기호' || t.pos === '개행' || !/\p{L}/u.test(String(t.text || ''))) continue;
+      const key = t.sep_link || t.base_form;
+      if (key) forms.add(key);
+    }
+  }
+  const empty = [];
+  const list = [...forms];
+  for (let i = 0; i < list.length; i += 200) {
+    const { data: rows } = await supabase.from('morpheme_dictionary')
+      .select('base_form, reading')
+      .eq('language', 'English')
+      .in('base_form', list.slice(i, i + 200));
+    for (const r of rows || []) if (!r.reading?.trim()) empty.push(r.base_form);
+  }
+  return empty.sort().slice(0, limit);
+}
+
 // OPS-HEALTH-001: 실행 한 줄(observe.cron_runs) — 인증 실패(401)는 남기지 않는다.
 async function backfillIpa(request) {
   // 관리자 판별(isAdminUser)과 보충 쓰기는 service-role로만 — 키가 없으면 판별이 예외로 꺼져 관리자도 401이 되고
@@ -49,9 +113,6 @@ async function backfillIpa(request) {
       .limit(200),
   ]);
   const empties = [...(nullRows || []), ...(emptyRows || [])];
-  if (empties.length === 0) {
-    return Response.json({ stage: 'idle', dictUpdated: 0, geminiUpdated: 0, remaining: 0 });
-  }
 
   // 2. 사전 매칭으로 1차 백필
   const baseForms = [...new Set(empties.map(v => v.base_form).filter(Boolean))];
@@ -81,41 +142,15 @@ async function backfillIpa(request) {
 
   // 3. 사전에 없는 단어 → Gemini 배치 호출 (한 번에 25개, 최대 3회 = 75개)
   const remainingBaseForms = [...stillEmptyByBase.keys()];
-  const BATCH = 25;
-  const MAX_BATCHES = 3;
   let geminiUpdated = 0;
+  let batchesUsed = 0;
 
-  for (let i = 0; i < remainingBaseForms.length && i < BATCH * MAX_BATCHES; i += BATCH) {
-    const slice = remainingBaseForms.slice(i, i + BATCH);
-    const prompt = `Provide IPA pronunciation for these English words. Output JSON only.
-
-Words:
-${slice.map((w, idx) => `${idx + 1}. ${w}`).join('\n')}
-
-Format: {"results":[{"word":"example","ipa":"/ɪɡˈzæm.pəl/"}, ...]}
-Rules:
-- Slash-delimited IPA (American English preference)
-- Same order as input, one entry per word
-- Skip words you cannot confidently transcribe (do not include them in results)
-- Output JSON only, no other text`;
-
-    let parsed;
-    try {
-      const raw = await callGemini(prompt);
-      const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '';
-      parsed = parseGeminiJSON(text);
-    } catch {
-      continue;
-    }
-    const results = parsed?.results || [];
-
-    for (const entry of results) {
-      const word = String(entry.word || '').trim();
-      const ipa = String(entry.ipa || '').trim();
-      if (!word || !ipa) continue;
+  for (let i = 0; i < remainingBaseForms.length && batchesUsed < IPA_MAX_BATCHES; i += IPA_BATCH) {
+    const results = await fetchIpaBatch(remainingBaseForms.slice(i, i + IPA_BATCH));
+    batchesUsed++;
+    for (const [word, ipa] of results) {
       // user_vocabulary 업데이트 (해당 base_form의 모든 빈 행)
-      const targetRows = stillEmptyByBase.get(word) || [];
-      for (const r of targetRows) {
+      for (const r of stillEmptyByBase.get(word) || []) {
         const { error } = await supabase.from('user_vocabulary')
           .update({ furigana: ipa })
           .eq('id', r.id);
@@ -130,12 +165,40 @@ Rules:
     }
   }
 
+  // 4. 남은 상한으로 공개 자료에 쓰인 사전 행의 빈 reading(IPA-DICT-001) — reading만, 비었을 때만.
+  let publicDictUpdated = 0;
+  let publicDictTargets = 0;
+  try {
+    const targets = await publicDictIpaTargets(supabase, (IPA_MAX_BATCHES - batchesUsed) * IPA_BATCH);
+    publicDictTargets = targets.length;
+    for (let i = 0; i < targets.length && batchesUsed < IPA_MAX_BATCHES; i += IPA_BATCH) {
+      const results = await fetchIpaBatch(targets.slice(i, i + IPA_BATCH));
+      batchesUsed++;
+      for (const [word, ipa] of results) {
+        if (!targets.includes(word)) continue;
+        const { data: updated, error } = await supabase.from('morpheme_dictionary')
+          .update({ reading: ipa })
+          .eq('language', 'English')
+          .eq('base_form', word)
+          .or('reading.is.null,reading.eq.')
+          .select('base_form');
+        if (!error && updated?.length) publicDictUpdated++;
+      }
+    }
+  } catch { /* 2단계 실패는 1단계 결과를 깨지 않는다 */ }
+
+  if (empties.length === 0 && publicDictTargets === 0) {
+    return Response.json({ stage: 'idle', dictUpdated: 0, geminiUpdated: 0, remaining: 0, publicDictTargets: 0, publicDictUpdated: 0 });
+  }
+
   return Response.json({
     stage: 'complete',
     dictUpdated,
     geminiUpdated,
     initialEmpty: empties.length,
     remaining: Math.max(0, empties.length - dictUpdated - geminiUpdated),
+    publicDictTargets,
+    publicDictUpdated,
   });
 }
 

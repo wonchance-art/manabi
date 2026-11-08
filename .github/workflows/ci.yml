@@ -75,6 +75,7 @@ jobs:
       - run: node supabase/tests/en-meaning-fill.mjs
       - run: node supabase/tests/en-dictionary-reviewed.mjs
       - run: node supabase/tests/en-pass-tokens.mjs
+      - run: node supabase/tests/en-wikinews-more-categories.mjs
       - run: node scripts/verification/n4-book-support.mjs
       - run: node scripts/verification/n3-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs

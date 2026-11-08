@@ -87,9 +87,10 @@ export const summarizeFetchSuggestions = (j) => ({
 });
 export const summarizeBackfillIpa = (j) => ({
   ok: true,
-  processed: (Number(j?.dictUpdated) || 0) + (Number(j?.geminiUpdated) || 0),
+  processed: (Number(j?.dictUpdated) || 0) + (Number(j?.geminiUpdated) || 0) + (Number(j?.publicDictUpdated) || 0),
   failed: 0,
-  detail: { stage: j?.stage ?? null, remaining: j?.remaining ?? null, initialEmpty: j?.initialEmpty ?? null },
+  detail: { stage: j?.stage ?? null, remaining: j?.remaining ?? null, initialEmpty: j?.initialEmpty ?? null,
+    publicDictTargets: j?.publicDictTargets ?? null, publicDictUpdated: j?.publicDictUpdated ?? null },
 });
 export const summarizeSendForecast = (j) => ({
   ok: true,
