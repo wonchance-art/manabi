@@ -76,6 +76,29 @@ describe('tokenizeEnLine — 토큰을 이으면 원문 줄(공백 제외)과 �
 
   it('기존 단어 · 문장부호 · 숫자 토큰은 그대로', () => {
     expect(tokenizeEnLine("I'd like ten-minute walks, 15th!").map((token) => token.text))
-      .toEqual(["I'd", 'like', 'ten-minute', 'walks', ',', '15', 'th', '!']);
+      .toEqual(["I'd", 'like', 'ten-minute', 'walks', ',', '15th', '!']);
+  });
+});
+
+describe('tokenizeEnLine — 서수는 한 토큰(SEED-QA-002 · 2026-11-08 KST)', () => {
+  it('1st · 2nd · 3RD · 21st · 25th = 수사 한 토큰 · base_form 소문자 · lemma 후보 없음', () => {
+    const tokens = tokenizeEnLine('September 1st, 2nd place, 3RD floor, 21st-century, May 25th.');
+    const ordinals = tokens.filter((token) => /^\d/.test(token.text));
+    expect(ordinals.map((token) => [token.text, token.pos, token.base_form])).toEqual([
+      ['1st', '수사', '1st'], ['2nd', '수사', '2nd'], ['3RD', '수사', '3rd'], ['21st', '수사', '21st'], ['25th', '수사', '25th'],
+    ]);
+    for (const token of ordinals) expect(token.lemma_candidates).toBeUndefined();
+    expect(tokens.map((token) => token.text)).not.toContain('st');
+    expect(tokens.map((token) => token.text)).not.toContain('th');
+  });
+  it('뒤에 글자가 더 붙으면 서수가 아니다(2nds · 1sts는 전과 같다) · 숫자만은 그대로 수사', () => {
+    expect(tokenizeEnLine('the 2nds and 1sts, 2026').map((token) => token.text)).toEqual(['the', '2', 'nds', 'and', '1', 'sts', ',', '2026']);
+  });
+  it('토큰을 이으면 원문과 같다(완료 판정 커버리지)', () => {
+    const line = 'School starts on September 1st — the 25th is a holiday.';
+    const tokens = tokenizeEnLine(line);
+    const json = { status: 'completed', failed_indices: [], sequence: tokens.map((_, i) => `id_0_${i}_t`),
+      dictionary: Object.fromEntries(tokens.map((token, i) => [`id_0_${i}_t`, token])) };
+    expect(inspectAnalysisCoverage(line, json).missingIndices).toEqual([]);
   });
 });
