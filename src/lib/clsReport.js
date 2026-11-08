@@ -34,6 +34,10 @@ export function connectionType(nav) {
   return NETS.has(t) ? t : 'unknown';
 }
 
+const area = (s) => (s?.currentRect?.width || 0) * (s?.currentRect?.height || 0) + (s?.previousRect?.width || 0) * (s?.previousRect?.height || 0);
+/** 이동 한 건의 출처 중 가장 넓은 요소의 선택자. */
+const largestSource = (entry) => selectorOf([...(entry?.sources || [])].sort((a, b) => area(b) - area(a))[0]?.node);
+
 /**
  * CLS 세션 창 계산기 — layout-shift 항목을 차례로 넣는다. 입력 직후 이동(hadRecentInput)은 뺀다.
  * worst(): 가장 큰 창의 { value, source, time } — source는 그 창에서 가장 큰 이동의 가장 넓은 출처 요소, time은 그 이동 시각(ms).
@@ -47,7 +51,8 @@ export function createClsTracker() {
     if (!win || t - win.last > 1000 || t - win.first > 5000) win = { value: 0, first: t, last: t, top: null };
     win.value += entry.value;
     win.last = t;
-    if (!win.top || entry.value > win.top.value) win.top = { value: entry.value, entry };
+    // 출처는 이동이 난 그때 읽는다 — 보낼 때(경로 이동 · 숨김)는 요소가 이미 문서에서 빠져 있을 수 있다(실제 빌드 확인: 이동 뒤 'unknown').
+    if (!win.top || entry.value > win.top.value) win.top = { value: entry.value, time: Math.round(t), source: largestSource(entry) };
     if (!best || win.value > best.value) best = { value: win.value, top: win.top };
   };
   return {
@@ -55,10 +60,7 @@ export function createClsTracker() {
     value: () => (best ? best.value : 0),
     worst() {
       if (!best) return { value: 0, source: 'unknown', time: 0 };
-      const entry = best.top.entry;
-      const area = (s) => (s?.currentRect?.width || 0) * (s?.currentRect?.height || 0) + (s?.previousRect?.width || 0) * (s?.previousRect?.height || 0);
-      const source = [...(entry.sources || [])].sort((a, b) => area(b) - area(a))[0];
-      return { value: best.value, source: selectorOf(source?.node), time: Math.round(entry.startTime) };
+      return { value: best.value, source: best.top.source, time: best.top.time };
     },
     reset() { win = null; best = null; },
   };

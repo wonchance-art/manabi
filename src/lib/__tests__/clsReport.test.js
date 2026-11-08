@@ -20,6 +20,14 @@ describe('CLS 계산 — 세션 창', () => {
     for (let i = 0; i < 12; i++) t.add(shift(i * 900, 0.02)); // 0 · 0.9 · … · 9.9초 — 5초에서 끊긴다
     expect(t.value()).toBeCloseTo(0.12, 6); // 0–4.5초 6개
   });
+  it('출처는 이동이 난 그때 읽는다 — 보낼 때 요소가 문서에서 빠져도 그대로(실제 빌드: 경로 이동 뒤 unknown이던 것)', () => {
+    const t = createClsTracker();
+    const n = node('div', 'manabi-page learn-page');
+    const e = shift(3000, 0.33, n);
+    t.add(e);
+    e.sources[0].node = null; // 이동 뒤 요소가 사라짐
+    expect(t.worst().source).toBe('div.manabi-page.learn-page');
+  });
   it('출처는 가장 큰 이동의 가장 넓은 요소 — 태그 · 클래스 두 개만(id · 글 없음)', () => {
     expect(selectorOf({ tagName: 'DIV', className: 'learn-tile learn-resume lang-ja', id: 'secret', textContent: '글' })).toBe('div.learn-tile.learn-resume');
     expect(selectorOf({ tagName: 'svg', className: { baseVal: 'x' } })).toBe('svg');
