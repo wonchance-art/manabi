@@ -69,6 +69,7 @@ jobs:
       - run: node supabase/tests/ja-punct-pos.mjs
       - run: node supabase/tests/punct-pos-private.mjs
       - run: node supabase/tests/zh-seed-token-fixes.mjs
+      - run: node supabase/tests/zh-seed-title-fix.mjs
       - run: node scripts/verification/n4-book-support.mjs
       - run: node scripts/verification/n3-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs

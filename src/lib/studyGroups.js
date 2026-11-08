@@ -6,7 +6,7 @@
  */
 import { supabase } from './supabase';
 import { learningWeekStartMs } from './growthStats';
-import { SERIES_TITLE_ILIKE } from './constants';
+import { withoutRetiredSeries } from './constants';
 
 /** 그룹 상한(§9-2 오너 확정) — 서버 RPC와 같은 값(계약 테스트로 동치 핀). */
 export const MAX_GROUPS_PER_USER = 3;
@@ -186,13 +186,12 @@ export async function setGroupRead(groupId, weekStartDate, materialId, userId) {
   if (error) throw error;
 }
 
-/** 지정 후보 — 공개 자료만(비공개는 그룹원이 못 읽는다), 시리즈 자료 제외(서재 관례). */
+/** 지정 후보 — 공개 자료만(비공개는 그룹원이 못 읽는다), 은퇴 표식 자료 제외(SEED-EXPOSE-001). */
 export async function fetchPublicMaterials(lang, search) {
-  let query = supabase
+  let query = withoutRetiredSeries(supabase
     .from('reading_materials')
     .select('id, title, level:processed_json->metadata->>level')
-    .eq('visibility', 'public')
-    .not('title', 'ilike', SERIES_TITLE_ILIKE)
+    .eq('visibility', 'public'))
     .order('created_at', { ascending: false })
     .limit(30);
   if (lang) query = query.eq('processed_json->metadata->>language', lang);

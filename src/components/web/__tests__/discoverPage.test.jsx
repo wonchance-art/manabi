@@ -30,7 +30,7 @@ describe('산책 화면 배선', () => {
     expect(fs.existsSync(path.join(ROOT, 'src/components/web/DiscoveryExplorer.jsx'))).toBe(true);
   });
   it('공개 글 수는 책 장도 센다 — 비로그인은 책 장 행을 못 읽으니 public_book_catalog로 더한다', () => {
-    expect(page()).toContain("client.rpc('public_book_catalog', {}, { count: 'exact', head: true }).not('title', 'ilike', SERIES_TITLE_ILIKE)");
+    expect(page()).toContain("withoutRetiredSeries(client.rpc('public_book_catalog', {}, { count: 'exact', head: true }))");
     expect(page()).not.toMatch(/rpc\('public_book_catalog'\)\.then/);
     expect(page()).toContain('const publicCount = looseCount + bookChapterCount;');
     expect(page()).toContain('{publicCount > 0 && <p className="discover-more">'); // 공개 글이 없으면 줄을 두지 않는다

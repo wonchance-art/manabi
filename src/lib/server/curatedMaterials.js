@@ -6,6 +6,7 @@
 // 조회를 늘리지 않게. 키가 없거나 조회가 실패하면 null(「모름」)이다: 부르는 쪽은 모름을 「남의 자료」로 치지 않는다(잠깐의 장애로 공개 자료를 빼지 않게 —
 // 뷰어 제목 조회 실패와 같은 원칙).
 import { createClient } from '@supabase/supabase-js';
+import { withoutRetiredSeries } from '@/lib/constants';
 
 export const CURATOR_TTL_MS = 10 * 60 * 1000;
 export const CURATOR_TIMEOUT_MS = 2500;
@@ -78,7 +79,8 @@ export async function curatedMaterialIds() {
   const ids = await curatorIds();
   if (!ids) throw new Error('curated materials: 관리자 목록을 읽지 못했어요');
   if (!ids.size) return [];
-  const { data, error } = await client.from('reading_materials').select('id')
+  // 은퇴 표식 자료는 목록과 같이 색인에서도 뺀다(정본 판정 withoutRetiredSeries — SEED-EXPOSE-001).
+  const { data, error } = await withoutRetiredSeries(client.from('reading_materials').select('id'))
     .eq('visibility', 'public').in('owner_id', [...ids])
     .in('processed_json->>status', [...ANALYZED_STATUSES]).not('processed_json->sequence->0', 'is', null)
     .order('id', { ascending: true })

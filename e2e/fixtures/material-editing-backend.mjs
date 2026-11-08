@@ -65,7 +65,8 @@ export async function fixture({width=1440,height=1000,reducedMotion='reduce',gue
     return json(route,[{id:row.id}]);
    }
    let found=rows.filter(row=>[...url.searchParams].every(([key,value])=>{
-    if(value==='is.null')return row[key]===null;
+    // JSON 경로(processed_json->metadata->>retired_series 등)는 PostgREST처럼 따라가고, 없는 칸은 null로 본다(SEED-EXPOSE-001).
+    if(value==='is.null')return key.includes('->')?key.split(/->>?/).slice(1).reduce((v,p)=>v==null?undefined:v[p],row[key.split(/->>?/)[0]])==null:row[key]===null;
     if(!value.startsWith('eq.'))return true;
     if(key==='document_json->>revision')return row.document_json?.revision===value.slice(3);
     if(key.includes('importAttempt'))return row.processed_json.metadata.importAttempt===value.slice(3);

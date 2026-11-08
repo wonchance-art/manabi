@@ -1,6 +1,6 @@
 import DiscoverTiles from '@/components/web/DiscoverTiles';
 import Link from 'next/link';
-import { SERIES_TITLE_ILIKE } from '@/lib/constants';
+import { withoutRetiredSeries } from '@/lib/constants';
 import { kstDateString } from '@/lib/growthStats';
 import { releasedArtOf, releasedClassicsOf } from '@/lib/server/classicsReading';
 import { suggestionClient, todaySuggestions } from '@/lib/server/suggestionReading';
@@ -21,13 +21,12 @@ export default async function Page() {
     todaySuggestions(client),
     releasedClassicsOf(client),
     releasedArtOf(client),
-    client.from('reading_materials').select('id', { count: 'exact', head: true }).eq('visibility', 'public')
-      .not('title', 'ilike', SERIES_TITLE_ILIKE) // 목록(/discover?view=reading)과 같은 조건으로 센다
+    withoutRetiredSeries(client.from('reading_materials').select('id', { count: 'exact', head: true }).eq('visibility', 'public')) // 목록(/discover?view=reading)과 같은 조건으로 센다
       .then(({ count, error }) => (error ? 0 : count || 0)),
     // 비로그인(anon)은 책 장 행을 못 센다(anon_book_chapters_hidden, #1504) — 목록이 책 카드를 채우는 것과 같은
     // public_book_catalog로 책 장을 따로 더한다. 안 더하면 정본 책 공개 뒤 「함께 읽는 글」 줄이 사라진다(리뷰 2026-10-17 KST).
     // 개수만 받는다(head) — 행을 받으면 장마다 책 · 문학 메타가 붙어 정본 공개 뒤 요청마다 MB 단위가 되고 1000행에서 잘린다(리뷰 2026-10-17 KST).
-    client.rpc('public_book_catalog', {}, { count: 'exact', head: true }).not('title', 'ilike', SERIES_TITLE_ILIKE)
+    withoutRetiredSeries(client.rpc('public_book_catalog', {}, { count: 'exact', head: true }))
       .then(({ count, error }) => (error ? 0 : count || 0)),
   ]);
   // ISR은 그린 판을 5분 동안 모두에게 준다 — 서가 조회가 실패한 판을 굳히지 않는다. 다시 만들 때(revalidate) 실패면 던져서 앞 판을 그대로 둔다

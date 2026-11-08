@@ -25,7 +25,7 @@ import { groupByBook } from '../lib/bookMeta';
 import { isTeamRoot } from '../lib/classTeamRoot';
 import { groupByPdf, pageRangeLabel, readProgressLabel } from '../lib/pdfGroups';
 import { useGroupReadIds } from '../lib/useGroupReadIds';
-import { LEVELS, SERIES_TITLE_ILIKE, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
+import { LEVELS, withoutRetiredSeries, langNameKo, levelRank, profileLevel, isWriteMaterial } from '../lib/constants';
 import { canReadSuggestion, suggestionHref, suggestionSource, TODAY_SUGGESTIONS_KEY, TODAY_NEWS_ID, fetchTodaySuggestions } from '../lib/suggestionReading';
 import { encounterLookupLang } from '../lib/refVocabLookup';
 import { isLibraryNote, materialLibraryFilters } from '../lib/libraryDiscovery';
@@ -93,8 +93,8 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
   // Add only current-document summary fields; its full body stays out of list payloads.
   if (withDocument) query = query.select(`${MATERIAL_LIST_COLS}${withDirection ? ', direction' : ''}, document_revision:document_json->>revision, document_language:document_json->>language, document_excerpt:document_json->>excerpt, document_assets:document_json->assets, document_has_body:document_json->hasBody`);
 
-  // 자료실은 현지 언어 콘텐츠만 — 시리즈 패턴 [* #N] 자료는 /lessons로 분리
-  query = query.not('title', 'ilike', SERIES_TITLE_ILIKE);
+  // 은퇴 표식이 붙은 자료만 뺀다(제목 모양으로는 숨기지 않는다 — SEED-EXPOSE-001)
+  query = withoutRetiredSeries(query);
 
   if (tab === 'public') {
     query = query.eq('visibility', 'public');

@@ -1239,12 +1239,16 @@
     문맥 오표기 3개 정정(364 全家 뜻 → 패밀리마트 · 368 吃 품사 → 동사 · 370 美英 → 인명). 儿화 병음 혼재는 알려진 한계로 기록만.
     난이도(materialDifficulty): HSK1 비중 H1 89% → H2 75% → H3 55% · HSK4+ 1 → 5 → 10%로 표시 레벨과 같은 방향.
     뜻 빈 토큰 70 중 남은 7개(134 제외)는 전부 아라비아 숫자(영어 연도 · 날짜 5 · 일본어 7じ의 7 둘 — 읽기도 없음) — 의도된 빈 뜻.
-    STALE-SUGGEST-001(이번 PR, 디자인 점검 D2 · D3): Wikinews 폐쇄(2026-05) 뒤 영어 오늘의 소식이 9/6~11/8 64일 동안 같은 기사 6개(321줄)를
+    STALE-SUGGEST-001(#1750 병합 d53beb59, 디자인 점검 D2 · D3): Wikinews 폐쇄(2026-05) 뒤 영어 오늘의 소식이 9/6~11/8 64일 동안 같은 기사 6개(321줄)를
     날마다 「오늘」로 실음 → 크론이 최근 30일 실린 id 재수록 금지 · Wikinews 날짜 카테고리로 30일 넘은 기사 제외. 영어 소식은 11/9부터 0줄
     (디자인 세션 빈 상태 확인 뒤 병합). D3 「Health」는 Wikinews 자체 다범주(Health · Military) — 우리 버그 아님.
     영어 · 일본어 YouTube 공급원 3/28 이후 0 = youtubei.js 17.2.0의 getBasicInfo가 UNPLAYABLE(「The page needs to be reloaded」) →
     의존성 갱신은 이 세션 권한 판정기가 거절 · 다른 클라이언트 우회도 거절(봇 확인 우회) → 오너 결정(공식 Data API · 갱신 · 끔).
     새 공급원 후보(기록만, 착수 금지 — 오케스트레이터 05:40): rss_text VOA(퍼블릭 도메인) · devto 운영 행.
+    SEED-EXPOSE-001(이번 PR, 오너 「권장대로」 11/8 12:10 KST — B안): 공개 목록 숨김을 제목 패턴([… #N]) 대신 명시 표식
+    processed_json.metadata.retired_series 하나로(withoutRetiredSeries) — 서가 · 목록 · 스터디 그룹 · 사이트맵이 같은 판정, 표식 대상 0편.
+    손님 「함께 읽는 글」 0 → 132편(영 60 · 일 63 · 중 9) · 사이트맵 132 그대로. 같은 PR: ZH-SEED-TITLE-001(366 [H3 여행 #2] → #1) ·
+    YT-API-001 설계 메모(docs/design/youtube-data-api-20261108.md — 오너 b안 결정, 구현은 다음 PR).
     감사 결과: FSRS 고아 · 중복 · 이상 due 0 · 대기열 쌓임(오너 1,584 · 319)은 제품 판단, lang 'ja' 11건 · grammar 중복 9건은 기록만.
     ④ 이번 PR — 언어 표시가 빈 초기 자료 10개에 metadata.language(오케스트레이터 진행 11/6): 판정 = 원문 글자(가나 → Japanese 1 · 5 · 7,
     라틴만 → English 13–18 · 30). 모두 owner 없음 · private · 진행 0 · 담긴 단어 0. 바꾸기 전 값 = metadata 없음. **운영 적용 11/6 KST — 언어 없음 14 → 4(토큰 0인
