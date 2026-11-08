@@ -50,6 +50,8 @@ import { authEntryHref } from '@/lib/authRedirect';
 import { guestBookCatalogRows, withGuestBookCatalog } from '@/lib/guestBookCatalog';
 
 
+// 「오늘의 소식」 카드 — 「함께 읽는 글」 목록 글자 묶음(READING-LIST-FONT-001). 표식 줄 뒤에는 글을 달지 않는다(그 글자도 세어진다).
+// kr-subset:reading-suggest:begin
 function SuggestionCard({ suggestion: s, router, from = 'materials' }) {
   const canStudy = canReadSuggestion(s);
   const source = suggestionSource(s);
@@ -79,6 +81,7 @@ function SuggestionCard({ suggestion: s, router, from = 'materials' }) {
     </div>
   );
 }
+// kr-subset:reading-suggest:end
 
 const MATERIAL_LIST_COLS = 'id, title, created_at, visibility, owner_id, processed_json, source_pdf_id, page_start, page_end';
 
@@ -741,6 +744,8 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
           </div>
         )}
 
+        {/* 정렬 · 목록 카드 · 「더 보기」 — 「함께 읽는 글」 목록 글자 묶음, 미리 받지 않는다(READING-LIST-FONT-001). 표식 뒤에는 글을 달지 않는다. */}
+        {/* // kr-subset:reading-list:begin */}
         {/* 정렬은 칩 줄 밖 자기 자리(NATIVE-FEEL-P1 ⓐ, 오너 「권장대로 진행」 2026-10-26 KST) — 칩 모양 선택 상자를 16px로 키우면
             칩 줄이 깨져(13.1px 칩 사이 16px 상자), 칩은 그대로 두고 정렬만 글자 단추 꼴로 떼어 냈다. 터치 기기에서 16px(iOS 초점 확대 방지). */}
         <select
@@ -749,11 +754,14 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
           className="materials-sort"
           aria-label="정렬"
         >
+          {/* 정렬 선택지는 첫 화면 묶음 글자 — 닫힌 상자의 폭은 가장 긴 선택지가 정해, 그 글자가 늦게 오면 상자 폭이 바뀌었다(CLS 0.0001, READING-LIST-FONT-001). */}
+          {/* // kr-subset:reading-sort:begin */}
           <option value="newest">최신순</option>
           {remetWords.length > 0 && <option value="words">다시 만난 말 먼저</option>}
           {signedInFilters && <option value="fit">내 수준 맞춤</option>}
           <option value="level">쉬운순</option>
           <option value="title">제목순</option>
+          {/* // kr-subset:reading-sort:end */}
         </select>
       </div>
 
@@ -1088,6 +1096,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
             </button>
           </div>
         )}
+        {/* // kr-subset:reading-list:end */}
         </>
       ) : (showPdfs && (pdfsLoading || pdfsError)) ? null : (
         <div className="empty-state">

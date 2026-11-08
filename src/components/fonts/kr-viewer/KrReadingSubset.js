@@ -1,6 +1,8 @@
 import { preload } from 'react-dom';
 // 「함께 읽는 글」(/discover?view=reading) 손님 첫 화면 한글 하위 집합(READING-CHIP-CLS-001) — 셸 · 머리 · 언어 칩 · 빈 상태 · 푸터 글자만. 목록 밖 글자는 원래 조각으로 넘어간다.
 import './krReadingSubset.css';
+// 목록 글자 묶음(READING-LIST-FONT-001) — 카드 제목 · 꼬리표 · 정렬 · 「더 보기」 글자. 미리 받지 않는다(목록은 첫 그림 뒤에 찬다): 쓰는 글자가 보일 때 한 파일로 온다.
+import './krReadingListSubset.css';
 import subset from './subset-reading.json';
 
 /**

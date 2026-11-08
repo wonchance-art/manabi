@@ -10,7 +10,9 @@
 // (복습실 실측 — 52KB 미리 받기가 1.6Mbps에서 FCP +0.26s). 그래서 복습실은 손님 첫 화면 글자만(셸 + 손님 블록) 싣는다.
 //
 // 글자 출처(이 목록이 정본): SUBSETS[이름].sources 파일에서 주석을 걷은 원문의 한글 음절(U+AC00–U+D7A3). block이 있으면 그 파일의
-// 「// kr-subset:<block>:begin」 ~ 「// kr-subset:<block>:end」 사이만 센다. 문구가 바뀌면 CI 계약
+// 「// kr-subset:<block>:begin」 ~ 「// kr-subset:<block>:end」 사이만 센다(표식 줄 뒤에 단 설명 글도 세어지니 설명은 앞 줄에 둔다).
+// match가 있으면 그 정규식의 1번 무리만(시드 제목 리터럴), cjk면 가나 · 한자 · 기호도 싣는다. preload: false인 묶음은 미리 받지 않고
+// (첫 그림 뒤에 차는 목록 몫), exclude는 다른 묶음의 글자를 뺀다(같은 글자를 두 파일이 나눠 받지 않게). 문구가 바뀌면 CI 계약
 // (src/components/fonts/__tests__/krViewerSubset.test.js)이 「추출 ⊆ 커밋된 목록」으로 잡고, 재생성은 scripts/fonts/kr-viewer-subset.py.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,6 +25,10 @@ const SHELL = Object.freeze([
   { file: 'src/components/Layout.jsx' },
   { file: 'src/lib/webNavigation.js' },
 ]);
+
+/** 시드 제목 — 「[N5 문법 #1] …」 꼴(시리즈 꼬리 · 번호). JS 정본(starter-content의 title: '…')과 SQL 리터럴('…'). */
+const SEED_TITLE_JS = /title: '(\[[A-Z0-9]{2} [^'\n\]]{1,20}#\d+\][^'\n]{0,160})'/g;
+const SEED_TITLE_SQL = /'(\[[A-Z0-9]{2} [^'\n\]]{1,20}#\d+\][^'\n]{0,160})'/g;
 
 /**
  * 하위 집합 — 이름 → { 산출 파일 · 글자 출처 }. 싣는 세그먼트 레이아웃이 그 이름의 미리 받기 함수를 부른다(계약이 짝을 본다).
@@ -68,11 +74,34 @@ export const SUBSETS = Object.freeze({
     stem: 'noto-sans-kr-reading', json: 'subset-reading.json', css: 'krReadingSubset.css', segment: 'discover/reading',
     sources: Object.freeze([
       ...SHELL,
-      { file: 'src/app/(app)/discover/reading/page.jsx' },
+      // cjk: 머리 「← 산책」의 ←(U+2190)는 Manrope에 없어(↑ ↓만 있다) Noto Sans KR 조각 하나를 따로 불렀다(READING-LIST-FONT-001).
+      { file: 'src/app/(app)/discover/reading/page.jsx', cjk: true },
       { file: 'src/lib/constants.js', block: 'reading-langs' },
       { file: 'src/views/MaterialsPage.jsx', block: 'reading-chips' },
+      { file: 'src/views/MaterialsPage.jsx', block: 'reading-sort' },
       { file: 'src/views/MaterialsPage.jsx', block: 'reading-guest' },
       { file: 'src/components/web/SiteFooter.jsx' },
+    ]),
+  }),
+  // 「함께 읽는 글」 목록 글자 묶음(READING-LIST-FONT-001) — 공개 자료 132편이 손님에게 보이자(#1760) 카드 제목 · 꼬리표 · 정렬 · 「더 보기」의 글자가
+  // Noto Sans KR 조각 30개 · 855KB를 불렀다(운영 실측 2026-11-08 KST, 화면의 서로 다른 한글은 96자). 그 글자를 한 파일로 묶는다. 미리 받지 않는다
+  // (preload: false — 목록은 첫 그림 뒤에 차고, 미리 받으면 FCP 대역을 나눈다). reading에 있는 글자는 빼고(exclude) 그쪽이 그린다.
+  // 데이터 글자(시드 제목의 한글 — 일본어 · 중국어 제목 괄호의 풀이)는 시드 정본(starter-content · 마이그레이션 제목 리터럴)에서 뽑는다.
+  // cjk: 그 출처의 가나 · 한자 · 전각 기호도 싣는다 — ko 줄의 「NHK ニュース（社会）」 · 「日本語」는 Noto Sans KR 조각이 그렸다(같은 원본이라 같은 그림).
+  readingList: Object.freeze({
+    stem: 'noto-sans-kr-reading-list', json: 'subset-reading-list.json', css: 'krReadingListSubset.css', segment: 'discover/reading',
+    preload: false, exclude: 'reading',
+    sources: Object.freeze([
+      { file: 'src/views/MaterialsPage.jsx', block: 'reading-list', cjk: true },
+      { file: 'src/views/MaterialsPage.jsx', block: 'reading-suggest', cjk: true },
+      { file: 'src/lib/constants.js', block: 'reading-levels' },
+      { file: 'src/lib/content-sources.js', block: 'reading-nhk', cjk: true },
+      { file: 'src/lib/content-sources.js', block: 'reading-nhk-name', cjk: true },
+      { file: 'src/lib/bookNavigation.js', block: 'reading-series', cjk: true },
+      // 시드 제목은 가나 · 한자까지(cjk) — 일본어 · 중국어 제목 줄은 Noto Sans JP · SC 조각이 오는 동안 다음 글꼴(Noto Sans KR)로 그리려고
+      // 그 글자의 KR 조각을 받는다(운영 실측: 중국어 제목에만 있는 店 · 游 · 算의 KR 조각 17개). 같은 원본의 한 파일이 그 몫을 맡는다.
+      { file: 'src/lib/starter-content.js', match: SEED_TITLE_JS, cjk: true },
+      { dir: 'supabase/migrations', pick: /\.sql$/, match: SEED_TITLE_SQL, cjk: true },
     ]),
   }),
 });
@@ -102,12 +131,23 @@ export function sliceBlock(src, name, rel = '') {
 function entriesOf(sources, root) {
   const out = [];
   for (const s of sources) {
-    if (s.file) { out.push({ rel: s.file, block: s.block }); continue; }
+    if (s.file) { out.push({ rel: s.file, block: s.block, match: s.match, cjk: s.cjk }); continue; }
     for (const name of fs.readdirSync(path.join(root, s.dir)).sort()) {
-      if (s.pick.test(name) && !/\.test\./.test(name)) out.push({ rel: `${s.dir}/${name}` });
+      if (s.pick.test(name) && !/\.test\./.test(name)) out.push({ rel: `${s.dir}/${name}`, match: s.match, cjk: s.cjk });
     }
   }
   return out;
+}
+
+// cjk 출처에서 싣는 한글 밖 글자 — 가운뎃점 · 줄표(U+00B7 · U+2014 — 일본어 · 중국어 제목 줄에서는 KR이 대체로 그린다) · 화살표 · 기호(U+2190–2BFF) · CJK 기호 · 가나(U+3000–30FF) · 한자(U+4E00–9FFF) · 전각(U+FF00–FFEF).
+// 라틴 · 일반 구두점은 Manrope가 그린다. Noto Sans KR에 없는 글자는 생성기가 빼고 skipped로 남긴다(원래도 다음 글꼴이 그린다).
+const CJK = /[\u00b7\u2014\u2190-\u2bff\u3000-\u30ff\u4e00-\u9fff\uff00-\uffef]/gu;
+
+/** 출처 한 건의 화면 글자 원문 — block이면 표식 사이, match면 그 무리(1번)만, 아니면 주석을 걷은 전체. */
+function textOf({ rel, block, match }, root) {
+  const raw = fs.readFileSync(path.join(root, rel), 'utf8');
+  if (match) return [...raw.matchAll(match)].map((m) => m[1]).join('\n');
+  return stripComments(block ? sliceBlock(raw, block, rel) : raw);
 }
 
 /** 하위 집합의 출처 파일(상대 경로). */
@@ -115,14 +155,22 @@ export function sourceFiles(root = ROOT, name = 'viewer') {
   return entriesOf(SUBSETS[name].sources, root).map((e) => e.rel);
 }
 
-/** 하위 집합 출처의 한글 음절 — 정렬 · 중복 없음. */
+/** 하위 집합 출처의 한글 음절 — 정렬 · 중복 없음. exclude가 있으면 그 하위 집합의 글자는 뺀다(그쪽 파일이 그린다). */
 export function extractSubsetHangul(name, root = ROOT) {
+  return extractSubsetChars(name, root).filter((ch) => /[가-힣]/u.test(ch));
+}
+
+/** 하위 집합에 싣는 글자 전부 — 한글 음절 + cjk 출처의 가나 · 한자 · 기호. 정렬(코드포인트) · 중복 없음. */
+export function extractSubsetChars(name, root = ROOT) {
+  const spec = SUBSETS[name];
   const set = new Set();
-  for (const { rel, block } of entriesOf(SUBSETS[name].sources, root)) {
-    const raw = fs.readFileSync(path.join(root, rel), 'utf8');
-    for (const ch of stripComments(block ? sliceBlock(raw, block, rel) : raw).match(HANGUL) || []) set.add(ch);
+  for (const entry of entriesOf(spec.sources, root)) {
+    const text = textOf(entry, root);
+    for (const ch of text.match(HANGUL) || []) set.add(ch);
+    if (entry.cjk) for (const ch of text.match(CJK) || []) set.add(ch);
   }
-  return [...set].sort();
+  if (spec.exclude) for (const ch of extractSubsetChars(spec.exclude, root)) set.delete(ch);
+  return [...set].sort((a, b) => a.codePointAt(0) - b.codePointAt(0));
 }
 
 /** 옛 이름 — 뷰어 하위 집합. */
@@ -133,11 +181,11 @@ export function extractViewerHangul(root = ROOT) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   // --json: 생성기(kr-viewer-subset.py)가 읽는 하위 집합 전부 — { 이름: { stem, json, css, chars } }
   if (process.argv[2] === '--json') {
-    const all = Object.fromEntries(Object.entries(SUBSETS).map(([n, s]) => [n, { stem: s.stem, json: s.json, css: s.css, chars: extractSubsetHangul(n).join('') }]));
+    const all = Object.fromEntries(Object.entries(SUBSETS).map(([n, s]) => [n, { stem: s.stem, json: s.json, css: s.css, chars: extractSubsetChars(n).join('') }]));
     process.stdout.write(JSON.stringify(all));
     process.exit(0);
   }
   const name = process.argv[2] || 'viewer';
   if (!SUBSETS[name]) { process.stderr.write(`모르는 하위 집합: ${name} (${Object.keys(SUBSETS).join(', ')})\n`); process.exit(2); }
-  process.stdout.write(extractSubsetHangul(name).join(''));
+  process.stdout.write(extractSubsetChars(name).join(''));
 }
