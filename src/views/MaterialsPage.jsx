@@ -18,7 +18,7 @@ import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import { buildVocabularyWordIndex, countVocabularyDueInMaterial } from '../lib/vocabularyDueIndex';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
-import { parseTitle, compareSeriesPath, seriesTotalsOf } from '../lib/seriesMeta';
+import { parseTitle, compareSeriesPath, seriesTotalsOf, seriesCardTitle, seriesLabelKo } from '../lib/seriesMeta';
 import { materialFit, fitBand, sortByFit, bookFit, FIT_MIN_TYPES } from '../lib/materialFit';
 import { fetchKnownWords, mergeKnownIntoIndex } from '../lib/knownWords';
 import { groupByBook } from '../lib/bookMeta';
@@ -65,7 +65,7 @@ function SuggestionCard({ suggestion: s, router, from = 'materials' }) {
           <span className="tag">{langNameKo(s.language)}</span>
           {s.level && <span className="tag">{s.level}</span>}
           <span className="suggestion-card__source">{s.channel_name}</span>
-          {canStudy && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
+          {/* 「✓ 바로 읽기」 배지는 걷었다(발매 점검 M4, 오너 「권장대로」 2026-11-08 KST) — 아래 「바로 읽기」 단추와 같은 말을 한 카드에 두 번 했다. */}
         </div>
         <ZhSlot lang={encounterLookupLang(s.language)}><h3 className="suggestion-card__title" lang={encounterLookupLang(s.language) || undefined}>{s.title}</h3></ZhSlot>
         <div className="suggestion-card__actions">
@@ -976,7 +976,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
                         style={{ color: 'inherit', textDecoration: 'none' }}
                         onClick={(e) => { e.stopPropagation(); openReader(`/viewer/${m.id}`, e); }}
                       >
-                        {m.title}
+                        {seriesCardTitle(m.title)}
                       </Link>
                     </h3>
                   </ZhSlot>
@@ -1048,7 +1048,7 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                     {isNote && <span className="tag" title="내가 쓴 노트 — 분석하지 않는 비공개 자료">✍ 내 노트</span>}
                     {seriesPosition && (
-                      <span className="tag" style={{ fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>{seriesPosition}</span>
+                      <span className="tag" style={{ fontVariantNumeric: 'tabular-nums' }} title={`${seriesLabelKo(titleMeta.series)} 시리즈`}>{seriesLabelKo(titleMeta.series)} {seriesPosition}</span>
                     )}
                     {dueCount > 0 && <span className="tag tag--due" title="이 자료를 읽으면 복습 처리됨">{dueCount} 복습</span>}
                     {/* 우리 그룹이 이번 주 읽는 자료(v2-F R3) — 무그룹·게스트는 빈 Set이라 자연히 안 뜬다 */}

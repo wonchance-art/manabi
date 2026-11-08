@@ -39,6 +39,19 @@ export function formatNextReviewDate(nextAt, { at = Date.now(), locale = 'ko' } 
 }
 
 /**
+ * 짧은 「다음 복습」 말(발매 점검 M6, 오너 「권장대로」 2026-11-08 KST) — 배움 단어 복습 칸이 0개일 때 「다음 복습 10분 뒤」.
+ * 같은 학습일이면 분 · 시간, 다음 학습일이면 「내일」, 그 밖은 formatNextReviewDate의 날짜 그대로. 이미 지났으면 null(그때는 「N개 대기」).
+ */
+export function nextReviewShortLabel(nextAt, { at = Date.now(), locale = 'ko' } = {}) {
+  const formatted = formatNextReviewDate(nextAt, { at, locale });
+  if (!formatted || formatted.due) return null;
+  const ms = new Date(nextAt).getTime() - new Date(at instanceof Date ? at.getTime() : at).getTime();
+  if (formatted.daysAway <= 0) return ms < 3600000 ? `${Math.max(1, Math.ceil(ms / 60000))}분 뒤` : `${Math.ceil(ms / 3600000)}시간 뒤`;
+  if (formatted.daysAway === 1) return '내일';
+  return formatted.label;
+}
+
+/**
  * savedWords(useQuery 'vocab-words' 인덱스)와 저장 행 → 다음 복습 표시값. 추가 조회 없음.
  * @returns {{label, year, month, date, daysAway, due, at, source}|null}
  */

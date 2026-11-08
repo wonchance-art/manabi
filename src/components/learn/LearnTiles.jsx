@@ -13,6 +13,7 @@ import { wordScopeLanguage } from '@/lib/reviewScope';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 import { reducedMotion } from '@/lib/reducedMotion';
+import { nextReviewShortLabel } from '@/lib/viewerNextReview';
 
 /**
  * 손님 배움의 로그인 칸 — 화면(HomePage, href 있음)과 대기 화면(home/loading.jsx, href 없는 자리표)이 같은 칸을 쓴다.
@@ -58,6 +59,17 @@ export function StreakTile({ profile, className }) {
   return <StatTile className={className} value={view.value} label={view.label} title={view.title} ariaLabel={view.aria} />;
 }
 
+/** 칩 언어 안에서 가장 이른 다음 복습 시각(아직 오지 않은 것) — 없으면 null. 칸이 이미 받은 projections만 본다(조회 0). */
+export function nextReviewAtOf(projections = [], lang, now = Date.now()) {
+  let best = null;
+  for (const p of projections) {
+    if (lang && wordScopeLanguage(p.vocabulary) !== lang) continue;
+    const at = Date.parse(p?.review?.nextQuestionAt);
+    if (Number.isFinite(at) && at > now && (best === null || at < best)) best = at;
+  }
+  return best === null ? null : new Date(best).toISOString();
+}
+
 /**
  * 단어 복습 — 단어가 시간차로 넘어가는 메트로식 칸. 숫자는 부르는 쪽이 countReviewScope로 낸 total을 넘긴다
  * (이 칸은 개수를 세지 않는다). 칩 언어의 단어만 돌린다. 0개면 「N개 대기」 없이 최근 담은 표현만 보인다.
@@ -100,13 +112,17 @@ export function ReviewTile({ projections = [], lang, count = null, href, classNa
   }
   const word = pool[idx % Math.max(pool.length, 1)];
   const waiting = Number.isFinite(count) && count > 0 ? `${count}개 대기` : null;
-  const cta = word ? '복습하기' : '읽으러 가기';
+  // 대기 0개인데 담은 표현이 있으면(첫 복습이 1~10분 뒤인 저장 직후 등) 「복습하기」가 아니라 다음 시각과 「담은 표현 보기」(발매 점검 M6,
+  // 오너 「권장대로」 2026-11-08 KST) — 들어가면 「지금 다시 볼 표현은 없어요」라 단추 말이 어긋났다. 행선지는 같은 복습 화면.
+  const nextLabel = word && !waiting ? nextReviewShortLabel(nextReviewAtOf(projections, lang, now), { at: now }) : null;
+  const next = nextLabel ? `다음 복습 ${nextLabel}` : null;
+  const cta = !word ? '읽으러 가기' : waiting ? '복습하기' : '담은 표현 보기';
   return (
     <Link href={word ? href : '/materials'} prefetch={false} className={`learn-tile learn-review ${className}`.trim()}
-      aria-label={['단어 복습', waiting, cta].filter(Boolean).join(' · ')}>
+      aria-label={['단어 복습', waiting || next, cta].filter(Boolean).join(' · ')}>
       <span className="learn-tile__head">
         <span className="learn-kick">단어 복습</span>
-        {waiting && <span className="learn-review__due">{waiting}</span>}
+        {(waiting || next) && <span className="learn-review__due">{waiting || next}</span>}
       </span>
       {word ? (
         <span className="learn-review__cycle" key={word.id ?? idx}>

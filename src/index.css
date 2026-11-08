@@ -6042,13 +6042,6 @@ a.viewer-badge:hover {
 .review-keys-hint { display: none; }
 @media (pointer: fine) { .review-keys-hint { display: inline; } }
 
-/* ========= 추천 카드 바로읽기 배지 ========= */
-.suggestion-card__ready {
-  font-size: 0.7rem;
-  color: var(--accent-text);
-  font-weight: 600;
-}
-
 /* ========= 언어 미설정 배너 ========= */
 
 /* ========= 신규 유저 시작 가이드 ========= */
@@ -8147,6 +8140,8 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 
 /* 팀 사본 담기 CTA(v2-AB R2) — 비로그인 학생의 카드 액션 줄 자리 */
 .save-grade__guest { padding: 10px 12px; border-radius: var(--radius-md); background: var(--primary-glow); border: 1px solid var(--primary); }
+/* 손님 담기 단추(발매 점검 M1) — 로그인한 사람의 네 칸과 같은 자리 · 같은 누름 높이(44px). */
+.save-grade__login { display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; }
 
 /* な형용사 표제어 뒤 작은 「な」(단어장 · 복습 카드 — 오너 승인 2026-11-06 KST) */
 .na-tail { font-size: .55em; font-weight: 500; color: var(--text-muted); margin-left: .06em; }
