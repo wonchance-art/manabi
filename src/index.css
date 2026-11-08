@@ -7295,11 +7295,15 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
 
 /* 공통 밑줄 텍스트 링크·버튼 — 세션 화면 인라인 스타일 통합 */
 .study-textlink {
+  position: relative;
   background: none; border: none; padding: 0;
   cursor: pointer; font-family: inherit;
   font-size: 0.8rem; color: var(--text-muted);
   text-decoration: underline;
 }
+/* 누르는 범위만 세로 44px(A11Y-AUTH-001 — 「왜 이게 답이에요?」 · 「번역 보기」 · 「지난 이야기 다시 읽기」, 보이는 글자 18–20px 그대로).
+   로고 · 「닉네임 바꾸기」와 같은 꼴. 이웃 조작 침범 0은 e2e/touch-targets-auth.e2e.mjs가 잰다. */
+.study-textlink::before { content: ''; position: absolute; left: 0; right: 0; top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px)); }
 .study-textlink:hover { color: var(--text-secondary); }
 
 /* ── 문단 발음 지연 공개 · 재료 단어 탭 ── */

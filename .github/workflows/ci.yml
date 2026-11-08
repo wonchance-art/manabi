@@ -247,3 +247,8 @@ jobs:
       # 운영 DB · 실계정 · LLM과 무관하다. 응답 모양 계약은 src/lib/__tests__/studyFixtureContract.test.js(vitest 단계).
       - name: /study 세션 한 바퀴 (합성 백엔드)
         run: node --test --test-concurrency=1 e2e/study-session.e2e.mjs
+
+      # 로그인 화면 누르는 범위 · 카드 제목 단계(A11Y-AUTH-001): 같은 합성 백엔드 환경(포트 3173). 보이는 글자는 그대로 두고 넓힌 범위가
+      # 실제로 잡히는지(elementFromPoint) · 이웃 조작을 덮지 않는지 · 뷰어 카드 칸 제목이 h1 다음 h2인지. CSS 모양 계약은 a11yAuthTargets(vitest 단계).
+      - name: 로그인 화면 누르는 범위 · 카드 제목 단계 (합성 백엔드)
+        run: node --test --test-concurrency=1 e2e/touch-targets-auth.e2e.mjs

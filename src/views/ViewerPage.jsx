@@ -4040,7 +4040,7 @@ export default function ViewerPage({ seed } = {}) {
         const count = senseListCount(senseGroups);
         return <>
           <section className="reader-card-senses" aria-label={vt('사전 뜻 · {count}개', { count })} key={`senses:${selectedToken.id||selectedToken.text}`}>
-            <h3 className="reader-card-section__label">{vt('사전 뜻 · {count}개', { count })}</h3>
+            <h2 className="reader-card-section__label">{vt('사전 뜻 · {count}개', { count })}</h2>
             <ol className="reader-card-sense-list">
               {senseGroups.flatMap((group) => group.items.map((item, k) => {
                 const line = <>
@@ -4074,7 +4074,7 @@ export default function ViewerPage({ seed } = {}) {
       {/* 더 알아보기(정본 §2.1) — AI로 새로 만드는 것이라 요청 버튼. 이미 만든 결과(캐시)가 있으면 버튼 대신 내용.
           한국어 나눈 조각(§7.5)은 기존 형태 분석 설명만 쓴다 — AI 요청 버튼을 두지 않는다. */}
       {!koreanPieceSelected && <section ref={learnRef} className="reader-card-learn" aria-label={vt('더 알아보기')} key={`learn:${selectedToken.id||selectedToken.text}`}>
-        <h3 className="reader-card-section__label">{vt('더 알아보기')}</h3>
+        <h2 className="reader-card-section__label">{vt('더 알아보기')}</h2>
         {/* 손님 = 요청 대신 로그인 안내(목업 viewer-audit §1 · 번역 칸 SENTENCE_TX_LOGIN_REQUIRED와 같은 규칙). 버튼 둘은 숨기고,
             캐시가 있으면 지금처럼 내용을 바로 보인다. 둘 다 이미 보이면 안내도 없다. 로그인 확인 중에는 버튼도 안내도 두지 않는다. */}
         {!user && !authLoading && ((synAntEligible(selectedToken,materialLang) && !(synAnt && !synAnt.loading && !synAnt.error)) || !wordDetail?.detail)
@@ -5218,7 +5218,7 @@ export default function ViewerPage({ seed } = {}) {
           {/* 접힌 막대의 ✕ = 문장 지정 해제(뷰어 점검 A3) — 막대 · 문장 강조가 함께 사라진다. 예전엔 지울 방법이 없었다. */}
           {pickedKey !== null && <button type="button" className="viewer-inspector__clear" aria-label={vt('문장 지정 해제')} title={vt('문장 지정 해제')} onClick={closeMoveBar} data-icon-action><ActionIcon name="close"/></button>}</>}
         leftContent={senseReviewContent || boundaryPendingContent || leftPanelContent}
-        rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h3 className="reader-card-section__label">{vt("교재 설명")}</h3>{annotationContent}</section>):<>{annotationContent}{renderRightPanelContent()}</>}
+        rightContent={selectedToken&&isSheetOpen?renderRightPanelContent(annotationContent&&<section className="reader-card-notes" aria-label={vt("교재 설명")}><h2 className="reader-card-section__label">{vt("교재 설명")}</h2>{annotationContent}</section>):<>{annotationContent}{renderRightPanelContent()}</>}
         leftActive={leftPanelLoading || !!leftPanelResult || !!senseReviewContent || !!boundaryPendingContent}
         rightActive={annotationOpen || dragTokens !== null || (selectedToken && isSheetOpen)}
         leftSignal={leftSheetSignal}
