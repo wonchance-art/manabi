@@ -32,7 +32,8 @@ export default function GuestGrammarReview() {
     fetch('/api/review/drills', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ rows: due }),
+      // 서버는 앞의 60행만 조립한다(/api/review/drills MAX_ROWS) — 그만큼만 보낸다(본문 상한 API-ABUSE-001).
+      body: JSON.stringify({ rows: due.slice(0, 60) }),
     })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
       .then((data) => {

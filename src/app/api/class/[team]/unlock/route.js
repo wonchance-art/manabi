@@ -4,6 +4,12 @@ import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 import { secretOf, signToken, verifyPassword, TOKEN_TTL_MS } from '@/lib/server/classAccess';
 import { serviceClient, loadTeamRoot, buildTeamIndex } from '@/lib/server/classIndex';
 import { TEAM_KEY_RE, TEAM_PW_MIN } from '@/lib/classBoard';
+import { readLimited } from '@/lib/server/errorEvents';
+
+// API-ABUSE-001(2026-11-08 KST): 로그인 없이 부르는 경로 — 해시(verifyPassword)에 들어가기 전에 본문 · 암호 길이를 자른다.
+// 상한은 실제 암호보다 넉넉히(정할 때 상한이 없어 기존 팀을 잠그지 않게). 넘으면 틀린 암호와 같은 404.
+const MAX_UNLOCK_BODY_BYTES = 8 * 1024;
+const MAX_PW_CHARS = 1024;
 
 export const runtime = 'nodejs';
 
@@ -21,9 +27,13 @@ export async function POST(request, { params }) {
   }
 
   let body;
-  try { body = await request.json(); } catch { return Response.json({ error: 'bad_json' }, { status: 400, headers: NO_STORE }); }
+  try {
+    const text = await readLimited(request, MAX_UNLOCK_BODY_BYTES);
+    if (text === null) return notFound();
+    body = JSON.parse(text);
+  } catch { return Response.json({ error: 'bad_json' }, { status: 400, headers: NO_STORE }); }
   const pw = String(body?.pw ?? '');
-  if (!TEAM_KEY_RE.test(String(key || '')) || pw.trim().length < TEAM_PW_MIN) return notFound();
+  if (!TEAM_KEY_RE.test(String(key || '')) || pw.trim().length < TEAM_PW_MIN || pw.length > MAX_PW_CHARS) return notFound();
 
   try {
     const admin = serviceClient();

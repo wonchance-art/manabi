@@ -3,6 +3,8 @@ import { getRefLang } from '@/content/refLangs';
 import { buildDrillReviewQuiz, drillIdFromQueueSlug, findDrillContext } from '@/lib/drillSrs';
 // 옛 교재 챕터 주소는 관리자 보관함으로만 열린다 — 학습자 링크는 null(VIEWER-R0-BUGS-001 버그 3).
 import { learnerHref } from '@/lib/bookNavigation';
+import { getClientKey, rateLimit } from '@/lib/server/rateLimit';
+import { readLimited } from '@/lib/server/errorEvents';
 
 /**
  * 게스트 복습 큐(localStorage) → 세션 문항 조립.
@@ -15,11 +17,22 @@ import { learnerHref } from '@/lib/bookNavigation';
  * 문항을 만들고, 요청에 실려 온 문항·정답은 일절 쓰지 않는다.
  */
 const MAX_ROWS = 60; // 한 세션에 이보다 많이 필요할 일이 없다 — 무한 확장 차단
+// API-ABUSE-001(2026-11-08 KST): 손님이 부르는 경로 — 본문 상한 · IP 분당 상한(정본 rateLimit).
+// 상한은 넉넉히 — 기기 큐에 밀린 복습이 많아도(행 하나 약 200바이트 × 1,000행) 413으로 복습이 막히지 않게. 클라는 MAX_ROWS만 보낸다.
+const MAX_DRILL_BODY_BYTES = 256 * 1024;
+const PER_MINUTE = 30;
 
 export async function POST(request) {
+  if (!rateLimit(`drills:${getClientKey(request)}`, { limit: PER_MINUTE, windowMs: 60_000 }).ok) {
+    return NextResponse.json({ error: 'rate limited' }, { status: 429 });
+  }
+  const declared = Number(request.headers.get('content-length') || 0);
+  if (declared > MAX_DRILL_BODY_BYTES) return NextResponse.json({ error: 'too large' }, { status: 413 });
   let body;
   try {
-    body = await request.json();
+    const text = await readLimited(request, MAX_DRILL_BODY_BYTES);
+    if (text === null) return NextResponse.json({ error: 'too large' }, { status: 413 });
+    body = JSON.parse(text);
   } catch {
     return NextResponse.json({ error: 'invalid json' }, { status: 400 });
   }
