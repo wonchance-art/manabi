@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { summarizeFetchSuggestions, withCronRun } from '@/lib/server/cronRuns';
 import { kstDateString } from '@/lib/growthStats';
 import { fetchFromSource } from '../../../../lib/content-sources.js';
 import { REPEAT_WINDOW_DAYS, daysBefore, freshSuggestions, groupByLanguage, isVideoSource, planCronRun, resolveActiveSources, suggestionSourceLabel } from '../../../../lib/suggestionSources.js';
@@ -8,7 +9,8 @@ import { REPEAT_WINDOW_DAYS, daysBefore, freshSuggestions, groupByLanguage, isVi
 export const maxDuration = 60;
 const VIDEO_START_DEADLINE_MS = 35_000;
 
-export async function GET(request) {
+// OPS-HEALTH-001: 실행 한 줄(observe.cron_runs)을 남긴다 — 일일 상태 점검이 「돌았나 · 몇 개 · 실패」를 본다. 인증 실패는 남기지 않는다.
+async function fetchSuggestions(request) {
   const startedAt = Date.now();
   // CRON_SECRET 미설정 시 "Bearer undefined" 통과 방지 — fail-closed.
   if (!process.env.CRON_SECRET) {
@@ -103,3 +105,5 @@ export async function GET(request) {
     runs: runLog,
   });
 }
+
+export const GET = withCronRun('fetch-suggestions', fetchSuggestions, summarizeFetchSuggestions);

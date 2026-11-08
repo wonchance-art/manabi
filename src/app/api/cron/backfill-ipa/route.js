@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { callGemini, parseGeminiJSON } from '../../../../lib/gemini.js';
 import { requireUser, isAdminUser, SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
+import { summarizeBackfillIpa, withCronRun } from '@/lib/server/cronRuns';
 
 export const maxDuration = 60;
 
-export async function GET(request) {
+// OPS-HEALTH-001: 실행 한 줄(observe.cron_runs) — 인증 실패(401)는 남기지 않는다.
+async function backfillIpa(request) {
   // 관리자 판별(isAdminUser)과 보충 쓰기는 service-role로만 — 키가 없으면 판별이 예외로 꺼져 관리자도 401이 되고
   // cron 경로는 쓰기 클라이언트를 만들지 못한다. seed-starters와 같이 닫힌 채 503(같은 안내)으로 돌려준다.
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -136,3 +138,5 @@ Rules:
     remaining: Math.max(0, empties.length - dictUpdated - geminiUpdated),
   });
 }
+
+export const GET = withCronRun('backfill-ipa', backfillIpa, summarizeBackfillIpa);
