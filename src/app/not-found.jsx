@@ -17,7 +17,8 @@ export const metadata = {
 // 남지 않게(2026-10-16 실측).
 export default function NotFound() {
   return (
-    <div className="manabi-app"><div style={{
+    // 본문은 <main> 랜드마크(A11Y-LAUNCH-001 — axe landmark-one-main · region). main은 div와 같은 블록이라 화면은 그대로다.
+    <div className="manabi-app"><main style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', minHeight: '70vh', padding: '40px 24px',
       color: 'var(--text-primary)', textAlign: 'center',
@@ -33,6 +34,6 @@ export default function NotFound() {
             className={`btn ${index === 0 ? 'btn--primary' : 'btn--ghost'} btn--md`}>{item.label}</Link>
         ))}
       </nav>
-    </div></div>
+    </main></div>
   );
 }

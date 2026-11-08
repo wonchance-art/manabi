@@ -12,7 +12,8 @@ export const metadata = publicMetadata('/privacy', {
 
 export default function PrivacyPage() {
   return (
-    <div className="manabi-app"><div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 20px 80px', lineHeight: 1.75 }}>
+    // 본문은 <main> 랜드마크(A11Y-LAUNCH-001 — axe landmark-one-main · region). main은 div와 같은 블록이라 화면은 그대로다.
+    <div className="manabi-app"><main style={{ maxWidth: 760, margin: '0 auto', padding: '40px 20px 80px', lineHeight: 1.75 }}>
       <h1 style={{ fontSize: '1.6rem', marginBottom: 6 }}>개인정보 처리방침</h1>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: 28 }}>
         최종 업데이트: 2026년 11월 2일
@@ -86,7 +87,7 @@ export default function PrivacyPage() {
       <p style={{ marginTop: 40 }}>
         <Link href="/terms" style={{ color: 'var(--primary)' }}>← 이용약관 보기</Link>
       </p>
-    </div></div>
+    </main></div>
   );
 }
 
