@@ -878,7 +878,14 @@
 
 ## Claude (claude/*)
 ### doing
-- **LH-BASELINE-001 공개 경로 Lighthouse 기준선 · ERR-BOUNDARY-001 (2026-11-09 KST)** 로컬 브랜치 `claude/wip/next-batch`(다음 코드 PR에 묶음 · 화면 무변화):
+- **VIEWER-MOBILE-PERF-001 모바일 뷰어 원인 분해 · 화면 무변화 고침 (2026-11-09 KST)** PR `claude/preview/web`(오케스트레이터 지시):
+  운영 직접 · 앞단 교대 A/B(1.6Mbps · CPU 4×). LCP 요소 = 제목 h1(셋 다). Lighthouse 4.7–5.7s는 모의 조절 값이고 실제 LCP−TTFB는 2.3–2.5s.
+  분해: 렌더 차단 CSS 21개(240KB) + 셸의 SC · TC 시트 미리 받기 68KB(JA · EN도) → FCP / React 19.2 경계 공개 묶음(+300ms)과 공개 배치(ZH 250ms) →
+  제목 / ZH 간체 글자 조각 600KB가 페이지 JS를 7.9s로 민다 / 하이드레이션 300–500ms. **느린 망에서 손님 서버 본문이 하이드레이션 때 버려짐**
+  (유지 2/15 — AuthProvider 손님 확정이 페이지 조각 도착 전 일반 우선순위 갱신, DevTools 훅으로 특정).
+  고침: ① 손님 확정 startTransition(유지 15/15 · TBT JA 668→585 · EN 637→452 · ZH 902→876) ② SC · TC 미리 받기를 쪽이 본문 언어로 고름
+  (JA 2.39→1.90s · EN 2.33→2.00s · ZH 2.47→2.29s). 회귀 e2e `viewer-ssr-hydration-keep`(CI 목록). 화면이 바뀌는 것은 목록(`docs/perf-measurement.md`).
+- **LH-BASELINE-001 공개 경로 Lighthouse 기준선 · ERR-BOUNDARY-001 (2026-11-09 KST)** #1787 병합(bbc83878) · 운영 사후 확인(세 로봇 UA head 메타 3/3):
   Lighthouse 12.6.1 운영 11경로 × 모바일 · 데스크톱 × 3회(텔레메트리 3종 차단). 데스크톱 성능 96–100, 모바일은 뷰어 63–76 · 함께 읽는 글 75 · 나머지 88–98.
   접근성 96–100 · 모범 사례 96–100 · SEO 91–100(/auth 63 = 의도된 noindex). 404는 Lighthouse가 채점하지 않음. 기준표 `docs/perf-measurement.md`.
   고침: ① 메타데이터 blocking 봇에 Googlebot · Daumoa · kakaotalk-scrap 추가(htmlLimitedBots — Next 15.5 streaming이 이들에게 description · og를 body에 두고

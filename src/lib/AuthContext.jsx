@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, startTransition, useContext, useEffect, useRef, useState } from 'react';
 import { getSupabase, supabase } from '../lib/supabase';
 import { hasSupabaseSessionCookie } from './authCookie';
 import { whenDocumentParsed } from './documentParsed';
@@ -239,8 +239,12 @@ export function AuthProvider({ children, queryClient, onAccountLeft }) {
       noteAccount(null); // 쿠키가 없으면 손님이 확정이다 — 기기 캐시 읽기(whenAccountKnown)가 기다리지 않게
       // 손님 확정 — 세션 쿠키가 없다(만료 · 다른 탭 로그아웃 뒤). 학습자 힌트를 남기지 않는다(SC-LINK-001 리뷰 N2).
       syncScHintCookie(false);
-      // 게스트 확정도 Provider 값을 바꾼다 — 스트리밍 본문이 다 온 뒤에(whenDocumentParsed).
-      const stopWaiting = whenDocumentParsed(() => { if (!cancelled) setLoading(false); });
+      // 게스트 확정도 Provider 값을 바꾼다 — 스트리밍 본문이 다 온 뒤에(whenDocumentParsed), 전환(startTransition)으로.
+      // 조각은 붙었지만 그 경계의 코드(페이지 조각)가 아직 오는 중이면 경계는 하이드레이션을 기다린다 — 그때 일반 우선순위로
+      // 값을 바꾸면 React가 서버 본문을 버리고 새로 그린다(VIEWER-MOBILE-PERF-001 운영 실측 — 1.6Mbps 손님 뷰어에서 본문이
+      // 하이드레이션 때 DOM에서 빠졌다가 약 0.5초 뒤 다시 그려졌다). 전환 갱신은 하이드레이션이 끝날 때까지 기다린다.
+      // 붙일 차례를 기다리는 경계(「$?」 · 「$~」)는 전환이어도 버리므로 whenDocumentParsed 대기는 그대로 둔다.
+      const stopWaiting = whenDocumentParsed(() => { if (!cancelled) startTransition(() => setLoading(false)); });
       return () => { cancelled = true; stopWaiting(); };
     }
 
