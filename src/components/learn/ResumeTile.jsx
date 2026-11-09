@@ -38,10 +38,9 @@ export default function ResumeTile({ item, pending = false, onClick, glyph = nul
   }
   const code = encounterLookupLang(item.lang) || 'ja';
   const pct = item.count && item.count.total > 0 ? Math.min(100, (item.count.done / item.count.total) * 100) : 0;
-  const label = [item.cta, item.kicker, item.number, item.title, item.sub, item.count && `${item.count.done} / ${item.count.total}`]
-    .filter(Boolean).join(' · ');
+  // 접근 이름 = 보이는 글(WCAG 2.5.3 Label in Name — LH-BASELINE-001): 따로 aria-label을 두면 「보이는 말 ⊂ 이름」이 깨졌다(순서 · 빠진 문장). 장식(글자 · 화살표)은 aria-hidden.
   return (
-    <Link href={item.href} prefetch={false} onClick={onClick} className={`learn-tile learn-resume lang-${code} learn-order-resume`} aria-label={label}>
+    <Link href={item.href} prefetch={false} onClick={onClick} className={`learn-tile learn-resume lang-${code} learn-order-resume`}>
       <ResumeGlyph glyph={item.glyph} lang={item.glyphLang || code} />
       <span className="learn-resume__head">
         <span className="learn-resume__kicker">{item.kicker}</span>

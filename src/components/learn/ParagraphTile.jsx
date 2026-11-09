@@ -24,8 +24,9 @@ export default function ParagraphTile({ state, lang, href, kicker = '오늘 문�
       </div>
     );
   }
+  // 접근 이름 = 보이는 글(WCAG 2.5.3 Label in Name — LH-BASELINE-001): 따로 aria-label을 두면 「보이는 말 ⊂ 이름」이 깨졌다(순서 · 빠진 문장). 장식(글자 · 화살표)은 aria-hidden.
   return (
-    <Link href={href} prefetch={false} className="learn-tile learn-paragraph learn-order-paragraph" aria-label={`${kicker} · 시작하기`}
+    <Link href={href} prefetch={false} className="learn-tile learn-paragraph learn-order-paragraph"
       onClick={state.kind === 'forecast' ? onForecastTap : undefined}>
       <span className="learn-tile__head"><span className="learn-kick">{kicker}</span></span>
       <span className="learn-paragraph__cycle" aria-busy={busy || undefined}>
@@ -36,7 +37,7 @@ export default function ParagraphTile({ state, lang, href, kicker = '오늘 문�
         </>}
         {state.kind === 'empty' && <span className="learn-paragraph__cap">시작하면 오늘 문단을 만들어요</span>}
       </span>
-      <span className="learn-tile__cta">시작하기 →</span>
+      <span className="learn-tile__cta">시작하기 <span aria-hidden="true">→</span></span>
     </Link>
   );
 }

@@ -878,6 +878,14 @@
 
 ## Claude (claude/*)
 ### doing
+- **LH-BASELINE-001 공개 경로 Lighthouse 기준선 · ERR-BOUNDARY-001 (2026-11-09 KST)** 로컬 브랜치 `claude/wip/next-batch`(다음 코드 PR에 묶음 · 화면 무변화):
+  Lighthouse 12.6.1 운영 11경로 × 모바일 · 데스크톱 × 3회(텔레메트리 3종 차단). 데스크톱 성능 96–100, 모바일은 뷰어 63–76 · 함께 읽는 글 75 · 나머지 88–98.
+  접근성 96–100 · 모범 사례 96–100 · SEO 91–100(/auth 63 = 의도된 noindex). 404는 Lighthouse가 채점하지 않음. 기준표 `docs/perf-measurement.md`.
+  고침: ① 메타데이터 blocking 봇에 Googlebot · Daumoa · kakaotalk-scrap 추가(htmlLimitedBots — Next 15.5 streaming이 이들에게 description · og를 body에 두고
+  head로 올리지 않았다 — 운영 실측) ② /home 학습 타일 3종 aria-label 제거 · 화살표 aria-hidden(WCAG 2.5.3 — axe 위반 0)
+  ③ ERR-BOUNDARY-001(a) reportError도 navigator.webdriver면 미전송(CLS 보고와 같은 규칙). 목록: CSP img-src i.ytimg.com(11/14 CSP 집계) ·
+  뷰어 본문 낱말 target-size(③) · / → /home 307 · 썸네일 크기 · 전역 CSS · 폴리필. ERR-BOUNDARY-001: boundary.global 4건 = 11/8 14:51 /viewer(404 주소) 단일 세션
+  ChunkLoadError timeout(배포 어긋남 아님) · CLS 1건 = bot 렌더러 — 재현 0, 11/15 집계 예약에 bot 분리 · boundary 후속 추가.
 - **BUNDLE-AUTH-001 로그인 경로 첫 화면 JS 측정 · 분리 (2026-11-08 KST)** 로컬 브랜치 `claude/wip/bundle-auth`(오케스트레이터 지시 · push는 11/9 오전 묶음 — 화면 무변화):
   합성 무거운 계정 · 발행판, 문서 스크립트(HTML이 싣는 첫 화면 몫, brotli) /home 222 · /study 197 · /vocab 255 · /profile 191 · /progress 207 · 뷰어 249KB(공통 148 —
   react-dom · Next 83 고정). 큰 덩어리: Supabase 43KB(뒤에 받음 · realtime · storage를 써서 못 걷음) · 뷰어 한자 표 107KB(HANJA-LAZY-001 유휴 받기) ·
