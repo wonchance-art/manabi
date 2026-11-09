@@ -1349,6 +1349,12 @@
     EN-SOURCE-001 ⓒ 1차(이번 PR — **병합 보류**, 오케스트레이터 04:42 · 04:47 · 04:57 KST): VOA Learning English 자료실 26편(14.9k 낱말 · A2 18 · B1 8) 공개 시드 반입 ·
     승인 27편 중 WHO 글 1편은 기자 줄이 AFP 각색이라 제외. 권리 거름 = 원문 기자 줄(source.credit) — 생성기 scripts/voa-seed.mjs · 마이그레이션 사전 검사 같은 규칙(재반입 · 추가분 공통).
     백업 · 복원 SQL(학습 기록 있으면 멈춤) · PGlite 16 · vitest 6. metadata.source kind 'web'. **선행 조건 = 출처 줄 표시 코드 운영 반영**(「with credit」).
+    백로그 SUPABASE-CLI-V3(오케스트레이터 11:30 KST 11/9 주간 트렌드 — 조치 없음, 2.122.0 고정 유지 · 올릴 때만): v3.0.0(11/2)은 대상 없는 명령이 로컬을 향하고
+    호스팅 변경은 무인 실행에서 --yes 없으면 실패, --linked · --project-ref · --db-url 폐기 예정(경고), 「--password + 로컬/URL 대상 = exit 1」, link --password 무시.
+    바꿀 것 — supabase-migrations.yml: `db push --password` → `db push --remote --yes --password`(대상 없이 두면 로컬 + --password로 exit 1) · `link --project-ref` 유지(경고만,
+    v3 link는 최소 권한 토큰 지원). supabase-repair.yml: `migration list` → `--remote` · `migration repair --status applied` → `--remote --yes` · `db push --dry-run --include-all` → `--remote`
+    (dry-run은 동의 불요) · `db push --include-all` → `--remote --yes`. 「Skipping migration」 등 오류 문구 grep(migrations.yml 82행)은 v3 문구 변경 여부 확인. config.toml [inbucket] 없음 · gen types 미사용.
+    근거 https://github.com/supabase/cli/releases/tag/v3.0.0 · supabase-js 2.119.0은 보안 수정 없음 → 정기 갱신 때.
     MATERIAL-DIFFICULTY-002([#1761](https://github.com/wonchance-art/manabi/pull/1761) squash 959fb842 · 11/8 13:00 KST · 운영 사후 확인 — 20261108040000 적용,
     RPC anon · authenticated EXECUTE 닫힘 · service_role만 · SECURITY DEFINER · search_path '' · difficulty 0행(첫 백필 전) · 지문 넷 그대로), 오케스트레이터 13:15 · 13:35 KST 승인 — 디자인 M2 「공개 카드 난이도 한 줄」 데이터): 서버가 정본
     materialDifficulty(#1743)로 processed_json.metadata.difficulty = { version, scale(HSK · JLPT · null), medianLevel, p90Level, types, listedShare }를
