@@ -310,19 +310,28 @@ describe('첫 그림 뒤 시트 — 뷰어(Noto Sans SC · TC)', () => {
   const layout = read('src/app/(app)/viewer/layout.jsx');
   const code = layout.replace(/(^|[^:'"`])\/\/[^\n]*/g, '$1');
 
-  it('뷰어 레이아웃은 Sc/TcFontScope를 싣지 않고 DeferredZhFontSheets를 둔다(라틴 미리 받기는 그대로)', () => {
+  // VIEWER-MOBILE-PERF-001(2026-11-09 KST): 셸(레이아웃)은 자료 언어를 몰라 두 시트를 모든 뷰어에서 미리 받았다(일본어 · 영어 손님도 br 약 68KB).
+  // 이제 본문 언어를 아는 쪽이 부품을 싣고 known으로 미리 받기 · 붙이는 때를 고른다(모드별 동작은 deferredZhFontSheets.test.jsx).
+  it('뷰어 레이아웃은 Sc/TcFontScope도 DeferredZhFontSheets도 싣지 않고(셸 미리 받기 없음) 변수 CSS · 라틴 미리 받기만 둔다', () => {
     expect(code).not.toMatch(/ScFontScope|TcFontScope|Noto_Sans_(SC|TC)/);
-    expect(code).toContain("import DeferredZhFontSheets from '@/components/fonts/DeferredZhFontSheets';");
-    expect(code).toContain('<DeferredZhFontSheets />');
+    expect(code).not.toContain('DeferredZhFontSheets');
+    expect(code).not.toMatch(/noto-sans-(sc|tc)|SC_STYLESHEET_HREF|TC_STYLESHEET_HREF/);
+    expect(code).toContain("import '@/components/fonts/zhFontVars.css';");
     expect(code).toContain('preloadNotoSansLatin();');
     expect(ZH_DEFERRED_SEGMENTS.every((seg) => !TC_SEGMENTS.includes(seg) && !SC_SEGMENTS.includes(seg))).toBe(true);
   });
 
-  it('부품은 두 독립 시트를 낮은 우선순위로 미리 받고(렌더 차단 없음) 하이드레이션 뒤에 붙인다', () => {
+  it('쪽이 서버 본문 언어로 known을 정해 부품을 싣는다 — 중국어 서버 본문 zh · 그 밖 서버 본문 other · 서버 본문 없음 null', () => {
+    const page = read('src/app/(app)/viewer/[id]/page.jsx');
+    expect(page).toContain("import DeferredZhFontSheets from '@/components/fonts/DeferredZhFontSheets';");
+    expect(page).toContain("<DeferredZhFontSheets known={ssr ? (ssr.processed_json?.metadata?.language === 'Chinese' ? 'zh' : 'other') : null} />");
+  });
+
+  it('부품은 렌더 차단 링크를 쓰지 않고, 모름(null) · 화면 언어 감춤(locale)이면 하이드레이션 직후, 아니면 한가할 때 붙인다', () => {
     const src = read('src/components/fonts/DeferredZhFontSheets.jsx');
     expect(src).toContain("export const DEFERRED_ZH_SHEETS = Object.freeze([SC_STYLESHEET_HREF, TC_STYLESHEET_HREF].filter(Boolean));");
-    expect(src).toContain("preload(href, { as: 'style', fetchPriority: 'low' })");
-    expect(src).toContain('useEffect(() => { attachZhFontSheets(); }, []);');
+    expect(src).toContain("if (known === null || document.documentElement.getAttribute('data-viewer-hold') === 'locale') { attachZhFontSheets(); return undefined; }");
+    expect(src).toContain('return onIdle(() => { attachZhFontSheets(); }, { timeout: 4000 });');
     expect(src).not.toMatch(/precedence=/); // React precedence 링크는 렌더를 막는다(SC-LINK-001) — 여기서는 쓰지 않는다
   });
 
