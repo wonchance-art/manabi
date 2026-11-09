@@ -28,6 +28,7 @@ test('guest server body survives hydration on a slow network (1.6Mbps · 150ms �
       window.__removed = [];
       document.addEventListener('DOMContentLoaded', () => {
         window.__h1 = document.querySelector('h1.page-header__title');
+        window.__backAtParse = document.querySelector('.viewer-back-link--icon')?.getAttribute('href') ?? null;
         window.__token = document.querySelector('.reader-area ruby[data-pinyin]');
       });
       new MutationObserver((records) => {
@@ -54,12 +55,45 @@ test('guest server body survives hydration on a slow network (1.6Mbps · 150ms �
       token: !!window.__token && document.contains(window.__token),
       removed: window.__removed,
       hold: document.documentElement.getAttribute('data-viewer-hold'),
+      backAtParse: window.__backAtParse,
+      back: document.querySelector('.viewer-back-link--icon')?.getAttribute('href') ?? null,
+      banner: document.querySelectorAll('.viewer-guest-banner').length,
     }));
     assert.equal(after.hold, null, 'default settings keep the server body visible');
     assert.ok(after.hadH1 && after.hadToken, 'server title and body were in the first HTML');
     assert.deepEqual(after.removed, [], 'the viewer root never leaves the page during hydration');
     assert.equal(after.h1, true, 'server title node survives hydration');
     assert.equal(after.token, true, 'server body token survives hydration');
+    // 손님 확정(전환 갱신)이 버려지지 않고 하이드레이션 뒤에 닿는다 — 서버 그림(로그인 확인 중)의 「←」는 서재 기준, 확정 뒤는 손님 기본 「← 산책」.
+    assert.notEqual(after.backAtParse, '/discover', 'server paint renders the back link before the guest is confirmed');
+    assert.equal(after.back, '/discover', 'guest confirmation (transition update) reaches AuthContext consumers after hydration');
+    assert.equal(after.banner, 1, 'guest banner stays');
+  } finally {
+    await f.context.close();
+  }
+});
+
+// 세션 복원(쿠키 있음) — 같은 느린 망에서 AuthContext 값이 바뀌는 다른 길. 회원 뷰어는 서버 본문이 없다(viewerSsrRow는 손님만) — 복원 뒤
+// 회원 화면(손님 안내 없음 · 「로그인하고 담기」 없음)으로 그려지고 본문이 서는지만 본다. 손님 → 계정 전환 · 계정 경계는 account-boundary e2e.
+test('signed-in reader restores the session and draws the member viewer on the same slow network', async () => {
+  const f = await fixture({ guest: false, width: 390, height: 844 });
+  try {
+    f.rows.push(row);
+    const html = await (await f.context.request.get(`/viewer/${row.id}`)).text();
+    assert.ok(!html.includes('<ruby data-pinyin="1">'), 'no server body for a signed-in request');
+    const cdp = await f.context.newCDPSession(f.page);
+    await cdp.send('Network.enable');
+    await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: 1.6 * 1024 * 1024 / 8, uploadThroughput: 750 * 1024 / 8 });
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+    await f.page.goto(`/viewer/${row.id}`, { waitUntil: 'load', timeout: 90000 });
+    await f.page.locator('.reader-area ruby[data-pinyin]').first().waitFor({ timeout: 60000 });
+    await f.page.waitForTimeout(1500);
+    const state = await f.page.evaluate(() => ({
+      banner: document.querySelectorAll('.viewer-guest-banner').length,
+      login: [...document.querySelectorAll('a')].filter((a) => /^\/auth\b/.test(a.getAttribute('href') || '')).length,
+    }));
+    assert.equal(state.banner, 0, 'restored session hides the guest banner');
+    assert.equal(state.login, 0, 'no sign-in links once the session is restored');
   } finally {
     await f.context.close();
   }

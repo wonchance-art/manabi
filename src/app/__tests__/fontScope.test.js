@@ -327,11 +327,14 @@ describe('첫 그림 뒤 시트 — 뷰어(Noto Sans SC · TC)', () => {
     expect(page).toContain("<DeferredZhFontSheets known={ssr ? (ssr.processed_json?.metadata?.language === 'Chinese' ? 'zh' : 'other') : null} />");
   });
 
-  it('부품은 렌더 차단 링크를 쓰지 않고, 모름(null) · 화면 언어 감춤(locale)이면 하이드레이션 직후, 아니면 한가할 때 붙인다', () => {
+  it('부품은 렌더 차단 링크를 쓰지 않고, 모름(null) · 화면 언어 감춤(locale)이면 하이드레이션 직후, 아니면 한가할 때 · 첫 입력 때 붙인다', () => {
     const src = read('src/components/fonts/DeferredZhFontSheets.jsx');
     expect(src).toContain("export const DEFERRED_ZH_SHEETS = Object.freeze([SC_STYLESHEET_HREF, TC_STYLESHEET_HREF].filter(Boolean));");
     expect(src).toContain("if (known === null || document.documentElement.getAttribute('data-viewer-hold') === 'locale') { attachZhFontSheets(); return undefined; }");
-    expect(src).toContain('return onIdle(() => { attachZhFontSheets(); }, { timeout: 4000 });');
+    expect(src).toContain('const cancelIdle = onIdle(attach, { timeout: 4000 });');
+    // 첫 입력(누름 · 키)도 붙인다 — 일본어 자료 한자 창의 간체 · 번체 꼴이 Noto Sans SC로 그려진다(운영 실측 /viewer/105 · 108).
+    expect(src).toContain("const FIRST_INPUT = ['pointerdown', 'keydown'];");
+    expect(src).toContain('for (const type of FIRST_INPUT) window.addEventListener(type, attach, { capture: true, passive: true });');
     expect(src).not.toMatch(/precedence=/); // React precedence 링크는 렌더를 막는다(SC-LINK-001) — 여기서는 쓰지 않는다
   });
 

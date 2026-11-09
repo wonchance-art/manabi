@@ -19,6 +19,7 @@ import './zhFontVars.css';
 // zh UI 뷰어가 「웹폰트, … Fallback」 스택 전체를 받는다). 웹폰트 이름은 독립 시트의 family 그대로다.
 export const DEFERRED_ZH_SHEETS = Object.freeze([SC_STYLESHEET_HREF, TC_STYLESHEET_HREF].filter(Boolean));
 const MARK = 'data-manabi-zh-font';
+const FIRST_INPUT = ['pointerdown', 'keydown'];
 
 /** 시트를 문서에 붙인다 — 같은 href의 스타일시트가 이미 있으면(React precedence 링크 포함) 그대로 둔다. 붙인 수를 돌려준다. */
 export function attachZhFontSheets(doc = document, hrefs = DEFERRED_ZH_SHEETS) {
@@ -43,8 +44,8 @@ export function attachZhFontSheets(doc = document, hrefs = DEFERRED_ZH_SHEETS) {
  * 쪽(본문 경계)이 정한다:
  *   - known 'zh'    = 서버가 중국어 본문을 그렸다. 경계 공개($RR)가 간체 시트를 기다리므로 간체만 경계 첫 조각에서 미리 받는다(우선순위 보통 —
  *                     미리 받기를 아예 빼면 시트를 공개 직전에 찾아 LCP가 2.47 → 3.77s로 나빠졌고, 경계 조각 위치면 2.29s로 셸과 같다).
- *                     번체는 낱말 카드 正 줄 · 한자 창(누른 뒤)만 쓰므로 한가할 때 붙인다.
- *   - known 'other' = 서버가 중국어가 아닌 본문을 그렸다. 미리 받지 않고 둘 다 한가할 때 붙인다 — 설명 · 화면 언어가 한국어가 아니면
+ *                     번체는 낱말 카드 正 줄 · 한자 창(누른 뒤)만 쓰므로 한가할 때(또는 첫 입력 때) 붙인다.
+ *   - known 'other' = 서버가 중국어가 아닌 본문을 그렸다. 미리 받지 않고 둘 다 한가할 때(또는 첫 입력 때) 붙인다 — 설명 · 화면 언어가 한국어가 아니면
  *                     (첫 그림 전 판정이 'locale'로 본문을 감춤) 지금처럼 바로 붙인다.
  *   - known null    = 모름(로그인 · 서버 본문 없음). 지금 그대로 — 둘 다 낮은 우선순위로 미리 받고 붙자마자 붙인다. 브라우저가 그리는
  *                     중국어 본문은 시트가 없으면 한자가 'Noto Sans KR' 조각까지 내려가 약 600KB를 받는다(ZH-SSR-SC-001).
@@ -54,7 +55,19 @@ export default function DeferredZhFontSheets({ known = null }) {
   else if (known !== 'other') for (const href of DEFERRED_ZH_SHEETS) preload(href, { as: 'style', fetchPriority: 'low' });
   useEffect(() => {
     if (known === null || document.documentElement.getAttribute('data-viewer-hold') === 'locale') { attachZhFontSheets(); return undefined; }
-    return onIdle(() => { attachZhFontSheets(); }, { timeout: 4000 });
+    // 한가할 때, 또는 첫 입력(누름 · 키) 때 — 먼저 오는 쪽. 일본어 자료의 한자 창(낱말 → 글자를 눌러 여는 char-inspect)은 간체 · 번체 꼴을
+    // Noto Sans SC로 그린다(운영 실측 /viewer/105 话 · 题, /viewer/108 张 · 體) — 낱말을 누르는 순간 시트를 받기 시작해 글자를 누를 때는 와 있게.
+    let done = false;
+    const attach = () => {
+      if (done) return;
+      done = true;
+      cancelIdle();
+      for (const type of FIRST_INPUT) window.removeEventListener(type, attach, true);
+      attachZhFontSheets();
+    };
+    const cancelIdle = onIdle(attach, { timeout: 4000 });
+    for (const type of FIRST_INPUT) window.addEventListener(type, attach, { capture: true, passive: true });
+    return () => { done = true; cancelIdle(); for (const type of FIRST_INPUT) window.removeEventListener(type, attach, true); };
   }, [known]);
   return null;
 }
