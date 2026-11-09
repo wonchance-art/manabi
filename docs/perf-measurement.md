@@ -175,7 +175,7 @@ NODE_USE_ENV_PROXY=1 node scripts/perf/first-paint-ab.mjs --arms scripts/perf/ar
 |---|---|---|
 | SEO `meta-description`(설명 없음) | 뷰어 셋 · 함께 읽는 글 | **고침(화면 무변화)**. 아래 「메타 위치」 |
 | 접근성 `label-content-name-mismatch` | /home 학습 타일(이어 읽기 · 오늘 문단) | **고침(화면 무변화)**. 타일 링크의 aria-label이 보이는 글과 순서 · 내용이 달랐다(WCAG 2.5.3). aria-label을 걷어 이름 = 보이는 글로 하고, 화살표는 aria-hidden. 같은 구조인 단어 복습 타일도 함께 고쳤다 |
-| 모범 사례 `inspector-issues` | 함께 읽는 글 | CSP Report-Only의 img-src에 `i.ytimg.com`(유튜브 썸네일)이 없어 보고된다. 그림은 뜬다. CSP 7일 집계(11/14)와 함께 허용 목록에 더하기로 넘김 |
+| 모범 사례 `inspector-issues` | 함께 읽는 글 | CSP Report-Only의 img-src에 `i.ytimg.com`(유튜브 썸네일)이 없어 보고된다. 그림은 뜬다. → 허용 목록에 더함(2026-11-09 KST, 같은 PR) |
 | 접근성 `target-size` | 뷰어 EN | 본문 낱말(글 줄 안 조작). 터치 영역 결정 ③과 함께 디자인 판단 |
 | 성능 `redirects` | `/` | `/` → `/home` 307(모바일 0.78s). 손님 · 회원 갈림이라 rewrite로 바꾸면 정본 주소가 달라진다. 목록 |
 | 성능 `unminified-css` | 뷰어(SC · TC 독립 스타일시트) | 원본 4KB씩, 압축 뒤 수백 바이트라 효과가 작다. 원문 블록 대조 계약이 있어 그대로 둔다 |

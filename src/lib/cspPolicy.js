@@ -25,7 +25,8 @@ export function cspReportOnlyDirectives(env = process.env) {
     ['default-src', "'self'"],
     ['script-src', "'self' 'unsafe-inline'"],
     ['style-src', "'self' 'unsafe-inline'"],
-    ['img-src', "'self' data: blob:"],
+    // i.ytimg.com — 함께 읽는 글 · 추천의 유튜브 썸네일(YouTube Data API thumbnails.*.url). LH-BASELINE-001에서 보고 실측(2026-11-09 KST).
+    ['img-src', "'self' data: blob: https://i.ytimg.com"],
     ['font-src', "'self' data:"],
     ['connect-src', ["'self'", ...supabase].join(' ')],
     ['media-src', "'self' blob: data:"],

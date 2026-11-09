@@ -883,7 +883,7 @@
   접근성 96–100 · 모범 사례 96–100 · SEO 91–100(/auth 63 = 의도된 noindex). 404는 Lighthouse가 채점하지 않음. 기준표 `docs/perf-measurement.md`.
   고침: ① 메타데이터 blocking 봇에 Googlebot · Daumoa · kakaotalk-scrap 추가(htmlLimitedBots — Next 15.5 streaming이 이들에게 description · og를 body에 두고
   head로 올리지 않았다 — 운영 실측) ② /home 학습 타일 3종 aria-label 제거 · 화살표 aria-hidden(WCAG 2.5.3 — axe 위반 0)
-  ③ ERR-BOUNDARY-001(a) reportError도 navigator.webdriver면 미전송(CLS 보고와 같은 규칙). 목록: CSP img-src i.ytimg.com(11/14 CSP 집계) ·
+  ③ ERR-BOUNDARY-001(a) reportError도 navigator.webdriver면 미전송(CLS 보고와 같은 규칙). 목록: CSP img-src i.ytimg.com(→ 같은 PR에서 반영) ·
   뷰어 본문 낱말 target-size(③) · / → /home 307 · 썸네일 크기 · 전역 CSS · 폴리필. ERR-BOUNDARY-001: boundary.global 4건 = 11/8 14:51 /viewer(404 주소) 단일 세션
   ChunkLoadError timeout(배포 어긋남 아님) · CLS 1건 = bot 렌더러 — 재현 0, 11/15 집계 예약에 bot 분리 · boundary 후속 추가.
 - **BUNDLE-AUTH-001 로그인 경로 첫 화면 JS 측정 · 분리 (2026-11-08 KST)** 로컬 브랜치 `claude/wip/bundle-auth`(오케스트레이터 지시 · push는 11/9 오전 묶음 — 화면 무변화):

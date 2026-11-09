@@ -58,7 +58,7 @@ object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'; 
 default-src 'self';
 script-src 'self' 'unsafe-inline';
 style-src 'self' 'unsafe-inline';
-img-src 'self' data: blob:;
+img-src 'self' data: blob: https://i.ytimg.com;
 font-src 'self' data:;
 connect-src 'self' https://<프로젝트>.supabase.co wss://<프로젝트>.supabase.co;
 media-src 'self' blob: data:;
@@ -81,6 +81,7 @@ report-uri /api/csp-report; report-to csp
 - **Vercel 미리 보기 도구 막대**(`vercel.live`): 미리 보기 배포에서만 뜬다. 운영 정책에는 넣지 않는다. 미리 보기 보고는 `route`로 거르거나 무시한다.
 - **브라우저 확장**: `chrome-extension:` 등은 `cspReport.js`가 출처를 `other`로 줄여 기록한다. 집계 때 뺀다.
 - **학습 월드(Phaser)**: 손님 순회에 없다. 2단계 Report-Only 기간에 `eval` · `wasm` 위반이 보이면 그때 판단한다.
+- **유튜브 썸네일**(`i.ytimg.com`): 함께 읽는 글 · 추천 카드가 YouTube Data API의 썸네일 주소를 그대로 쓴다. LH 기준선(2026-11-09 KST)에서 보고로 잡혀 `img-src`에 더했다.
 - **Supabase 저장소 이미지**: 지금 화면은 자체 보관 이미지만 쓴다. 저장소 공개 URL을 화면에 직접 쓰는 기능이 생기면 `img-src`에 더한다.
 
 ## 4. 다음 순서 제안
