@@ -183,6 +183,21 @@ describe('⑶ 보내기(reportError → /api/client-error)', () => {
     expect(beacon).not.toHaveBeenCalled();
   });
 
+  it('자동화 브라우저(navigator.webdriver)는 운영 빌드여도 보내지 않는다 — CLS 보고와 같은 규칙(ERR-BOUNDARY-001)', async () => {
+    vi.resetModules();
+    stubPage('/viewer');
+    vi.stubEnv('NODE_ENV', 'production');
+    const beacon = vi.fn(() => true);
+    vi.stubGlobal('navigator', { sendBeacon: beacon, webdriver: true });
+    const fresh = await import('../reportError');
+    expect(fresh.sendErrorEvent(new Error('automation case'), { kind: 'boundary.global' })).toBe(false);
+    expect(beacon).not.toHaveBeenCalled();
+    vi.stubGlobal('navigator', { sendBeacon: beacon, webdriver: false });
+    expect(fresh.sendErrorEvent(new Error('real user case'), { kind: 'boundary.global' })).toBe(true); // 실사용자는 그대로
+    expect(beacon).toHaveBeenCalledTimes(1);
+    expect(read('src/lib/clsReport.js')).toContain('if (win.navigator?.webdriver) return () => {};'); // 두 보고가 같은 규칙
+  });
+
   it('전역 고리: 한 번만 걸고, 잡음(Script error · ResizeObserver · 다른 출처)은 보내지 않는다', async () => {
     vi.resetModules();
     const listeners = stubPage('/home');
