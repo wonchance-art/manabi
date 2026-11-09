@@ -4,8 +4,9 @@ import { getGrammarStaticParams, loadChapter } from '@/content/refGrammarLoaders
 import { loadPublishedRegistry } from '@/lib/publishedChapter';
 import { withOgDefaults } from '@/lib/seo';
 
-// ISR — 오버라이드 저장 시 revalidatePath로 즉시 무효화되고, 그 외에는 60초 주기로 갱신.
-export const revalidate = 60;
+// ISR — 오버라이드 저장 · 복원 시 revalidateTag · revalidatePath로 즉시 무효화되고, 그 외에는 1시간 주기로 갱신(안전망).
+// 60초였을 때 장마다 분당 재생성 · 오버라이드 조회 쓰기가 Data Cache · ISR 쓰기 한도를 위협했다(DATA-CACHE-1109, 2026-11-09 KST).
+export const revalidate = 3600;
 // 챕터 slug는 소스에서 전량 열거된다(generateStaticParams) — 목록에 없는 slug는 존재하지 않는
 // 페이지이므로 on-demand 렌더 없이 곧바로 404로 응답한다. ISR 라우트에서 notFound()만으로는
 // 상태가 200으로 나가는 문제(soft 404)를 이 선언이 근본 차단한다.

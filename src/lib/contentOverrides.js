@@ -14,8 +14,11 @@
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// ISR 참여 — route-level revalidate와 함께 캐시. revalidatePath 시 함께 무효화된다.
-const REVALIDATE = 60;
+// ISR 참여 — route-level revalidate와 함께 캐시(Data Cache). 저장 · 복원 API가 태그(revalidateTag)와 경로(revalidatePath)를 바로 버리므로
+// 주기는 안전망이다 — 60초였을 때 언어 키 4개 × 분당 1회 쓰기로 월 최대 약 17만 건(Hobby 쓰기 20만)이라 1시간으로 늘렸다(DATA-CACHE-1109, 2026-11-09 KST).
+const REVALIDATE = 3600;
+/** 오버라이드 조회 fetch의 Data Cache 태그 — 저장 · 복원 때 revalidateTag로 이 태그를 쓴 모든 판(문법 장 · 목록 · 학습 연결)을 함께 버린다. */
+export const CONTENT_OVERRIDES_TAG = 'content-overrides';
 
 // 병합 시 항상 base가 이기는 불변 필드 — 진도·링크·목차 키
 const IMMUTABLE_FIELDS = ['slug', 'level', 'order'];
@@ -33,7 +36,7 @@ async function restGet(pathAndQuery) {
         apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`,
       },
-      next: { revalidate: REVALIDATE },
+      next: { revalidate: REVALIDATE, tags: [CONTENT_OVERRIDES_TAG] },
     });
     if (!res.ok) return null;
     return await res.json();

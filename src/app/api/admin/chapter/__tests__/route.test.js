@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { authenticate, revalidate, base } = vi.hoisted(() => ({
-  authenticate: vi.fn(), revalidate: vi.fn(),
+const { authenticate, revalidate, revalidateTag, base } = vi.hoisted(() => ({
+  authenticate: vi.fn(), revalidate: vi.fn(), revalidateTag: vi.fn(),
   base: { slug: 'test-chapter', level: 'N5', order: 1, title: '원본', sections: [{ heading: '주문', body: '설명' }] },
 }));
 vi.mock('@/lib/supabaseServer', () => ({ requireAdmin: authenticate }));
-vi.mock('next/cache', () => ({ revalidatePath: revalidate }));
+vi.mock('next/cache', () => ({ revalidatePath: revalidate, revalidateTag }));
 vi.mock('@/content/refLangs', () => ({ getRefLang: () => ({ base: '/japanese', getChapter: (slug) => slug === base.slug ? { chapter: base } : null }) }));
 vi.mock('@/lib/contentOverrides', async () => vi.importActual('../../../../../lib/contentOverrides.js'));
 
@@ -47,7 +47,7 @@ function post(extra = {}) {
 }
 let db;
 beforeEach(() => {
-  db = database(); authenticate.mockReset(); revalidate.mockReset();
+  db = database(); authenticate.mockReset(); revalidate.mockReset(); revalidateTag.mockReset();
   authenticate.mockResolvedValue({ supabase: db.supabase, user: { id: 'admin-id' } });
 });
 
@@ -74,6 +74,8 @@ describe('관리자 교재 API', () => {
     expect((await response.json()).updatedAt).toBe(db.state.row.updated_at);
     expect(db.state.row.data).toMatchObject({ slug: base.slug, level: 'N5', order: 1, title: '수정' });
     expect(revalidate.mock.calls).toEqual([['/japanese/grammar/test-chapter'], ['/lessons'], ['/review/grammar']]);
+    // 저장 → 즉시 반영(DATA-CACHE-1109): 주기를 1시간으로 늘린 대신 오버라이드 조회 Data Cache 태그를 바로 버린다(이웃 장 제목 · 학습 연결 포함).
+    expect(revalidateTag.mock.calls).toEqual([['content-overrides']]);
   });
   it('같은 원본에서 시작한 동시 첫 저장은 하나만 성공한다', async () => {
     const responses = await Promise.all([post(), post()]);
@@ -85,6 +87,14 @@ describe('관리자 교재 API', () => {
     expect((await post({ expectedUpdatedAt: oldVersion, data: { ...base, title: '최신 제목' } })).status).toBe(200);
     expect((await post({ expectedUpdatedAt: oldVersion })).status).toBe(409);
     expect(db.state.row.data.title).toBe('최신 제목');
+  });
+  it('복원(삭제)도 오버라이드 조회 태그와 챕터 · 목록 경로를 바로 버린다 — 1시간 주기를 기다리지 않는다', async () => {
+    await post(); revalidate.mockReset(); revalidateTag.mockReset();
+    const response = await DELETE(new Request(url, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lang: 'Japanese', slug: base.slug }) }));
+    expect(response.status).toBe(200);
+    expect(db.state.row).toBeNull();
+    expect(revalidateTag.mock.calls).toEqual([['content-overrides']]);
+    expect(revalidate.mock.calls).toEqual([['/japanese/grammar/test-chapter'], ['/lessons'], ['/review/grammar']]);
   });
   it('복원 후 오래된 편집 탭에서 수정본을 부활시키지 않는다', async () => {
     await post(); const version = db.state.row.updated_at; db.state.row = null;
@@ -106,5 +116,6 @@ describe('관리자 교재 API', () => {
     db.state.failure = { message: 'write failed' };
     expect((await post()).status).toBe(500);
     expect(revalidate).not.toHaveBeenCalled();
+    expect(revalidateTag).not.toHaveBeenCalled();
   });
 });
