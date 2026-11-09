@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { buildReleaseVersion } from './src/lib/releaseVersion.js';
 import { cspReportOnly as buildCspReportOnly } from './src/lib/cspPolicy.js';
+import { htmlLimitedBotsRegex } from './src/lib/htmlBots.js';
 
 // 화면별 글꼴 미리 받기 주소(FONT-HINT-001) — 이번 빌드의 글꼴 입력(NEXT_FONT_GOOGLE_MOCKED_RESPONSES)에서
 // next/font 산출 파일 이름을 다시 계산한다. 쓰는 곳: src/components/fonts/fontHints.js.
@@ -9,6 +10,9 @@ const { fontHintEnv } = createRequire(import.meta.url)('./scripts/fonts/next-fon
 // 간체 중국어 독립 스타일시트(SC-LINK-001 1단계) — 같은 글꼴 입력에서 public/_fonts/noto-sans-sc/에 CSS를 쓰고(글꼴은 next/font 산출 주소 그대로 — 리뷰 B1) 주소를 env로 준다.
 // 글꼴 입력이 없는 실행(next dev · 테스트의 config import)은 아무것도 쓰지 않는다. 산출 대조: scripts/fonts/check-sc-stylesheet.mjs.
 const { scStylesheetEnv, tcStylesheetEnv } = createRequire(import.meta.url)('./scripts/fonts/sc-stylesheet.cjs');
+
+// 메타데이터를 <head>에 막고 보낼 봇 — Next 기본 목록 + Googlebot · Daumoa · kakaotalk-scrap(src/lib/htmlBots.js, LH-BASELINE-001).
+const { HTML_LIMITED_BOT_UA_RE } = createRequire(import.meta.url)('next/dist/shared/lib/router/utils/html-bots.js');
 
 const releaseVersion = {
   ...buildReleaseVersion(process.env),
@@ -22,6 +26,9 @@ const LITERATURE_CHAPTERS = './src/content/literature/*/*/chapters.json';
 const nextConfig = {
   // Strict mode
   reactStrictMode: true,
+
+  // 메타데이터 blocking 대상 봇(위 htmlBots) — 사람 방문자는 그대로 흘려 받는다(첫 바이트가 메타데이터 조회를 기다리지 않는다).
+  htmlLimitedBots: htmlLimitedBotsRegex(HTML_LIMITED_BOT_UA_RE.source),
 
   // Keep the production compiler below the 8 GB build-container limit. This changes
   // Webpack's build-time memory management, not the served content or font selection.

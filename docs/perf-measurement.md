@@ -132,3 +132,59 @@ NODE_USE_ENV_PROXY=1 node scripts/perf/first-paint-ab.mjs --arms scripts/perf/ar
 **화면 무변화 검증.** `next/dynamic`(React.lazy)은 모듈을 이미 받았어도 처음 그릴 때 한 틱 멈춘다. `loading`이 없으면 가장 가까운 Suspense(화면 대기 골격)까지 올라간다. 그래서 다음처럼 했다.
 - 복습 화면은 `src/lib/warmable.js`로 감쌌다. 유휴 시간에 받아 둔 뒤에는 멈춤 없이 그리고, 못 받았으면 그 자리만 비운다.
 - 「복습 시작」을 세 조건에서 눌러 봤다: 바로 · 유휴 뒤 · 조각마다 400ms 지연. 세 경우 모두 빈 본문 프레임 0 · 대기 골격 0이고, 초점은 「정답 확인하기」로 갔다.
+
+## Lighthouse 기준선 — 공개 경로 — LH-BASELINE-001 (2026-11-09 KST)
+
+**조건.**
+- Lighthouse 12.6.1, 운영 `https://www.manabi.co.kr`, 이 컨테이너의 Chromium(헤드리스).
+- 모바일은 기본값(Moto G Power 에뮬레이션 · 느린 4G · CPU 4×), 데스크톱은 `--preset=desktop`.
+- 경로 × 폼마다 3회 돌려 성능 지표는 **중앙값**을 적는다. 접근성 · 모범 사례 · SEO 점수는 판마다 같다.
+- 측정 잡음이 운영 기록에 남지 않게 `/api/client-error` · `/api/vitals` · `/api/csp-report`를 `--blocked-url-patterns`로 막는다.
+- 판 수(n)가 3보다 작은 칸은 Lighthouse 쪽 일시 오류(NO_NAVSTART) 판을 뺀 것이다.
+
+| 경로 | 폼 | 성능 | FCP s | LCP s | TBT ms | CLS | 접근성 | 모범 사례 | SEO | n |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `/` (→ /home 307) | 모바일 | 88 | 1.7 | 3.8 | 51 | 0 | 100 | 100 | 100 | 3 |
+| | 데스크톱 | 100 | 0.4 | 0.7 | 0 | 0 | 100 | 100 | 100 | 3 |
+| `/discover?view=reading` | 모바일 | 75 | 2.9 | 4.9 | 338 | 0.004 | 100 | 96 | 91 | 2 |
+| | 데스크톱 | 98 | 0.7 | 1.0 | 0 | 0 | 100 | 96 | 91 | 3 |
+| 뷰어 EN `/viewer/120` | 모바일 | 76 | 2.0 | 4.8 | 269 | 0 | 96 | 100 | 91 | 3 |
+| | 데스크톱 | 98 | 0.7 | 1.1 | 18 | 0 | 96 | 100 | 91 | 3 |
+| 뷰어 JA `/viewer/45` | 모바일 | 72 | 2.2 | 4.7 | 380 | 0 | 100 | 100 | 91 | 3 |
+| | 데스크톱 | 97 | 0.7 | 1.2 | 13 | 0 | 100 | 100 | 91 | 3 |
+| 뷰어 ZH `/viewer/371` | 모바일 | 63 | 2.3 | 5.7 | 618 | 0 | 100 | 100 | 91 | 2 |
+| | 데스크톱 | 96 | 0.6 | 1.2 | 59 | 0 | 100 | 100 | 91 | 3 |
+| `/studies` | 모바일 | 97 | 1.5 | 2.6 | 52 | 0 | 100 | 100 | 100 | 3 |
+| | 데스크톱 | 100 | 0.4 | 0.7 | 0 | 0 | 100 | 100 | 100 | 3 |
+| `/studies/korea/kr-economy` | 모바일 | 92 | 1.5 | 3.2 | 44 | 0 | 100 | 100 | 100 | 3 |
+| | 데스크톱 | 100 | 0.4 | 0.6 | 0 | 0 | 100 | 100 | 100 | 3 |
+| `/auth` | 모바일 | 97 | 1.5 | 2.4 | 46 | 0 | 100 | 100 | 63 | 3 |
+| | 데스크톱 | 100 | 0.4 | 0.5 | 0 | 0 | 100 | 100 | 63 | 3 |
+| `/privacy` | 모바일 | 98 | 1.4 | 2.1 | 60 | 0.011 | 100 | 100 | 100 | 3 |
+| | 데스크톱 | 100 | 0.3 | 0.5 | 0 | 0.003 | 100 | 100 | 100 | 3 |
+| `/terms` | 모바일 | 98 | 1.4 | 2.0 | 39 | 0.042 | 100 | 100 | 100 | 3 |
+| | 데스크톱 | 100 | 0.3 | 0.5 | 0 | 0 | 100 | 100 | 100 | 2 |
+| 404(`/this-page-does-not-exist`) | — | Lighthouse가 채점하지 않는다 | | | | | | | | |
+
+- 404 칸: Lighthouse는 404 응답 문서를 채점하지 않는다(`ERRORED_DOCUMENT_REQUEST`). 접근성은 A11Y-LAUNCH-001의 axe 위반 0으로 대신한다.
+- `/auth` SEO 63은 의도된 `noindex`(is-crawlable) 때문이다.
+
+**실패 · 경고 항목과 처리**
+
+| 항목 | 어디 | 처리 |
+|---|---|---|
+| SEO `meta-description`(설명 없음) | 뷰어 셋 · 함께 읽는 글 | **고침(화면 무변화)**. 아래 「메타 위치」 |
+| 접근성 `label-content-name-mismatch` | /home 학습 타일(이어 읽기 · 오늘 문단) | **고침(화면 무변화)**. 타일 링크의 aria-label이 보이는 글과 순서 · 내용이 달랐다(WCAG 2.5.3). aria-label을 걷어 이름 = 보이는 글로 하고, 화살표는 aria-hidden. 같은 구조인 단어 복습 타일도 함께 고쳤다 |
+| 모범 사례 `inspector-issues` | 함께 읽는 글 | CSP Report-Only의 img-src에 `i.ytimg.com`(유튜브 썸네일)이 없어 보고된다. 그림은 뜬다. → 허용 목록에 더함(2026-11-09 KST, 같은 PR) |
+| 접근성 `target-size` | 뷰어 EN | 본문 낱말(글 줄 안 조작). 터치 영역 결정 ③과 함께 디자인 판단 |
+| 성능 `redirects` | `/` | `/` → `/home` 307(모바일 0.78s). 손님 · 회원 갈림이라 rewrite로 바꾸면 정본 주소가 달라진다. 목록 |
+| 성능 `unminified-css` | 뷰어(SC · TC 독립 스타일시트) | 원본 4KB씩, 압축 뒤 수백 바이트라 효과가 작다. 원문 블록 대조 계약이 있어 그대로 둔다 |
+| 성능 `uses-responsive-images` | 함께 읽는 글(데스크톱) | 유튜브 mqdefault(320px)가 더 작게 그려진다(66KB). 더 작은 썸네일(120px)은 흐려진다. 목록 |
+| 성능 `unused-css-rules` · `render-blocking-resources` · `unused-javascript` · `legacy-javascript` | 대부분 | 전역 CSS 123KB · 폴리필 11KB. 구조 작업이라 목록(BUNDLE-AUTH-001 이어서) |
+| 성능 LCP · TBT(모바일 뷰어 4.7–5.7s · 270–620ms) | 뷰어 셋 | 알려진 무게(ZH-SSR · HANJA-LAZY 진행분). 기준선으로 둔다 |
+
+**메타 위치(SEO `meta-description`의 실제 원인).**
+- Next 15.5는 메타데이터를 흘려 보낸다(streaming metadata). 기본 봇 목록(`html-bots.js` `HTML_LIMITED_BOT_UA_RE`)에 없는 UA는 description · og를 `<body>` 뒤쪽에 받고, 브라우저에서도 `<head>`로 올라가지 않는다(운영 `/viewer/120` 실측: head 0 · body 1).
+- Next는 JS를 실행한다는 이유로 **Googlebot을 기본 목록에서 뺐고**, 다음 검색(`Daumoa`)도 목록에 없다. 이들은 설명을 `<head>`에서 찾지 못했다.
+- 고침: `next.config.mjs` `htmlLimitedBots` = Next 기본 목록 + `Googlebot` · `Daumoa` · `kakaotalk-scrap`(`src/lib/htmlBots.js`, 계약 `htmlBots.test.js`). 사람 방문자는 그대로 흘려 받는다.
+- 이번에 쓴 Lighthouse 12.6.1의 UA에는 `Chrome-Lighthouse`가 없어 사람으로 분류됐다. 그래서 이 항목은 고친 뒤에도 남는다. 기준표는 검색 로봇이 받는 HTML로 따로 확인한다.
