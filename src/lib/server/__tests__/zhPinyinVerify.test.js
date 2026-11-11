@@ -139,14 +139,14 @@ describe('④ 불변식 · 정답 대조 상한', () => {
 });
 
 describe('⑤ 검증표는 서버 전용', () => {
-  it('src/lib/server 밖에서 zhPinyinCheck.json · zhPinyinVerify를 가져오지 않는다', () => {
+  it('src/lib/server 밖에서 zhPinyinCheck.json · zhPinyinVerify · zhErhua(.json)를 가져오지 않는다', () => {
     const hits = [];
     const walk = (dir) => {
       for (const f of readdirSync(dir)) {
         const p = join(dir, f);
         if (statSync(p).isDirectory()) { if (!/node_modules|__tests__/.test(p)) walk(p); continue; }
         if (!/\.(m?jsx?|tsx?)$/.test(f) || p.startsWith(join('src', 'lib', 'server'))) continue;
-        if (/zhPinyinCheck|zhPinyinVerify/.test(readFileSync(p, 'utf8'))) hits.push(p);
+        if (/zhPinyinCheck|zhPinyinVerify|zhErhua/.test(readFileSync(p, 'utf8'))) hits.push(p);
       }
     };
     walk('src');

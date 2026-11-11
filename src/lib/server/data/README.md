@@ -7,7 +7,8 @@
 | 파일 | 원천 | 라이선스 | 생성기 | 원천에서 바꾼 것 |
 |---|---|---|---|---|
 | `zhNeutralToneCedict.json` | CC-CEDICT © MDBG (npm `cedict-json@1.3.20251213`, 2025-12-13 스냅샷) | **CC BY-SA 4.0** — 출처 표기·라이선스 링크·변경 고지·동일조건 | `scripts/build-zh-neutral-tone.mjs` | 경성 표제어만 추출, 다의어·고유명사·얼화·5자 이상·라이브러리 정답 일치 항목 배제, 수제 층(`zhNeutralTone.js` HAND)이 덮음. 2,018항 |
-| `zhPinyinCheck.json` | CC-CEDICT © MDBG (npm `cedict-json@1.3.20251213`, 2025-12-13 스냅샷) | **CC BY-SA 4.0** — 출처 표기·라이선스 링크·변경 고지·동일조건(이 파일만) | `scripts/build-zh-pinyin-check.mjs` | HSK 3.0 다글자 낱말의 독음만, 성조 숫자 → 기호, 고유명사 · 얼화 독음 제외. 병음 검증 패스(`zhPinyinVerify.js`) 전용 — 서버 밖 import 0이 계약. 9,332항 |
+| `zhPinyinCheck.json` | CC-CEDICT © MDBG (npm `cedict-json@1.3.20251213`, 2025-12-13 스냅샷) | **CC BY-SA 4.0** — 출처 표기·라이선스 링크·변경 고지·동일조건(이 파일만) | `scripts/build-zh-pinyin-check.mjs` | HSK 3.0 다글자 낱말의 독음만, 성조 숫자 → 기호, 고유명사 독음 제외(얼화 r5는 「r」). 병음 검증 패스(`zhPinyinVerify.js`) 전용 — 서버 밖 import 0이 계약. 9,332항 |
+| `zhErhua.json` | CC-CEDICT © MDBG (npm `cedict-json@1.3.20251213`, 2025-12-13 스냅샷) | **CC BY-SA 4.0** — 출처 표기·라이선스 링크·변경 고지·동일조건(이 파일만) | `scripts/build-zh-pinyin-check.mjs` | 儿로 끝나는 한자 2자 이상 낱말 중 儿 자리를 r5로만 적는 낱말의 **목록**(독음은 싣지 않음 · er2 독음이 있는 낱말 제외). 얼화 병음(`zhErhua.js` — 儿 자리 「r」) 전용 — 서버 밖 import 0이 계약. 625항 |
 | `zhPosFixHsk.json` | ivankra/hsk30 (`hsk30.csv`) | MIT | `scripts/build-zh-hsk.mjs` | 품사 열만 사용. CC-CEDICT는 고유명사 판별(병음 대문자)에만 쓰고 그 내용을 싣지 않는다 |
 | `zhSeparableHsk.json` | ivankra/hsk30 (WebPinyin ∥ 분철 마커) | MIT | `scripts/build-zh-hsk.mjs` | 2자 V+O 이합사만, 수제 층과 중복 제외 |
 | `zhSeparable.json` | 자체 작성(수제 층) | — | — | — |
