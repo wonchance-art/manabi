@@ -1,5 +1,5 @@
 -- 복원(오너 확인 뒤에만) — 20261112040000_voa_learning_english_import(EN-SOURCE-001 ⓒ 1차).
--- 넣은 27편을 지우고 시드 작업 한 줄을 반입 전 값(status · material_ids · current_key · failure_streak · last_error · lease_until)으로 되돌린다.
+-- 넣은 26편을 지우고 시드 작업 한 줄을 반입 전 값(status · material_ids · current_key · failure_streak · last_error · lease_until)으로 되돌린다.
 -- 학습 기록이 붙기 전에만 깨끗하다 — reading_materials를 가리키는 표 다수가 ON DELETE CASCADE라(운영 실측 11/9) 아래 사전 검사가
 --   그 자료를 가리키는 행을 하나라도 찾으면 아무것도 지우지 않고 멈춘다(그때는 오너와 다시 정한다 — 숨김(visibility) 등).
 -- 다른 자료 · 작업의 분석 진행(chapters_done · attempts · llm_usage)은 건드리지 않는다. 백업 표는 기록으로 남긴다. 한 트랜잭션으로 실행한다.
