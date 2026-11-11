@@ -878,7 +878,13 @@
 
 ## Claude (claude/*)
 ### doing
-- **SEC-DEPS-1111 의존성 보안 패치 · 문법 장 Data Cache 1시간 (2026-11-11 KST)** 11/9 로컬 작업(SEC-DEPS-1109 · DATA-CACHE-1109)을 main 16e5cc3f 위로 다시 얹음(오케스트레이터 재개 지시 · 화면 무변화):
+- **오케스트레이터 11/12 KST 병합 · 사후** #1800 squash `763af4ea`(00:58 — SEC-DEPS-1111 · DATA-CACHE-1109 · IPA-CRON-FIX · 얼화 사전 캐시 9행 · Wikinews 원천 끄기,
+  사후: 마이그레이션 2개 OK · 지문 넷 그대로, IPA 새 코드 판정은 11/13 01:05 실행(오늘 실행은 배포 READY 45초 전 옛 코드) · Wikinews 빈 호출 11/13 00:06 확인 예정) ·
+  #1784 squash `f978595a`(02:25 — EN-SOURCE-001 ⓒ 1차 VOA 26편, 사후: id 373–398 · 26/26 분석 · 출처 줄 · 원문 링크 운영 확인) ·
+  ANALYSIS-CHAIN-END-001(이 PR, Data 반입): 작업을 끝낸 tick이 부른 마지막 tick이 사라지면 사슬 끝 일(뜻 채움 · 난이도)이 그날 통째로 빠지던 것 —
+  끝난 tick · kick 실패에서도 그 tick이 하고 kick 결과를 detail.kick에(A-2 일본어 25편 카드 난이도 줄 빈칸 원인, 데이터는 다음 예약 실행이 정본 경로로 채움).
+  고아 10행 삭제(마이그레이션 판)는 파괴적 변경이라 묶지 않음 — 오너 확인 대기.
+- **SEC-DEPS-1111 의존성 보안 패치 · 문법 장 Data Cache 1시간 (2026-11-11 KST) — #1800으로 병합** 11/9 로컬 작업(SEC-DEPS-1109 · DATA-CACHE-1109)을 main 16e5cc3f 위로 다시 얹음(오케스트레이터 재개 지시 · 화면 무변화):
   패치 판만 — vitest 4.1.4 → 4.1.12(@vitest/mocker GHSA-82fw · GHSA-qxg6, 같이 vite 8.3.8) · dompurify 3.4.15 → 3.4.17(critical, excalidraw → mermaid 동적 조각만) ·
   js-yaml 4.3.1 → 4.3.2(eslintrc, 개발 한정 — 11/9 뒤 새 권고) · source-map-js 1.2.2 · nanoid 3.3.20. npm audit 27 → 21(critical 0). 남은 21: excalidraw 사슬(고친 판 = 0.17.6 내림 · 주 판) ·
   next/postcss(next 16 주 판) · eslint 도구(brace-expansion 1.1.22는 11/11 21:32 KST 발행 — 2주 숙성 뒤) — 개발 · 동적 조각 한정.
