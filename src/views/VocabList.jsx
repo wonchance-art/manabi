@@ -9,6 +9,7 @@ import { refInline } from './refShared';
 import { ZH_HSK_LEVELS, zhHskLevelLabel } from '../lib/zhHskLevel';
 import { wordStage } from '../lib/growthStats';
 import { isVocabularyReviewDue } from '../lib/vocabularyLearningRead';
+import { displayReading } from '../lib/erhuaDisplay';
 
 const EDIT_FIELDS = ['word_text', 'furigana', 'meaning', 'pos'];
 
@@ -70,7 +71,7 @@ const VocabRow = memo(function VocabRow({ v, learning, due, selected, selectMode
           {displayWord(v.word_text, v.pos)}{v.language === 'Japanese' && isJaNaAdjective({ word_text: v.word_text, pos: v.pos }) && <span className="na-tail">な</span>}
         </button>
       </h3>
-      {v.furigana && <span className="vocab-row__reading" lang={lc}>{v.furigana}</span>}
+      {v.furigana && <span className="vocab-row__reading" lang={lc}>{displayReading(v.furigana, v.language)}</span>}
 
       {String(v.meaning ?? '').trim() || !editable || selectMode
         ? <p className="vocab-row__meaning">{v.meaning}</p>
