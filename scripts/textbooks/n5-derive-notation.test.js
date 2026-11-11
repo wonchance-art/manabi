@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { applyPatch, bareKanji, deriveNotation, loadBase, stage1Eligibility } from './n5-derive-notation.mjs';
+import { applyPatch, bareKanji, deriveNotation, isReadingRow, loadBase, stage1Eligibility } from './n5-derive-notation.mjs';
 
 // N5-NOTATION-001 1단계(2026-11-11 KST) — 조각 치환 파생의 계약. 바탕 = 운영 공개 판본 8a8c.
 const BASE = 'src/content/textbookEditions/8a8c1c1fd452773810abaf8c';
@@ -78,8 +78,7 @@ describe('거절해야 하는 것', () => {
   // 가나형이 같도록 첫 글자에 같은 글자를 인라인으로 단 「표기만 바뀐」 변경 — 표기 외 계약은 통과하고 자격 규칙만 시험한다.
   const sameKana = text => { const first = [...text][0]; return `{${first}|${first}}${text.slice(first.length)}`; };
   it.each([
-    ['2단계 필드와 렌더 공유', 'shared-with-stage2'],
-    ['1–9과와 렌더 공유', 'shared-with-kana-lessons'],
+    ['2단계 필드와 렌더 공유', 'shared-with-non-stage1'],
   ])('%s(1단계 제외)는 바꾸지 않는다', (_name, reason) => {
     const target = stage1Eligibility(base, { fromLesson: 10 }).excluded.find(e => e.reason === reason);
     expect(target).toBeTruthy();
@@ -103,11 +102,31 @@ describe('거절해야 하는 것', () => {
 });
 
 describe('1단계 범위(10–42과, 오케스트레이터 확정 필드)', () => {
-  it('대상 941개(가나만 637) · 제외 50개(2단계 공유 35 · 1–9과 공유 14 · 인라인 틀 1)', () => {
+  it('대상 832개(가나만 528) · 읽기표 줄 121 · 제외 38개(1단계 밖과 렌더 공유 37 · 인라인 틀 1) — 과별로 나눌 수 있는 렌더는 과마다 따로', () => {
     const { eligible, excluded } = stage1Eligibility(base, { fromLesson: 10 });
-    expect(eligible).toHaveLength(941);
-    expect(eligible.filter(e => !/\p{Script=Han}/u.test(e.text))).toHaveLength(637);
+    expect(eligible).toHaveLength(832);
+    expect(eligible.filter(e => !/\p{Script=Han}/u.test(e.text))).toHaveLength(528);
     const by = reason => excluded.filter(e => e.reason === reason).length;
-    expect({ total: excluded.length, stage2: by('shared-with-stage2'), kana: by('shared-with-kana-lessons'), inline: by('inline-template'), mismatch: by('render-mismatch') }).toEqual({ total: 50, stage2: 35, kana: 14, inline: 1, mismatch: 0 });
+    expect({ total: excluded.length, shared: by('shared-with-non-stage1'), kana: by('shared-with-kana-lessons'), inline: by('inline-template'), mismatch: by('render-mismatch') }).toEqual({ total: 38, shared: 37, kana: 0, inline: 1, mismatch: 0 });
+    const rows = [];
+    base.bundle.manuscript.lessons.forEach((l, li) => { if (l.number >= 10) (l.study_pages || []).forEach((sp, si) => (sp.rows || []).forEach((r, ri) => { if (isReadingRow(base.bundle.manuscript, `lessons.${li}.study_pages.${si}.rows.${ri}.ja`)) rows.push(r); })); });
+    expect(rows).toHaveLength(121);
+  });
+  it('읽기표 줄(label 何歳 → ja なんさい)은 바꾸지 않고, 같은 렌더의 단어도 함께 빠진다(11과 なんさい)', () => {
+    expect(isReadingRow(base.bundle.manuscript, 'lessons.10.study_pages.5.rows.11.ja')).toBe(true);
+    expect(() => derive({ 'lessons.10.study_pages.5.rows.11.ja': 'なん{歳|さい}' })).toThrow(/읽기표 줄/);
+    expect(() => derive({ 'lessons.10.words.5.ja': 'なん{歳|さい}' })).toThrow(/1단계 제외\(shared-with-non-stage1\)/);
+  });
+  it('같은 가나라도 과마다 다른 낱말로 — はる(24과 貼る · 33과 春), 1–9과와 같은 가나여도 10과 이후만 바꾼다', () => {
+    const at = path => path.split('.').reduce((o, k) => o[k], base.bundle.manuscript);
+    expect([at('lessons.24.words.7.ja'), at('lessons.33.words.4.ja')]).toEqual(['はる', 'はる']);
+    const r = derive({ 'lessons.24.words.7.ja': '{貼|は}る', 'lessons.33.words.4.ja': '春' }); // 34과는 지도에 春 — 맨글
+    expect(r.html).toContain('<ruby>貼<rt>は</rt></ruby>る');
+    expect(r.html).toContain('<span class="phrase"><ruby>春<rt>はる</rt></ruby></span>');
+    // 1–9과에도 있는 가나(28과 がくせい)를 10과 이후에서만 바꿔도 1–9과의 가나는 그대로 남는다.
+    expect(at('lessons.28.words.4.ja')).toBe('がくせい');
+    const before = (base.html.match(/<span class="phrase">がくせい<\/span>/g) || []).length;
+    const r2 = derive({ 'lessons.28.words.4.ja': '{学生|がくせい}' });
+    expect((r2.html.match(/<span class="phrase">がくせい<\/span>/g) || []).length).toBe(before - 1);
   });
 });

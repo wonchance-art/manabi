@@ -32,11 +32,19 @@ export const STAGE1 = [
   /^lessons\.\d+\.extra_patterns\.\d+\.examples\.\d+\.ja$/, /^lessons\.\d+\.reading$/,
 ];
 const KANA = /[\u3040-\u30ff]/u, HANGUL = /[가-힣]/u;
+/** 읽기표 줄 — study_pages rows에서 label이 한자 · 숫자(예: 1時 · 月曜日 · 何歳)이고 ja가 그 읽기인 줄. 표기를 바꾸면 읽기표가 깨지므로 1단계가 아니다
+ *  (Data 세션 판정 2026-11-11 KST, 121줄). 이런 줄과 같은 렌더를 공유하는 다른 문자열은 「2단계 공유」처럼 함께 빠진다. */
+export function isReadingRow(manuscript, path) {
+  const m = path.match(/^lessons\.(\d+)\.study_pages\.(\d+)\.rows\.(\d+)\.ja$/);
+  if (!m) return false;
+  const label = manuscript.lessons[+m[1]]?.study_pages?.[+m[2]]?.rows?.[+m[3]]?.label;
+  return typeof label === 'string' && /[\p{Script=Han}\p{Number}]/u.test(label);
+}
 
 /**
  * 1단계에서 바꿀 수 있는 원고 문자열(경로)과 빠지는 까닭. 렌더 단위로 묶는다:
  *   - 옛 본문 렌더가 HTML에 없으면(같은 필드라도 인라인 틀로 그려진 줄 — 예: 일부 row label) → 'inline-template'
- *   - 같은 렌더의 HTML 출현 수 > 1단계 문자열 수 → 2단계 필드와 렌더 공유 → 묶음 전체 'shared-with-stage2'
+ *   - 같은 렌더의 HTML 출현 수 > 1단계 문자열 수 → 1단계 밖(2단계 필드 · 읽기표 줄)과 렌더 공유 → 묶음 전체 'shared-with-non-stage1'
  *   - 1–9과(fromLesson 앞) 문자열과 렌더를 공유 → 'shared-with-kana-lessons'
  *   - 같으면 묶음 전체가 대상(여럿이면 함께 · 같은 새 표기로 바꿔야 한다 — deriveNotation이 강제).
  */
@@ -44,21 +52,32 @@ export function stage1Eligibility(base, { fromLesson = 1 } = {}) {
   const { bundle, html } = base, rows = [];
   bundle.manuscript.lessons.forEach((lesson, li) => {
     const visit = (v, p) => {
-      if (typeof v === 'string') { const path = p.join('.'); if (STAGE1.some(re => re.test(path)) && KANA.test(v) && !HANGUL.test(v)) rows.push({ path, text: v, lesson: li, render: n5Phrase(v, lesson.kanji || {}) }); return; }
+      if (typeof v === 'string') {
+        const path = p.join('.');
+        if (STAGE1.some(re => re.test(path)) && KANA.test(v) && !HANGUL.test(v) && !isReadingRow(bundle.manuscript, path)) rows.push({ path, text: v, lesson: li, render: n5Phrase(v, lesson.kanji || {}) });
+        return;
+      }
       if (Array.isArray(v)) v.forEach((x, i) => visit(x, [...p, i])); else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) if (k !== 'kanji') visit(x, [...p, k]);
     };
     visit(lesson, ['lessons', li]);
   });
   const byRender = new Map(); for (const r of rows) byRender.set(r.render, [...(byRender.get(r.render) || []), r]);
   const eligible = [], excluded = [];
+  const unitOf = r => bundle.manuscript.lessons[r.lesson].id;
   for (const [render, group] of byRender) {
     const found = occurrences(html, render);
-    // 1–9과(가나 중심 유지)와 같은 렌더를 공유하면 함께 바꿀 수 없다 — 묶음 전체를 뺀다.
-    const kanaLesson = group.some(g => bundle.manuscript.lessons[g.lesson].number < fromLesson);
-    const reason = found === 0 ? 'inline-template' : found > group.length ? 'shared-with-stage2' : found < group.length ? 'render-mismatch' : kanaLesson ? 'shared-with-kana-lessons' : null;
+    // 과별로 나눌 수 있나: 각 과 문자열 수 = 그 과 article 안 출현 수, 과 article 밖 출현 0이면 과마다 따로 바꾼다(같은 가나라도 과마다
+    // 다른 낱말 · 다른 지도일 수 있다 — 예: はる 春/貼る, 10과 {今|いま} · 26과 지도 今). 아니면 묶음 전체를 함께.
+    const perUnit = occurrencesByUnit(html, render), units = new Map();
+    for (const r of group) units.set(unitOf(r), (units.get(unitOf(r)) || 0) + 1);
+    const separable = found === group.length && [...units].every(([u, n]) => (perUnit.get(u) || 0) === n) && [...perUnit.keys()].every(u => units.has(u));
+    // 1–9과(가나 중심 유지)와 같은 렌더를 공유하면 — 과별로 나눌 수 없을 때만 — 함께 바꿀 수 없어 묶음 전체를 뺀다.
+    const kanaLesson = !separable && group.some(g => bundle.manuscript.lessons[g.lesson].number < fromLesson);
+    const reason = found === 0 ? 'inline-template' : found > group.length ? 'shared-with-non-stage1' : found < group.length ? 'render-mismatch' : kanaLesson ? 'shared-with-kana-lessons' : null;
     for (const r of group) {
       if (bundle.manuscript.lessons[r.lesson].number < fromLesson) continue;
-      const entry = { path: r.path, text: r.text, group: group.length > 1 ? group.map(g => g.path) : undefined };
+      const mates = separable ? group.filter(g => g.lesson === r.lesson) : group;
+      const entry = { path: r.path, text: r.text, scope: separable ? unitOf(r) : 'book', group: mates.length > 1 ? mates.map(g => g.path) : undefined };
       if (reason) excluded.push({ ...entry, reason }); else eligible.push(entry);
     }
   }
@@ -66,6 +85,32 @@ export function stage1Eligibility(base, { fromLesson = 1 } = {}) {
 }
 
 const occurrences = (text, needle) => { let n = 0, i = 0; while ((i = text.indexOf(needle, i)) >= 0) { n++; i += needle.length; } return n; };
+/** article 구간(data-unit-page) — 중첩 없음(8a8c 실측). 과 단위 치환 · 출현 집계에 쓴다. */
+export function articleSpans(html) {
+  const spans = [];
+  for (const m of html.matchAll(/<article\b([^>]*)>/g)) {
+    const end = html.indexOf('</article>', m.index);
+    if (end < 0 || html.slice(m.index + 1, end).includes('<article')) throw new Error('article 중첩 — 과 단위 치환 불가');
+    spans.push({ unit: m[1].match(/data-unit-page="([^"]*)"/)?.[1] ?? '', start: m.index, end: end + '</article>'.length });
+  }
+  return spans;
+}
+function occurrencesByUnit(html, needle) {
+  const counts = new Map(); let inside = 0;
+  for (const sp of articleSpans(html)) { const n = occurrences(html.slice(sp.start, sp.end), needle); if (n) { counts.set(sp.unit, (counts.get(sp.unit) || 0) + n); inside += n; } }
+  const outside = occurrences(html, needle) - inside; if (outside) counts.set('#outside', outside);
+  return counts;
+}
+/** 과(unit)의 article 안에서만 before → after. 바꾼 수를 돌려준다. */
+function replaceInUnit(html, unit, before, after) {
+  let out = '', last = 0, count = 0;
+  for (const sp of articleSpans(html)) {
+    if (sp.unit !== unit) continue;
+    const slice = html.slice(sp.start, sp.end), n = occurrences(slice, before);
+    out += html.slice(last, sp.start) + (n ? slice.split(before).join(after) : slice); last = sp.end; count += n;
+  }
+  return { html: out + html.slice(last), count };
+}
 
 export const stripSource = h => h.replace(/<rt\b[^>]*>[\s\S]*?<\/rt>|<small class="reading-note">[\s\S]*?<\/small>/g, '').replace(/<[^>]+>/g, '').replace(/&(?:amp|lt|gt|quot|#39);/g, e => ({ '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" }[e]));
 
@@ -124,6 +169,7 @@ export function deriveNotation(base, next, { fromLesson = 10 } = {}) {
   for (const c of changes) {
     if (!STAGE1.some(re => re.test(c.path))) fail(`1단계 범위 밖 필드 ${c.path}(인라인 틀 · 문항 — 2단계)`);
     if (bundle.manuscript.lessons[c.lesson].number < fromLesson) fail(`${c.path}: ${fromLesson}과 앞은 가나 중심 유지`);
+    if (isReadingRow(bundle.manuscript, c.path)) fail(`${c.path}: 읽기표 줄(label의 읽기) — 바꾸지 않는다`);
     if (blocked.has(c.path)) fail(`${c.path}: 1단계 제외(${blocked.get(c.path)})`);
     const entry = allowed.get(c.path);
     if (!entry) fail(`${c.path}: 1단계 자격 목록에 없다`);
@@ -131,23 +177,37 @@ export function deriveNotation(base, next, { fromLesson = 10 } = {}) {
     const map = next.lessons[c.lesson].kanji || {};
     for (const b of inlineBases(c.after)) if (Object.hasOwn(map, b)) fail(`${c.path}: ${b}는 그 과 지도에 있다 — 지도 읽기를 쓴다`);
   }
-  // ⑶ 렌더 단위 치환
+  // ⑶ 렌더 단위 치환 — 과별로 나눌 수 있는 묶음은 그 과 article 안에서, 아니면 책 전체에서.
   const groups = new Map();
   for (const c of changes) {
-    const map = next.lessons[c.lesson].kanji || {};
+    const map = next.lessons[c.lesson].kanji || {}, scope = allowed.get(c.path).scope;
     const before = n5Phrase(c.before, map), after = n5Phrase(c.after, map);
     if (HAN.test(stripSource(after.replace(/<ruby>[\s\S]*?<\/ruby>/g, '')))) fail(`${c.path}: 새 렌더에 루비 없는 한자`);
-    const g = groups.get(before) || { after, paths: [] };
+    const key = `${scope}\u0000${before}`;
+    const g = groups.get(key) || { scope, before, after, paths: [] };
     if (g.after !== after) fail(`같은 옛 렌더가 서로 다른 새 렌더로 갈린다: ${g.paths[0]} · ${c.path}`);
-    g.paths.push(c.path); groups.set(before, g);
+    g.paths.push(c.path); groups.set(key, g);
   }
   let out = html, replaced = 0;
-  for (const [before, g] of groups) {
-    const found = occurrences(out, before);
-    if (found !== g.paths.length) fail(`${g.paths.join(', ')}: HTML 출현 ${found} ≠ 바꾸는 원고 문자열 ${g.paths.length}(다른 필드와 렌더 공유)`);
+  for (const g of groups.values()) {
     const afterBefore = occurrences(out, g.after);
-    out = out.split(before).join(g.after); replaced += found;
-    if (occurrences(out, before) !== 0 || occurrences(out, g.after) !== afterBefore + found) fail(`${g.paths[0]}: 치환 수 불일치`);
+    let count;
+    if (g.scope === 'book') {
+      count = occurrences(out, g.before);
+      if (count !== g.paths.length) fail(`${g.paths.join(', ')}: HTML 출현 ${count} ≠ 바꾸는 원고 문자열 ${g.paths.length}(다른 필드와 렌더 공유)`);
+      out = out.split(g.before).join(g.after);
+    } else {
+      const r = replaceInUnit(out, g.scope, g.before, g.after); count = r.count;
+      if (count !== g.paths.length) fail(`${g.paths.join(', ')}: ${g.scope} 안 출현 ${count} ≠ 바꾸는 원고 문자열 ${g.paths.length}`);
+      out = r.html;
+    }
+    replaced += count;
+    if (occurrences(out, g.after) !== afterBefore + count) fail(`${g.paths[0]}: 치환 수 불일치`);
+  }
+  // 옛 렌더 잔존: 책 단위로 바꾼 렌더는 0, 과 단위는 그 과 안에서 0(다른 과의 같은 가나는 그 과 원고대로 남는다)
+  for (const g of groups.values()) {
+    const left = g.scope === 'book' ? occurrences(out, g.before) : (occurrencesByUnit(out, g.before).get(g.scope) || 0);
+    if (left) fail(`${g.paths[0]}: 옛 렌더 ${left}곳이 남았다`);
   }
   // 판본 ID
   const contentHash = sha256(JSON.stringify(canonical(manuscriptContent(next))));
