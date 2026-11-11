@@ -69,6 +69,7 @@ describe('경로별 요약 — 응답 모양 그대로', () => {
   it('IPA 보충: 사전 + LLM 갱신 합계', () => {
     expect(summarizeBackfillIpa({ stage: 'complete', dictUpdated: 3, geminiUpdated: 2, remaining: 4 })).toMatchObject({ processed: 5, detail: { stage: 'complete', remaining: 4 } });
     expect(summarizeBackfillIpa({ stage: 'idle', dictUpdated: 0, geminiUpdated: 0, remaining: 0 }).processed).toBe(0);
+    expect(summarizeBackfillIpa({ stage: 'complete', geminiUpdated: 0, failedBatches: 3, firstError: 'x' })).toMatchObject({ ok: false, failed: 3 }); // 조용한 0 금지
   });
   it('예보 푸시: 보낸 수 · 키 없으면 skipped 기록', () => {
     expect(summarizeSendForecast({ checked: 4, sent: 2, silent: 2 })).toMatchObject({ processed: 2 });

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // IPA-DICT-001 계약 — backfill-ipa 2단계: 공개 영어 자료에 쓰인 사전 행의 빈 reading만 채운다(reading만 · 비었을 때만 ·
 // 하루 상한 3묶음을 1단계와 함께 쓴다). 1단계(단어장)는 그대로.
-const state = vi.hoisted(() => ({ tables: {}, updates: [], prompts: [] }));
+const state = vi.hoisted(() => ({ tables: {}, updates: [], prompts: [], calls: [], fail: false }));
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
@@ -42,13 +42,14 @@ vi.mock('@supabase/supabase-js', () => ({
     rpc: vi.fn(async () => ({ data: true, error: null })),
   }),
 }));
-vi.mock('../../gemini.js', () => ({
-  callGemini: vi.fn(async (prompt) => {
-    state.prompts.push(prompt);
+// 서버 경로 callLLM을 흉내 낸다(IPA-CRON-FIX — 예전 계약은 클라이언트용 callGemini를 흉내 내 실제 서버 실패를 못 잡았다).
+vi.mock('../llm', () => ({
+  callLLM: vi.fn(async (tier, prompt, opts) => {
+    state.prompts.push(prompt); state.calls.push({ tier, opts });
+    if (state.fail) throw Object.assign(new Error('Claude overloaded'), { code: 'failed', status: 529 });
     const words = [...prompt.matchAll(/^\d+\. (.+)$/gm)].map((m) => m[1]);
-    return JSON.stringify({ results: words.map((w) => ({ word: w, ipa: `/${w}/` })) });
+    return { text: JSON.stringify({ results: words.map((w) => ({ word: w, ipa: `/${w}/` })) }), meta: {} };
   }),
-  parseGeminiJSON: (t) => JSON.parse(t),
 }));
 
 const material = (bases) => ({ visibility: 'public', processed_json: { status: 'completed', metadata: { language: 'English' },
@@ -58,7 +59,7 @@ beforeEach(() => {
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'svc-test';
   process.env.CRON_SECRET = 'cron-test';
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://x.supabase.test';
-  state.updates = []; state.prompts = [];
+  state.updates = []; state.prompts = []; state.calls = []; state.fail = false;
 });
 afterEach(() => { vi.resetModules(); });
 const run = async () => {
@@ -106,5 +107,29 @@ describe('backfill-ipa 2단계 — 공개 자료에 쓰인 사전 행의 빈 IPA
       morpheme_dictionary: [{ base_form: 'cat', language: 'English', reading: '/kæt/', source: 'gemini', meanings: [] }] };
     expect(await run()).toMatchObject({ stage: 'idle', publicDictTargets: 0, publicDictUpdated: 0 });
     expect(state.prompts).toHaveLength(0);
+  });
+});
+
+describe('backfill-ipa — 서버 경로 호출 · 실패 기록(IPA-CRON-FIX 2026-11-12 KST)', () => {
+  const tables = () => ({
+    user_vocabulary: [{ id: 1, base_form: 'tide', language: 'English', furigana: null }],
+    reading_materials: [material(['party'])],
+    morpheme_dictionary: [{ base_form: 'party', language: 'English', reading: null, source: 'gemini', meanings: [] }],
+  });
+  it('callLLM(light · route backfill-ipa · 묶음 시간 상한)으로 부르고, 성공하면 실패 0', async () => {
+    state.tables = tables();
+    const out = await run();
+    expect(state.calls).toHaveLength(2); // 1단계 1묶음 + 2단계 1묶음
+    for (const c of state.calls) { expect(c.tier).toBe('light'); expect(c.opts).toMatchObject({ route: 'backfill-ipa', temperature: 0 }); expect(c.opts.timeoutMs).toBeGreaterThan(0); }
+    expect(out).toMatchObject({ geminiUpdated: 1, publicDictUpdated: 1, batchesUsed: 2, failedBatches: 0, firstError: null });
+  });
+  it('묶음이 실패하면 삼키지 않는다 — failedBatches · firstError, 크론 한 줄은 ok=false · failed > 0', async () => {
+    state.tables = tables(); state.fail = true;
+    const out = await run();
+    expect(out).toMatchObject({ geminiUpdated: 0, publicDictUpdated: 0, failedBatches: 2 });
+    expect(out.firstError).toMatch(/overloaded/);
+    const { summarizeBackfillIpa } = await import('../cronRuns.js');
+    expect(summarizeBackfillIpa(out)).toMatchObject({ ok: false, failed: 2, processed: 0, detail: { failedBatches: 2, firstError: out.firstError } });
+    expect(state.tables.user_vocabulary[0].furigana).toBeNull();
   });
 });
