@@ -170,7 +170,7 @@ describe('출처 — JMdict(EDRDG, CC BY-SA 4.0)', () => {
 });
 
 describe('새 문구 — viewerMessages ko · zh-CN · zh-TW', () => {
-  it.each(['일본어로는', '✦ 일본어로는?', '같은 한자 표기는 일본어에서 ‘{meaning}’라는 뜻이에요.', '일본어 읽기 · JMdict (EDRDG) · CC BY-SA 4.0', '대만 정체', '일본어 표기'])('%s', (key) => {
+  it.each(['일본어로는', '일본어로는?', '같은 한자 표기는 일본어에서 ‘{meaning}’라는 뜻이에요.', '일본어 읽기 · JMdict (EDRDG) · CC BY-SA 4.0', '대만 정체', '일본어 표기'])('%s', (key) => {
     for (const locale of VIEWER_MESSAGE_LOCALES) expect(VIEWER_MESSAGES[locale][key], `${locale} ${key}`).toBeTruthy();
     expect(VIEWER_MESSAGES['zh-CN'][key]).not.toBe(key);
   });

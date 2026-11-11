@@ -4,7 +4,7 @@
 //   · 같은 뜻 다른 말(diff — 老师 → 先生 せんせい)과 동형이의어 경고(warn — 汽车 = 일본어로는 ‘기차’): 사전 행이 이 뜻에 맞는
 //     일본어를 갖고 있으면 버튼 대신 내용(정본 §2.1 「이미 만든 결과가 있으면 내용」). 뜻별 매칭은 기존 japaneseReferenceForMeaning.
 //   · 수기 동형이의어(jaWords.json warn — 回复 ↔ 回復 '회복')는 사전 행이 없어도(게스트) 경고로 보인다.
-//   · 없으면 로그인 사용자에게 [✦ 일본어로는?] 요청 버튼 — 누를 때만 기존 클라 AI 조회(lookupJapaneseReference) 그대로.
+//   · 없으면 로그인 사용자에게 [일본어로는?] 요청 버튼 — 누를 때만 기존 클라 AI 조회(lookupJapaneseReference) 그대로.
 // 「AI」 표시는 없다(오너 결정 2026-10-07 23:45 KST). 이 조각은 쓰지 않는다 — 요미 받기·빈 칸 저장은 PR ③.
 // 호출부는 日 줄이 보이지 않을 때만 둔다(같은 표기를 두 번 보이지 않는다).
 import {useContext,useId,useState} from 'react';
@@ -50,6 +50,6 @@ export default function ViewerJapaneseMore({userId,word,meaning,pos,dictEntry,ja
     {warnLine}
     {notice}
     {query.isError&&<p className="reader-card-learn__ja-error" aria-hidden="true">{vt('대응어를 불러오지 못했어요.')}</p>}
-    <button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby={noticeId} onClick={()=>{if(requested)query.refetch();else setRequested(true);}}>{vt('✦ 일본어로는?')}</button>
+    <button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby={noticeId} onClick={()=>{if(requested)query.refetch();else setRequested(true);}}>{vt('일본어로는?')}</button>
   </>;
 }

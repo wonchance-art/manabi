@@ -20,6 +20,7 @@ const paths={
   up:'m5 15 7-7 7 7', down:'m5 9 7 7 7-7',
   play:'m8 4 12 8-12 8V4Z', pause:'M8 4v16M16 4v16', stop:'M5 5h14v14H5Z',
   audio:'m3 9 4 0 5-5v16l-5-5H3V9ZM16 8a6 6 0 0 1 0 8M19 5a10 10 0 0 1 0 14',
+  muted:'m3 9 4 0 5-5v16l-5-5H3V9ZM16 9l5 6M21 9l-5 6',
   headphones:'M3 14v-3a9 9 0 0 1 18 0v3M3 12h4v9H3ZM17 12h4v9h-4Z',
   edit:'m4 16 12-12 4 4L8 20H4v-4ZM13 7l4 4',
   more:'M5 12h.01M12 12h.01M19 12h.01',

@@ -302,7 +302,7 @@ export default function VocabList({
               className={`chip ${selectMode ? 'chip--active' : ''}`}
               aria-pressed={selectMode}
             >
-              {selectMode ? '✕ 취소' : '☑ 선택'}
+              {selectMode ? '취소' : '선택'}
             </button>
           )}
         </div>

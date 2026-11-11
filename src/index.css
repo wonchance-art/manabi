@@ -720,11 +720,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .btn--primary {
   background: var(--primary);
   color: var(--on-fill);
-  box-shadow: 0 4px 15px var(--primary-glow);
+  /* 빛 그림자 없음(UNSLOP U2, 오너 승인 2026-11-11 KST) — 깊이는 칠과 테두리로 */
 }
 /* 호버 들림은 마우스 기기만(PWA-SHELL-001 ④) — 터치는 누른 뒤에도 :hover가 남아 단추가 들린 채 있었다(390 탭 실측 translateY(-1px) · brightness 1.1 잔류). */
 @media (hover: hover) {
-  .btn--primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
+  .btn--primary:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
 }
 
 .btn--secondary {
@@ -1219,8 +1219,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .vocab-row__word {
   grid-area: word; align-self: baseline;
   font-size: 1.3rem; font-weight: 800; margin: 0; line-height: 1.2; word-break: break-word;
-  background: linear-gradient(135deg, var(--text-primary) 60%, var(--primary-light));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  color: var(--text-primary); /* 먹색 한 색(UNSLOP U8) */
 }
 .vocab-row__word-button {
   display: block;
@@ -1228,10 +1227,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   text-align: left;
   font: inherit;
   color: inherit;
-  background: linear-gradient(135deg, var(--text-primary) 60%, var(--primary-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
 }
 .vocab-row__reading {
   grid-area: reading; font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.02em;
@@ -1612,10 +1608,8 @@ body.is-review-chrome .page-container { padding-top: 8px; }
   overflow-wrap: anywhere;
   font-weight: 800;
   margin: 0;
-  background: linear-gradient(135deg, var(--text-primary), var(--primary-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  /* 표제어는 먹색 한 색(UNSLOP U1, 오너 승인 2026-11-11 KST) — 그라디언트 글자 금지(uiConventions 계약) */
+  color: var(--text-primary);
 }
 
 .review-card__furigana {
