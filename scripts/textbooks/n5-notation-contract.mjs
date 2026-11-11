@@ -41,3 +41,48 @@ export function notationOnlyReport(base, next) {
 }
 
 export const inlineBases = text => [...String(text ?? '').matchAll(INLINE_BASE)].map(m => m[1]);
+
+// 오변환 안전망(2026-11-11 KST) — 가나형이 같아도 뜻이 틀린 표기를 경고로 뽑는다(위반 아님 · 표 검수와 별개의 한 번 더).
+// 실측: 「いけません」 → 「{池|いけ}ません」은 가나형 계약을 통과한다. 그래서 「명사로만 쓰이는 낱말의 한자를 그 명사 읽기로 적고,
+// 바로 뒤에 동사 · 형용사 활용 어미가 붙은 조합」을 찾는다. 낱말 · 품사 · 읽기는 책 lexicon(spellings · pos · ja)에서 온다.
+const INFLECTION = /^(?:ま[すせしょ]|な(?:い|かっ|く|けれ)|て(?!ん)|た(?![ちくべ])|る|れ|ろ|よう)/u;
+const NOUN_ONLY = pos => /명사|조수사|접미사/u.test(pos || '') && !/동사|형용사/u.test(pos || '');
+const INLINE_ALL = /\{([^{}|]+)\|([^{}|]+)\}/gu;
+
+/** 새 원고에서 바뀐 문자열마다 (한자 덩어리, 읽기, 뒤따르는 글자)를 훑어 명사 읽기 + 활용 어미 조합을 돌려준다. */
+export function misreadWarnings(base, next) {
+  const nouns = new Map();
+  for (const entry of base.lexicon || []) if (NOUN_ONLY(entry.pos)) for (const s of entry.spellings || []) {
+    if (!/\p{Script=Han}/u.test(s)) continue;
+    if (!nouns.has(s)) nouns.set(s, []);
+    nouns.get(s).push({ id: entry.id, reading: entry.ja });
+  }
+  const warnings = [];
+  const check = (path, token, reading, after) => {
+    const m = after.match(INFLECTION);
+    if (!m) return;
+    const hit = (nouns.get(token) || []).find(n => n.reading === reading);
+    if (hit) warnings.push({ path, token, reading, ending: m[0], lexicon: hit.id, context: `${token}${after.slice(0, 6)}` });
+  };
+  walk(next, base, [], (after, before, path) => {
+    if (typeof after !== 'string' || after === before || path[0] !== 'lessons' || path[2] === 'kanji') return;
+    const map = next.lessons?.[path[1]]?.kanji || {};
+    const keys = Object.keys(map).filter(k => k && map[k]).sort((a, b) => b.length - a.length || a.localeCompare(b));
+    const at = path.join('.');
+    let last = 0;
+    const plain = (text, offset, full) => {
+      for (let i = 0; i < text.length;) {
+        const key = keys.find(k => text.startsWith(k, i));
+        if (key) { check(at, key, map[key], full.slice(offset + i + key.length).replace(INLINE_ALL, (_, _b, r) => r)); i += key.length; }
+        else i += String.fromCodePoint(text.codePointAt(i)).length;
+      }
+    };
+    for (const m of after.matchAll(INLINE_ALL)) {
+      plain(after.slice(last, m.index), last, after);
+      check(at, m[1], m[2], after.slice(m.index + m[0].length).replace(INLINE_ALL, (_, _b, r) => r));
+      last = m.index + m[0].length;
+    }
+    plain(after.slice(last), last, after);
+  });
+  return warnings;
+}

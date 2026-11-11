@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { applyPatch, bareKanji, deriveNotation, isReadingRow, loadBase, stage1Eligibility } from './n5-derive-notation.mjs';
+import { misreadWarnings } from './n5-notation-contract.mjs';
 
 // N5-NOTATION-001 1단계(2026-11-11 KST) — 조각 치환 파생의 계약. 바탕 = 운영 공개 판본 8a8c.
 const BASE = 'src/content/textbookEditions/8a8c1c1fd452773810abaf8c';
@@ -128,5 +129,31 @@ describe('1단계 범위(10–42과, 오케스트레이터 확정 필드)', () =
     const before = (base.html.match(/<span class="phrase">がくせい<\/span>/g) || []).length;
     const r2 = derive({ 'lessons.28.words.4.ja': '{学生|がくせい}' });
     expect((r2.html.match(/<span class="phrase">がくせい<\/span>/g) || []).length).toBe(before - 1);
+  });
+});
+
+describe('오변환 안전망 · 섞인 표기 통일', () => {
+  const at = path => path.split('.').reduce((o, k) => o[k], base.bundle.manuscript);
+  it('「いけません」 → 「{池|いけ}ません」은 가나형이 같아 계약을 통과하지만, 명사 읽기 + 활용 어미 경고로 잡힌다(Data 판 4 실측 5곳)', () => {
+    const p = 'lessons.26.patterns.1.examples.1.ja';
+    expect(at(p)).toBe('ここで たべては いけません。');
+    const wrong = applyPatch(base.bundle.manuscript, { [p]: 'ここで 食べては {池|いけ}ません。' });
+    expect(misreadWarnings(base.bundle.manuscript, wrong)).toEqual([expect.objectContaining({ path: p, token: '池', reading: 'いけ', ending: 'ませ', lexicon: 'lex-606' })]);
+    const right = applyPatch(base.bundle.manuscript, { [p]: 'ここで 食べては いけません。' });
+    expect(misreadWarnings(base.bundle.manuscript, right)).toEqual([]);
+    expect(misreadWarnings(base.bundle.manuscript, structuredClone(base.bundle.manuscript))).toEqual([]);
+  });
+  it('파생 보고에 경고가 실린다(거절은 하지 않는다 — 판정은 표 검수)', () => {
+    expect(derive(U10).report.misread).toEqual([]);
+  });
+  it('「友だち」 → 「友達」: 友가 그 과 지도 키여도 {友達|ともだち} 통째 인라인(루비 하나) · 友{達|だち}(루비 둘) 모두 통과, 맨 「友達」은 거절', () => {
+    const p = 'lessons.22.patterns.1.examples.0.ja';
+    expect(at(p)).toBe('友だちが うちへ あそびに きます。');
+    expect(base.bundle.manuscript.lessons[22].kanji['友']).toBe('とも');
+    expect(derive({ [p]: '{友達|ともだち}が うちへ あそびに きます。' }).html).toContain('<ruby>友達<rt>ともだち</rt></ruby>が');
+    expect(derive({ [p]: '友{達|だち}が うちへ あそびに きます。' }).html).toContain('<ruby>友<rt>とも</rt></ruby><ruby>達<rt>だち</rt></ruby>が');
+    expect(() => derive({ [p]: '友達が うちへ あそびに きます。' })).toThrow(/표기 외 변경/);
+    // 찾아보기: lexicon lex-035 spellings에 友達이 이미 있다(1단계는 lexicon을 바꾸지 않는다).
+    expect(base.bundle.manuscript.lexicon.find(x => x.id === 'lex-035').spellings).toContain('友達');
   });
 });

@@ -17,7 +17,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { n5Phrase } from './n5-markup.mjs';
-import { notationOnlyReport, inlineBases } from './n5-notation-contract.mjs';
+import { misreadWarnings, notationOnlyReport, inlineBases } from './n5-notation-contract.mjs';
 
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canonical(v[k])])) : v;
@@ -235,7 +235,7 @@ export function deriveNotation(base, next, { fromLesson = 10 } = {}) {
     qa: { passed: false, scope: 'Notation-only derivation contracts passed. Language review, notation table sign-off and runtime/browser review pending.' },
   };
   const changedSources = Object.keys(sourceIndex).filter(id => sourceIndex[id].text !== bundle.sourceIndex[id].text);
-  return { editionId, bundle: nextBundle, html: out, app: nextApp, css, report: { changes: changes.length, renders: groups.size, replaced, changedSources: changedSources.length, bareKanji: bareAfter.length, uncovered: report.uncovered } };
+  return { editionId, bundle: nextBundle, html: out, app: nextApp, css, report: { changes: changes.length, renders: groups.size, replaced, changedSources: changedSources.length, bareKanji: bareAfter.length, uncovered: report.uncovered, misread: misreadWarnings(bundle.manuscript, next) } };
 }
 
 export async function loadBase(dir) {
