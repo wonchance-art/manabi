@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { applyPatch, bareKanji, deriveNotation, loadBase } from './n5-derive-notation.mjs';
+import { applyPatch, bareKanji, deriveNotation, loadBase, stage1Eligibility } from './n5-derive-notation.mjs';
 
 // N5-NOTATION-001 1단계(2026-11-11 KST) — 조각 치환 파생의 계약. 바탕 = 운영 공개 판본 8a8c.
 const BASE = 'src/content/textbookEditions/8a8c1c1fd452773810abaf8c';
@@ -75,18 +75,39 @@ describe('거절해야 하는 것', () => {
     const option = base.bundle.manuscript.lessons[9].checks[0].options[0], first = [...option][0];
     expect(() => derive({ 'lessons.9.checks.0.options.0': `{${first}|${first}}${option.slice(first.length)}` })).toThrow(/1단계 범위 밖/);
   });
-  it('다른 필드와 렌더를 공유하는 문자열은 바꾸지 않는다(HTML 출현 수 ≠ 원고 수)', () => {
-    // 11과 이후에서 렌더 공유로 1단계에서 빠지는 낱말 하나를 찾아 바꿔 본다.
-    const lessons = base.bundle.manuscript.lessons;
-    let target = null;
-    for (let li = 9; li < lessons.length && !target; li++) lessons[li].words.forEach((w, wi) => {
-      if (target || /\p{Script=Han}/u.test(w.ja)) return;
-      const render = `<span lang="ja"><span class="phrase">${w.ja}</span></span>`;
-      if (base.html.split(render).length - 1 > 1) target = [`lessons.${li}.words.${wi}.ja`, w.ja];
-    });
-    expect(target).not.toBeNull();
-    // 가나형이 같도록 첫 글자에 같은 읽기를 인라인으로 달아도(표기 외 동일) 렌더 공유라 거절된다.
-    const [path, ja] = target, first = [...ja][0];
-    expect(() => derive({ [path]: `{${first}|${first}}${ja.slice(first.length)}` })).toThrow(/렌더 공유|HTML 출현/);
+  // 가나형이 같도록 첫 글자에 같은 글자를 인라인으로 단 「표기만 바뀐」 변경 — 표기 외 계약은 통과하고 자격 규칙만 시험한다.
+  const sameKana = text => { const first = [...text][0]; return `{${first}|${first}}${text.slice(first.length)}`; };
+  it.each([
+    ['2단계 필드와 렌더 공유', 'shared-with-stage2'],
+    ['1–9과와 렌더 공유', 'shared-with-kana-lessons'],
+  ])('%s(1단계 제외)는 바꾸지 않는다', (_name, reason) => {
+    const target = stage1Eligibility(base, { fromLesson: 10 }).excluded.find(e => e.reason === reason);
+    expect(target).toBeTruthy();
+    expect(() => derive({ [target.path]: sameKana(target.text) })).toThrow(new RegExp(`1단계 제외\\(${reason}\\)`));
+  });
+  it('같은 렌더 묶음은 함께 · 같은 새 표기로 — 하나만 바꾸면 거절', () => {
+    const member = stage1Eligibility(base, { fromLesson: 10 }).eligible.find(e => e.group);
+    expect(member).toBeTruthy();
+    expect(() => derive({ [member.path]: sameKana(member.text) })).toThrow(/같은 렌더 묶음/);
+    const all = Object.fromEntries(member.group.map(p => [p, sameKana(member.text)]));
+    expect(() => derive(all)).not.toThrow();
+  });
+  it('1–9과는 가나 중심 유지 · 문항이 아닌 필드라도 row label(인라인 틀)은 1단계가 아니다', () => {
+    expect(() => derive({ 'lessons.2.words.0.ja': sameKana(base.bundle.manuscript.lessons[2].words[0].ja) })).toThrow(/가나 중심 유지/);
+    const li = base.bundle.manuscript.lessons.findIndex((l, i) => i >= 9 && l.study_pages?.some(sp => sp.rows?.some(r => /[\u3040-\u30ff]/.test(r.label))));
+    const si = base.bundle.manuscript.lessons[li].study_pages.findIndex(sp => sp.rows?.some(r => /[\u3040-\u30ff]/.test(r.label)));
+    const ri = base.bundle.manuscript.lessons[li].study_pages[si].rows.findIndex(r => /[\u3040-\u30ff]/.test(r.label));
+    const label = base.bundle.manuscript.lessons[li].study_pages[si].rows[ri].label;
+    expect(() => derive({ [`lessons.${li}.study_pages.${si}.rows.${ri}.label`]: sameKana(label) })).toThrow(/1단계 범위 밖/);
+  });
+});
+
+describe('1단계 범위(10–42과, 오케스트레이터 확정 필드)', () => {
+  it('대상 941개(가나만 637) · 제외 50개(2단계 공유 35 · 1–9과 공유 14 · 인라인 틀 1)', () => {
+    const { eligible, excluded } = stage1Eligibility(base, { fromLesson: 10 });
+    expect(eligible).toHaveLength(941);
+    expect(eligible.filter(e => !/\p{Script=Han}/u.test(e.text))).toHaveLength(637);
+    const by = reason => excluded.filter(e => e.reason === reason).length;
+    expect({ total: excluded.length, stage2: by('shared-with-stage2'), kana: by('shared-with-kana-lessons'), inline: by('inline-template'), mismatch: by('render-mismatch') }).toEqual({ total: 50, stage2: 35, kana: 14, inline: 1, mismatch: 0 });
   });
 });

@@ -23,7 +23,47 @@ const sha256 = value => createHash('sha256').update(value).digest('hex');
 const canonical = v => Array.isArray(v) ? v.map(canonical) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canonical(v[k])])) : v;
 const manuscriptContent = m => Object.fromEntries(Object.entries(m).filter(([k]) => !['revision', 'source', 'editorialChanges'].includes(k)));
 const HAN = /\p{Script=Han}/u;
-const STAGE1 = [/^lessons\.\d+\.dialog\.\d+\.ja$/, /^lessons\.\d+\.patterns\.\d+\.examples\.\d+\.ja$/, /^lessons\.\d+\.words\.\d+\.ja$/, /^lessons\.\d+\.writing_sample\.ja$/];
+// 1단계 필드(오케스트레이터 확정 2026-11-11 KST) — 문항이 아닌 본문 틀 필드만. 문항의 선택지 · 답(checks · practice_pages · review_pages)은
+// 본문 틀로 그려지더라도 2단계(한 문항 안 선택지 표기를 한꺼번에, options.includes(answer) 일치까지).
+export const STAGE1 = [
+  /^lessons\.\d+\.dialog\.\d+\.ja$/, /^lessons\.\d+\.patterns\.\d+\.examples\.\d+\.ja$/, /^lessons\.\d+\.words\.\d+\.ja$/, /^lessons\.\d+\.writing_sample\.ja$/,
+  // rows[].label은 인라인 틀(<b><span lang="ja">…</span></b>)이라 1단계가 아니다 — 본문 틀 일치처럼 보인 것은 같은 글의 ja 줄과 겹친 우연(실측).
+  /^lessons\.\d+\.study_pages\.\d+\.rows\.\d+\.ja$/, /^lessons\.\d+\.study_pages\.\d+\.examples\.\d+\.ja$/,
+  /^lessons\.\d+\.extra_patterns\.\d+\.examples\.\d+\.ja$/, /^lessons\.\d+\.reading$/,
+];
+const KANA = /[\u3040-\u30ff]/u, HANGUL = /[가-힣]/u;
+
+/**
+ * 1단계에서 바꿀 수 있는 원고 문자열(경로)과 빠지는 까닭. 렌더 단위로 묶는다:
+ *   - 옛 본문 렌더가 HTML에 없으면(같은 필드라도 인라인 틀로 그려진 줄 — 예: 일부 row label) → 'inline-template'
+ *   - 같은 렌더의 HTML 출현 수 > 1단계 문자열 수 → 2단계 필드와 렌더 공유 → 묶음 전체 'shared-with-stage2'
+ *   - 1–9과(fromLesson 앞) 문자열과 렌더를 공유 → 'shared-with-kana-lessons'
+ *   - 같으면 묶음 전체가 대상(여럿이면 함께 · 같은 새 표기로 바꿔야 한다 — deriveNotation이 강제).
+ */
+export function stage1Eligibility(base, { fromLesson = 1 } = {}) {
+  const { bundle, html } = base, rows = [];
+  bundle.manuscript.lessons.forEach((lesson, li) => {
+    const visit = (v, p) => {
+      if (typeof v === 'string') { const path = p.join('.'); if (STAGE1.some(re => re.test(path)) && KANA.test(v) && !HANGUL.test(v)) rows.push({ path, text: v, lesson: li, render: n5Phrase(v, lesson.kanji || {}) }); return; }
+      if (Array.isArray(v)) v.forEach((x, i) => visit(x, [...p, i])); else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) if (k !== 'kanji') visit(x, [...p, k]);
+    };
+    visit(lesson, ['lessons', li]);
+  });
+  const byRender = new Map(); for (const r of rows) byRender.set(r.render, [...(byRender.get(r.render) || []), r]);
+  const eligible = [], excluded = [];
+  for (const [render, group] of byRender) {
+    const found = occurrences(html, render);
+    // 1–9과(가나 중심 유지)와 같은 렌더를 공유하면 함께 바꿀 수 없다 — 묶음 전체를 뺀다.
+    const kanaLesson = group.some(g => bundle.manuscript.lessons[g.lesson].number < fromLesson);
+    const reason = found === 0 ? 'inline-template' : found > group.length ? 'shared-with-stage2' : found < group.length ? 'render-mismatch' : kanaLesson ? 'shared-with-kana-lessons' : null;
+    for (const r of group) {
+      if (bundle.manuscript.lessons[r.lesson].number < fromLesson) continue;
+      const entry = { path: r.path, text: r.text, group: group.length > 1 ? group.map(g => g.path) : undefined };
+      if (reason) excluded.push({ ...entry, reason }); else eligible.push(entry);
+    }
+  }
+  return { eligible, excluded };
+}
 
 const occurrences = (text, needle) => { let n = 0, i = 0; while ((i = text.indexOf(needle, i)) >= 0) { n++; i += needle.length; } return n; };
 
@@ -57,7 +97,7 @@ export function bareKanji(html) {
 }
 const attrs = (html, id) => (html.match(/(?:id|data-save|href|data-search)="[^"]*"/g) || []).map(v => v.replaceAll(id, '<edition>'));
 
-export function deriveNotation(base, next) {
+export function deriveNotation(base, next, { fromLesson = 10 } = {}) {
   const { bundle, html, app, css } = base;
   const fail = message => { throw new Error(`N5 표기 파생 거절: ${message}`); };
   // ⑸ 바탕 재현
@@ -77,8 +117,17 @@ export function deriveNotation(base, next) {
     };
     visit(next.lessons[li], lesson, ['lessons', li]);
   });
+  // 1단계 자격(stage1Eligibility — 필드 · 1–9과 · 렌더 공유)과 묶음 동시 변경
+  const { eligible, excluded } = stage1Eligibility(base, { fromLesson });
+  const allowed = new Map(eligible.map(e => [e.path, e])), blocked = new Map(excluded.map(e => [e.path, e.reason]));
+  const changedTo = new Map(changes.map(c => [c.path, c.after]));
   for (const c of changes) {
-    if (!STAGE1.some(re => re.test(c.path))) fail(`1단계 범위 밖 필드 ${c.path}(인라인 틀 — 2단계)`);
+    if (!STAGE1.some(re => re.test(c.path))) fail(`1단계 범위 밖 필드 ${c.path}(인라인 틀 · 문항 — 2단계)`);
+    if (bundle.manuscript.lessons[c.lesson].number < fromLesson) fail(`${c.path}: ${fromLesson}과 앞은 가나 중심 유지`);
+    if (blocked.has(c.path)) fail(`${c.path}: 1단계 제외(${blocked.get(c.path)})`);
+    const entry = allowed.get(c.path);
+    if (!entry) fail(`${c.path}: 1단계 자격 목록에 없다`);
+    for (const member of entry.group || []) if (changedTo.get(member) !== c.after) fail(`${c.path}: 같은 렌더 묶음(${entry.group.join(', ')})은 함께 · 같은 새 표기로 바꾼다`);
     const map = next.lessons[c.lesson].kanji || {};
     for (const b of inlineBases(c.after)) if (Object.hasOwn(map, b)) fail(`${c.path}: ${b}는 그 과 지도에 있다 — 지도 읽기를 쓴다`);
   }
