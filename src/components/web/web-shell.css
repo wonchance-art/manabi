@@ -165,6 +165,8 @@ body:has(.manabi-app){background-color:#f6f4ee}
 .manabi-app .manabi-book-tools>a{min-height:48px}
 .book-scope{border-bottom:1px solid var(--rule);font-size:12px;line-height:1.8;padding:10px 0}
 .book-scope summary{cursor:pointer;min-height:36px;display:list-item;padding-top:6px}
+/* 「교재 안내」 누르는 범위 세로 44(A11Y-LAUNCH-001 ③ A안) — 보이는 줄 그대로, ::before가 위아래로만 넓힌다. */
+.book-scope summary{position:relative}.book-scope summary::before{content:'';position:absolute;left:0;right:0;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px))}
 .book-scope p{font-size:12px;color:var(--muted)}
 .manabi-app .manabi-reader-toolbar,.manabi-app .manabi-chapter-opening{border-color:var(--rule)}
 .manabi-app .manabi-reader-outline nav a{font-size:12px;min-height:39px}

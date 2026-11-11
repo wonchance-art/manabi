@@ -15,9 +15,10 @@ before(async () => { env = await startWallEnv({ out: await mkdtemp(join(tmpdir()
 after(async () => { await env?.close(); });
 
 // 진행 「완료/전체」 — 전체는 고정하지 않는다: 문단 생성(/api/study-paragraph)이 실패하면 그 문단 문항이 세션에서 빠져 분모가 줄어든다(0/9 → 1/7 실측).
+// 문단을 만드는 동안 몸풀기 구간은 「몸풀기 완료/몸풀기 수」로 읽힌다(STUDY-DENOM-001 A안 — 분모가 몸풀기 도중에 바뀌지 않게).
 // 고정하는 기대값은 「답한 수」다.
 const progressOf = async (page) => page.getByRole('progressbar', { name: '세션 진행' }).getAttribute('aria-valuetext');
-const doneOf = async (page) => { const m = /^(\d+)\/(\d+)$/.exec(await progressOf(page)); assert.ok(m && Number(m[2]) >= 1, `progress reads done/total: ${await progressOf(page)}`); return Number(m[1]); };
+const doneOf = async (page) => { const m = /^(?:몸풀기 )?(\d+)\/(\d+)$/.exec(await progressOf(page)); assert.ok(m && Number(m[2]) >= 1, `progress reads done/total: ${await progressOf(page)}`); return Number(m[1]); };
 
 test('/study: 세션을 열고 답 하나를 내면 채점이 보이고 다음 문항으로 넘어간다', async () => {
   const context = await env.newContext({ persona: 'filled', viewportKey: 'mobile' });

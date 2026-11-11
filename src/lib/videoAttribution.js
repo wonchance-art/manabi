@@ -77,7 +77,7 @@ export function materialSource(material) {
  * 화면에 보이는 출처 한 줄의 재료. 렌더는 컴포넌트가 한다(링크를 걸어야 하므로).
  * 라이선스를 모르는 개인 반입분에도 **채널·원본 링크는 준다** — 법적 의무는 없지만
  * 「어디서 온 글인지」는 어차피 필요한 정보다.
- * @returns {{channel:string, license:string, url:string}|null}
+ * @returns {{channel:string, license:string, url:string, text?:boolean}|null} — text: 웹 기사(링크 말 「원문 보기」)
  */
 /**
  * 원본 링크는 https 유튜브 주소일 때만 건다. `processed_json`은 자료 소유자가 쓰는 값이라, 공개 자료의
@@ -95,7 +95,28 @@ export function safeYoutubeUrl(raw) {
   }
 }
 
+/* 웹 기사 출처(SOURCE-ATTR-WEB-001) — 같은 「출처 한 줄」 문법. 사이트는 허용 목록으로만 받고, 이름 · 링크 호스트는 목록이 정한다
+ * (metadata의 channel · url 글자가 다른 이름 · 다른 주소를 띄우는 통로가 되지 않게 — safeYoutubeUrl과 같은 원칙). */
+const WEB_SITES = Object.freeze({
+  voa_le: Object.freeze({ host: 'learningenglish.voanews.com', name: 'VOA Learning English' }),
+});
+export function safeWebUrl(raw, site) {
+  const entry = Object.hasOwn(WEB_SITES, site) ? WEB_SITES[site] : null;
+  if (!entry) return '';
+  try {
+    const u = new URL(String(raw || '').trim());
+    return u.protocol === 'https:' && !u.username && !u.password && u.hostname.toLowerCase() === entry.host ? u.href : '';
+  } catch {
+    return '';
+  }
+}
+
 export function attributionParts(source) {
+  if (source?.kind === 'web') {
+    if (!Object.hasOwn(WEB_SITES, source.site)) return null;
+    // text: 링크가 영상이 아니라 글로 간다 → 줄의 링크 말은 「원문 보기」(위키문헌 줄과 같은 말, 오너 「권장대로」 B안 2026-11-12 KST).
+    return { channel: WEB_SITES[source.site].name, license: LICENSE_LABEL[source.license] || '', url: safeWebUrl(source.url, source.site), text: true };
+  }
   if (!source || source.kind !== 'youtube') return null;
   const channel = String(source.channel || '').trim();
   const url = safeYoutubeUrl(source.url);

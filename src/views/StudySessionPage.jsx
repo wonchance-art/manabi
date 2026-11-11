@@ -522,7 +522,16 @@ export default function StudySessionPage({
     ? Math.max(0, gradedBase + RESERVED_PARA - skipped.size)
     : nonProduceTotal;
   const progressDone = Object.values(firstResults).filter(r => r.item.type !== 'produce-writing').length;
-  const progressPct = progressTotal ? Math.min(100, Math.round((progressDone / progressTotal) * 100)) : 0;
+  // 몸풀기 구간(STUDY-DENOM-001 A안 — 오너 「권장대로」 2026-11-12 KST, 목업 https://claude.ai/artifact/AAXf3CYfqdH5V4KBeJSC7K):
+  // 문단을 만드는 동안 분모가 「몸풀기 + 예상 7」에서 실제 수로 바뀌어 숫자 · 막대가 뛰었다. 몸풀기(와 그 뒤 다시 풀기) 동안은
+  // 머리 줄이 몸풀기 수만 세고 막대는 처음 예상 그대로 둔다. 전체 숫자는 몸풀기도 다시 풀기도 아닌 첫 문항에서 처음 보인다.
+  const warmTotal = warmupItems.length;
+  const warmPhase = liveGen && warmTotal > 0
+    && queue.slice(0, idx + 1).every(it => it.warmup || String(it.uid).endsWith('-r'));
+  const warmDone = Object.values(firstResults).filter(r => r.item.warmup).length;
+  const barTotal = warmPhase ? Math.max(0, warmTotal + RESERVED_PARA - skipped.size) : progressTotal;
+  const progressPct = barTotal ? Math.min(100, Math.round((progressDone / barTotal) * 100)) : 0;
+  const progressText = warmPhase ? `몸풀기 ${warmDone}/${warmTotal}` : `${progressDone}/${progressTotal}`;
 
   function baseUid(u) { return String(u).replace(/-r$/, ''); }
 
@@ -1252,13 +1261,13 @@ export default function StudySessionPage({
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
         <Link href="/home" prefetch={false} aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
         <div className="study-progress" role="progressbar" aria-label="세션 진행" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct}
-          aria-valuetext={`${progressDone}/${progressTotal}`}>
+          aria-valuetext={progressText}>
           <div className="study-progress__fill" style={{ width: `${progressPct}%` }} />
         </div>
         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>
           {isRetry ? '오답 다시 풀기'
             : item.type === 'produce-writing' ? '보너스'
-            : `${progressDone}/${progressTotal}`}
+            : progressText}
         </span>
       </div>
 
