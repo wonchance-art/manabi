@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tokenizeJaLine } from '../tokenizeJa';
-import { decomposeKanaChunk, kuromojiBroke, segmentKanaTokens } from '../jaKanaSegment';
+import { decomposeKanaChunk, kuromojiBroke, segmentKanaTokens, SELF_TIE_BLOCK } from '../jaKanaSegment';
 import JA_YOMI_INDEX from '../../data/jaYomiIndex.json';
 
 /**
@@ -13,15 +13,17 @@ const brief = async (s) => (await toks(s)).map((t) => `${t.text}/${t.base_form}[
 
 describe('부서진 문절 — 정본 분절로 바꾼다', () => {
   it('조각: えいが(え+いが)·がくせい(がく+せい)·にほんご(に+ほん+ご)·みず(み+ず)', async () => {
-    // えいが의 정본 N5 표제어는 가나 그대로(えいが) — 기본형은 정본을 따른다. 핵심은 え[간투사]+いが 조각이 사라진 것.
+    // えいが는 N5 정본에 가나(えいが)와 한자(映画) 표제어가 둘 다 있다(자기 항목 동급). 기본형은 한자 映画 — 뒤 과 한자 토큰과
+    // 같은 낱말로 잇는다(JA-KANJI-A-001 · 2026-11-11 KST, 이전 기대값 えいが/えいが). N5 카드는 findWord('映画')로 그대로 만난다.
+    // 핵심은 여전히 え[간투사]+いが 조각이 사라진 것.
     const eiga = await brief('わたしは きのう ともだちと えいがを みました。');
-    expect(eiga).toContain('えいが/えいが[명사] を/を[조사]');
+    expect(eiga).toContain('えいが/映画[명사] を/を[조사]');
     expect(eiga).not.toContain('え/え[간투사]');
     expect(await brief('わたしは がくせいです。')).toContain('がくせい/学生[명사] です/です[조동사]');
     // べんきょう도 N5 표제어가 가나(べんきょう) — 勉強은 N1 항목이라 뒤로 밀린다(최저 급수 우선)
     expect(await brief('がっこうで にほんごを べんきょうします。')).toContain('がっこう/学校[명사] で/で[조사] にほんご/日本語[명사] を/を[조사] べんきょう/べんきょう[명사] します/する[동사]');
     expect(await brief('みずを のみます。')).toContain('みず/水[명사] を/を[조사]');
-    expect(await brief('あには かいしゃいんです。')).toContain('あに/あに[명사] は/は[조사]');
+    expect(await brief('あには かいしゃいんです。')).toContain('あに/兄[명사] は/は[조사]'); // 자기 항목 동급 → 兄(JA-KANJI-A-001, 이전 あに/あに)
   });
 
   it('동사 오독: くるま(くるむ)·かれ(かれる)·まえ(まえる) — 정본은 명사', async () => {
@@ -92,5 +94,33 @@ describe('규칙 부품', () => {
     expect(decomposeKanaChunk('を')).toBe(null);
     expect(decomposeKanaChunk('きってを')?.head).toBe('きって');        // 切手(N5)
     expect(decomposeKanaChunk('おにぎりを')).toBe(null);               // 정본에 없다 — 드릴 R2 감사와 같은 결과, kuromoji로 폴백
+  });
+});
+
+describe('자기 항목 동급(JA-KANJI-A-001) — 가나 표제어와 같은 급 한자가 하나뿐이면 한자를 기본형으로', () => {
+  const base = async (line, surface) => (await tokenizeJaLine(line)).find((t) => t.text === surface)?.base_form;
+  it('부서진 가나 문절의 기본형이 뒤 과 한자 토큰과 같은 낱말이 된다(えいが → 映画 · としょかん → 図書館 · しゃしん → 写真)', async () => {
+    expect(await base('えいがを みます。', 'えいが')).toBe('映画');
+    expect(await base('としょかんで べんきょう します。', 'としょかん')).toBe('図書館');
+    expect(await base('カメラで しゃしんを とります。', 'しゃしん')).toBe('写真');
+  });
+  it('오연결 차단 — 지시어 · 기능어는 같은 읽기의 다른 낱말로 가지 않는다', async () => {
+    expect(SELF_TIE_BLOCK).toEqual(['個々', '銅', '内', '底', '股', '厚い', '欲']);
+    const lines = ['ここは えきです。', 'そこです。', 'にほんは どうですか。', 'うちに かえります。', 'また あした。', 'きょうは あついです。', 'よく みます。'];
+    for (const line of lines) {
+      for (const t of await tokenizeJaLine(line)) expect(SELF_TIE_BLOCK, `${line} ${t.text}`).not.toContain(t.base_form);
+    }
+  });
+  it('색인 불변식 — 자기 항목 동급 키 중 차단 목록 낱말은 같은 급에 있을 때만 막히고, 바꿀 대상은 모두 N5 · N4 한자 하나', () => {
+    const k2h = (s) => s.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+    const LV = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4 };
+    let converted = 0;
+    for (const [key, cands] of Object.entries(JA_YOMI_INDEX)) {
+      const [main, level] = cands[0];
+      if (k2h(main) !== key || !['N5', 'N4'].includes(level)) continue;
+      const same = cands.slice(1).filter((c) => LV[c[1]] === LV[level]);
+      if (same.length === 1 && /[一-鿿]/.test(same[0][0]) && !SELF_TIE_BLOCK.includes(same[0][0])) converted++;
+    }
+    expect(converted).toBeGreaterThan(100); // 11/11 실측 — 코퍼스 17,714줄 중 244줄 · 43낱말이 바뀐다
   });
 });

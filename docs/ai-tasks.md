@@ -878,6 +878,16 @@
 
 ## Claude (claude/*)
 ### doing
+- **JA-KANJI-A-001 일본어 N5 한자 표기 (2026-11-11 KST)** 오너 결정: N5 본문 A-2(자연 표기 + 후리가나 전부) · N4 그대로 · 카드 ③-b · 교재 띄어쓰기 N5 동안 유지
+  (목업 `8LJQkLiDFZyozWn5ACSXjY` 3판). 경계 = 교재 1–9과 · 공개 자료 N5 문법 #1~#9 가나 중심.
+  · **공개 자료 25편(이 PR, Data 세션 묶음을 오케스트레이터 브랜치로 반입 · 검수)**: 마이그레이션 `20261111010000_ja_n5_kanji_a2`(표기 전환 14편 175토큰 ·
+  표제어 보정 251 · 오분할 보정 50건), 백업 `backup_private.ja_kanji_a2_20261111` · 복원 `docs/sql/ja-kanji-a2-20261111-rollback.sql`, 사전 검사가 어긋나면 무변경.
+  기존 학습 기록 영향 0(운영 읽기 전용 실측). 검증 기록 `docs/verification/ja-kanji-a2-20261111.md`. 같이: 가나 문절 자기 항목 동급 보정 · EN 복수형 표제어.
+  · 카드 ③-b = #1791(Design). · 남은 것: 합성어 분할(朝ご飯 표제어가 朝御飯으로 보임 · 誕生日) 별도 과제.
+  · **교재 N5(운영 판본 8a8c)**: 전체 재렌더 불가(원 도구 없음) → 조각 치환 파생 판본. 1단계 = 본문 틀(대화 · 문형 예문 · 단어 · 쓰기 예시)만, 2단계(답 · 선택지 ·
+  해설 루비)는 목업 승인 뒤. WEB = 치환 도구 · 계약, Data = 문자열 표(로컬 wip, push 대기). 발행은 오너 관리자 로그인.
+- **UNSLOP-001 디자인 unslop 스킬 도입 · 상시 적용 (2026-11-11 KST)** #1790 병합(ddb174e1) — `.claude/skills/unslop/`(heydamir/unslop, CC BY 4.0) ·
+  사용 규칙 `THIRD_PARTY-heydamir.md`. 오너 「unslop 원칙 지켜서 검사하고 앞으로도 제작하라」 → CLAUDE.md 게이트에 자가 점검 상시 규칙(이 PR). Design이 주요 화면 검사 중.
 - **VIEWER-MOBILE-PERF-001 모바일 뷰어 원인 분해 · 화면 무변화 고침 (2026-11-09 KST)** PR `claude/preview/web`(오케스트레이터 지시):
   운영 직접 · 앞단 교대 A/B(1.6Mbps · CPU 4×). LCP 요소 = 제목 h1(셋 다). Lighthouse 4.7–5.7s는 모의 조절 값이고 실제 LCP−TTFB는 2.3–2.5s.
   분해: 렌더 차단 CSS 21개(240KB) + 셸의 SC · TC 시트 미리 받기 68KB(JA · EN도) → FCP / React 19.2 경계 공개 묶음(+300ms)과 공개 배치(ZH 250ms) →

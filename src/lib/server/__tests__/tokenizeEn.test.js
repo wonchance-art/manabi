@@ -117,3 +117,19 @@ describe('tokenizeEnLine — -ss 낱말은 s를 떼지 않는다(EN-LEMMA-SS · 
     expect(['cats', 'buses', 'was', 'has', 'less'].map((w) => lemma(w).base_form)).toEqual(['cat', 'bus', 'be', 'have', 'little']);
   });
 });
+
+describe('tokenizeEnLine — 복수형이 표제어인 명사는 명사 후보를 단수로 돌리지 않는다(EN-LEMMA-PLURAL · 2026-11-09 KST)', () => {
+  const cand = (word) => tokenizeEnLine(word)[0].lemma_candidates;
+  it('species · physics · pants · goods · shorts · outskirts … = 명사 후보 그대로, lenses → lens', () => {
+    for (const word of ['species', 'physics', 'crossroads', 'outskirts', 'pants', 'trousers', 'jeans', 'shorts', 'pajamas', 'goods', 'belongings', 'savings', 'means', 'news', 'series']) {
+      expect(cand(word)['명사'], word).toBe(word);
+    }
+    expect(cand('lenses')['명사']).toBe('lens');
+    expect(tokenizeEnLine('species')[0].base_form).toBe('species');
+  });
+  it('동사 후보 · 보통 복수는 그대로(means → mean · pants → pant · topics → topic · cats → cat · buses → bus)', () => {
+    expect(cand('means')['동사']).toBe('mean');
+    expect(cand('pants')['동사']).toBe('pant');
+    expect(['topics', 'cats', 'buses', 'statistics', 'boxes'].map((w) => cand(w)['명사'])).toEqual(['topic', 'cat', 'bus', 'statistic', 'box']);
+  });
+});
