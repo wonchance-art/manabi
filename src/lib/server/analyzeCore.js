@@ -5,6 +5,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { tokenizeJaLine } from '@/lib/server/tokenizeJa';
 import { tokenizeEnLine } from '@/lib/server/tokenizeEn';
+import { summarizeZhPinyinChecks } from '@/lib/server/zhPinyinVerify';
 import { tokenizeZhLine } from '@/lib/server/tokenizeZh';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
 import { loadZhCuratedIndex, pickZhCuratedMeaning } from '@/lib/server/zhCuratedMeaning';
@@ -69,6 +70,11 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
   // 품사 판별·병음을 그대로 탄다(§3.4). 기록이 없으면 null — 아래 경로는 원래 토큰 그대로.
   const boundaryState = applyRequestBoundaries(rawTokenizedLines, boundaryRequest.byLine, language);
   const tokenizedLines = boundaryState?.tokenizedLines ?? rawTokenizedLines;
+  // 중국어 병음 검증 관측(ZH-PINYIN-CHECK) — 토크나이저가 고친 수 · 의심 낱말 · 같은 요청 안에서 갈린 낱말. 값은 바꾸지 않는다(관측 전용).
+  const zhPinyinStats = language === 'Chinese' ? summarizeZhPinyinChecks(rawTokenizedLines.map((l) => l.tokens)) : null;
+  if (zhPinyinStats && (zhPinyinStats.suspect || zhPinyinStats.inconsistent.length)) {
+    console.info('[api/analyze] zh pinyin check', JSON.stringify({ fixed: zhPinyinStats.fixed, suspect: zhPinyinStats.suspect, words: zhPinyinStats.suspects.map((x) => x.word), inconsistent: zhPinyinStats.inconsistent.map((x) => x.word) }));
+  }
   const lookupLines = boundaryState?.lookupLines ?? tokenizedLines;
   // 1.6. AD-R4 PR④ 경계 검수(중국어만, 상수 ZH_BOUNDARY_REVIEW 꺼짐으로 출시) — 켜지면 이웃 한자 쌍을 같은 판별 호출에
   // [묶음 판정]으로 싣는다. 이 자료 경계 기록 구간(적용 못 한 기록 포함)과 겹치는 쌍은 만들지 않는다(사용자 경계가 이긴다).
@@ -376,6 +382,7 @@ export async function analyzeLines({ lines, language, boundaryRequest = { byLine
       },
       ...(zhSenseStats ? { zhSense: zhSenseStats } : {}),
       ...(zhCuratedFills ? { zhCuratedFills } : {}),
+      ...(zhPinyinStats && (zhPinyinStats.fixed || zhPinyinStats.suspect || zhPinyinStats.inconsistent.length) ? { zhPinyin: zhPinyinStats } : {}),
     },
   };
 }
