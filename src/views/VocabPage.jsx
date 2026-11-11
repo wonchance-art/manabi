@@ -1728,7 +1728,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
             <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">이야기로 연습 →</Link></div>
                   {confused.length >= CONFUSED_MIN && (
                     <button type="button" className="vocab-rematch" onClick={startRematch}>
-                      ⚔ 헷갈린 말 <strong>{confused.length}개</strong> — 재대결 시작 →
+                      헷갈린 말 <strong>{confused.length}개</strong> — 다시 풀기 →
                     </button>
                   )}
                   {/* 🎯 유형 큐(v2-A R3) — 헷갈린 말 큐의 형제. 저쪽은 "어떤 말"이고

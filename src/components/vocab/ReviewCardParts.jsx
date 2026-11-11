@@ -8,6 +8,7 @@ import { isJaNaAdjective } from '../../lib/jaNaAdjectives';
 import VocabularyContexts from '../learning/VocabularyContexts';
 import { detectLang, displayWord } from '../../lib/constants';
 import { EXPRESSION_KIND_LABELS, expressionKind, readingLine, revealTrigger } from '../../lib/reviewCard';
+import ActionIcon from '../ActionIcon';
 import { focusIfFree } from '../../lib/focusAfterAction';
 
 const LANG_TAG = { Japanese: 'ja', Chinese: 'zh', English: 'en', French: 'fr', Korean: 'ko' };
@@ -121,8 +122,8 @@ export function ReviewIntroCard({ word, speak, ttsSupported, onNext, disabled = 
   </div>;
 }
 
-/** 🔈/🔇 — 펼칠 때 소리 자동 재생(기기별 기억). */
+/** 소리 켬/끔 — 펼칠 때 소리 자동 재생(기기별 기억). 앱의 선 아이콘(audio · muted, UNSLOP U3). */
 export function ReviewSoundToggle({ on, onToggle }) {
   return <button type="button" className="review-sound-toggle" aria-pressed={on} aria-label="소리 자동 재생"
-    title={on ? '소리 켜짐' : '소리 꺼짐'} onClick={() => onToggle(!on)}><span aria-hidden="true">{on ? '🔈' : '🔇'}</span></button>;
+    title={on ? '소리 켜짐' : '소리 꺼짐'} onClick={() => onToggle(!on)}><ActionIcon name={on ? 'audio' : 'muted'} /></button>;
 }

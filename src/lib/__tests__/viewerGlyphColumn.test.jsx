@@ -71,14 +71,14 @@ describe('더 알아보기 · 일본어로는 — 사전 diff/warn은 내용, �
     expect(text(markup)).toContain('自動車');
     expect(text(markup)).toContain(t('ko','같은 한자 표기는 일본어에서 ‘{meaning}’라는 뜻이에요.',{meaning:'기차'}));
   });
-  it('사전 결과가 없으면 로그인 사용자에게만 [✦ 일본어로는?] — 누르기 전 조회 0, 게스트는 아무것도 없다',()=>{
+  it('사전 결과가 없으면 로그인 사용자에게만 [일본어로는?] — 누르기 전 조회 0, 게스트는 아무것도 없다',()=>{
     const owner=renderMore({word:'尽量',meaning:'되도록',userId:'u1',dictEntry:null});
     expect(owner.markup).toContain('reader-card-learn__ask');
-    expect(text(owner.markup)).toBe(t('ko','✦ 일본어로는?'));
+    expect(text(owner.markup)).toBe(t('ko','일본어로는?'));
     expect(owner.fetching).toBe(0);
     expect(renderMore({word:'尽量',meaning:'되도록',userId:null,dictEntry:null}).markup).toBe('');
   });
-  it('수기 동형이의어(回复 ↔ 回復 회복) — 게스트에게도 경고 줄, 로그인이면 경고 + [✦ 일본어로는?], 日 줄은 없다',()=>{
+  it('수기 동형이의어(回复 ↔ 回復 회복) — 게스트에게도 경고 줄, 로그인이면 경고 + [일본어로는?], 日 줄은 없다',()=>{
     const guest=renderMore({word:'回复',meaning:'답장하다',userId:null,dictEntry:null});
     expect(text(guest.markup)).toBe(t('ko','일본어 {form}는 ‘{meaning}’',{form:'回復',meaning:'회복'}));
     const owner=renderMore({word:'回复',meaning:'답장하다',userId:'u1',dictEntry:null});
