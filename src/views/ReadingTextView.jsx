@@ -308,7 +308,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
             : '문형';
           return (
             <li key={q.key} className="fr-quiz__item">
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6 }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
                 {i + 1}. {label}
               </div>
               {q.contextJa && (
@@ -379,7 +379,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
                     <div lang="ja" style={{ fontSize: '1.05rem', lineHeight: 2, marginBottom: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
                       <span>{before}</span>
                       {a?.ok ? (
-                        <span style={{ fontWeight: 700, color: 'var(--accent-text)', margin: '0 2px' }}>{q.fillAnswer}</span>
+                        <span style={{ fontWeight: 600, color: 'var(--accent-text)', margin: '0 2px' }}>{q.fillAnswer}</span>
                       ) : (
                         <input
                           type="text" lang="ja" value={val} inputMode="text"
@@ -492,7 +492,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
                   ○ {q.why || '정답이에요.'}{a.tries > 1 ? ` (${a.tries}회 시도)` : ''}
                   {q.qtype === 'order' && q.ko && (
                     <div style={{ marginTop: 4 }}>
-                      <span lang="ja" style={{ fontWeight: 700 }}>{(q.answerTiles || []).join('')}</span>
+                      <span lang="ja" style={{ fontWeight: 600 }}>{(q.answerTiles || []).join('')}</span>
                       <span style={{ color: 'var(--text-secondary)', marginLeft: 6 }}>{q.ko}</span>
                     </div>
                   )}
@@ -568,7 +568,7 @@ function PatternCardDialog({ card, onClose }) {
         style={{ width: '100%', maxWidth: 520, borderRadius: '16px 16px 0 0', padding: '18px 18px 26px', maxHeight: '78vh', overflowY: 'auto' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <span lang="ja" style={{ fontSize: '1.15rem', fontWeight: 700 }}>{card.pattern}</span>
+          <span lang="ja" style={{ fontSize: '1.15rem', fontWeight: 600 }}>{card.pattern}</span>
           <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{card.ko}</span>
           <button type="button" className="chip" style={{ marginLeft: 'auto' }} onClick={onClose}>닫기</button>
         </div>
@@ -725,7 +725,7 @@ export default function ReadingTextView({ text, onPass, onBack, saving = false }
         </button>
       ) : (
         <section className="card" style={{ padding: '16px' }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 12 }}>문항</h2>
+          <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 12 }}>문항</h2>
           <QuestionFlow
             questions={questions}
             textId={text.id}

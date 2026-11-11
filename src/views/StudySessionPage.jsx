@@ -1015,7 +1015,7 @@ export default function StudySessionPage({
   // 재료 단어 팝오버 — 단어·발음·뜻 (라벨 없이 값만)
   const wordPop = (w) => (
     <span className="study-wordpop" onClick={e => e.stopPropagation()}>
-      <span lang={langCode} style={{ fontWeight: 700 }}>
+      <span lang={langCode} style={{ fontWeight: 600 }}>
         {w.word}{w.pron ? <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}> {w.pron}</span> : null}
       </span>
       <span style={{ color: 'var(--text-secondary)' }}>{w.meaning}</span>
@@ -1130,10 +1130,10 @@ export default function StudySessionPage({
             width: 92, height: 92, borderRadius: '50%', margin: '0 auto 12px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             border: `6px solid ${pct >= 80 ? 'var(--accent)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)'}`,
-            fontSize: '1.5rem', fontWeight: 700,
+            fontSize: '1.5rem', fontWeight: 600,
           }}>{pct}%</div>
           <h1 ref={resultHeadingRef} tabIndex={-1} style={{ fontSize: '1.3rem', fontWeight: 700 }}>세션 완료</h1>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: 6, fontWeight: 700 }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: 6, fontWeight: 600 }}>
             강해진 기억 {rightCount} · 곧 다시 만날 {wrong.length}
             {skipped.size > 0 && ` · 건너뜀 ${skipped.size}`}
           </p>
@@ -1196,7 +1196,7 @@ export default function StudySessionPage({
         {(newWordCount > 0 || nextPreview || produceReflected) && (
           <div style={{ textAlign: 'center' }}>
             {produceReflected && (
-              <p style={{ fontSize: '0.8rem', color: 'var(--accent-text)', margin: (newWordCount > 0 || nextPreview) ? '0 0 6px' : 0, fontWeight: 700, lineHeight: 1.6 }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--accent-text)', margin: (newWordCount > 0 || nextPreview) ? '0 0 6px' : 0, fontWeight: 600, lineHeight: 1.6 }}>
                 당신이 정한 전개로 내일 이야기가 이어져요.
               </p>
             )}
@@ -1228,7 +1228,7 @@ export default function StudySessionPage({
           </div>
         )}
         {pushPrime === 'done' && (
-          <p style={{ textAlign: 'center', marginTop: 18, fontSize: '0.85rem', color: 'var(--accent-text)', fontWeight: 700 }}>
+          <p style={{ textAlign: 'center', marginTop: 18, fontSize: '0.85rem', color: 'var(--accent-text)', fontWeight: 600 }}>
             내일 만나요.
           </p>
         )}
@@ -1255,7 +1255,7 @@ export default function StudySessionPage({
           aria-valuetext={`${progressDone}/${progressTotal}`}>
           <div className="study-progress__fill" style={{ width: `${progressPct}%` }} />
         </div>
-        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>
+        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>
           {isRetry ? '오답 다시 풀기'
             : item.type === 'produce-writing' ? '보너스'
             : `${progressDone}/${progressTotal}`}
@@ -1269,17 +1269,17 @@ export default function StudySessionPage({
       {/* 문항 한 장 — uid마다 새로 그려 짧게 내려앉는다(.study-item, 0.16초 · 모션 축소 시 없음). */}
       <div key={item.uid} ref={itemRef} className="study-item">
       {isRetry && (
-        <div style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 700, marginBottom: 8 }}>↻ 다시 도전</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 600, marginBottom: 8 }}>↻ 다시 도전</div>
       )}
 
       {item.warmup && !isRetry && (
-        <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', fontWeight: 700, marginBottom: 8 }}>몸풀기</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', fontWeight: 600, marginBottom: 8 }}>몸풀기</div>
       )}
 
       {/* ── 오늘의 문단 (읽기 카드) ── */}
       {item.type === 'paragraph' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 14 }}>
+          <div id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary-light)', marginBottom: 14 }}>
             {paragraphMaterials?.weekly ? '이번 주 헷갈린 것들' : '오늘의 문단'}
           </div>
           {item.preQuestion?.q && (
@@ -1373,7 +1373,7 @@ export default function StudySessionPage({
       {/* ── 티칭 카드 ── */}
       {item.type === 'teach' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 10 }}>
+          <div id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary-light)', marginBottom: 10 }}>
             새로 배우기 · {item.chapter.level} #{item.chapter.order} {item.chapter.title}
           </div>
           <div className="fr-pattern" style={{ borderColor: 'var(--primary)' }}>
@@ -1563,7 +1563,7 @@ export default function StudySessionPage({
           {item.serial ? (
             <>
               <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
-                주인공이 다음에 어떻게 할까요? 이야기의 다음 문장을 <span style={{ fontWeight: 700 }}>{langName}</span>로 한 문장 쓰세요.
+                주인공이 다음에 어떻게 할까요? 이야기의 다음 문장을 <span style={{ fontWeight: 600 }}>{langName}</span>로 한 문장 쓰세요.
               </div>
               {item.context && (
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 6 }}>
@@ -1572,7 +1572,7 @@ export default function StudySessionPage({
               )}
               {item.targetPattern?.pattern && (
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: 4 }}>
-                  가능하면 <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
+                  가능하면 <span lang={langCode} style={{ fontWeight: 600 }}>{item.targetPattern.pattern}</span>
                   {item.targetPattern.patternKo && <span> ({item.targetPattern.patternKo})</span>} 표현을 써 보세요.
                 </p>
               )}
@@ -1580,7 +1580,7 @@ export default function StudySessionPage({
           ) : (
             <>
               <div className="fr-quiz__prompt" id={headId} tabIndex={-1} data-item-head="" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
-                이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
+                이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 600 }}>{item.targetPattern.pattern}</span>
                 {item.targetPattern.patternKo && <span style={{ color: 'var(--text-muted)' }}> ({item.targetPattern.patternKo})</span>}
                 을(를) 써서 한 문장
               </div>
@@ -1631,7 +1631,7 @@ export default function StudySessionPage({
               <div style={{ marginTop: 14 }}>
                 <span style={{
                   display: 'inline-block', padding: '2px 10px', borderRadius: 'var(--radius-full)',
-                  background: badgeColor, color: '#fff', fontSize: '0.8rem', fontWeight: 700,
+                  background: badgeColor, color: '#fff', fontSize: '0.8rem', fontWeight: 600,
                 }}>
                   {ts != null ? badgeLabel : '채점'}
                 </span>

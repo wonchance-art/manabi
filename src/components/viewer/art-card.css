@@ -18,7 +18,7 @@
 /* 크기 정보가 없는 그림만 — 높이를 미리 정한 상자 안에 담는다(가로·세로 판형 모두 contain). */
 .viewer-layout .viewer-art-card__img--box {width: 100%; height: clamp(200px, 62cqi, 440px); max-height: none; object-fit: contain;}
 .viewer-layout .viewer-art-card__caption {margin-top: 6px; font-size: .75rem; line-height: 1.5; color: var(--reader-muted); overflow-wrap: anywhere;}
-.viewer-layout .viewer-art-card__title {margin: 0 0 2px; font-size: 1.05rem; font-weight: 700; line-height: 1.5; color: var(--reader-ink); overflow-wrap: anywhere;}
+.viewer-layout .viewer-art-card__title {margin: 0 0 2px; font-size: 1.05rem; font-weight: 600; line-height: 1.5; color: var(--reader-ink); overflow-wrap: anywhere;}
 .viewer-layout .viewer-art-card__title-ko {font-weight: 500;}
 .viewer-layout .viewer-art-card__meta {margin: 0 0 10px; font-size: .8125rem; color: var(--reader-muted); overflow-wrap: anywhere;}
 .viewer-layout .viewer-art-card__facts {display: grid; gap: 4px; margin: 0;}

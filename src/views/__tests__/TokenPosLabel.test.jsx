@@ -31,19 +31,19 @@ describe('TokenPosLabel', () => {
     expect(html).toContain('동사');
     expect(html).toContain('명사');
     // 짚힌 품사(동사)는 강조 스타일, 나머지(명사)는 흐림
-    expect(html).toMatch(/font-weight:700[^>]*>동사/);
+    expect(html).toMatch(/font-weight:600[^>]*>동사/);
     expect(html).toMatch(/opacity:0\.5[^>]*>명사/);
     expect(html).toContain('이 문장에서는 동사로 쓰였어요');
   });
 
   it('pos가 비어 있으면 첫 후보를 짚는다(판별 실패 디그레이드)', () => {
     const html = render({ pos: '', pos_all: '동사·명사' });
-    expect(html).toMatch(/font-weight:700[^>]*>동사/);
+    expect(html).toMatch(/font-weight:600[^>]*>동사/);
   });
 
   it('사용자 교정으로 pos가 후보 밖이면 교정값을 짚힌 항목으로 앞에 붙인다', () => {
     const html = render({ pos: '양사', pos_all: '동사·명사' });
-    expect(html).toMatch(/font-weight:700[^>]*>양사/);
+    expect(html).toMatch(/font-weight:600[^>]*>양사/);
     expect(html).toContain('동사');
     expect(html).toContain('명사');
   });

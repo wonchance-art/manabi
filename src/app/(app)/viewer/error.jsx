@@ -23,7 +23,7 @@ export default function ViewerError({ error, reset }) {
 
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '8px' }}>
         {config.title}
       </h2>
       <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px' }}>

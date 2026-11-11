@@ -53,7 +53,7 @@ describe('대기 밑줄 자리 = 지금 탭 밑줄 자리(두 번째 줄로 보�
     const pending = sliceBetween(shell, '.nav-pending{position:absolute;', '}');
     expect(geometry(pending)).toEqual(geometry(active));
     expect(geometry(active)).toEqual(['14px', '14px', '4px', '2px']);
-    expect(read('src/components/levels/level-list.css')).toContain('.lv-tabs a[aria-current=page]{color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ink)}');
+    expect(read('src/components/levels/level-list.css')).toContain('.lv-tabs a[aria-current=page]{color:var(--ink);font-weight:600;box-shadow:inset 0 -2px 0 var(--ink)}');
   });
 });
 

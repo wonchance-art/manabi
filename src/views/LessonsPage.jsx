@@ -313,7 +313,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
           {(refRead[langFilter]?.size ?? 0) === 0 && (
           <div className="card" style={{ padding: '14px 16px', marginBottom: 6 }}>
             {refLang.pitch && (
-              <p style={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.55, margin: '2px 0 8px', color: 'var(--text-primary)' }}>
+              <p style={{ fontSize: '1.05rem', fontWeight: 600, lineHeight: 1.55, margin: '2px 0 8px', color: 'var(--text-primary)' }}>
                 {refLang.pitch.hook}
               </p>
             )}
@@ -352,7 +352,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
               {refLang.legend.map((item, i) => (
                 <span key={item}>{i > 0 && <span style={{ marginRight: 6 }}>·</span>}{item}</span>
               ))}
-              <Link href="/guide" prefetch={false} style={{ marginLeft: 'auto', fontWeight: 700, color: 'var(--accent-text)', display: 'inline-flex', alignItems: 'center', minHeight: 24 }}>
+              <Link href="/guide" prefetch={false} style={{ marginLeft: 'auto', fontWeight: 600, color: 'var(--accent-text)', display: 'inline-flex', alignItems: 'center', minHeight: 24 }}>
                 학습 가이드 →
               </Link>
             </div>

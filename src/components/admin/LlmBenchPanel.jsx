@@ -52,7 +52,7 @@ export default function LlmBenchPanel() {
 
   return (
     <main className="container" style={{ padding: '24px 16px', maxWidth: 1080 }}>
-      <h1 style={{ fontSize: '1.3rem', fontWeight: 800 }}>모델 비교 측정</h1>
+      <h1 style={{ fontSize: '1.3rem', fontWeight: 700 }}>모델 비교 측정</h1>
       <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.6 }}>
         같은 고정 입력(ZH 뜻 고르기 14문단 · 단어 뜻 생성 2묶음 · 문장 번역 3)을 모델마다 한 번씩 보내요. 학습 기록·사전에는 쓰지 않아요.
         모델당 약 19회 호출, 비용은 모델당 수 센트 이하예요(Sonnet 5.5는 수십 센트).
@@ -110,7 +110,7 @@ function QualityTable({ quality }) {
   const rows = Object.values(quality);
   return (
     <div style={{ overflowX: 'auto', marginTop: 16 }}>
-      <h2 style={{ fontSize: '1.05rem', fontWeight: 700 }}>품질 세트</h2>
+      <h2 style={{ fontSize: '1.05rem', fontWeight: 600 }}>품질 세트</h2>
       <table style={{ width: '100%', fontSize: '0.82rem', borderCollapse: 'collapse' }}>
         <thead><tr>{['모델', '호출 성공', 'p50', 'p95', '회화 통과', '첨삭 통과', '문단 통과', '토큰 입·출', '추정 비용'].map((h) => <th key={h} style={{ textAlign: 'left', padding: 6, borderBottom: '1px solid var(--border)' }}>{h}</th>)}</tr></thead>
         <tbody>

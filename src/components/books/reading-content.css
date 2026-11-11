@@ -6,7 +6,7 @@
 .book-reading-content .meta,.book-reading-content footer,.book-reading-content .audio-btn,.book-reading-content .roles,.book-reading-content .player,.book-reading-content .lex-tools{display:none!important}
 /* 첫 쪽 h2는 42과 모두 앱 h1(lesson.title)과 같은 글이라 display:none을 지킨다 — sr-only로 바꾸면 제목이 두 번 읽힌다(AXE-CONTRAST-001, 2026-10-17 KST 실측). */
 .book-reading-content.is-lesson .paper:first-child>h2,.book-reading-content.is-lesson .paper:first-child>.subtitle,.book-reading-content.is-lesson .paper:first-child>.goal{display:none}
-.book-reading-content .stage{background:transparent;border-radius:0;padding:0;color:var(--mauve);font-size:11px;letter-spacing:.04em;font-weight:700;margin-bottom:10px}
+.book-reading-content .stage{background:transparent;border-radius:0;padding:0;color:var(--mauve);font-size:11px;letter-spacing:.04em;font-weight:600;margin-bottom:10px}
 .book-reading-content h2{font-size:27px;margin:6px 0 24px;color:var(--ink);letter-spacing:-.035em}
 .book-reading-content h3{font-size:18px;letter-spacing:-.025em;margin-top:30px}
 .book-reading-content .explanation,.book-reading-content .scene>p:first-child{font-family:var(--font-noto-kr),KR,sans-serif;font-size:15px;line-height:2}
@@ -48,7 +48,7 @@
 .book-reading-content .answers>:not(summary,.answer){margin:16px 18px}
 .book-reading-content .answers .examples{margin-top:14px}
 .book-reading-content .is-duplicate-stage,.book-reading-content .is-duplicate-subtitle{display:none}
-.book-reading-content .book-question-label{color:var(--mauve);font-size:13px;font-weight:700}.book-reading-content .book-question-label::after{content:" · ";color:var(--muted);font-weight:400}
+.book-reading-content .book-question-label{color:var(--mauve);font-size:13px;font-weight:600}.book-reading-content .book-question-label::after{content:" · ";color:var(--muted);font-weight:400}
 .book-reading-content .book-dialogue-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px 20px;margin:6px 0 24px;flex-wrap:wrap}
 .book-reading-content .book-dialogue-heading h2{flex:1;min-width:160px;margin:0}
 .book-reading-content .book-dialogue-heading .translation{margin:0;min-height:44px;flex-shrink:0;background:transparent}
@@ -57,7 +57,7 @@
 .book-reading-content .oral>div>p{margin:4px 0 16px}
 .book-reading-content .oral textarea{margin:0;align-self:end}
 .book-reading-content .review-task{margin:26px 0;padding-top:20px;border-top:1px solid var(--line)}
-.book-reading-content .review-task>p:first-child{font-weight:700;color:var(--ink)}
+.book-reading-content .review-task>p:first-child{font-weight:600;color:var(--ink)}
 .book-reading-content .review-task .check{background:transparent;border:0;padding:0;margin:12px 0}
 .book-reading-content .review-task .check legend{padding:0}
 .book-reading-content summary:focus-visible{outline:2px solid var(--mauve);outline-offset:4px}

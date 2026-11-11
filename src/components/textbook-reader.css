@@ -68,7 +68,7 @@
   margin: 0 0 10px;
   color: var(--book-text);
   font-size: .78rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 .textbook-examples .fr-examples { margin: 0; }
 .textbook-examples .fr-example {

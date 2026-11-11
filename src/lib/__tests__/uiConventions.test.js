@@ -334,3 +334,88 @@ describe('unslop — 고친 징후가 되살아나지 않는다', () => {
     expect(read('src/components/OnboardingModal.jsx')).toContain('>처음 설정</h2>');
   });
 });
+
+describe('굵기 정본 — 600을 넘는 값은 허용 목록에만(WEIGHT-CANON-001 · docs/ui-conventions.md §8)', () => {
+  // 범위 밖: 학습 월드 · 공유 카드 이미지(Satori) · 게시 판본 스냅숏 · 글꼴 선언 파일.
+  const OUT_OF_SCOPE = /^src\/(components\/world\/|views\/WorldPage\.jsx|app\/opengraph-image\.jsx|content\/textbookEditions\/|components\/fonts\/)/;
+  const HEAVY = /^(6[5-9]\d|[7-9]\d\d|bold|bolder)$/;
+  /** 주 버튼(칠한 단추) — 700을 쓰는 선택자 조각. 화면 벽 전수 실측(84장면 × 폰 · PC)에서 주 버튼으로 잡힌 자리. */
+  const PRIMARY_BUTTONS = ['.manabi-button', '.learn-intro__start', '.lw-btn--primary', '.board-ink-primary'];
+  /** h1에만 붙는 제목 클래스 — 아래 「h1 전용」 검사가 다른 태그에 붙지 않았음을 지킨다. */
+  const H1_CLASSES = ['.page-header__title', '.auth-header__title', '.groups-page__title', '.guide-hero__title', '.lw-title', '.pdf-toolbar__title'];
+  const hasPiece = (part, list) => list.some((k) => new RegExp(`${k.replace(/[.]/g, '\\.')}(?![\\w-])`).test(part));
+  const num = (v) => (v === 'bold' || v === 'bolder' ? 700 : Number(v));
+  const lastIsH1 = (part) => /(^|[\s>+~])h1([.:[][^\s>+~]*)?$/.test(part.trim());
+  /** 허용: 선택자의 모든 쉼표 갈래가 h1로 끝나면 700까지, 로고 800, 개인정보 처리방침 700, 주 버튼 700. */
+  const allowed = (sel) => {
+    if (/\.gnb__logo\b/.test(sel)) return 800;
+    if (/\.site-footer__privacy\b/.test(sel)) return 700;
+    if (sel.split(',').every((p) => lastIsH1(p) || hasPiece(p, H1_CLASSES) || hasPiece(p, PRIMARY_BUTTONS))) return 700;
+    return 600;
+  };
+  const all = (dir, out = []) => {
+    for (const name of fs.readdirSync(path.join(ROOT, dir))) {
+      if (name === 'node_modules' || name === '__tests__') continue;
+      const rel = `${dir}/${name}`;
+      if (fs.statSync(path.join(ROOT, rel)).isDirectory()) all(rel, out); else out.push(rel);
+    }
+    return out;
+  };
+  const srcFiles = (ext) => all('src').filter((f) => ext.test(f) && !OUT_OF_SCOPE.test(f) && !/\.test\./.test(f));
+  /** 가장 안쪽 규칙 블록(선택자 { 선언 })만 — @media 겉 블록은 안쪽 블록으로 들어간다. @font-face는 글꼴 선언이라 뺀다. */
+  const blocks = (css) => {
+    const out = []; const src = css.replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const m of src.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      const sel = m[1].replace(/\s+/g, ' ').trim();
+      if (sel.startsWith('@font-face')) continue;
+      out.push({ sel: sel.replace(/^@[^;]*;\s*/, ''), body: m[2] });
+    }
+    return out;
+  };
+
+  it('CSS — 규칙의 font-weight · font 굵기', () => {
+    const bad = [];
+    for (const f of srcFiles(/\.css$/)) {
+      for (const { sel, body } of blocks(read(f))) {
+        for (const d of body.matchAll(/(?:^|;)\s*(font-weight|font)\s*:\s*([^;]+)/g)) {
+          const tok = d[1] === 'font-weight' ? d[2].trim() : (d[2].match(/\b(6[5-9]\d|[7-9]\d\d|bold|bolder)\b/) || [])[1];
+          if (tok && HEAVY.test(tok.replace(/\s*!important$/, '')) && num(tok.replace(/\s*!important$/, '')) > allowed(sel)) bad.push(`${f} ${sel} → ${tok}`);
+        }
+      }
+    }
+    expect(bad, '굵기는 400 · 500 · 600 — 700은 h1 · 주 버튼만(docs/ui-conventions.md §8)').toEqual([]);
+  });
+
+  it('JSX 인라인 · 문자열 CSS — h1 줄만 700까지', () => {
+    const bad = [];
+    for (const f of srcFiles(/\.(jsx?|tsx?)$/)) {
+      read(f).split('\n').forEach((line, i) => {
+        for (const m of line.matchAll(/fontWeight:\s*(['"]?)(\w+)\1/g)) {
+          if (HEAVY.test(m[2]) && num(m[2]) > (/<h1\b/.test(line) ? 700 : 600)) bad.push(`${f}:${i + 1} fontWeight ${m[2]}`);
+        }
+        for (const m of line.matchAll(/font-weight:\s*(\w+)/g)) if (HEAVY.test(m[1])) bad.push(`${f}:${i + 1} font-weight ${m[1]}`);
+      });
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('h1 전용 제목 클래스는 h1에만 붙는다 — 다른 태그에 붙으면 700이 새어 나간다', () => {
+    const bad = [];
+    for (const f of srcFiles(/\.jsx$/)) {
+      for (const m of read(f).matchAll(/<([a-zA-Z][\w.]*)\b[^>]*className=["'{`][^>]*/g)) {
+        for (const k of H1_CLASSES) if (new RegExp(`\\b${k.slice(1)}(?![\\w-])`).test(m[0]) && m[1] !== 'h1') bad.push(`${f} <${m[1]}> ${k}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('브라우저 기본 굵게(h2–h6 · b · strong · th)는 명시도 0으로 600 — 월드는 닿지 않는다', () => {
+    expect(read('src/index.css')).toContain(':where(h2, h3, h4, h5, h6, b, strong, th):not(:where([data-world] *)) { font-weight: 600; }');
+    expect(read('src/components/Layout.jsx')).toContain('data-world={isWorldRoute(pathname) || undefined}');
+  });
+
+  it('정본 문서가 규칙 · 예외 · 글꼴 사실을 담는다', () => {
+    const doc = read('docs/ui-conventions.md');
+    for (const s of ['## 8. 굵기', '400 · 500 · 600', '화면 제목(`h1`)과 주 버튼', '.gnb__logo', '.site-footer__privacy', '600과 700이 같은 픽셀']) expect(doc).toContain(s);
+  });
+});

@@ -166,7 +166,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
       {/* ── ① 지식 ── */}
       {phase === 'q1' && (
         <>
-          <h1 ref={headingRef} tabIndex={-1} style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
+          <h1 ref={headingRef} tabIndex={-1} style={{ fontSize: '1.35rem', fontWeight: 700, marginBottom: 6 }}>
             {langName}, 얼마나 알고 있나요?
           </h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 22 }}>
@@ -175,12 +175,12 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <button type="button" style={cardStyle(false)} onClick={chooseFresh}>
-              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 700, marginBottom: 3 }}>처음이에요</span>
+              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 600, marginBottom: 3 }}>처음이에요</span>
               <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>완전 처음부터 차근차근</span>
             </button>
 
             <button type="button" style={cardStyle(false)} onClick={chooseBasics}>
-              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 700, marginBottom: 3 }}>기초는 알아요</span>
+              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 600, marginBottom: 3 }}>기초는 알아요</span>
               <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>인사·기본 문형은 익숙해요</span>
             </button>
 
@@ -190,7 +190,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
               aria-expanded={knowledge === 'learned'}
               onClick={() => setKnowledge('learned')}
             >
-              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 700, marginBottom: 3 }}>배운 적 있어요</span>
+              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 600, marginBottom: 3 }}>배운 적 있어요</span>
               <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>시작할 레벨을 골라볼게요</span>
             </button>
 
@@ -216,7 +216,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
       {/* ── 문자 안내 (완전 처음 + 가나/병음 트랙) ── */}
       {phase === 'chars' && scriptTrack && (
         <>
-          <h1 ref={headingRef} tabIndex={-1} style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
+          <h1 ref={headingRef} tabIndex={-1} style={{ fontSize: '1.35rem', fontWeight: 700, marginBottom: 6 }}>
             {langName}는 {scriptNoun}부터예요
           </h1>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 22 }}>
@@ -226,12 +226,12 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <Link href={scriptTrack.href} style={{ ...cardStyle(false), textDecoration: 'none', color: 'inherit' }}>
-              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 700, marginBottom: 3 }}>{scriptNoun} 배우러 가기 →</span>
+              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 600, marginBottom: 3 }}>{scriptNoun} 배우러 가기 →</span>
               <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>표를 보고 따라 쓰고, 발음으로 바로 확인해요</span>
             </Link>
 
             <button type="button" style={cardStyle(false)} onClick={() => setPhase('q2')}>
-              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 700, marginBottom: 3 }}>이미 읽을 수 있어요 — 바로 시작</span>
+              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 600, marginBottom: 3 }}>이미 읽을 수 있어요 — 바로 시작</span>
               <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{scriptNoun}는 익숙해요. 세션을 시작할게요</span>
             </button>
           </div>
@@ -247,7 +247,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
       {/* ── ② 관심사 ── */}
       {phase === 'q2' && (
         <>
-          <h1 ref={headingRef} tabIndex={-1} style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
+          <h1 ref={headingRef} tabIndex={-1} style={{ fontSize: '1.35rem', fontWeight: 700, marginBottom: 6 }}>
             어떤 이야기가 좋아요?
           </h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 22 }}>
@@ -264,7 +264,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
                 onClick={() => setInterest(o.key)}
               >
                 <span style={{ display: 'block', fontSize: '1.5rem', marginBottom: 4 }} aria-hidden="true">{o.emoji}</span>
-                <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, marginBottom: 2 }}>{o.label}</span>
+                <span style={{ display: 'block', fontSize: '0.95rem', fontWeight: 600, marginBottom: 2 }}>{o.label}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{o.hint}</span>
               </button>
             ))}

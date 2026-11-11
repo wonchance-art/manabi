@@ -534,7 +534,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       {/* U R2 — 쓰려다 못 쓴 말(능동 어휘 결손). errors[].fix + sentence↔corrected에서 수확, 담기는 명시 탭만 */}
       {!result && writingGaps.length > 0 && (
         <div className="card" style={{ padding: '16px 18px', marginBottom: 14 }}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 4 }}>쓰려다 못 쓴 말</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: 4 }}>쓰려다 못 쓴 말</div>
           <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: 10 }}>
             첨삭에서 고쳐진 표현이에요. 담으면 담은 표현으로 복습해요(자동으로 담지 않아요).
           </div>
@@ -566,7 +566,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       {/* 최근 작문 히스토리 */}
       {!result && history.length > 0 && (
         <div className="card" style={{ padding: '16px 18px', marginBottom: 14 }}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 10 }}>최근 작문</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: 10 }}>최근 작문</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {history.map(h => {
               const open = expandedId === h.id;
@@ -583,7 +583,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                     }}
                   >
                     {h.score != null && (
-                      <span style={{ fontWeight: 800, color: scoreColor(h.score), flexShrink: 0 }}>{h.score}</span>
+                      <span style={{ fontWeight: 600, color: scoreColor(h.score), flexShrink: 0 }}>{h.score}</span>
                     )}
                     <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {h.sentence}
@@ -627,15 +627,15 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
           <div className="card" style={{ padding: '18px 20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <span style={{
-                fontSize: '1.4rem', fontWeight: 800, color: scoreColor(result.score),
+                fontSize: '1.4rem', fontWeight: 600, color: scoreColor(result.score),
                 border: `2px solid ${scoreColor(result.score)}`, borderRadius: '50%',
                 width: 44, height: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               }}>{result.score}</span>
               <div>
-                <div style={{ fontSize: '0.82rem', fontWeight: 700 }}>{promptShown || '자유 작문'} · {level}</div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>{promptShown || '자유 작문'} · {level}</div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{FIT_LABEL[result.levelFit]}</div>
                 {prevScore != null && (
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, marginTop: 2, color: result.score >= prevScore ? 'var(--accent)' : 'var(--warning)' }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 600, marginTop: 2, color: result.score >= prevScore ? 'var(--accent)' : 'var(--warning)' }}>
                     재작문: {prevScore}점 → {result.score}점 {result.score > prevScore ? `(+${result.score - prevScore})` : result.score === prevScore ? '(유지)' : `(${result.score - prevScore})`}
                   </div>
                 )}
@@ -692,7 +692,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
 
           {result.naturalness.length > 0 && (
             <div className="card" style={{ padding: '16px 18px' }}>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 8 }}>더 자연스럽게</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: 8 }}>더 자연스럽게</div>
               <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {result.naturalness.map((n, i) => (
                   <li key={i} style={{ fontSize: '0.88rem', lineHeight: 1.65 }}>{n}</li>
