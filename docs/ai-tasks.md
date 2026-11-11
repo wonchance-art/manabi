@@ -1405,7 +1405,8 @@
     IPA-DICT-001 · EN-SOURCE-001 ⓐ([#1782](https://github.com/wonchance-art/manabi/pull/1782) squash 96926892 · 11/9 05:25 KST, 오케스트레이터 03:48 · 04:00 KST 11/9): backfill-ipa 크론 2단계 — 공개 영어 자료에 쓰인 사전 행의 빈 reading만(같은 하루 상한 3×25 공용,
     실행 줄 detail publicDictTargets · publicDictUpdated) · content_sources에 영어 Wikinews 분류 3행(Culture and entertainment · Sports · Weather, 정치/국제 제외).
     사후: 11/10 01:05 KST backfill-ipa 실행 줄 · 00:06 KST fetch-suggestions 새 분류 수확 집계 보고.
-    EN-SOURCE-001 ⓒ 1차(이번 PR — **병합 보류**, 오케스트레이터 04:42 · 04:47 · 04:57 KST): VOA Learning English 자료실 26편(14.9k 낱말 · A2 18 · B1 8) 공개 시드 반입 ·
+    EN-SOURCE-001 ⓒ 1차(이번 PR — **병합 준비**: 선행 조건 출처 줄 #1801 운영 READY 11/12 01:57 KST · 마이그레이션 날짜 20261109020000 → 20261112040000
+    (그 뒤 적용된 마이그레이션보다 앞서 db push가 거부하므로 · 내용 그대로), 오케스트레이터 04:42 · 04:47 · 04:57 KST): VOA Learning English 자료실 26편(14.9k 낱말 · A2 18 · B1 8) 공개 시드 반입 ·
     승인 27편 중 WHO 글 1편은 기자 줄이 AFP 각색이라 제외. 권리 거름 = 원문 기자 줄(source.credit) — 생성기 scripts/voa-seed.mjs · 마이그레이션 사전 검사 같은 규칙(재반입 · 추가분 공통).
     백업 · 복원 SQL(학습 기록 있으면 멈춤) · PGlite 16 · vitest 6. metadata.source kind 'web'. **선행 조건 = 출처 줄 표시 코드 운영 반영**(「with credit」).
     백로그 SUPABASE-CLI-V3(오케스트레이터 11:30 KST 11/9 주간 트렌드 — 조치 없음, 2.122.0 고정 유지 · 올릴 때만): v3.0.0(11/2)은 대상 없는 명령이 로컬을 향하고
