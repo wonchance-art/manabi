@@ -297,3 +297,40 @@ describe('테마 — 저장값이 없을 때만 OS를 따른다', () => {
     expect(hook).toMatch(/toggleTheme[\s\S]{0,200}?localStorage\.setItem\('theme', next\)/);
   });
 });
+
+/**
+ * unslop 되살림 방지(UNSLOP-AUDIT-001/002 U1~U11, 오너 「권장대로」 2026-11-11 KST — 감사 https://claude.ai/artifact/VAzdiNxPr55WiQj3kf8ugZ).
+ * 최소한만 잡는다: 고친 자리의 그라디언트 글자 · 주 버튼 빛 · 이모지 라벨 · eyebrow 자간.
+ */
+describe('unslop — 고친 징후가 되살아나지 않는다', () => {
+  const css = read('src/index.css');
+  const rule = (sel) => sliceBetween(css, `\n${sel} {`, '}');
+  it('표제어 그라디언트 글자 0 — 복습 카드 · 담은 표현 목록(U1 · U8)', () => {
+    for (const sel of ['.review-card__word', '.vocab-row__word', '.vocab-row__word-button']) {
+      const r = rule(sel);
+      expect(r, sel).not.toMatch(/gradient|background-clip:\s*text|text-fill-color:\s*transparent/);
+    }
+  });
+  it('주 버튼에 빛 그림자 없음 — 평소 · hover(U2)', () => {
+    expect(rule('.btn--primary')).not.toContain('box-shadow');
+    expect(css).not.toMatch(/\.btn--primary:hover[^{]*\{[^}]*box-shadow/);
+  });
+  it('eyebrow는 자간 0 — 정의한 모든 자리(U6)', () => {
+    const files = ['src/components/web/web-shell.css', 'src/components/books/reading-shell.css'];
+    for (const f of files) {
+      for (const m of read(f).matchAll(/\.manabi-eyebrow\{([^}]*)\}/g)) {
+        const ls = m[1].match(/letter-spacing:\s*([^;]+)/);
+        if (ls) expect(ls[1].trim(), `${f}: ${m[0]}`).toBe('0');
+      }
+    }
+  });
+  it('이모지 · 반짝이 라벨 0 — 소리 단추 · 다시 풀기 · AI 단추 · 선택 칩(U3 · U4 · U5 · U10)', () => {
+    expect(read('src/components/vocab/ReviewCardParts.jsx')).not.toMatch(/🔈|🔇/);
+    expect(read('src/views/VocabPage.jsx')).not.toMatch(/⚔ 헷갈린 말|재대결 시작/);
+    for (const f of ['src/views/ViewerPage.jsx', 'src/components/viewer/ViewerJapaneseMore.jsx', 'src/lib/viewerMessages.js']) expect(read(f), f).not.toContain('✦');
+    expect(read('src/views/VocabList.jsx')).not.toMatch(/☑ 선택|✕ 취소/);
+  });
+  it('온보딩 제목은 인사가 아니라 창이 하는 일(U9)', () => {
+    expect(read('src/components/OnboardingModal.jsx')).toContain('>처음 설정</h2>');
+  });
+});

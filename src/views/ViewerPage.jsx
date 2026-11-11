@@ -1373,7 +1373,7 @@ export default function ViewerPage({ seed } = {}) {
   // localStorage 캐시라 단어당 1회 초소형 호출. 늦게 온 응답이 다른 단어에 붙지 않게 가드.
   // AE-R1 「더 알아보기」(VIEWER-V2-ROUNDS-001 §2.1): AI로 새로 만드는 것이라 요청 버튼이다. 이미 만든 결과(캐시)가
   // 있으면 카드를 열 때 버튼 대신 바로 보인다 — 캐시 확인은 localStorage만(네트워크 0). 접기(details)는 없다.
-  const [synAntRequest,setSynAntRequest]=useState(0); // 0 = 요청 전(캐시만), n = [✦ 비슷한 말 찾기] n번째 누름
+  const [synAntRequest,setSynAntRequest]=useState(0); // 0 = 요청 전(캐시만), n = [비슷한 말 찾기] n번째 누름
   useEffect(()=>setSynAntRequest(0),[selectedToken?.id,selectedToken?.text]);
   const [synAnt, setSynAnt] = useState(null);
   useEffect(() => {
@@ -1599,7 +1599,7 @@ export default function ViewerPage({ seed } = {}) {
     } finally { clearTimeout(deadline); }
   }
 
-  // AE-R1 「더 알아보기」(VIEWER-V2-ROUNDS-001 §2.1): 이미 받은 설명(로컬 캐시)이 있으면 [✦ 자세한 설명] 대신
+  // AE-R1 「더 알아보기」(VIEWER-V2-ROUNDS-001 §2.1): 이미 받은 설명(로컬 캐시)이 있으면 [자세한 설명] 대신
   // 내용을 바로 보인다 — 네트워크·AI 0. 없으면 버튼이 기존 fetchWordDetail 경로를 그대로 부른다.
   useEffect(() => {
     if (!selectedToken || !isSheetOpen || materialLang === 'Korean') return undefined;
@@ -4087,16 +4087,16 @@ export default function ViewerPage({ seed } = {}) {
             캐시가 있으면 지금처럼 내용을 바로 보인다. 둘 다 이미 보이면 안내도 없다. 로그인 확인 중에는 버튼도 안내도 두지 않는다. */}
         {!user && !authLoading && ((synAntEligible(selectedToken,materialLang) && !(synAnt && !synAnt.loading && !synAnt.error)) || !wordDetail?.detail)
           && <Link href={signInHref} className="reader-card-learn__login">{vt('로그인하면 비슷한 말과 자세한 설명을 볼 수 있어요 →')}</Link>}
-        {/* 비슷한 말 실패 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 「✦ 비슷한 말 찾기」가 이유를 가리킨다(A11Y-SWEEP-001). */}
+        {/* 비슷한 말 실패 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 「비슷한 말 찾기」가 이유를 가리킨다(A11Y-SWEEP-001). */}
         <span className="sr-only" role="status" id="viewer-synant-notice">{synAntEligible(selectedToken,materialLang) && !synAnt?.loading && synAnt?.error ? vt("불러오지 못했어요.") : ''}</span>
         {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p aria-busy="true">{vt("비슷한 말 불러오는 중…")}</p>
           : synAnt && !synAnt.error ? <div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>
-          : !user ? null : <>{synAnt?.error && <p className="syn-ant__error" aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice" onClick={() => setSynAntRequest(n => n + 1)}>{vt("✦ 비슷한 말 찾기")}</button></>)}
+          : !user ? null : <>{synAnt?.error && <p className="syn-ant__error" aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice" onClick={() => setSynAntRequest(n => n + 1)}>{vt("비슷한 말 찾기")}</button></>)}
         {/* 자세한 설명(AI 생성 — 긴 작업) 알림 — 영역은 늘 두고 내용만(LOADING-ANNOUNCE-001 ③). 보이는 줄은 한 번만 읽히게 숨긴다. */}
         <span className="sr-only" role="status">{wordDetail?.loading ? vt("상세 설명 만드는 중…") : ''}</span>
         {wordDetail?.loading ? <p className="reader-card-learn__pending" aria-hidden="true">{vt("상세 설명 만드는 중…")}</p>
           : wordDetail?.detail ? <div className="reader-card-learn__detail"><small>{vt('일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요')}</small><div className="pdf-detail-popup__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} /></div>
-          : user && <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("✦ 자세한 설명")}</button>}
+          : user && <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("자세한 설명")}</button>}
         {/* 일본어로는(AE-R3 PR② — 일본어 대조 블록 대체, 설계서 §5): 日 줄이 숨겨졌을 때만(수업 모드는 자형 열이 없으므로 항상) —
             사전 diff/warn이 있으면 내용, 없으면 로그인 사용자에게 요청 버튼(기존 클라 AI 그대로, 「AI」 표 없음). 쓰기 0. */}
         {materialLang === 'Chinese' && (classStudyActive || !glyph.ja) && <ViewerJapaneseMore key={`ja:${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} jaTable={jaWordsTable} dictLoading={!dictFetched&&!dictError} />}

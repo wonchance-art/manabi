@@ -59,7 +59,7 @@ describe('①b 결과 알림 영역 2차 — 서재 · 노트 · 뷰어 더 알�
     expect(src).toContain('{outcome?.ok&&<p className="note-saved" aria-hidden="true">{outcome.text}</p>}');
     expect(src).toContain('<footer><span className="sr-only" role="status">{notice||message||\'\'}</span>{(notice||message)&&<p className="note-review-notice" aria-hidden="true">{notice||message}</p>}');
   });
-  it('뷰어 비슷한 말 실패 — 영역은 조건 밖, 「✦ 비슷한 말 찾기」가 가리킨다', () => {
+  it('뷰어 비슷한 말 실패 — 영역은 조건 밖, 「비슷한 말 찾기」가 가리킨다', () => {
     const src = read('src/views/ViewerPage.jsx');
     const live = '<span className="sr-only" role="status" id="viewer-synant-notice">{synAntEligible(selectedToken,materialLang) && !synAnt?.loading && synAnt?.error ? vt("불러오지 못했어요.") : \'\'}</span>';
     expect(src).toContain(live);

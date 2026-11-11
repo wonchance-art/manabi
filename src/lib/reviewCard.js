@@ -1,3 +1,4 @@
+import { joinErhuaPinyin } from './erhuaDisplay';
 // 복습 카드 규격(REV-SCOPE-R1B-1 — 오너 승인 3판 D6 · D9, 설계 §3-2 · §3-3 · §6-1 ⑥⑦).
 // 순수 모듈: 종류 판별 · 발음 판정 대상 · 채점 기준 문구 · 뒷면 읽기 줄 · 소리 설정. 화면(VocabReview ·
 // FsrsReviewSession · 처음 보는 표현 카드 · 집중 연습)이 모두 이 판정을 쓴다 — 화면마다 다시 짓지 않는다.
@@ -39,7 +40,7 @@ export function readingLine(word) {
   const reading = readingOf(word);
   if (!reading) return { kind: 'none', text: null };
   if (word.language === 'Japanese') return KANJI.test(clean(word.word_text)) ? { kind: 'ruby', text: reading } : { kind: 'none', text: null };
-  if (word.language === 'Chinese') return { kind: 'pinyin', text: reading };
+  if (word.language === 'Chinese') return { kind: 'pinyin', text: joinErhuaPinyin(reading) };
   if (word.language === 'English' || word.language === 'French') return { kind: 'phonetic', text: reading };
   return { kind: 'none', text: null };
 }

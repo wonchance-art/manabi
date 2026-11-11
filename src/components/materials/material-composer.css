@@ -2,7 +2,7 @@
 .material-composer .manabi-button, .composer-gate .manabi-button, .original-reader .manabi-button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 24px; color: var(--sheet); background: var(--ja); border: 1px solid var(--ja); border-radius: 3px; font: inherit; font-size: 14px; font-weight: 600; text-decoration: none; }
 .composer-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding-bottom: 24px; border-bottom: 1px solid var(--rule); font-size: 12px; }
 .composer-top a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; color: inherit; }
-.composer-top span { color: var(--muted); letter-spacing: .1em; font-size: 10px; }
+.composer-top span { color: var(--muted); letter-spacing: 0; font-size: 12px; }
 .composer-heading { padding: 26px 0 22px; }
 .composer-heading h1 { font-size: clamp(28px, 4.5cqi, 36px); line-height: 1.28; letter-spacing: -.055em; font-weight: 550; margin: 16px 0; }
 .composer-heading > p:last-child { color: var(--muted); font-size: 14px; line-height: 1.8; }

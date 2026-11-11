@@ -38,7 +38,7 @@ describe('뺏지 않기 판정(canTakeFocus · focusIfFree)', () => {
   it('늦게 끝나는 동작(읽기 저장 줄): 영역 = 누른 요소 — 그 자리 그대로이거나 잃었을 때만, 카드 안 다른 컨트롤로 옮겼으면 그대로', () => {
     const doc = { body: { isConnected: true } };
     const pressed = { isConnected: true, contains: (el) => el === pressed };
-    const other = { isConnected: true }; // 같은 카드의 「✦ 비슷한 말 찾기」 등
+    const other = { isConnected: true }; // 같은 카드의 「비슷한 말 찾기」 등
     const target = { isConnected: true, disabled: false, ownerDocument: doc, focus: vi.fn(() => { doc.activeElement = target; }) };
     doc.activeElement = other;
     expect(focusIfFree(target, pressed)).toBe(false);

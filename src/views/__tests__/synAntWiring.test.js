@@ -11,7 +11,7 @@ const css = read('src/index.css');
 
 describe('유의어·반의어 배선', () => {
   // AE-R1 개정(VIEWER-V2-ROUNDS-001 §2.1 「더 알아보기 — AI로 새로 만드는 것이라 요청 버튼. 이미 만든 결과(캐시)가 있으면
-  // 버튼 대신 내용」 · 접힘 0, 설계서 §7.2): details 펼침 조회 → [✦ 비슷한 말 찾기] 누름 조회 + 캐시만 보는 즉시 표시.
+  // 버튼 대신 내용」 · 접힘 0, 설계서 §7.2): details 펼침 조회 → [비슷한 말 찾기] 누름 조회 + 캐시만 보는 즉시 표시.
   it('내용어 게이트(synAntEligible)를 통과할 때만 — 캐시는 열 때 바로(peekSynAnt), 생성 조회는 요청 버튼(fetchSynAnt)', () => {
     expect(viewer).toContain("import { fetchSynAnt, peekSynAnt, synAntEligible } from '../lib/synAnt'");
     expect(viewer).toMatch(/!synAntEligible\(selectedToken, materialLang\)/);

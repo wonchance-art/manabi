@@ -6,6 +6,7 @@ import { fsrsIntervalLabel } from '../lib/useFsrsReview';
 import VocabularyContexts from '../components/learning/VocabularyContexts';
 import { langTag } from '../components/vocab/ReviewCardParts';
 import { wordStage } from '../lib/growthStats';
+import { displayReading } from '../lib/erhuaDisplay';
 
 const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported, showBookContexts = false, projection, now: at = new Date() }) {
   const dialogRef = useRef(null);
@@ -63,7 +64,7 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
         <button type="button" className="vocab-detail-card__close" onClick={onClose} aria-label="단어 상세 닫기" data-dialog-initial-focus>✕</button>
 
         <div className="vocab-detail-card__header">
-          {v.furigana && <span className="vocab-detail-card__furigana" lang={langTag(v)}>{v.furigana}</span>}
+          {v.furigana && <span className="vocab-detail-card__furigana" lang={langTag(v)}>{displayReading(v.furigana, v.language)}</span>}
           <h2 id="vocab-detail-title" className="vocab-detail-card__word" lang={langTag(v)}>
             {displayWord(v.word_text, v.pos)}
             {ttsSupported && (

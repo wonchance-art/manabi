@@ -304,7 +304,7 @@ test('390px zh unsaved: sentence line · chips · headword(+hun ruby) · meaning
   assert.equal(await senses.locator('.reader-card-sense.is-current').count(),1);
   assert.ok((await senses.locator('.reader-card-sense.is-current').innerText()).includes('문맥상'));
   // 더 알아보기 = 요청 버튼(캐시 없음).
-  for(const name of ['✦ 비슷한 말 찾기','✦ 자세한 설명'])assert.equal(await f.page.locator('#inspector-word').getByRole('button',{name,exact:true}).count(),1,name);
+  for(const name of ['비슷한 말 찾기','자세한 설명'])assert.equal(await f.page.locator('#inspector-word').getByRole('button',{name,exact:true}).count(),1,name);
   await assertNoFoldsNoLegacyButtons(f,'zh 390');
   if(process.env.COMPOSER_SCREENSHOTS)await f.page.screenshot({path:`${process.env.COMPOSER_SCREENSHOTS}/card-zh-390.png`});
   // 긴 문장: 한 문장을 3줄 예산으로 줄여(양 끝 …) 누른 자리를 남기고, 첫 화면 계약은 그대로.
@@ -661,15 +661,15 @@ test('「자세한 설명」: shared detail_text is read once per card when 더 
   assert.deepEqual(f.detail,[],'no detail_text request before the section is in view');
   await learn.scrollIntoViewIfNeeded();
   await learn.getByText('공유 설명 검수용.').waitFor();
-  assert.equal(await learn.getByRole('button',{name:'✦ 자세한 설명',exact:true}).count(),0,'content instead of the button');
+  assert.equal(await learn.getByRole('button',{name:'자세한 설명',exact:true}).count(),0,'content instead of the button');
   assert.deepEqual(f.detail,['壮观']);
   // 설명이 없는 단어: 1회 조회 뒤 버튼 그대로(조용히).
   await tap(f,'id_0_2','경기장');
   await learn.scrollIntoViewIfNeeded();
   await until(()=>f.detail.length===2);
   // 조회 응답을 처리한 뒤에 단추가 다시 선다 — 고정 300ms 대신 그 단추를 기다린 뒤 센다(E2E-RACE-001).
-  await learn.getByRole('button',{name:'✦ 자세한 설명',exact:true}).waitFor();
-  assert.equal(await learn.getByRole('button',{name:'✦ 자세한 설명',exact:true}).count(),1);
+  await learn.getByRole('button',{name:'자세한 설명',exact:true}).waitFor();
+  assert.equal(await learn.getByRole('button',{name:'자세한 설명',exact:true}).count(),1);
   // 같은 단어 재열람 = 메모리 캐시, 0요청.
   await tap(f,'id_0_7','웅장하다, 장관이다');
   await learn.scrollIntoViewIfNeeded();
@@ -856,7 +856,7 @@ for(const late of [8,100])test(`AE-R3 390 첫 화면 우선: 시트 자리 판�
  }finally{await f.context.close();}
 });
 
-test('AE-R3: 老师(diff) · 汽车(warn) → 日 숨김 · 「일본어로는」 줄, 尽量(ja null) → 正만 + [✦ 일본어로는?](기존 클라 AI, 「AI」 표 0, 사전 쓰기 0) · 일본어 자료엔 자형 열 0',{timeout:180000},async()=>{
+test('AE-R3: 老师(diff) · 汽车(warn) → 日 숨김 · 「일본어로는」 줄, 尽量(ja null) → 正만 + [일본어로는?](기존 클라 AI, 「AI」 표 0, 사전 쓰기 0) · 일본어 자료엔 자형 열 0',{timeout:180000},async()=>{
  const f=await open(glyphMaterial(),{prefs:zhPrefs,rows:glyphRows});
  try{
   await f.context.route('**/api/gemini',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({candidates:[{content:{parts:[{text:JSON.stringify({form:'できるだけ',warn:null})}]}}]})}));
@@ -873,7 +873,7 @@ test('AE-R3: 老师(diff) · 汽车(warn) → 日 숨김 · 「일본어로는�
   assert.equal(g.ja,null,'汽车: 日 hidden (warn)');
   assert.ok(g.learnJa.includes('自動車')&&g.learnJa.includes('じどうしゃ')&&g.learnJa.includes('같은 한자 표기는 일본어에서 ‘기차’라는 뜻이에요.'),g.learnJa);
   await tap(f,'id_1_5','되도록');
-  const ask=learn.getByRole('button',{name:'✦ 일본어로는?',exact:true});
+  const ask=learn.getByRole('button',{name:'일본어로는?',exact:true});
   await ask.waitFor({state:'attached'});
   g=await glyphGeometry(f.page);
   assert.equal(g.zheng.text,'儘量');assert.equal(g.ja,null);assert.equal(g.learnJa,null);
