@@ -1,6 +1,6 @@
 # VOA Learning English 1차 반입 — 26편 검증 기록 (EN-SOURCE-001 ⓒ · 2026-11-09 KST)
 
-마이그레이션 `supabase/migrations/20261109020000_voa_learning_english_import.sql` · 복원 `docs/sql/voa-import-20261109-rollback.sql` ·
+마이그레이션 `supabase/migrations/20261112040000_voa_learning_english_import.sql` · 복원 `docs/sql/voa-import-20261109-rollback.sql` ·
 계약 `supabase/tests/voa-learning-english-import.mjs`(PGlite 16 checks) · 생성기 `scripts/voa-seed.mjs`(단위 `scripts/voa-seed.test.js` 6).
 
 ## 병합 선행 조건

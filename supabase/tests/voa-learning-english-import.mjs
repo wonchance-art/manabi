@@ -1,5 +1,5 @@
 /** Local, disposable PGlite only — never connects to Supabase (EN-SOURCE-001 ⓒ 1차 · 2026-11-09 KST).
- * 20261109020000_voa_learning_english_import: VOA Learning English 26편을 시드 작업 주인 소유 · 공개 · idle · direction read로 넣고
+ * 20261112040000_voa_learning_english_import: VOA Learning English 26편을 시드 작업 주인 소유 · 공개 · idle · direction read로 넣고
  * 출처 칸(metadata.source kind web · site voa_le · https 주소 · public-domain) · 작업 material_ids 끝에 붙임 · done이면 running(진행 칸 그대로) ·
  * 다른 자료 그대로 · 재적용 무변경 · 이미 같은 제목이 있으면 멈춤 · 작업 없음/둘이면 무변경 · 200 상한 · 복원 SQL(학습 기록 있으면 멈춤) ·
  * 권리 거름(기자 줄 없음 · 통신사 · 허용 밖 호스트면 멈춤) · 제목 parseTitle · 화면 출처 줄은 아직 그리지 않음(표시 코드 선행 조건) · 표 없는 환경 42P01.
@@ -13,7 +13,7 @@ import { voaCreditIsAgency, voaCreditIsOwn } from '../../scripts/voa-seed.mjs';
 
 const BASE = await readFile(new URL('../migrations/20261024120000_canonical_analysis_jobs.sql', import.meta.url), 'utf8');
 const STARTER = await readFile(new URL('../migrations/20261106210000_starter_analysis_jobs.sql', import.meta.url), 'utf8');
-const migration = await readFile(new URL('../migrations/20261109020000_voa_learning_english_import.sql', import.meta.url), 'utf8');
+const migration = await readFile(new URL('../migrations/20261112040000_voa_learning_english_import.sql', import.meta.url), 'utf8');
 const rollback = await readFile(new URL('../../docs/sql/voa-import-20261109-rollback.sql', import.meta.url), 'utf8');
 const admin = '10000000-0000-0000-0000-000000000001';
 let checks = 0;

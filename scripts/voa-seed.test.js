@@ -69,7 +69,7 @@ describe('voa-seed 권리 거름', () => {
   });
 
   it('반입 마이그레이션의 26행 기자 줄이 모두 이 거름을 통과한다', () => {
-    const sql = readFileSync(new URL('../supabase/migrations/20261109020000_voa_learning_english_import.sql', import.meta.url), 'utf8');
+    const sql = readFileSync(new URL('../supabase/migrations/20261112040000_voa_learning_english_import.sql', import.meta.url), 'utf8');
     const credits = [...sql.matchAll(/"credit":"((?:[^"\\]|\\.)*)"/g)].map((m) => JSON.parse(`"${m[1]}"`).replace(/''/g, "'"));
     expect(credits).toHaveLength(26);
     for (const c of credits) expect(voaCreditIsOwn(c), c).toBe(true);
