@@ -77,6 +77,7 @@ import { fetchWordDetailText, peekWordDetailText, fetchSharedDetailText } from '
 import { announcedProgress } from '../lib/announceProgress';
 import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby, KANA_RE, kuruNextTexts, baseFormReading } from '../lib/splitRuby';
+import { kanaSpellingReading } from '../lib/jaKanaSpelling';
 import { pickedRangeOf } from '../lib/headwordPick';
 import { pickableSentenceUnits, adjacentSentence } from '../lib/sentenceNav';
 import { fitDivisor, isFitLang, fitLongHeadword, longHeadSplitAt } from '../lib/fitWord';
@@ -2940,9 +2941,13 @@ export default function ViewerPage({ seed } = {}) {
   // 로그아웃이면 사전 행이 없다(RLS) — 토큰 독음이 기본형 읽기일 때만 표제어 읽기로 쓴다(GUEST-HEAD-READING-001 · splitRuby와 같은 판정).
   // 로그인은 사전 행 읽기만(조회 중 토큰 독음 → 사전 읽기로 바뀌는 깜빡임 없음). 「기본형」 라벨(headFallback)은 그대로.
   const guestHeadReading = headIsBase && !user && !authLoading ? baseFormReading(selectedToken.text, selectedToken.furigana, headText) : null;
-  const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || null) : selectedToken?.furigana;
+  // 가나로 쓴 낱말의 한자 표기(JA-KANJI-A-MOCK-001 ③-b): 본문 がっこう · 표제어 学校면 칩 「한자 표기」 + 표제어 읽기 がっこう.
+  // 로그인은 사전 조회가 끝난 뒤에만 판정한다(사전 읽기가 있으면 그것과 같을 때만 — 깜빡임 없음). 손님은 사전을 못 읽어 바로 판정한다.
+  const jaKanaSpelling = materialLang === 'Japanese' && headIsBase && (user ? (dictFetched || dictError) : !authLoading)
+    ? kanaSpellingReading(selectedToken.text, headText, editDictEntry?.reading || null) : null;
+  const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || jaKanaSpelling || null) : selectedToken?.furigana;
   // 사전 행이 없으면 기본형을 루비 없이 세우고 메타에 「기본형 …」 라벨 — 조회가 끝난 뒤에만(깜빡임 방지)
-  const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;
+  const headFallback = headIsBase && dictFetched && !editDictEntry?.reading && !jaKanaSpelling;
   // 영어 발음 줄(IPA) — 분석기는 IPA를 토큰 furigana에 둔다(analyzeCore dictionary[tokenId].furigana, 영어 토큰 953개 중 672개 ·
   // reading 칸은 0개 — 운영 실측 2026-10-17 KST). reading만 보던 카드는 줄을 한 번도 그리지 않았다. 저장된 값 그대로(/…/ 포함) 쓴다.
   const enPronunciation = materialLang === 'English' ? (selectedToken?.furigana || selectedToken?.reading || null) : null;
@@ -3710,7 +3715,10 @@ export default function ViewerPage({ seed } = {}) {
           <span className="reader-card-tag"><TokenPosLabel token={selectedToken} naAdjective={jaNaHead} sahen={jaSahenHead} /></span>
           {/* 기본형은 표제어가 보여 준다(R R2) — 「품사 · 기본형」이 겸류 구분자와 같은 모양이라
               품사 오염으로 읽히던 중의성 소멸. 사전 읽기가 없어 표제어가 폴백일 때만 라벨 텍스트. */}
-          <ViewerLabelSlot locale={uiLocale} text={vt('기본형')}>{headFallback && <span className="word-detail-card__base">기본형</span>}</ViewerLabelSlot>
+          {/* 가나로 쓴 낱말이 그 한자의 읽기면 같은 칩 자리에 「한자 표기」(JA-KANJI-A-MOCK-001 ③-b) — 활용형은 「기본형」 그대로. */}
+          {jaKanaSpelling
+            ? <ViewerLabelSlot locale={uiLocale} text={vt('한자 표기')}><span className="word-detail-card__base">한자 표기</span></ViewerLabelSlot>
+            : <ViewerLabelSlot locale={uiLocale} text={vt('기본형')}>{headFallback && <span className="word-detail-card__base">기본형</span>}</ViewerLabelSlot>}
           {materialLang === 'Korean' && selectedToken.text !== headText && <span lang="ko">{selectedToken.text} → {headText}</span>}
           {hskLevelLabel && <span className="word-detail-card__level">{hskLevelLabel}</span>}
         </div>
