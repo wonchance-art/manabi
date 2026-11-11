@@ -49,7 +49,8 @@ beforeAll(async()=>{
  }};
  auth.admin.mockImplementation(async()=>role==='admin'?{user:{id:owner},supabase:client}:{error:'관리자 전용',status:403});
  auth.user.mockImplementation(async()=>({user:{id:owner},supabase:client}));auth.client.mockResolvedValue(client);
- old=await candidate('7f572327dc67893e9453246c');next=await candidate('8a8c1c1fd452773810abaf8c');
+ // next = 최신 검수 후보(reviewCandidates 맨 앞) — N5-NOTATION-001(2026-11-11 KST)부터 86593008. 발행 · 저장 · 복원 흐름이 실제 다음 후보로 돈다.
+ old=await candidate('7f572327dc67893e9453246c');next=await candidate('86593008c8f915a0b71aa15e');
  await db.exec("set role authenticated;set qa.admin='true'");
  let response=await editor.POST(request({action:'publish',editionId:old.editionId,expectedDraftVersion:null,expectedReleaseVersion:null}));expect(response.status).toBe(200);release=(await response.json()).release;
  savedDraft=withField(old.manuscript,['lessons',0,'title'],'보존할 선생님 초안');

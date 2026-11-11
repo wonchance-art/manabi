@@ -7,7 +7,7 @@ import { BUNDLED_EDITIONS } from '../../src/lib/textbook/bundledEditions.js';
 
 // N5-NOTATION-001 1단계 출시 후보(2026-11-11 KST, 오너 목업 승인) — 저장소 안 재현 계약.
 //   판본 86593008 = 운영 공개 판본 8a8c + Data 표기 패치 판 5(오케스트레이터 검수 통과)를 도구로 다시 만든 것과 바이트 단위로 같다.
-//   qa.passed는 새 release-verification 전까지 false — 이 상태로는 공개 화면 · 관리자 편집 목록이 바뀌지 않는다(아래 「공개 화면 불변」).
+//   qa는 release-verification(docs/verification/n5-notation-release-20261111.md) 뒤에만 true다 — 좁은 scope와 함께. 공개는 DB 발행 포인터가 정한다.
 const ROOT = 'src/content/textbookEditions';
 const BASE = '8a8c1c1fd452773810abaf8c', NEXT = '86593008c8f915a0b71aa15e';
 const PATCH = 'scripts/textbooks/n5-notation/n5-8a8c-stage1-patch.json'; // 표 · 패치 · 제외 목록은 Data 커밋(ja-n5-stage1-generate.mjs)이 둔다
@@ -31,7 +31,10 @@ describe('판본 86593008 = 8a8c + 표기 패치 판 5(도구로 다시 만들�
     expect(result.html).toBe(read(`${ROOT}/${NEXT}/index.html`));
     expect(result.app).toBe(read(`${ROOT}/${NEXT}/app.js`));
     expect(result.css).toBe(read(`${ROOT}/${NEXT}/style.css`));
-    expect(JSON.stringify(result.bundle)).toBe(read(`${ROOT}/${NEXT}/bundle.json`));
+    // qa만 검증 기록으로 바뀐다(도구 출력은 false) — 그 밖의 번들은 바이트 단위로 같다
+    const committed = JSON.parse(read(`${ROOT}/${NEXT}/bundle.json`));
+    expect(result.bundle.qa.passed).toBe(false);
+    expect(JSON.stringify({ ...result.bundle, qa: committed.qa })).toBe(read(`${ROOT}/${NEXT}/bundle.json`));
   });
   it('파생 보고 — 549 치환 · sourceIndex 183쪽 · 루비 없는 한자 1,421자 불변 · 오변환 경고 0', () => {
     expect(result.report).toMatchObject({ changes: 549, replaced: 549, changedSources: 183, bareKanji: 1421, misread: [] });
@@ -43,20 +46,22 @@ describe('판본 86593008 = 8a8c + 표기 패치 판 5(도구로 다시 만들�
   });
 });
 
-describe('공개 화면 불변 — qa.passed false인 후보는 어디에서도 열리지 않는다', () => {
-  it('후보 번들은 qa.passed false · 검수 범위 문구가 남아 있다(예전 QA를 복사하지 않음)', () => {
-    const bundle = JSON.parse(read(`${ROOT}/${NEXT}/bundle.json`));
-    expect(bundle.qa.passed).toBe(false);
-    expect(bundle.qa.scope).toMatch(/pending/);
+describe('검증 뒤 — 관리자 후보로 열리고, 공개는 DB 포인터가 정한다', () => {
+  it('qa는 검증 기록을 가리키는 좁은 scope로만 true다(예전 QA를 복사하지 않음)', () => {
+    const { qa } = JSON.parse(read(`${ROOT}/${NEXT}/bundle.json`));
+    expect(qa.passed).toBe(true);
+    expect(qa.scope).toMatch(/Not independent language\/coverage certification; live admin preview and publication pending/);
+    expect(fs.existsSync(qa.verification)).toBe(true);
+    expect(qa.verification).toBe('docs/verification/n5-notation-release-20261111.md');
   });
-  it('로더가 거절한다(503) — ?edition= 동적 화면 · 관리자 미리보기 · 발행 API · 자산 경로 모두 candidate()를 거친다', async () => {
-    await expect(candidate(NEXT)).rejects.toMatchObject({ status: 503 });
+  it('로더가 연다 — 관리자 미리보기 · 발행 버튼의 전제. 바탕 8a8c도 그대로 열린다(구판 귀환)', async () => {
+    await expect(candidate(NEXT)).resolves.toMatchObject({ editionId: NEXT });
     await expect(candidate(BASE)).resolves.toMatchObject({ editionId: BASE });
   });
-  it('기본 판본 · 편집 후보 목록은 그대로 — 후보를 reviewCandidates에 넣으면 관리자 편집 목록(editorCandidates)이 503이 된다', () => {
+  it('저장소 기본 판본(current)은 그대로 · 편집 후보 맨 앞에 후보 — reviewCandidates의 판본은 모두 qa.passed true(아니면 editorCandidates가 503)', () => {
     const index = JSON.parse(read(`${ROOT}/index.json`));
     expect(index.current).toBe('7f572327dc67893e9453246c');
-    expect(index.reviewCandidates).not.toContain(NEXT);
+    expect(index.reviewCandidates[0]).toBe(NEXT);
     for (const id of index.reviewCandidates) expect(JSON.parse(read(`${ROOT}/${id}/bundle.json`)).qa.passed, id).toBe(true);
   });
 });
