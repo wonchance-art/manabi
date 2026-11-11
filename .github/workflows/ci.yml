@@ -77,6 +77,7 @@ jobs:
       - run: node supabase/tests/en-pass-tokens.mjs
       - run: node supabase/tests/en-wikinews-more-categories.mjs
       - run: node supabase/tests/ja-n5-kanji-a2.mjs
+      - run: node supabase/tests/ja-n5-reading-fix.mjs
       - run: node scripts/verification/n4-book-support.mjs
       - run: node scripts/verification/n3-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs
