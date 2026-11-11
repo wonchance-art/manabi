@@ -83,7 +83,7 @@ describe('tick — 임대 · 책 차례 · 예산 · 멈춤 · 실패', () => {
     const result = await runAnalysisTick({ supabase, now: clock(), getBooks: () => BOOKS, publishable: () => true, analyze, prepare, listChapters });
     expect(analyze.mock.calls.map((call) => call[2])).toEqual([11, 21, 22]);
     expect(prepare.mock.calls.map((call) => call[2].book.key)).toEqual(['aozora-a', 'aozora-b']); // 책마다 이 tick에서 한 번 「게시」
-    expect(result).toEqual({ jobId: 7, processed: 3, more: true });
+    expect(result).toEqual({ jobId: 7, processed: 3, more: true, done: true }); // 방금 끝남 — 라우트가 사슬 끝 일을 이 tick에서(ANALYSIS-CHAIN-END-001)
     expect(table[0]).toMatchObject({ status: 'done', chapters_done: 3, current_key: null, lease_until: null });
   });
   it('다른 tick이 임대 중인 작업은 잡지 않는다(같은 장을 둘이 분석하지 않게)', async () => {
@@ -241,7 +241,7 @@ describe('STARTER-ANALYSIS-001 — 공개 시드(starter) 작업', () => {
     expect(quota).toEqual([
       { kind: 'analyze', subject: 'u:admin', units: 1 }, { kind: 'analyze', subject: 'u:admin', units: 3 }, { kind: 'analyze', subject: 'u:admin', units: 1 },
     ]);
-    expect(out).toMatchObject({ jobId: 9, processed: 3, more: true });
+    expect(out).toMatchObject({ jobId: 9, processed: 3, more: true, done: true });
     expect(table[0]).toMatchObject({ status: 'done', chapters_done: 3, lease_until: null });
     expect(table[0].llm_usage).toMatchObject({ calls: 6, in: 600, out: 300, byModel: { 'claude-haiku-5-5': { calls: 6, ok: 6, in: 600, out: 300 } } });
   });

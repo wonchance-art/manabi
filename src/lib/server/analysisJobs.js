@@ -256,7 +256,8 @@ export async function runAnalysisTick({
         : await nextChapter(supabase, job, books, prepared, { prepare, listChapters, publishable });
       if (!next) {
         await updateJob(supabase, job.id, { status: 'done', current_key: null });
-        return { jobId: job.id, processed, more: true };
+        // done: 이 작업이 방금 끝났다 — 라우트가 사슬 끝 일(뜻 채움 · 난이도)을 이 tick에서 먼저 한다(ANALYSIS-CHAIN-END-001).
+        return { jobId: job.id, processed, more: true, done: true };
       }
       if (starter) {
         // 하루 상한 회계(AI-QUOTA-001) — 닿으면 실패로 세지 않고 오늘은 여기까지(작업은 도는 채로, 다음 날 예약 실행이 잇는다).
