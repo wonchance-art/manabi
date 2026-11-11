@@ -998,7 +998,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* 카드 단계 배지 — 신규/학습/익히는 중/익숙/재학습(D15, 부채 ②). 판정은 `growthStats.wordStage`가
    지고 여기는 표현만 진다. 옛 인라인은 색을 삼항으로 골라 `color-mix`에 끼워 넣고
    있었는데, 그러면 경계값이 판정과 표현 두 군데에 살아 한쪽만 낡는다. */
-.badge--stage-new { background: color-mix(in srgb, var(--text-muted) 15%, transparent); color: var(--text-muted); }
+/* 「신규」 12px 글자 대비 4.29 → 4.86(A11Y-LAUNCH-001 ④ A안 — 바탕을 셸 면 색으로, 회색 알약 모양 그대로) */
+.badge--stage-new { background: var(--bg-secondary); color: var(--text-muted); }
 .badge--stage-learning { background: var(--danger-tint); color: var(--danger-text); }
 .badge--stage-relearning { background: var(--danger-tint); color: var(--danger-text); }
 .badge--stage-young { background: var(--warning-tint); color: var(--warning-on-tint); }
@@ -1786,7 +1787,7 @@ body.is-review-chrome .page-container { padding-top: 8px; }
   box-shadow: 0 8px 24px color-mix(in srgb, var(--text-primary) 14%, transparent);
 }
 .mat-menu__item {
-  display: flex; align-items: center; min-height: 40px; padding: 0 12px;
+  display: flex; align-items: center; min-height: 44px; padding: 0 12px; /* 누르는 높이 44(A11Y-LAUNCH-001 ③ A안 — 항목마다 4px, 판은 카드 위에 떠 아래 글은 그대로) */
   border: none; border-radius: var(--radius-sm); background: none; color: var(--text-primary);
   font-size: 0.85rem; text-align: left; cursor: pointer;
 }
@@ -5461,6 +5462,7 @@ a.viewer-badge:hover {
 }
 .auth-input {
   width: 100%;
+  min-height: 44px; /* 누르는 높이 44(A11Y-LAUNCH-001 ③ A안 — 칸마다 2px) */
   padding: 11px 14px;
   border-radius: var(--radius-sm);
   background: var(--bg-elevated);
@@ -7302,6 +7304,13 @@ select.listen-controls__rate { font-size: max(var(--field-font-min), 0.78rem); }
    로고 · 「닉네임 바꾸기」와 같은 꼴. 이웃 조작 침범 0은 e2e/touch-targets-auth.e2e.mjs가 잰다. */
 .study-textlink::before { content: ''; position: absolute; left: 0; right: 0; top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px)); }
 .study-textlink:hover { color: var(--text-secondary); }
+/* 작은 글자 조작의 누르는 범위 세로 44(A11Y-LAUNCH-001 ③ A안 — 오너 「권장대로」 2026-11-12 KST, 목업 https://claude.ai/artifact/MAyWiF5LjbMmJaUaRJbgeE).
+   보이는 크기는 그대로 — ::before가 위아래로만 넓힌다(요소가 44보다 작을 때만, .study-textlink · .gnb__logo와 같은 꼴).
+   거르기 칩 단추(40) · 오늘의 소식 카드 단추(38) · 뷰어 손님 띠 링크(23) · 댓글 로그인 단추(34) · 교재 「교재 안내」(36). */
+button.chip, .suggestion-card__actions .btn--sm, .viewer-guest-banner__cta, .viewer-comments__signin { position: relative; }
+button.chip::before, .suggestion-card__actions .btn--sm::before, .viewer-guest-banner__cta::before, .viewer-comments__signin::before {
+  content: ''; position: absolute; left: 0; right: 0; top: min(0px, calc(50% - 22px)); bottom: min(0px, calc(50% - 22px));
+}
 
 /* ── 문단 발음 지연 공개 · 재료 단어 탭 ── */
 /* 비입문 문단 문장 — 탭하면 발음 공개(미묘한 점선 단서) */

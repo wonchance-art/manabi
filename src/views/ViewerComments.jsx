@@ -77,7 +77,7 @@ export default function ViewerComments({
           </Button>
         </div>
       ) : (
-        <Link href={signInHref} className="btn btn--secondary btn--sm">
+        <Link href={signInHref} className="btn btn--secondary btn--sm viewer-comments__signin">
           로그인하고 댓글 남기기
         </Link>
       )}
