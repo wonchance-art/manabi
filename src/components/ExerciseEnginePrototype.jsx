@@ -777,7 +777,7 @@ function StandaloneExerciseEngine({
                           alignItems: 'center',
                         }}
                       >
-                        <span lang={langCode} style={{ fontWeight: 700 }}>{pair.left}</span>
+                        <span lang={langCode} style={{ fontWeight: 600 }}>{pair.left}</span>
                         <select
                           className="form-input"
                           aria-label={`${pair.left}의 뜻`}

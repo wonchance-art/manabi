@@ -18,13 +18,13 @@ import { useLearningAdmission } from '../lib/useLearningAdmission';
 import { isAdmissionOfflineError } from '../lib/learningAdmission';
 import { LEGACY_REVIEW_SUPERSEDED_NOTICE } from '../lib/legacyReviewSupersede';
 import { isSettledFsrsActivity } from '../lib/learningActivity';
-import FsrsReviewSession from '../components/vocab/FsrsReviewSession';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
 import OfflineNotice, { PendingReviewsNotice, VOCAB_OFFLINE_TITLE, vocabOfflineLine } from '../components/OfflineNotice';
 import ConfirmModal from '../components/ConfirmModal';
 import VocabularyExclusionList from '../components/VocabularyExclusionList';
-import VocabReview, { REVIEW_PREP_FAILED } from './VocabReview';
+import { REVIEW_PREP_FAILED } from './vocabReviewCopy';
+import { warmable } from '../lib/warmable';
 import { CardGridSkeleton, SkeletonLine } from '../components/Skeleton';
 import { failureMessage } from '../lib/errorMessage';
 import { detectLang, detectLangConfident, hasCjkText } from '../lib/constants';
@@ -73,6 +73,13 @@ import {
 import '../components/web/review-room.css';
 import dynamic from 'next/dynamic';
 import Spinner from '../components/Spinner';
+
+// 복습 화면 두 개(일반 복습 · FSRS 카드)는 「복습 시작」을 누른 뒤에만 그린다 — 단어장 첫 화면 JS에서 뺀다(BUNDLE-AUTH-001).
+// 목록 · 상세 카드와 같은 유휴 시간 미리 받기(warm effect)로 받아 두므로 시작을 눌렀을 때 빈 칸이 생기지 않는다.
+// 받아 둔 뒤에는 기다림 없이 그린다(warmable) — 시작을 누른 순간 빈 칸 · 초점 잃음이 없다. 유휴 시간 전에 누르는 드문 경우만 그 자리가 잠깐 빈다.
+const [VocabReview, warmVocabReview] = warmable(dynamic(() => import('./VocabReview'), { loading: () => null }), () => import('./VocabReview'));
+const [FsrsReviewSession, warmFsrsReviewSession] = warmable(dynamic(() => import('../components/vocab/FsrsReviewSession'), { loading: () => null }), () => import('../components/vocab/FsrsReviewSession'));
+const preloadReviewScreens = () => Promise.all([warmVocabReview(), warmFsrsReviewSession()]);
 
 // 둘러보기 탭 · 상세 카드는 첫 화면(복습방)에 없다 — 페이지 청크에서 뺀다(2026-10-17 KST 번들 조사, refShared 포함 소스 약 44KB).
 // 오프라인 첫 화면(오류 분기의 캐시 목록)도 목록을 쓰므로 첫 렌더 뒤 유휴 시간에 미리 받는다(SW가 청크를 캐시).
@@ -168,7 +175,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
   const [startingReview, setStartingReview] = useState(false);
   const startingRef = useRef(false);
   useEffect(() => {
-    const warm = () => { loadVocabList(); loadVocabDetailCard(); };
+    const warm = () => { loadVocabList(); loadVocabDetailCard(); preloadReviewScreens(); };
     const id = typeof window.requestIdleCallback === 'function' ? window.requestIdleCallback(warm, { timeout: 3000 }) : window.setTimeout(warm, 1500);
     return () => (typeof window.cancelIdleCallback === 'function' ? window.cancelIdleCallback(id) : window.clearTimeout(id));
   }, []);
@@ -1721,7 +1728,7 @@ function VocabWorkspace({ reviewScope, firstScreen }) {
             <div className="review-room-extra"><p>글 한 편으로 함께 연습하고 싶다면</p><Link href="/study" prefetch={false} className="manabi-link">이야기로 연습 →</Link></div>
                   {confused.length >= CONFUSED_MIN && (
                     <button type="button" className="vocab-rematch" onClick={startRematch}>
-                      ⚔ 헷갈린 말 <strong>{confused.length}개</strong> — 재대결 시작 →
+                      헷갈린 말 <strong>{confused.length}개</strong> — 다시 풀기 →
                     </button>
                   )}
                   {/* 🎯 유형 큐(v2-A R3) — 헷갈린 말 큐의 형제. 저쪽은 "어떤 말"이고

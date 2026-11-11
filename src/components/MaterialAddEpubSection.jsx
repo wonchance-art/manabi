@@ -107,7 +107,7 @@ export default function MaterialAddEpubSection({ toast, onReady, onBookReady, op
 
       {book && (
         <div style={{ marginTop: 14 }}>
-          <div style={{ fontSize: '0.88rem', fontWeight: 700 }}>
+          <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>
             {book.title || book.fileName}
             <span style={{ fontWeight: 400, color: 'var(--text-muted)', marginLeft: 8, fontSize: '0.78rem' }}>
               챕터 {book.chapters.length}개{book.language ? ` · ${book.language}` : ''}

@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { isVocabularyReviewAvailable, isVocabularyReviewDue } from '@/lib/vocabularyLearningRead';
 import { streakView, todayGoalPct } from '@/lib/learnDashboard';
-import { wordScopeLanguage } from '@/lib/reviewScope';
+import { wordScopeLanguage } from '@/lib/wordScopeLanguage';
 import { encounterLookupLang } from '@/lib/refVocabLookup';
 import { SkeletonLine, SkeletonRegion } from '@/components/Skeleton';
 import { reducedMotion } from '@/lib/reducedMotion';
@@ -117,9 +117,9 @@ export function ReviewTile({ projections = [], lang, count = null, href, classNa
   const nextLabel = word && !waiting ? nextReviewShortLabel(nextReviewAtOf(projections, lang, now), { at: now }) : null;
   const next = nextLabel ? `다음 복습 ${nextLabel}` : null;
   const cta = !word ? '읽으러 가기' : waiting ? '복습하기' : '담은 표현 보기';
+  // 접근 이름 = 보이는 글(WCAG 2.5.3 Label in Name — LH-BASELINE-001): 따로 aria-label을 두면 「보이는 말 ⊂ 이름」이 깨졌다(순서 · 빠진 문장). 장식(글자 · 화살표)은 aria-hidden.
   return (
-    <Link href={word ? href : '/materials'} prefetch={false} className={`learn-tile learn-review ${className}`.trim()}
-      aria-label={['단어 복습', waiting || next, cta].filter(Boolean).join(' · ')}>
+    <Link href={word ? href : '/materials'} prefetch={false} className={`learn-tile learn-review ${className}`.trim()}>
       <span className="learn-tile__head">
         <span className="learn-kick">단어 복습</span>
         {(waiting || next) && <span className="learn-review__due">{waiting || next}</span>}
@@ -134,7 +134,7 @@ export function ReviewTile({ projections = [], lang, count = null, href, classNa
           <span className="learn-review__empty">아직 수집한 단어가 없어요.<br />자료를 읽으며 단어를 모아 보세요.</span>
         </span>
       )}
-      <span className="learn-tile__cta">{cta} →</span>
+      <span className="learn-tile__cta">{cta} <span aria-hidden="true">→</span></span>
     </Link>
   );
 }

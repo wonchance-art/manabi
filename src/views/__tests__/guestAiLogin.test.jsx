@@ -91,7 +91,7 @@ describe('더 알아보기(비슷한 말 · 자세한 설명) — 손님은 버�
   });
 
   it('버튼 둘은 손님에게 숨김 — 캐시 내용(synAnt · wordDetail.detail) 분기는 그대로 앞에 둔다', () => {
-    expect(learn).toMatch(/: synAnt && !synAnt\.error \? <div className="syn-ant">[\s\S]*?: !user \? null : <>\{synAnt\?\.error[\s\S]*?\{vt\("✦ 비슷한 말 찾기"\)\}<\/button><\/>\)\}/);
+    expect(learn).toMatch(/: synAnt && !synAnt\.error \? <div className="syn-ant">[\s\S]*?: !user \? null : <>\{synAnt\?\.error[\s\S]*?\{vt\("비슷한 말 찾기"\)\}<\/button><\/>\)\}/);
     expect(learn).toMatch(/: wordDetail\?\.detail \? <div className="reader-card-learn__detail">[\s\S]*?: user && <button type="button" onClick=\{\(\) => fetchWordDetail\(selectedToken\)\}/);
   });
 

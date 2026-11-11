@@ -14,7 +14,9 @@ const sentKeys = new Set();
 let sends = 0;
 
 // 개발 서버에서는 보내지 않는다(콘솔로 충분하다) — 운영 빌드(Preview · 운영 · e2e 빌드)만.
-const shouldSend = () => typeof window !== 'undefined' && process.env.NODE_ENV === 'production';
+// 자동화 브라우저(navigator.webdriver — e2e · 측정 스크립트)도 보내지 않는다 — 실사용자 오류가 아니고, 운영을 재는 우리 스크립트의 잡음이
+// 오류 기록 · 일일 점검에 섞인다(ERR-BOUNDARY-001, 2026-11-09 KST — CLS 보고 clsReport와 같은 규칙).
+const shouldSend = () => typeof window !== 'undefined' && process.env.NODE_ENV === 'production' && !(typeof navigator !== 'undefined' && navigator.webdriver);
 
 /**
  * 오류 기록 한 건을 보낸다(브라우저 전용). 보냈으면 true. 무엇이 잘못돼도 throw하지 않는다.

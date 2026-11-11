@@ -59,7 +59,7 @@ describe('①b 결과 알림 영역 2차 — 서재 · 노트 · 뷰어 더 알�
     expect(src).toContain('{outcome?.ok&&<p className="note-saved" aria-hidden="true">{outcome.text}</p>}');
     expect(src).toContain('<footer><span className="sr-only" role="status">{notice||message||\'\'}</span>{(notice||message)&&<p className="note-review-notice" aria-hidden="true">{notice||message}</p>}');
   });
-  it('뷰어 비슷한 말 실패 — 영역은 조건 밖, 「✦ 비슷한 말 찾기」가 가리킨다', () => {
+  it('뷰어 비슷한 말 실패 — 영역은 조건 밖, 「비슷한 말 찾기」가 가리킨다', () => {
     const src = read('src/views/ViewerPage.jsx');
     const live = '<span className="sr-only" role="status" id="viewer-synant-notice">{synAntEligible(selectedToken,materialLang) && !synAnt?.loading && synAnt?.error ? vt("불러오지 못했어요.") : \'\'}</span>';
     expect(src).toContain(live);
@@ -114,7 +114,7 @@ describe('③ 가벼운 팝업 — 열면 안으로 · Esc로 닫기 · 닫으�
 describe('④ axe 스캔(Preview b5d2fc7, 2026-10-17 KST) — 제목 단계', () => {
   it('뷰어 토론 칸 제목은 본문 h1 바로 아래 단계(h2) — h3로 건너뛰지 않는다', () => {
     const src = read('src/views/ViewerComments.jsx');
-    expect(src).toMatch(/<h2 style=\{\{ fontSize: '1rem', fontWeight: 700, marginBottom: '20px', color: 'var\(--text-primary\)' \}\}>\s*토론 /);
+    expect(src).toMatch(/<h2 style=\{\{ fontSize: '1rem', fontWeight: 600, marginBottom: '20px', color: 'var\(--text-primary\)' \}\}>\s*토론 /);
     expect(src).not.toMatch(/<h3\b/);
   });
 });

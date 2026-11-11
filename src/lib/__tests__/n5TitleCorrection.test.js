@@ -42,6 +42,7 @@ describe('mandatory message-title correction preserves learning contracts', () =
     for (const [file, asset] of Object.entries(after.assets)) expect(sha(fs.readFileSync(`${root}${corrected}/${file}`))).toBe(asset.sha256);
     const index = JSON.parse(fs.readFileSync(`${root}index.json`, 'utf8'));
     expect(index.current).toBe('7f572327dc67893e9453246c');
-    expect(index.reviewCandidates).toEqual([corrected, previous, index.current]);
+    // N5-NOTATION-001(2026-11-11 KST): 표기 파생 후보 86593008이 맨 앞에 더해졌다 — 이 정정의 두 판본과 기본 판본 순서는 그대로다.
+    expect(index.reviewCandidates).toEqual(['86593008c8f915a0b71aa15e', corrected, previous, index.current]);
   });
 });

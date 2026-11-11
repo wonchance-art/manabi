@@ -163,7 +163,7 @@ describe('경고 세트 — 노랑 글자는 예외 목록 안에서만, 노랑 
     const study = read('src/views/StudySessionPage.jsx');
     expect(study).toContain("const badgeColor = ts >= 2 ? 'var(--accent)' : ts === 1 ? 'var(--warning)' : 'var(--danger)';");
     expect(study).toContain("background: badgeColor, color: '#fff',");
-    expect(read('src/views/ReadingTrackPage.jsx')).toContain("background: 'var(--warning)', color: '#fff', fontWeight: 700 }}>파일럿");
+    expect(read('src/views/ReadingTrackPage.jsx')).toContain("background: 'var(--warning)', color: '#fff', fontWeight: 600 }}>파일럿");
     const solidWhite = walk('src', /\.(jsx?|tsx?)$/).filter(f => /background:\s*'var\(--warning\)',\s*color:\s*'#fff'/.test(read(f)));
     expect(solidWhite).toEqual(['src/views/ReadingTrackPage.jsx']);
     expect(read('src/index.css')).not.toContain('--warning-on-solid');

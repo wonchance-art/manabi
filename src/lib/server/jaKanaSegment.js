@@ -68,10 +68,29 @@ export function decomposeKanaChunk(chunk) {
   return null;
 }
 
-/** 머리 토큰 — 동음이의는 최저 급수, 동급이면 기본형을 표면으로 둔다. */
+/**
+ * 자기 항목 동급(JA-KANJI-A-001 · 2026-11-11 KST 실측): N5 단어 자료가 가나 표제어(えいが)와 한자 표제어(映画)를 둘 다 실어
+ * 색인 첫 후보가 가나 자기 자신이고 같은 급 한자가 하나 더 있는 키가 128개다. 이걸 동음이의로 보면 기본형이 가나로 남아
+ * 뒤 과의 한자 토큰(映画)과 같은 단어로 이어지지 않는다. 같은 급 한자가 **정확히 하나**이고 N5 · N4이면 그 한자를 기본형으로 —
+ * 단, 지시어 · 기능어가 다른 낱말로 붙는 자리(ここ → 個々 · どう → 銅 · うち → 内 · そこ → 底 · また → 股 · あつい → 厚い ·
+ * よく → 欲)는 막는다(계약 jaKanaSegment.test — 자기 항목이 이 오연결을 막던 방패였다).
+ */
+export const SELF_TIE_BLOCK = Object.freeze(['個々', '銅', '内', '底', '股', '厚い', '欲']);
+const SELF_TIE_BLOCKED = new Set(SELF_TIE_BLOCK);
+function selfTieKanji(head, cands) {
+  const [main, level] = cands[0];
+  if (k2h(main) !== k2h(head) || (level !== 'N5' && level !== 'N4')) return null;
+  const same = cands.slice(1).filter((c) => LV[c[1]] === LV[level]);
+  if (same.length !== 1 || !/[一-鿿]/.test(same[0][0]) || SELF_TIE_BLOCKED.has(same[0][0])) return null;
+  return same[0];
+}
+
+/** 머리 토큰 — 동음이의는 최저 급수, 동급이면 기본형을 표면으로 둔다(자기 항목 동급만 예외 — 위). */
 function headToken(head, cands) {
   const [main, level, cls] = cands[0];
   const tie = cands.length > 1 && LV[cands[1][1]] === LV[level];
+  const self = tie ? selfTieKanji(head, cands) : null;
+  if (self) return { surface_form: head, basic_form: self[0], reading: head, pos: POS_OF[self[2]] || POS_OF[cls] || '名詞', pos_detail_1: '*' };
   return { surface_form: head, basic_form: tie ? head : main, reading: head, pos: POS_OF[cls] || '名詞', pos_detail_1: '*' };
 }
 

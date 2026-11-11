@@ -9,6 +9,8 @@ import { pinyin } from 'pinyin-pro';
 import { ZH_NEUTRAL_TONE } from './zhNeutralTone';
 import { ZH_PINYIN_FIX } from './zhPinyinFix';
 import { contextPinyin, resandhiBu } from './zhPinyinContext';
+import { applyZhErhua } from './zhErhua';
+import { verifyZhSyllables } from './zhPinyinVerify';
 import './zhSuppress';
 import { fixZhTagged } from './zhTokenFix';
 
@@ -85,14 +87,18 @@ export function tokenizeZhLine(line) {
     // 줄 병음을 먼저 소비해 글자-병음 정렬을 유지하고, 필독 경성 어휘(zhNeutralTone.js)와
     // 경계 오독 확정분(zhPinyinFix.js — 人参加→人参 탐욕 매칭류)은 토큰 단위로만
     // 오버라이드한다(customPinyin 전역 등록은 단어 경계 오염 실측으로 배제).
-    const lineSyllables = takeSyllables(chars);
+    // 얼화(zhErhua — 안 A): 얼화 낱말이면 儿 자리 음절을 「r」로(哪儿 nǎ ér → nǎ r). 문맥 층 · 검증 패스가 이 꼴을 본다.
+    const lineSyllables = applyZhErhua(text, takeSyllables(chars));
     const override = !isPunct && (ZH_NEUTRAL_TONE[text] ?? ZH_PINYIN_FIX[text]);
     // 세 번째 층(zhPinyinContext): 토큰 정확 일치로 못 잡는 구조조사·다음자를 태그·이웃으로 가른다.
     const contextual = !isPunct && !override ? contextPinyin(tagged, ti, lineSyllables) : null;
-    const syllables = override
+    // 다섯 번째 층(zhPinyinVerify): 다른 층이 손대지 않은 줄 병음만 사전 둘(CC-CEDICT · 낱말 단독 pinyin-pro)의 합의로 검증한다 —
+    // 줄 문맥 오독(被认为 rèn wèi · 中医 zhòng)은 고치고, 둘 다 어긋나면 표식만 단다(값은 그대로).
+    const check = !isPunct && !override && !contextual && lineSyllables ? verifyZhSyllables(text, lineSyllables) : null;
+    const syllables = applyZhErhua(text, override
       ? override.split(' ')
       : contextual
-        ?? (lineSyllables ?? [pinyin(text, { toneType: 'symbol', type: 'string' })]).filter(Boolean);
+        ?? (check ? check.syllables : (lineSyllables ?? [pinyin(text, { toneType: 'symbol', type: 'string' })])).filter(Boolean));
     tokens.push({
       text,
       // 중국어는 굴절이 없어 표면형이 곧 표제어. 유일 예외 = 이합사 삽입형(R4a —
@@ -106,6 +112,13 @@ export function tokenizeZhLine(line) {
       // 겸류 후보: jieba 겸류 태그(vn 등) 또는 POS_FIX가 실은 후보(自觉 동사·형용사 등)
       ...(!isPunct && (posAll ?? POS_ALL[tag]) ? { pos_all: posAll ?? POS_ALL[tag] } : {}),
     });
+    // 검증 결과는 열거되지 않는 표식으로만 — 저장 · 응답 모양(토큰 필드)은 그대로이고 analyzeCore가 관측 집계에 읽는다.
+    if (check && (check.verdict === 'fixed' || check.verdict === 'suspect')) {
+      Object.defineProperty(tokens[tokens.length - 1], 'pinyinCheck', {
+        value: { verdict: check.verdict, from: check.from ?? lineSyllables.join(' '), to: check.syllables.join(' ') },
+        enumerable: false,
+      });
+    }
   }
   // 네 번째 손질: 단독 不의 변조를 이웃의 최종 음절로 다시 정한다(zhPinyinContext.resandhiBu — 문맥 층이 바꾼
   // 성조·pinyin-pro 내부 판독 불일치의 이음새).

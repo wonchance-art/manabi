@@ -216,7 +216,7 @@ describe('표시 재료 — 순수 계산', () => {
 
   it('진행바 B 간격(정수 px) — 넓은 화면 15/13/20/21, 휴대폰 15/12/20/20', () => {
     expect(css).toContain('.learn-goal{height:146px;padding:15px 18px 0;');
-    expect(css).toContain('.learn-goal__big{font:700 24px/24px var(--font-serif-kr),serif;letter-spacing:-.5px;grid-row:2;margin-top:13px}');
+    expect(css).toContain('.learn-goal__big{font:600 24px/24px var(--font-serif-kr),serif;letter-spacing:-.5px;grid-row:2;margin-top:13px}');
     expect(css).toContain('.learn-goal__barcell{grid-column:1/-1;grid-row:3;margin-top:20px}');
     expect(css).toContain('margin-top:21px;display:flex');
     const phone = sliceBetween(css, '@container manabi-shell (max-width:640px){', '\n}\n');

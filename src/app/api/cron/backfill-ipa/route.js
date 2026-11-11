@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import { callGemini, parseGeminiJSON } from '../../../../lib/gemini.js';
+import { parseGeminiJSON } from '../../../../lib/gemini.js';
+import { callLLM } from '@/lib/server/llm';
 import { requireUser, isAdminUser, SERVICE_KEY_MISSING_MESSAGE } from '@/lib/server/auth';
 import { summarizeBackfillIpa, withCronRun } from '@/lib/server/cronRuns';
 
@@ -7,8 +8,14 @@ export const maxDuration = 60;
 
 const IPA_BATCH = 25;
 const IPA_MAX_BATCHES = 3; // 하루 상한 — 두 단계(단어장 · 공개 자료 사전 행)가 함께 쓴다(25 × 3 = 75낱말)
+const IPA_CALL_TIMEOUT_MS = 15_000; // 묶음 하나 — 3묶음이 maxDuration(60초) 안에 끝나게
 
-/** 낱말 묶음 → Map(word → IPA). 실패한 묶음은 건너뛴다(빈 Map). */
+/**
+ * 낱말 묶음 → { map: Map(word → IPA), error }. 실패한 묶음은 빈 Map과 오류 문구(앞 200자)를 돌려준다 — 호출부가 실패 수로 센다.
+ * 서버 경로 callLLM(route 'backfill-ipa' — 영어 표제어 목록만 싣는 사전 경로, llmProviderPolicy.js).
+ * ⚠ 클라이언트용 callGemini(lib/gemini.js)는 상대 경로 fetch('/api/gemini') + 브라우저 세션이라 서버에서 매번 예외였다 —
+ *   catch가 빈 Map으로 삼켜 11/9~11/11 KST 실행 3회가 「ok · 0」으로만 남았다(IPA-CRON-FIX 2026-11-12 KST). 계약 backfillIpaPublicDict.test.js.
+ */
 async function fetchIpaBatch(words) {
   const prompt = `Provide IPA pronunciation for these English words. Output JSON only.
 
@@ -22,17 +29,16 @@ Rules:
 - Skip words you cannot confidently transcribe (do not include them in results)
 - Output JSON only, no other text`;
   try {
-    const raw = await callGemini(prompt);
-    const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '';
-    const out = new Map();
+    const { text } = await callLLM('light', prompt, { temperature: 0, timeoutMs: IPA_CALL_TIMEOUT_MS, route: 'backfill-ipa' });
+    const map = new Map();
     for (const entry of parseGeminiJSON(text)?.results || []) {
       const word = String(entry.word || '').trim();
       const ipa = String(entry.ipa || '').trim();
-      if (word && ipa) out.set(word, ipa);
+      if (word && ipa) map.set(word, ipa);
     }
-    return out;
-  } catch {
-    return new Map();
+    return { map, error: null };
+  } catch (err) {
+    return { map: new Map(), error: `${err?.code ? `${err.code}: ` : ''}${String(err?.message || err)}`.slice(0, 200) };
   }
 }
 
@@ -144,10 +150,18 @@ async function backfillIpa(request) {
   const remainingBaseForms = [...stillEmptyByBase.keys()];
   let geminiUpdated = 0;
   let batchesUsed = 0;
+  // 실패한 묶음 수 · 첫 오류 — 「조용한 0」을 막는다(cron_runs.failed · ok=false).
+  let failedBatches = 0;
+  let firstError = null;
+  const ipaBatch = async (words) => {
+    const { map, error } = await fetchIpaBatch(words);
+    batchesUsed++;
+    if (error) { failedBatches++; firstError ??= error; }
+    return map;
+  };
 
   for (let i = 0; i < remainingBaseForms.length && batchesUsed < IPA_MAX_BATCHES; i += IPA_BATCH) {
-    const results = await fetchIpaBatch(remainingBaseForms.slice(i, i + IPA_BATCH));
-    batchesUsed++;
+    const results = await ipaBatch(remainingBaseForms.slice(i, i + IPA_BATCH));
     for (const [word, ipa] of results) {
       // user_vocabulary 업데이트 (해당 base_form의 모든 빈 행)
       for (const r of stillEmptyByBase.get(word) || []) {
@@ -172,8 +186,7 @@ async function backfillIpa(request) {
     const targets = await publicDictIpaTargets(supabase, (IPA_MAX_BATCHES - batchesUsed) * IPA_BATCH);
     publicDictTargets = targets.length;
     for (let i = 0; i < targets.length && batchesUsed < IPA_MAX_BATCHES; i += IPA_BATCH) {
-      const results = await fetchIpaBatch(targets.slice(i, i + IPA_BATCH));
-      batchesUsed++;
+      const results = await ipaBatch(targets.slice(i, i + IPA_BATCH));
       for (const [word, ipa] of results) {
         if (!targets.includes(word)) continue;
         const { data: updated, error } = await supabase.from('morpheme_dictionary')
@@ -185,7 +198,9 @@ async function backfillIpa(request) {
         if (!error && updated?.length) publicDictUpdated++;
       }
     }
-  } catch { /* 2단계 실패는 1단계 결과를 깨지 않는다 */ }
+  } catch (err) { // 2단계 실패는 1단계 결과를 깨지 않는다 — 다만 실패로 센다
+    failedBatches++; firstError ??= String(err?.message || err).slice(0, 200);
+  }
 
   if (empties.length === 0 && publicDictTargets === 0) {
     return Response.json({ stage: 'idle', dictUpdated: 0, geminiUpdated: 0, remaining: 0, publicDictTargets: 0, publicDictUpdated: 0 });
@@ -199,6 +214,9 @@ async function backfillIpa(request) {
     remaining: Math.max(0, empties.length - dictUpdated - geminiUpdated),
     publicDictTargets,
     publicDictUpdated,
+    batchesUsed,
+    failedBatches,
+    firstError,
   });
 }
 

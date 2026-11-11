@@ -36,7 +36,7 @@ describe('진행 막대', () => {
   });
 
   it('progressbar 역할과 aria-valuemin · max · now(+ 문항 수 읽기)', () => {
-    expect(session).toMatch(/className="study-progress" role="progressbar" aria-label="세션 진행" aria-valuemin=\{0\} aria-valuemax=\{100\} aria-valuenow=\{progressPct\}\s*aria-valuetext=\{`\$\{progressDone\}\/\$\{progressTotal\}`\}/);
+    expect(session).toMatch(/className="study-progress" role="progressbar" aria-label="세션 진행" aria-valuemin=\{0\} aria-valuemax=\{100\} aria-valuenow=\{progressPct\}\s*aria-valuetext=\{progressText\}/);
   });
 });
 
@@ -127,5 +127,17 @@ describe('로그아웃 · 계정 바뀜 감지', () => {
 
   it('게스트는 기록 경로를 지나지 않는다 — 옛 주석(「게스트도 같은 호출」)을 남기지 않는다', () => {
     expect(session).not.toContain('게스트도 같은 호출');
+  });
+});
+
+describe('몸풀기 동안 진행 숫자(STUDY-DENOM-001 A안 — 오너 「권장대로」 2026-11-12 KST, 목업 https://claude.ai/artifact/AAXf3CYfqdH5V4KBeJSC7K)', () => {
+  const session = read('src/views/StudySessionPage.jsx');
+  it('몸풀기(와 그 뒤 다시 풀기) 구간 — 문단을 만드는 라이브 경로에서만, 지금 문항까지 모두 몸풀기 · 다시 풀기일 때', () => {
+    expect(session).toContain("const warmPhase = liveGen && warmTotal > 0\n    && queue.slice(0, idx + 1).every(it => it.warmup || String(it.uid).endsWith('-r'));");
+  });
+  it('머리 줄은 「몸풀기 n/m」, 막대는 처음 예상(몸풀기 + 7) 그대로 — 문단 도착으로 숫자 · 막대가 뛰지 않는다', () => {
+    expect(session).toContain('const barTotal = warmPhase ? Math.max(0, warmTotal + RESERVED_PARA - skipped.size) : progressTotal;');
+    expect(session).toContain('const progressText = warmPhase ? `몸풀기 ${warmDone}/${warmTotal}` : `${progressDone}/${progressTotal}`;');
+    expect(session).toMatch(/\{isRetry \? '오답 다시 풀기'\s*: item\.type === 'produce-writing' \? '보너스'\s*: progressText\}/);
   });
 });

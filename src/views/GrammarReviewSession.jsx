@@ -56,7 +56,7 @@ function UpcomingList({ upcoming }) {
   if (!upcoming?.length) return null;
   return (
     <div style={{ marginTop: 24, textAlign: 'left' }}>
-      <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 10, color: 'var(--text-secondary)' }}>
+      <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: 10, color: 'var(--text-secondary)' }}>
         다가오는 복습 {upcoming.length}개
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

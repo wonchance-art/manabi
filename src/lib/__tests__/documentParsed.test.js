@@ -47,8 +47,12 @@ describe('AuthProvider 첫 상태 변경 배선', () => {
   it('게스트 확정 · 세션 복원 모두 whenDocumentParsed 뒤에 값을 바꾼다', () => {
     const effect = sliceBetween(read('src/lib/AuthContext.jsx'), 'const hasSessionCookie =', '// 마운트 1회 세션 복원.');
     const guest = sliceBetween(effect, 'if (!hasSessionCookie) {', 'getSupabase()');
-    expect(guest).toContain('whenDocumentParsed(() => { if (!cancelled) setLoading(false); })');
-    expect(guest.replace(/whenDocumentParsed\(\(\) => \{ if \(!cancelled\) setLoading\(false\); \}\)/, '')).not.toContain('setLoading(');
+    // 전환으로 바꾼다(VIEWER-MOBILE-PERF-001, 2026-11-09 KST) — 조각은 붙었지만 경계 코드(페이지 조각)가 아직 오는 중이면 경계는 하이드레이션을
+    // 기다린다. 그때 일반 우선순위 갱신은 서버 본문을 버리고 새로 그렸다(운영 1.6Mbps 손님 뷰어 — 본문이 DOM에서 빠졌다가 약 0.5초 뒤 다시).
+    // 전환 갱신은 하이드레이션 뒤로 미뤄진다(앞단에서 이 줄만 바꾼 조각으로 서버 h1 유지 확인).
+    expect(guest).toContain('whenDocumentParsed(() => { if (!cancelled) startTransition(() => setLoading(false)); })');
+    expect(guest.replace(/whenDocumentParsed\(\(\) => \{ if \(!cancelled\) startTransition\(\(\) => setLoading\(false\)\); \}\)/, '')).not.toContain('setLoading(');
+    expect(read('src/lib/AuthContext.jsx')).toMatch(/^import \{[^}]*\bstartTransition\b[^}]*\} from 'react';$/m);
     const session = sliceBetween(effect, 'getSupabase()', '.catch(');
     const gate = session.indexOf('whenDocumentParsed(() => resolve(client))');
     expect(gate).toBeGreaterThan(-1);

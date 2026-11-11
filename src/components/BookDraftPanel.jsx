@@ -28,7 +28,7 @@ export default function BookDraftPanel({
     <div className="card add-form" style={{ marginBottom: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 200 }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', fontWeight: 700 }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', fontWeight: 600 }}>
             {append ? `책에 이어 등록 — 현재 ${append.existingCount}과` : '책으로 등록'}
           </div>
           <input

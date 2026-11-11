@@ -35,7 +35,7 @@ describe('채점 문구 · 읽기 줄', () => {
 });
 
 describe('소리 규격(§3-3)', () => {
-  it('🔈/🔇는 기기별로 기억한다 — 저장소가 막혀도 켜짐으로 동작', () => {
+  it('소리 켬/끔은 기기별로 기억한다 — 저장소가 막혀도 켜짐으로 동작', () => {
     const map = new Map();
     const storage = { getItem: key => map.get(key) ?? null, setItem: (key, value) => map.set(key, value) };
     expect(readReviewSound(storage)).toBe(true);

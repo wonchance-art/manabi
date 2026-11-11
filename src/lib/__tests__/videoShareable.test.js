@@ -4,7 +4,7 @@ import path from 'node:path';
 import { sliceBetween } from './helpers/sliceBetween.js';
 import {
   CC_SOURCE, PD_SOURCE, LICENSE_CC_BY, LICENSE_PUBLIC_DOMAIN,
-  attributionParts, isCreativeCommonsText, isShareableSource, licenseForSource, materialSource, safeYoutubeUrl,
+  attributionParts, isCreativeCommonsText, isShareableSource, licenseForSource, materialSource, safeWebUrl, safeYoutubeUrl,
 } from '../videoAttribution';
 import { createSuggestionSave } from '../suggestionReading';
 import { DEFAULT_SOURCES } from '../suggestionSources';
@@ -153,5 +153,31 @@ describe('F R5 — 표기는 저장이 아니라 **표시**다', () => {
     const block = sliceBetween(read('src/index.css'), '.viewer-attribution {', '.suggestion-card__note {');
     expect(block).toContain('var(--');
     expect(block).not.toMatch(/#[0-9a-fA-F]{3,8}|rgba?\(/);
+  });
+});
+
+describe('웹 기사 출처 줄(SOURCE-ATTR-WEB-001 B안 — 오너 「권장대로」 2026-11-12 KST, 목업 https://claude.ai/artifact/Uc3kMbpupLQLh4oqvkJG8r)', () => {
+  const voa = { kind: 'web', site: 'voa_le', channel: 'VOA Learning English', url: 'https://learningenglish.voanews.com/a/adverbs-and-adjectives/3702382.html', license: LICENSE_PUBLIC_DOMAIN };
+  it('허용 목록 사이트 — 이름 · 라이선스 · https 링크, 링크 말은 「원문 보기」(text)', () => {
+    expect(attributionParts(voa)).toEqual({ channel: 'VOA Learning English', license: '퍼블릭 도메인', url: voa.url, text: true });
+  });
+  it('이름은 목록 값 — metadata.channel 글자가 다른 이름을 띄우지 않는다', () => {
+    expect(attributionParts({ ...voa, channel: '공식 은행 고객센터' }).channel).toBe('VOA Learning English');
+  });
+  it('링크는 허용 호스트 · https만 — 아니면 이름 · 라이선스만 남는다', () => {
+    for (const url of ['https://evil.example/a/1.html', 'http://learningenglish.voanews.com/a/1.html', 'javascript:alert(1)', 'https://u:p@learningenglish.voanews.com/a', '']) {
+      expect(attributionParts({ ...voa, url }).url, url).toBe('');
+    }
+    expect(safeWebUrl('https://LearningEnglish.VOAnews.com/a/x.html', 'voa_le')).toBe('https://learningenglish.voanews.com/a/x.html');
+  });
+  it('모르는 사이트는 줄이 없다', () => {
+    expect(attributionParts({ ...voa, site: 'cnn' })).toBe(null);
+    expect(attributionParts({ ...voa, site: '__proto__' })).toBe(null);
+    expect(safeWebUrl(voa.url, 'constructor')).toBe('');
+  });
+  it('뷰어는 웹 기사에 「원문 보기」, 유튜브에 「원본 보기」 — 줄 문법은 하나', () => {
+    const v = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+    expect(v).toContain('{at.text ? vt("원문 보기") : vt("원본 보기")}');
+    expect(attributionParts({ kind: 'youtube', channel: 'C', url: 'https://www.youtube.com/watch?v=x' }).text).toBeUndefined();
   });
 });

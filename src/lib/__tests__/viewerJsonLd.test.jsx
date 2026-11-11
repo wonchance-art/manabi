@@ -11,6 +11,7 @@ vi.mock('@/lib/supabaseServer', () => ({ createSupabaseServerClient: async () =>
 vi.mock('@/views/ViewerPage', () => ({ default: () => null }));
 vi.mock('@/components/viewer/ViewerLoading', () => ({ default: () => null }));
 vi.mock('@/components/fonts/ScFontLink', () => ({ ScFontLink: () => null }));
+vi.mock('@/components/fonts/DeferredZhFontSheets', () => ({ default: () => null }));
 
 const row = { id: 45, title: '[N5 문법 #1] ~は~です (기본 단정문)', visibility: 'public', owner_id: 'admin-1', raw_text: 'わたしは がくせいです。',
   processed_json: { status: 'completed', sequence: ['t'], metadata: { language: 'Japanese', level: 'N5 기초' } } };

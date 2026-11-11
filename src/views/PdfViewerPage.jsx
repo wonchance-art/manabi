@@ -28,6 +28,7 @@ import { VOCAB_UPSERT, buildVocabRow } from '../lib/vocabIO';
 import { readCompleteLegacyRows } from '../lib/legacyReviewSync';
 import SaveContextButton, { saveContext } from '../components/learning/SaveContextButton';
 import TokenPosLabel from './TokenPosLabel';
+import { displayReading } from '../lib/erhuaDisplay';
 
 async function fetchPdfInfo(pdfId) {
   const { data, error } = await supabase
@@ -450,7 +451,7 @@ export default function PdfViewerPage() {
             <div className="pdf-detail-popup__header">
               <div className="pdf-detail-popup__word">
                 {wordDetail.token.furigana
-                  ? <ruby>{wordDetail.token.text}<rt>{wordDetail.token.furigana}</rt></ruby>
+                  ? <ruby>{wordDetail.token.text}<rt>{displayReading(wordDetail.token.furigana, language)}</rt></ruby>
                   : wordDetail.token.text}
               </div>
               <button className="pdf-detail-popup__close" onClick={() => setWordDetail(null)}>✕</button>
@@ -468,7 +469,7 @@ export default function PdfViewerPage() {
                   fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
                   letterSpacing: '0.02em',
                 }}>
-                  {wordDetail.token.reading}
+                  {displayReading(wordDetail.token.reading, language)}
                 </span>
               )}
             </div>

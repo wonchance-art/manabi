@@ -77,6 +77,7 @@ import { fetchWordDetailText, peekWordDetailText, fetchSharedDetailText } from '
 import { announcedProgress } from '../lib/announceProgress';
 import { pinyinToneClass } from '../lib/pinyinTone';
 import { splitRuby, KANA_RE, kuruNextTexts, baseFormReading } from '../lib/splitRuby';
+import { kanaSpellingReading } from '../lib/jaKanaSpelling';
 import { pickedRangeOf } from '../lib/headwordPick';
 import { pickableSentenceUnits, adjacentSentence } from '../lib/sentenceNav';
 import { fitDivisor, isFitLang, fitLongHeadword, longHeadSplitAt } from '../lib/fitWord';
@@ -197,6 +198,7 @@ import { recordVocabEncounters } from '../components/world/vocabEncounters';
 import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
+import { displayReading } from '../lib/erhuaDisplay';
 import { isWordToken, opensWordCard, wordStateOf, wordStateExtraClass } from '../lib/wordState';
 import { buildReaderChunks, chunkCardToken, chunkPatternEntry } from '../lib/jaReaderChunks';
 import { isJaNaAdjective, jaNaNounUseAt } from '../lib/jaNaAdjectives';
@@ -1372,7 +1374,7 @@ export default function ViewerPage({ seed } = {}) {
   // localStorage 캐시라 단어당 1회 초소형 호출. 늦게 온 응답이 다른 단어에 붙지 않게 가드.
   // AE-R1 「더 알아보기」(VIEWER-V2-ROUNDS-001 §2.1): AI로 새로 만드는 것이라 요청 버튼이다. 이미 만든 결과(캐시)가
   // 있으면 카드를 열 때 버튼 대신 바로 보인다 — 캐시 확인은 localStorage만(네트워크 0). 접기(details)는 없다.
-  const [synAntRequest,setSynAntRequest]=useState(0); // 0 = 요청 전(캐시만), n = [✦ 비슷한 말 찾기] n번째 누름
+  const [synAntRequest,setSynAntRequest]=useState(0); // 0 = 요청 전(캐시만), n = [비슷한 말 찾기] n번째 누름
   useEffect(()=>setSynAntRequest(0),[selectedToken?.id,selectedToken?.text]);
   const [synAnt, setSynAnt] = useState(null);
   useEffect(() => {
@@ -1598,7 +1600,7 @@ export default function ViewerPage({ seed } = {}) {
     } finally { clearTimeout(deadline); }
   }
 
-  // AE-R1 「더 알아보기」(VIEWER-V2-ROUNDS-001 §2.1): 이미 받은 설명(로컬 캐시)이 있으면 [✦ 자세한 설명] 대신
+  // AE-R1 「더 알아보기」(VIEWER-V2-ROUNDS-001 §2.1): 이미 받은 설명(로컬 캐시)이 있으면 [자세한 설명] 대신
   // 내용을 바로 보인다 — 네트워크·AI 0. 없으면 버튼이 기존 fetchWordDetail 경로를 그대로 부른다.
   useEffect(() => {
     if (!selectedToken || !isSheetOpen || materialLang === 'Korean') return undefined;
@@ -2940,9 +2942,13 @@ export default function ViewerPage({ seed } = {}) {
   // 로그아웃이면 사전 행이 없다(RLS) — 토큰 독음이 기본형 읽기일 때만 표제어 읽기로 쓴다(GUEST-HEAD-READING-001 · splitRuby와 같은 판정).
   // 로그인은 사전 행 읽기만(조회 중 토큰 독음 → 사전 읽기로 바뀌는 깜빡임 없음). 「기본형」 라벨(headFallback)은 그대로.
   const guestHeadReading = headIsBase && !user && !authLoading ? baseFormReading(selectedToken.text, selectedToken.furigana, headText) : null;
-  const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || null) : selectedToken?.furigana;
+  // 가나로 쓴 낱말의 한자 표기(JA-KANJI-A-MOCK-001 ③-b): 본문 がっこう · 표제어 学校면 칩 「한자 표기」 + 표제어 읽기 がっこう.
+  // 로그인은 사전 조회가 끝난 뒤에만 판정한다(사전 읽기가 있으면 그것과 같을 때만 — 깜빡임 없음). 손님은 사전을 못 읽어 바로 판정한다.
+  const jaKanaSpelling = materialLang === 'Japanese' && headIsBase && (user ? (dictFetched || dictError) : !authLoading)
+    ? kanaSpellingReading(selectedToken.text, headText, editDictEntry?.reading || null) : null;
+  const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || jaKanaSpelling || null) : selectedToken?.furigana;
   // 사전 행이 없으면 기본형을 루비 없이 세우고 메타에 「기본형 …」 라벨 — 조회가 끝난 뒤에만(깜빡임 방지)
-  const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;
+  const headFallback = headIsBase && dictFetched && !editDictEntry?.reading && !jaKanaSpelling;
   // 영어 발음 줄(IPA) — 분석기는 IPA를 토큰 furigana에 둔다(analyzeCore dictionary[tokenId].furigana, 영어 토큰 953개 중 672개 ·
   // reading 칸은 0개 — 운영 실측 2026-10-17 KST). reading만 보던 카드는 줄을 한 번도 그리지 않았다. 저장된 값 그대로(/…/ 포함) 쓴다.
   const enPronunciation = materialLang === 'English' ? (selectedToken?.furigana || selectedToken?.reading || null) : null;
@@ -3436,11 +3442,11 @@ export default function ViewerPage({ seed } = {}) {
               {isMet && (
                 <span
                   title={vt("월드에서 만난 말")} aria-label={vt("월드에서 만난 말")}
-                  style={{ color: 'var(--text-muted)', marginRight: 3, fontWeight: 800 }}
+                  style={{ color: 'var(--text-muted)', marginRight: 3, fontWeight: 600 }}
                 >·</span>
               )}
               {t.text}
-              {t.furigana && <span className="pdf-word-item__reading">{t.furigana}</span>}
+              {t.furigana && <span className="pdf-word-item__reading">{displayReading(t.furigana, materialLang)}</span>}
             </span>
             <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{materialLang !== 'Korean' || (t.meaningLocale || t.explanationLocale || 'ko') === effectiveExplanationLocale ? t.meaning : ''}</span>
             {user && learningStorageSupported && koreanSaveReady(t) && (
@@ -3710,7 +3716,10 @@ export default function ViewerPage({ seed } = {}) {
           <span className="reader-card-tag"><TokenPosLabel token={selectedToken} naAdjective={jaNaHead} sahen={jaSahenHead} /></span>
           {/* 기본형은 표제어가 보여 준다(R R2) — 「품사 · 기본형」이 겸류 구분자와 같은 모양이라
               품사 오염으로 읽히던 중의성 소멸. 사전 읽기가 없어 표제어가 폴백일 때만 라벨 텍스트. */}
-          <ViewerLabelSlot locale={uiLocale} text={vt('기본형')}>{headFallback && <span className="word-detail-card__base">기본형</span>}</ViewerLabelSlot>
+          {/* 가나로 쓴 낱말이 그 한자의 읽기면 같은 칩 자리에 「한자 표기」(JA-KANJI-A-MOCK-001 ③-b) — 활용형은 「기본형」 그대로. */}
+          {jaKanaSpelling
+            ? <ViewerLabelSlot locale={uiLocale} text={vt('한자 표기')}><span className="word-detail-card__base">한자 표기</span></ViewerLabelSlot>
+            : <ViewerLabelSlot locale={uiLocale} text={vt('기본형')}>{headFallback && <span className="word-detail-card__base">기본형</span>}</ViewerLabelSlot>}
           {materialLang === 'Korean' && selectedToken.text !== headText && <span lang="ko">{selectedToken.text} → {headText}</span>}
           {hskLevelLabel && <span className="word-detail-card__level">{hskLevelLabel}</span>}
         </div>
@@ -3730,7 +3739,7 @@ export default function ViewerPage({ seed } = {}) {
         let at = 0; // 표제어 안 코드포인트 위치 — 탭한 구간(headPicked) 강조용
         if (!isFitLang(materialLang)) {
           return (
-            <div lang={contentLangTag} style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
+            <div lang={contentLangTag} style={{ fontSize: '1.5rem', fontWeight: 600, lineHeight: 1.3 }}>
               {rubySegs
                 ? rubySegs.map((seg, i) =>
                     seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? ['pinyin-text', showToneColors && pinyinToneClass(seg.reading)].filter(Boolean).join(' ') : undefined} style={{ fontSize: '0.45em', color: showToneColors && seg.pinyin ? undefined : 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
@@ -4079,16 +4088,16 @@ export default function ViewerPage({ seed } = {}) {
             캐시가 있으면 지금처럼 내용을 바로 보인다. 둘 다 이미 보이면 안내도 없다. 로그인 확인 중에는 버튼도 안내도 두지 않는다. */}
         {!user && !authLoading && ((synAntEligible(selectedToken,materialLang) && !(synAnt && !synAnt.loading && !synAnt.error)) || !wordDetail?.detail)
           && <Link href={signInHref} className="reader-card-learn__login">{vt('로그인하면 비슷한 말과 자세한 설명을 볼 수 있어요 →')}</Link>}
-        {/* 비슷한 말 실패 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 「✦ 비슷한 말 찾기」가 이유를 가리킨다(A11Y-SWEEP-001). */}
+        {/* 비슷한 말 실패 알림 — 영역은 늘 두고 내용만 넣는다. 보이는 줄은 숨기고 「비슷한 말 찾기」가 이유를 가리킨다(A11Y-SWEEP-001). */}
         <span className="sr-only" role="status" id="viewer-synant-notice">{synAntEligible(selectedToken,materialLang) && !synAnt?.loading && synAnt?.error ? vt("불러오지 못했어요.") : ''}</span>
         {synAntEligible(selectedToken,materialLang) && (synAnt?.loading ? <p aria-busy="true">{vt("비슷한 말 불러오는 중…")}</p>
           : synAnt && !synAnt.error ? <div className="syn-ant"><div className="syn-ant__row"><span>{vt("유의어")}</span>{renderSynAntChips(synAnt.syn)}</div><div className="syn-ant__row"><span>{vt("반의어")}</span>{renderSynAntChips(synAnt.ant)}</div>{!synAnt.syn.length&&!synAnt.ant.length&&<p>{vt("표시할 항목이 없어요.")}</p>}</div>
-          : !user ? null : <>{synAnt?.error && <p className="syn-ant__error" aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice" onClick={() => setSynAntRequest(n => n + 1)}>{vt("✦ 비슷한 말 찾기")}</button></>)}
+          : !user ? null : <>{synAnt?.error && <p className="syn-ant__error" aria-hidden="true">{vt("불러오지 못했어요.")}</p>}<button type="button" className="btn btn--ghost btn--sm reader-card-learn__ask" aria-describedby="viewer-synant-notice" onClick={() => setSynAntRequest(n => n + 1)}>{vt("비슷한 말 찾기")}</button></>)}
         {/* 자세한 설명(AI 생성 — 긴 작업) 알림 — 영역은 늘 두고 내용만(LOADING-ANNOUNCE-001 ③). 보이는 줄은 한 번만 읽히게 숨긴다. */}
         <span className="sr-only" role="status">{wordDetail?.loading ? vt("상세 설명 만드는 중…") : ''}</span>
         {wordDetail?.loading ? <p className="reader-card-learn__pending" aria-hidden="true">{vt("상세 설명 만드는 중…")}</p>
           : wordDetail?.detail ? <div className="reader-card-learn__detail"><small>{vt('일반 사전 설명 · 본문과 다른 뜻이 포함될 수 있어요')}</small><div className="pdf-detail-popup__text" lang={effectiveExplanationLocale} dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} /></div>
-          : user && <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("✦ 자세한 설명")}</button>}
+          : user && <button type="button" onClick={() => fetchWordDetail(selectedToken)} className="btn btn--ghost btn--sm reader-card-learn__ask">{vt("자세한 설명")}</button>}
         {/* 일본어로는(AE-R3 PR② — 일본어 대조 블록 대체, 설계서 §5): 日 줄이 숨겨졌을 때만(수업 모드는 자형 열이 없으므로 항상) —
             사전 diff/warn이 있으면 내용, 없으면 로그인 사용자에게 요청 버튼(기존 클라 AI 그대로, 「AI」 표 없음). 쓰기 0. */}
         {materialLang === 'Chinese' && (classStudyActive || !glyph.ja) && <ViewerJapaneseMore key={`ja:${selectedToken.id||selectedToken.text}:${refMeaning||''}`} userId={user?.id} word={headText} meaning={refMeaning||selectedToken.meaning||''} pos={selectedToken.pos} dictEntry={editDictEntry} jaTable={jaWordsTable} dictLoading={!dictFetched&&!dictError} />}
@@ -4384,7 +4393,7 @@ export default function ViewerPage({ seed } = {}) {
                 return (
                   <li key={g.key} className="reader-words__row">
                     <span className="reader-words__text" lang={contentLangTag}>{g.text}</span>
-                    <span className="reader-words__reading" lang={contentLangTag}>{g.reading}</span>
+                    <span className="reader-words__reading" lang={contentLangTag}>{displayReading(g.reading, materialLang)}</span>
                     <span className="reader-words__meaning">{g.meaning}</span>
                     {canSave && koreanSaveReady(token) && <StatusPill status={wordStatus(g)} onSave={() => saveInlineVocabulary(token)} busy={!!inlineSaving[saveKey]} />}
                   </li>
@@ -4565,9 +4574,9 @@ export default function ViewerPage({ seed } = {}) {
         const at = attributionParts(materialSource(material));
         if (!at) return null;
         return (
-          <p className="viewer-attribution">{vt("출처:")}{at.channel || '유튜브'}
+          <p className="viewer-attribution">{vt("출처:")} {at.channel || '유튜브'}
             {at.license && <> · <span className="viewer-attribution__license">{at.license}</span></>}
-            {at.url && <> · <a href={at.url} target="_blank" rel="noopener noreferrer">{vt("원본 보기")}</a></>}
+            {at.url && <> · <a href={at.url} target="_blank" rel="noopener noreferrer">{at.text ? vt("원문 보기") : vt("원본 보기")}</a></>}
           </p>
         );
       })()}
@@ -4697,7 +4706,7 @@ export default function ViewerPage({ seed } = {}) {
           )}
           {reanalyzePanel === 'confirm-full' && (
             <div className="reader-manage" role="group" aria-labelledby="reanalyze-confirm-title">
-              <p id="reanalyze-confirm-title" style={{ fontWeight: 700, margin: '16px 0 6px' }}>{vt("전체 분석을 다시 할까요?")}</p>
+              <p id="reanalyze-confirm-title" style={{ fontWeight: 600, margin: '16px 0 6px' }}>{vt("전체 분석을 다시 할까요?")}</p>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.6 }}>{vt("지금 분석 결과를 새 결과로 바꿔요. 직접 고친 뜻·단어 경계는 같은 자리에 남은 것만 이어져요.")}</p>
               <div className="reanalyze-panel__actions">
                 <button className="btn btn--ghost btn--sm" onClick={() => setReanalyzePanel('menu')}>{vt("취소")}</button>
@@ -4708,7 +4717,7 @@ export default function ViewerPage({ seed } = {}) {
           {reanalyzePanel === 'pick' && (
             <div className="reader-manage reader-manage--pick">
               <div className="reanalyze-panel__header">
-                <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{vt("문단 선택")}</span>
+                <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{vt("문단 선택")}</span>
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{vt('{count}개 선택', {count: selectedParas.size})}</span>
               </div>
               <div className="reanalyze-panel__list">
@@ -5307,11 +5316,11 @@ export default function ViewerPage({ seed } = {}) {
       <style>{`
         .modal__content--markdown { display: flex; flex-direction: column; gap: 8px; }
         .modal__content--markdown p { color: var(--text-primary); line-height: 1.7; }
-        .modal__content--markdown strong { color: var(--primary-light); font-weight: 700; }
+        .modal__content--markdown strong { color: var(--primary-light); font-weight: 600; }
         .modal__content--markdown em { color: var(--accent); font-style: italic; }
         .modal__content--markdown code { background: var(--bg-secondary); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 0.88em; }
-        .md-h2 { font-size: 1.05rem; font-weight: 700; color: var(--primary-light); margin-top: 8px; }
-        .md-h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-top: 6px; }
+        .md-h2 { font-size: 1.05rem; font-weight: 600; color: var(--primary-light); margin-top: 8px; }
+        .md-h3 { font-size: 0.95rem; font-weight: 600; color: var(--accent); margin-top: 6px; }
         .analyzing-banner--error {
           border-color: rgba(255, 107, 107, 0.4);
           background: rgba(255, 107, 107, 0.08);

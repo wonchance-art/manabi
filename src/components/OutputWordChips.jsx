@@ -12,7 +12,7 @@ export default function OutputWordChips({ words, usedSet, label = '✍️ 오늘
   if (!words?.length) return null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-      <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+      <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>
         {label}
       </span>
       {words.map((w) => {

@@ -218,8 +218,8 @@ describe('baseFormReading — 로그아웃 기본형 표제어 읽기(GUEST-HEAD
     expect(fn).not.toMatch(/CONJUGABLE|anchorSplit|RegExp/);
     const viewer = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
     expect(viewer).toContain('const guestHeadReading = headIsBase && !user && !authLoading ? baseFormReading(selectedToken.text, selectedToken.furigana, headText) : null;');
-    expect(viewer).toContain('const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || null) : selectedToken?.furigana;');
-    expect(viewer).toContain('const headFallback = headIsBase && dictFetched && !editDictEntry?.reading;'); // 「기본형」 라벨은 목업대로 유지
+    expect(viewer).toContain('const headReading = headIsBase ? (editDictEntry?.reading || guestHeadReading || jaKanaSpelling || null) : selectedToken?.furigana;');
+    expect(viewer).toContain('const headFallback = headIsBase && dictFetched && !editDictEntry?.reading && !jaKanaSpelling;'); // 「기본형」 라벨은 목업대로 유지
     expect(viewer).toContain('splitRuby(headText, headReading, headIsBase ? undefined : selectedToken?.base_form)');
     expect(viewer.match(/baseFormReading\(/g)).toHaveLength(1);
   });

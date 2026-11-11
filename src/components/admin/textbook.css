@@ -26,7 +26,7 @@
 .textbook-editor textarea { resize: vertical; min-height: 80px; }
 .textbook-editor__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
 .textbook-editor__section { margin: 18px 0; padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; }
-.textbook-editor__section > h2, .textbook-editor__section > summary { margin-bottom: 16px; font-weight: 700; }
+.textbook-editor__section > h2, .textbook-editor__section > summary { margin-bottom: 16px; font-weight: 600; }
 .textbook-editor summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
 .textbook-editor__node { padding: 8px 0 8px 14px; margin-bottom: 12px; border-left: 2px solid var(--primary-glow); min-width: 0; }
 .textbook-editor__node > legend { color: var(--primary-light); font-size: .86rem; padding: 0 6px; }

@@ -122,7 +122,7 @@ export default function JapanStudiesMapPage() {
         <aside className="card" style={{ padding: '14px 16px', alignSelf: 'start' }} aria-live="polite">
           {activeVisible ? (
             <>
-              <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>{activeVisible.name}</div>
+              <div style={{ fontWeight: 600, fontSize: '1.05rem' }}>{activeVisible.name}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '8px 0 10px' }}>
                 {activeVisible.themes.map((t) => (
                   <span key={t} className="chip" style={{ fontSize: '0.72rem', padding: '2px 10px' }}>
@@ -142,13 +142,13 @@ export default function JapanStudiesMapPage() {
               </ul>
               {/* 더 보기 — 원문 문서는 정말 관심 깊은 사람만 닿도록 접어 둔다 */}
               <details style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
-                <summary style={{ cursor: 'pointer', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700, listStyle: 'none', display: 'inline-flex', alignItems: 'center', minHeight: 26 }}>
+                <summary style={{ cursor: 'pointer', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, listStyle: 'none', display: 'inline-flex', alignItems: 'center', minHeight: 26 }}>
                   더 보기 — 근거 문서 ▾
                 </summary>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
                   {activeVisible.themes.map((t) => (
                     <Link key={t} href={`/studies/japan/${THEME_BY_ID[t].doc}`} prefetch={false}
-                      style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-text)', display: 'inline-flex', alignItems: 'center', minHeight: 26 }}>
+                      style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent-text)', display: 'inline-flex', alignItems: 'center', minHeight: 26 }}>
                       {THEME_BY_ID[t].label} 문서 전문 →
                     </Link>
                   ))}
@@ -171,7 +171,7 @@ export default function JapanStudiesMapPage() {
             <li key={p.id} className="card" style={{ padding: '10px 14px' }}>
               <button type="button" onClick={() => setActiveId(p.id)} aria-pressed={activeVisible?.id === p.id}
                 style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', width: '100%', color: 'inherit' }}>
-                <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
                   {p.themes.map((t) => (
                     <span key={t} aria-hidden="true" style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: THEME_BY_ID[t].color, marginRight: 4 }} />
                   ))}

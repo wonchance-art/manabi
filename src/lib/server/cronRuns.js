@@ -85,12 +85,14 @@ export const summarizeFetchSuggestions = (j) => ({
   failed: j?.errors?.length || 0,
   detail: { date: j?.date ?? null, saved: j?.saved ?? null, errors: (j?.errors || []).slice(0, 5), runs: (j?.runs || []).slice(0, 20) },
 });
+// 실패한 IPA 묶음이 있으면 ok=false · failed = 실패 묶음 수 · 첫 오류(앞 200자) — 「조용한 0」 금지(IPA-CRON-FIX 2026-11-12 KST).
 export const summarizeBackfillIpa = (j) => ({
-  ok: true,
+  ok: !(Number(j?.failedBatches) > 0),
   processed: (Number(j?.dictUpdated) || 0) + (Number(j?.geminiUpdated) || 0) + (Number(j?.publicDictUpdated) || 0),
-  failed: 0,
+  failed: Number(j?.failedBatches) || 0,
   detail: { stage: j?.stage ?? null, remaining: j?.remaining ?? null, initialEmpty: j?.initialEmpty ?? null,
-    publicDictTargets: j?.publicDictTargets ?? null, publicDictUpdated: j?.publicDictUpdated ?? null },
+    publicDictTargets: j?.publicDictTargets ?? null, publicDictUpdated: j?.publicDictUpdated ?? null,
+    batchesUsed: j?.batchesUsed ?? null, failedBatches: j?.failedBatches ?? null, firstError: j?.firstError ?? null },
 });
 export const summarizeSendForecast = (j) => ({
   ok: true,

@@ -7,18 +7,18 @@
 .learn-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;min-width:0}
 .learn-top__title{display:flex;align-items:center;gap:14px}
 .learn-page .learn-top h1{font:700 34px/1.2 var(--font-manrope),var(--font-noto-kr),sans-serif;letter-spacing:-1.2px;margin:0;white-space:nowrap}
-.learn-toplink{font-size:13px;font-weight:700;color:var(--ink);min-height:44px;display:inline-flex;align-items:center;white-space:nowrap}
+.learn-toplink{font-size:13px;font-weight:600;color:var(--ink);min-height:44px;display:inline-flex;align-items:center;white-space:nowrap}
 /* 「교재 · 현황 전체 →」(HOME-SHELF-LINK-001) — 두 링크가 한 덩어리(좁은 화면 격자에서 한 칸). 가운뎃점은 장식. */
 .learn-toplinks{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.learn-toplinks__sep{font-size:13px;font-weight:700;color:var(--muted)}
-.learn-crumb{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:700;color:var(--muted);margin:-12px 0 0}
+.learn-toplinks__sep{font-size:13px;font-weight:600;color:var(--muted)}
+.learn-crumb{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:600;color:var(--muted);margin:-12px 0 0}
 .learn-chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0;min-height:44px}
 .learn-chip{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:transparent;font:inherit;cursor:pointer}
 .learn-chip>span{font-size:12.5px;font-weight:600;line-height:1.4;padding:4px 12px;border-radius:999px;border:1px solid var(--rule);color:var(--muted);white-space:nowrap;background:var(--sheet)}
 .learn-chip.is-on>span{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .learn-chip:focus-visible{outline:none}
 .learn-chip:focus-visible>span{outline:2px solid var(--ja);outline-offset:3px}
-.learn-button-s{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:700 13px/1 var(--font-noto-kr),sans-serif;white-space:nowrap;cursor:pointer}
+.learn-button-s{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--ink);background:transparent;color:var(--ink);font:600 13px/1 var(--font-noto-kr),sans-serif;white-space:nowrap;cursor:pointer}
 button.learn-button-s{min-height:44px}
 .learn-note{font-size:12px;color:var(--muted);margin:14px 0 0}
 .learn-more{margin-top:28px}
@@ -29,14 +29,14 @@ button.learn-button-s{min-height:44px}
 .learn-tile{border-radius:20px;padding:24px;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 1px 3px color-mix(in srgb,var(--ink) 6%,transparent);display:flex;flex-direction:column;min-width:0;position:relative;overflow:hidden;color:var(--ink);text-decoration:none;transition:background .15s ease}
 a.learn-tile:hover{background:var(--learn-soft)}
 .learn-tile__head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.learn-kick{font-size:11.8px;font-weight:700;letter-spacing:.02em;color:var(--muted)}
+.learn-kick{font-size:11.8px;font-weight:600;letter-spacing:.02em;color:var(--muted)}
 .learn-tile__cta{font-size:12.8px;font-weight:600;color:var(--ja);text-align:right}
 .learn-quad{grid-column:span 2;grid-row:span 2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
 .learn-quad>.learn-goal,.learn-stats>.learn-goal{grid-column:span 2}
 
 /* 작은 칸(오늘 목표 · 연속 · 이번 주 · 아는 단어) */
 .learn-stat{align-items:center;justify-content:center;gap:4px;text-align:center;padding-top:23px;padding-bottom:25px}
-.learn-stat__value{font:700 27.2px/1.15 var(--font-serif-kr),serif;font-variant-numeric:tabular-nums}
+.learn-stat__value{font:600 27.2px/1.15 var(--font-serif-kr),serif;font-variant-numeric:tabular-nums}
 .learn-stat__label{font-size:11.2px;line-height:1.45;color:var(--muted)}
 
 /* 단어 복습 · 오늘 문단(2×2) */
@@ -48,15 +48,15 @@ a.learn-tile:hover{background:var(--learn-soft)}
 /* 골격(LOADING-SKELETON-001) — 받는 중 칸은 들어오는 효과 없이 제자리. 단추 자리는 실제 알약과 같은 둥근 칸. */
 .learn-review__cycle--skeleton{animation:none}
 .learn-skeleton-pill{border-radius:999px;margin-left:6px;flex:none}
-.learn-review__word{font:700 24.8px/1.3 var(--font-serif-kr),serif;overflow-wrap:anywhere}
+.learn-review__word{font:600 24.8px/1.3 var(--font-serif-kr),serif;overflow-wrap:anywhere}
 .learn-review__meaning{font-size:13.6px;color:var(--muted);overflow-wrap:anywhere}
 .learn-review__empty{font-size:13.6px;color:var(--muted);line-height:1.6}
 .learn-paragraph__cycle{transform:translateY(-1px);transition:opacity var(--transition-fast)}
 /* 언어 칩을 바꾸는 동안(LIST-KEEP) — 이전 문단을 자리 그대로 흐리게. */
 .learn-paragraph__cycle[aria-busy="true"]{opacity:.6}
 @media (prefers-reduced-motion:reduce){.learn-paragraph__cycle{transition:none}}
-.learn-paragraph__sentence{font:700 19px/1.65 var(--font-serif-kr),serif;max-width:15em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
-.learn-paragraph__words{font:700 20px/1.4 var(--font-serif-kr),serif;overflow-wrap:anywhere}
+.learn-paragraph__sentence{font:600 19px/1.65 var(--font-serif-kr),serif;max-width:15em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.learn-paragraph__words{font:600 20px/1.4 var(--font-serif-kr),serif;overflow-wrap:anywhere}
 /* 일본어 문장 · 표현 · 복습 단어는 일본어 글꼴로 그린다(FIELD-AUDIT 2026-10-23 KST — 운영 /home 실측). Noto Serif KR로 그리면 한자가 한국 자형이고,
    한자가 흩어진 unicode-range 조각을 17개(743KB) 받아 LCP가 2.7~4.0초였다. 이미 받는 Noto Sans JP(:lang(ja) 전역 규칙과 같은 순서)로 그린다. */
 .learn-paragraph__sentence:lang(ja),.learn-paragraph__words:lang(ja),.learn-review__word:lang(ja){font-family:var(--font-noto-jp,'Noto Sans JP'),var(--font-noto-kr,'Noto Sans KR'),sans-serif}
@@ -74,24 +74,24 @@ a.learn-tile:hover{background:var(--learn-soft)}
 .learn-resume__glyph{position:absolute;z-index:1;pointer-events:none;font:300 130px/1 var(--font-noto-jp),var(--font-noto-sc, 'Noto Sans SC'),sans-serif;right:-8px;top:-16px;color:color-mix(in srgb,#fff 17%,transparent)}
 .learn-resume__glyph[lang=zh]{font-family:var(--font-noto-sc, 'Noto Sans SC'),sans-serif}
 .learn-resume__head{display:flex;flex-direction:column;justify-content:space-between;height:124px;padding:20px 24px;background:var(--lc);color:var(--on-fill);flex:none}
-.learn-resume__kicker{font:700 12px/1.4 var(--font-noto-kr),sans-serif;letter-spacing:.02em;color:color-mix(in srgb,#fff 90%,transparent)}
-.learn-resume__num{font:700 40px/1 var(--font-serif-kr),serif;letter-spacing:-1px}
+.learn-resume__kicker{font:600 12px/1.4 var(--font-noto-kr),sans-serif;letter-spacing:.02em;color:color-mix(in srgb,#fff 90%,transparent)}
+.learn-resume__num{font:600 40px/1 var(--font-serif-kr),serif;letter-spacing:-1px}
 .learn-resume__body{display:block;position:relative;padding:18px 24px 0;min-width:0}
-.learn-resume__title{display:block;font:700 20px/1.45 var(--font-serif-kr),serif;line-break:strict;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.learn-resume__title{display:block;font:600 20px/1.45 var(--font-serif-kr),serif;line-break:strict;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .learn-resume__sub{display:block;font-size:14px;line-height:1.5;margin-top:4px;color:var(--muted);overflow-wrap:anywhere}
 .learn-resume__bottom{margin-top:auto;display:flex;align-items:center;gap:12px;padding:0 24px 22px;position:relative}
 .learn-resume__count{font:600 12px var(--font-manrope),sans-serif;color:var(--muted);white-space:nowrap;flex:none}
 .learn-resume__bar{flex:1;min-width:40px;height:4px;border-radius:2px;position:relative;overflow:hidden;background:var(--lw)}
 .learn-resume__bar i{position:absolute;inset:0 auto 0 0;border-radius:2px;background:var(--lc)}
 .learn-resume__spacer{flex:1}
-.learn-resume__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;margin-left:6px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;background:var(--lc);color:var(--on-fill);flex:none}
+.learn-resume__pill{display:inline-flex;align-items:center;gap:12px;height:44px;padding:0 6px 0 18px;margin-left:6px;border-radius:999px;font-weight:600;font-size:14px;white-space:nowrap;background:var(--lc);color:var(--on-fill);flex:none}
 .learn-resume__pill i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-style:normal;background:#fff;color:var(--lc)}
 .learn-resume[role=status] .learn-resume__body{padding-top:24px}
 
 /* 진행바 반쪽(2×1, 높이 146) — 세로 배치 B(등간격, 정수 px): 넓은 화면 15/13/20/21, 휴대폰 15/12/20/20 */
 .learn-goal{height:146px;padding:15px 18px 0;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto auto auto;align-content:start;align-items:start;row-gap:0;column-gap:10px}
 .learn-goal__head{grid-column:1/-1;grid-row:1;font-size:11px;line-height:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.learn-goal__big{font:700 24px/24px var(--font-serif-kr),serif;letter-spacing:-.5px;grid-row:2;margin-top:13px}
+.learn-goal__big{font:600 24px/24px var(--font-serif-kr),serif;letter-spacing:-.5px;grid-row:2;margin-top:13px}
 .learn-goal__d{grid-column:1}
 .learn-goal__eta{grid-column:3;justify-self:end;display:inline-flex;align-items:center;gap:6px}
 .learn-goal .is-go{color:var(--learn-go)}.learn-goal .is-stop{color:var(--learn-stop)}
@@ -101,18 +101,18 @@ a.learn-tile:hover{background:var(--learn-soft)}
 .learn-goal__bar i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--ja)}
 .learn-goal__bar b{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:var(--sheet);box-shadow:inset 0 0 0 3.5px var(--ja),0 1px 3px color-mix(in srgb,var(--ink) 12%,transparent);transform:translate(-50%,-50%)}
 .learn-goal__cap{grid-column:1/-1;grid-row:4;margin-top:21px;display:flex;justify-content:space-between;gap:8px;font-size:11px;line-height:14px;color:var(--muted);white-space:nowrap}
-.learn-goal__cap em{font-style:normal;font-weight:700;color:var(--ink)}
+.learn-goal__cap em{font-style:normal;font-weight:600;color:var(--ink)}
 .learn-goal--empty{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;padding:16px 18px}
-.learn-goal__title{display:block;font-weight:800;font-size:15.2px}
+.learn-goal__title{display:block;font-weight:600;font-size:15.2px}
 .learn-goal__line{display:block;margin-top:4px;font-size:12px;color:var(--muted)}
 .learn-guest{grid-column:span 4;flex-direction:row;align-items:center;justify-content:space-between;gap:16px;padding:24px}
 
 /* 현황 — 히트맵 반쪽 · 레벨 어휘 · 기억 건강 */
 .learn-heatmap{grid-column:span 2;height:146px;padding:14px 21px 18px}
 .learn-sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.learn-sec-title{font-size:15.2px;font-weight:700;margin:0}
+.learn-sec-title{font-size:15.2px;font-weight:600;margin:0}
 .learn-sec-meta{font-size:12.2px;color:var(--muted);white-space:nowrap}
-.learn-sec-meta b{color:var(--ink);font-weight:700}
+.learn-sec-meta b{color:var(--ink);font-weight:600}
 /* 칸 크기 = 보이는 폭에 24주(넓은 화면 286px → 10px · 휴대폰은 폭에 맞춰). 나머지 28주는 옆으로 민다. */
 .learn-heatmap__view{container-type:inline-size;margin-top:6px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;cursor:grab;
   -webkit-mask-image:linear-gradient(to right,transparent 0,var(--ink) 18px);mask-image:linear-gradient(to right,transparent 0,var(--ink) 18px)}
@@ -129,7 +129,7 @@ a.learn-tile:hover{background:var(--learn-soft)}
 .learn-week__empty{margin:0;font-size:13.5px;color:var(--muted)}
 .learn-week__hero{display:grid;gap:6px}
 .learn-week__hero-k{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;color:var(--muted)}
-.learn-week__hero-k>span:first-child{font-weight:700}
+.learn-week__hero-k>span:first-child{font-weight:600}
 .learn-week__num{display:flex;align-items:baseline;gap:8px}
 .learn-week__num strong{font-family:var(--font-manrope),sans-serif;font-size:52px;font-weight:500;letter-spacing:-2px;line-height:1.05;color:var(--ja)}
 .learn-week__num span{font-size:14px;color:var(--muted)}
@@ -139,7 +139,7 @@ a.learn-tile:hover{background:var(--learn-soft)}
 .learn-week__bar i{display:block;height:100%;border-radius:99px;background:var(--ja)}
 .learn-week__cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .learn-week__cell{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 4px;border:1px solid var(--rule);border-radius:14px;background:var(--sheet);min-width:0;text-align:center}
-.learn-week__cell b{font:700 21px/1.25 var(--font-serif-kr),serif}
+.learn-week__cell b{font:600 21px/1.25 var(--font-serif-kr),serif}
 .learn-week__cell span{font-size:11.5px;line-height:1.35;color:var(--muted)}
 .learn-week__list{border:1px solid var(--rule);border-radius:14px;background:var(--sheet);overflow:hidden}
 .learn-week__list:empty{display:none}
@@ -174,19 +174,19 @@ button.learn-week__row--tap{width:100%;border:0;border-radius:0;background:none;
 .learn-remet__kind{flex:none;box-sizing:border-box;width:3.2em;height:18px;line-height:16px;text-align:center;font-size:11px;font-weight:500;color:var(--muted);border:1px solid var(--rule);border-radius:4px}
 .learn-week>.word-chips-legend{margin-top:-8px}
 /* .manabi-page a(0,1,1)가 색을 inherit로 덮어 두 단계 선택자로 올린다. */
-.learn-week .learn-remet__next{justify-self:end;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 4px;font-size:13.5px;font-weight:700;color:var(--ja);text-decoration:none}
+.learn-week .learn-remet__next{justify-self:end;display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 4px;font-size:13.5px;font-weight:600;color:var(--ja);text-decoration:none}
 .learn-week .learn-remet__next:hover{text-decoration:underline}
 .learn-week .learn-remet__next:focus-visible{outline:2px solid var(--ja);outline-offset:2px;border-radius:4px}
 /* 기간 칩 · 창 맨 아래(기간 요약 — 오너 「1번으로」 2026-11-02 KST). 칩 = 두 칸 고르기, 아래 = 「자세히 보기 ›」 · 「요약 복사」. */
 .learn-period{display:inline-grid;grid-auto-flow:column;gap:2px;padding:3px;margin:-4px 0 14px;border-radius:999px;background:var(--learn-soft)}
 .learn-period button,.learn-page .learn-period a{display:inline-flex;align-items:center;min-height:32px;padding:0 14px;border:0;border-radius:999px;background:none;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;text-decoration:none}
-.learn-period a.is-on,.learn-period button.is-on{background:var(--sheet);color:var(--ink);font-weight:700;box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 12%,transparent)}
+.learn-period a.is-on,.learn-period button.is-on{background:var(--sheet);color:var(--ink);font-weight:600;box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 12%,transparent)}
 .learn-period a:focus-visible,.learn-period button:focus-visible{outline:2px solid var(--ja);outline-offset:2px}
 .learn-week__foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-top:14px}
-.learn-week .learn-week__more,.learn-week__foot .learn-week__more{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 2px;font-size:13.5px;font-weight:700;color:var(--ja);text-decoration:none}
+.learn-week .learn-week__more,.learn-week__foot .learn-week__more{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 2px;font-size:13.5px;font-weight:600;color:var(--ja);text-decoration:none}
 .learn-week__foot .learn-week__more:hover{text-decoration:underline}
 .learn-week__foot .learn-week__more:focus-visible{outline:2px solid var(--ja);outline-offset:2px;border-radius:4px}
-.learn-week__copy{min-height:36px;padding:0 14px;border:1px solid var(--ja);border-radius:999px;background:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--ja);cursor:pointer;white-space:nowrap}
+.learn-week__copy{min-height:36px;padding:0 14px;border:1px solid var(--ja);border-radius:999px;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--ja);cursor:pointer;white-space:nowrap}
 .learn-week__copy:hover:not(:disabled):not(.is-done){background:color-mix(in srgb,var(--ja) 8%,transparent)}
 .learn-week__copy.is-done{background:var(--ja);color:var(--sheet)}
 .learn-week__copy:disabled{opacity:.45;cursor:default}
@@ -202,7 +202,7 @@ button.learn-week__row--tap{width:100%;border:0;border-radius:0;background:none;
 .learn-levels__rows{display:flex;flex-direction:column;gap:9px}
 .learn-levels__row{display:grid;grid-template-columns:4.6em minmax(0,1fr) 3.2em 5px 3.4em;align-items:center;gap:0 6px;padding:3px 0;border-radius:6px;color:var(--ink);text-decoration:none;min-height:30px}
 a.learn-levels__row:hover{background:var(--learn-soft)}
-.learn-levels__key{font:700 14px/1 var(--font-serif-kr),serif;white-space:nowrap}
+.learn-levels__key{font:600 14px/1 var(--font-serif-kr),serif;white-space:nowrap}
 .learn-levels__bar{height:7px;position:relative;background:var(--learn-track);border-radius:99px;overflow:hidden;margin-right:8px}
 .learn-levels__bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
 .learn-levels__bar .s{background:var(--learn-rose-1)}.learn-levels__bar .k{background:var(--ja)}
@@ -214,17 +214,17 @@ a.learn-levels__row:hover{background:var(--learn-soft)}
 .learn-levels__legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
 .learn-levels__legend .k{background:var(--ja)}.learn-levels__legend .s{background:var(--learn-rose-1)}
 .learn-center{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12.5px;color:var(--muted)}
-.learn-memory__ret{font-size:13px;font-weight:700;color:var(--ink)}
+.learn-memory__ret{font-size:13px;font-weight:600;color:var(--ink)}
 .learn-memory__buckets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .learn-memory__bucket{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;background:var(--learn-soft);border-radius:10px;color:var(--ink);text-decoration:none;min-width:0}
 a.learn-memory__bucket:hover{background:color-mix(in srgb,var(--ink) 8%,var(--sheet))}
 .learn-memory__bucket small{font-size:12px}
-.learn-memory__bucket b{font:700 19px/1.3 var(--font-serif-kr),serif}
+.learn-memory__bucket b{font:600 19px/1.3 var(--font-serif-kr),serif}
 .learn-memory__bucket span{font-size:11.2px;color:var(--muted)}
 .learn-memory__s{font-size:11.5px;color:var(--muted);margin:12px 0 4px}
 .learn-memory__fc{display:flex;align-items:stretch;justify-content:space-between;height:78px;gap:12px;padding:0 6px}
 .learn-memory__col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
-.learn-memory__n{font-size:12px;font-weight:700}
+.learn-memory__n{font-size:12px;font-weight:600}
 .learn-memory__area{flex:1;width:100%;display:flex;align-items:flex-end}
 .learn-memory__area i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--learn-rose-2)}
 .learn-memory__col:first-child .learn-memory__area i{background:var(--ja)}
@@ -238,7 +238,7 @@ a.learn-memory__bucket:hover{background:color-mix(in srgb,var(--ink) 8%,var(--sh
 .learn-memory__true-k{display:grid;gap:1px;margin-right:auto;min-width:0}
 .learn-memory__true-k>span{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
 .learn-memory__true-k small{font-size:11.5px;color:var(--muted);white-space:nowrap}
-.learn-memory__true-v{font-size:18px;font-weight:700;white-space:nowrap}
+.learn-memory__true-v{font-size:18px;font-weight:600;white-space:nowrap}
 .learn-memory__true-go{font-size:16px;color:var(--muted)}
 .learn-memory__true:hover .learn-memory__true-k small{color:var(--ink)}
 .tile-modal.tile-modal--wide{max-width:400px}
@@ -322,7 +322,7 @@ span.learn-chip{cursor:default}
 /* 손님 첫 화면 소개 띠(발매 점검 #1 — 오너 승인 2026-11-06 KST). 셸 면 · 3px 주 단추. 링크 둘은 .manabi-page a(색 inherit · 밑줄 없음)보다 높게 건다. */
 .learn-intro{margin:0 0 26px;padding:22px 24px;background:var(--sheet);border:1px solid var(--rule);display:grid;gap:10px}
 .learn-intro__eyebrow{margin:0}
-.learn-intro__title{margin:0;font-size:clamp(21px,2.6vw,26px);font-weight:700;letter-spacing:-.6px;line-height:1.35;text-wrap:balance}
+.learn-intro__title{margin:0;font-size:clamp(21px,2.6vw,26px);font-weight:600;letter-spacing:-.6px;line-height:1.35;text-wrap:balance}
 .learn-intro__text{margin:0;color:var(--muted);font-size:14px;line-height:1.75}
 .learn-intro__actions{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;margin-top:4px}
 .learn-page .learn-intro__start{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:3px;background:var(--ja);color:var(--on-fill);font-size:15px;font-weight:700}

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { classLanguage } from '../../lib/classroomModel';
 import './classroom.css';
+import { displayReading } from '../../lib/erhuaDisplay';
 
 export function ClassroomShell({ lang='Japanese', children, board=false, teamHome=false }) {
   return <div className={`classroom-shell${board?' classroom-shell--board':''}${teamHome?' classroom-team-home':''}`} data-language={lang}><div className="classroom-page">{children}</div></div>;
@@ -20,7 +21,7 @@ export function ClassCover({team,small=false}) {
 export function ClassEntryDisplay({entry,lang,hidden=false}) {
   return <div className="classroom-expression">
     {entry ? <>
-      {entry.reading&&<p className="classroom-reading" lang={classLanguage(lang).code}>{entry.reading}</p>}
+      {entry.reading&&<p className="classroom-reading" lang={classLanguage(lang).code}>{displayReading(entry.reading, lang)}</p>}
       <p className="classroom-word" lang={classLanguage(lang).code}>{entry.text}</p>
       {hidden?<p className="classroom-meaning classroom-meaning--hidden">뜻을 떠올려 보세요</p>:<p className={`classroom-meaning${entry.primary?'':' classroom-meaning--empty'}`}>{entry.primary || (entry.analyzed?'대표 뜻을 직접 적어 주세요':'뜻 준비 중')}</p>}
     </>:<><p className="classroom-word">첫 표현을 기다려요.</p><p className="classroom-meaning classroom-meaning--empty">수업 진행 화면에서 입력하면 이곳에 나타납니다.</p></>}

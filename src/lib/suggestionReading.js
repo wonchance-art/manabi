@@ -1,5 +1,4 @@
 import { isOnDemandSuggestion } from './suggestionSources';
-import { createComposerSave, newComposerDraft } from './materialComposer';
 import { licenseForSource } from './videoAttribution';
 import { SUGGESTION_BACK, suggestionBackKey } from './suggestionBack';
 
@@ -80,6 +79,9 @@ export async function createSuggestionSave(ownerId, suggestion) {
   const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input)))].map(b => b.toString(16).padStart(2, '0')).join('');
   const id = `${digest.slice(0, 8)}-${digest.slice(8, 12)}-5${digest.slice(13, 16)}-a${digest.slice(17, 20)}-${digest.slice(20, 32)}`;
   const source = suggestionSource(suggestion);
+  // 작성기 저장 모듈(materialComposer · bilingualSplit · sourceEdit)은 「내 서재에 저장」을 누를 때만 받는다 —
+  // 배움(/home) · 함께 읽는 글이 오늘의 추천 목록만 그리려고 이 파일을 불러도 끌려오지 않게(BUNDLE-AUTH-001, /home 첫 화면 −5KB).
+  const { createComposerSave, newComposerDraft } = await import('./materialComposer');
   const save = createComposerSave(ownerId, { ...newComposerDraft(id), title: suggestion.title,
     body: suggestion.transcript, language: suggestion.language, links: source.url ? [source.url] : [] });
   const meta = save.attempt.row.processed_json.metadata;

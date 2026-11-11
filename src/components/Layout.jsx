@@ -5,7 +5,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/useTheme';
 import { useState, useEffect, useRef } from 'react';
-import OnboardingModal from './OnboardingModal';
+import dynamic from 'next/dynamic';
+// 첫 방문 온보딩 창은 새 프로필(onboarded false)에만, 로그인 정보가 온 뒤에 뜬다 — 모든 화면 첫 JS에서 뺀다(BUNDLE-AUTH-001).
+// 서버 그림에는 없으므로(프로필은 브라우저에서 읽는다) ssr: false — 창 자체 Suspense라 받는 동안 바깥 화면은 그대로다.
+const OnboardingModal = dynamic(() => import('./OnboardingModal'), { ssr: false });
 import './books/reading-shell.css';
 import './web/web-shell.css';
 import { MAIN_NAV, navigationOwner, isFocusedReadingRoute } from '@/lib/webNavigation';

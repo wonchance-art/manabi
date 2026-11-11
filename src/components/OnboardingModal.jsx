@@ -84,7 +84,7 @@ export default function OnboardingModal() {
     <div className="onboarding-overlay">
       <div className="onboarding-modal" ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="onboarding-title" aria-describedby="onboarding-sub">
         <div className="onboarding-modal__header">
-          <h2 className="onboarding-modal__title" id="onboarding-title">manabi에 오신 걸 환영해요!</h2>
+          <h2 className="onboarding-modal__title" id="onboarding-title">처음 설정</h2>
           <p className="onboarding-modal__sub" id="onboarding-sub">학습 시작 전에 몇 가지만 알려 주세요.</p>
         </div>
 

@@ -5,9 +5,9 @@
 .word-chips>button{cursor:pointer}
 .word-chips>button:hover{background:color-mix(in srgb,var(--ink,var(--text-primary)) 5%,var(--sheet,var(--bg-card)))}
 .word-chips>button:focus-visible{outline:2px solid var(--ja,var(--accent));outline-offset:2px}
-.word-chips>.is-key{background:var(--ja,var(--accent));border-color:var(--ja,var(--accent));color:var(--sheet,var(--bg-card));font-weight:700;animation:word-chip-pulse 1.6s ease-out 1}
+.word-chips>.is-key{background:var(--ja,var(--accent));border-color:var(--ja,var(--accent));color:var(--sheet,var(--bg-card));font-weight:600;animation:word-chip-pulse 1.6s ease-out 1}
 .word-chips>button.is-key:hover{background:color-mix(in srgb,var(--ja,var(--accent)) 88%,var(--ink,var(--text-primary)))}
-.word-chips>button.is-more{background:none;border-color:var(--ja,var(--accent));color:var(--ja,var(--accent));font-weight:700}
+.word-chips>button.is-more{background:none;border-color:var(--ja,var(--accent));color:var(--ja,var(--accent));font-weight:600}
 @keyframes word-chip-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ja,var(--accent)) 45%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
 @media (prefers-reduced-motion:reduce){.word-chips>.is-key{animation:none}}
 .word-chips-legend{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted,var(--text-muted))}

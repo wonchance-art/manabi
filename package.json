@@ -35,7 +35,7 @@
     "e2e:learning": "node --test --test-concurrency=1 e2e/learning-flow.e2e.mjs",
     "e2e:typography": "node --test --test-concurrency=1 e2e/typography.e2e.mjs",
     "e2e:chrome": "node --test --test-concurrency=1 e2e/viewer-chrome.e2e.mjs",
-    "e2e:build": "NEXT_PUBLIC_SUPABASE_URL=https://e2e.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=e2e-anon-key NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3100 NEXT_FONT_GOOGLE_MOCKED_RESPONSES=\"$PWD/e2e/fixtures/google-fonts-mock.cjs\" next build",
+    "e2e:build": "NEXT_PUBLIC_SUPABASE_URL=https://e2e.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=e2e-anon-key NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3100 NEXT_FONT_GOOGLE_MOCKED_RESPONSES=\"$PWD/e2e/fixtures/google-fonts-mock.cjs\" node scripts/next-build.mjs",
     "e2e:full": "npm run e2e:build && npm run e2e:learning",
     "wall:build": "NEXT_PUBLIC_SUPABASE_URL=https://e2e.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=e2e-anon-key NEXT_PUBLIC_SITE_URL=http://localhost:3170 E2E_PUBLISHED_BOOKS=japanese-n4,japanese-n3 NODE_OPTIONS=\"--import=$PWD/e2e/server-fetch-mock.mjs\" node scripts/next-build.mjs",
     "wall:capture": "node scripts/wall-capture.mjs"
@@ -73,7 +73,7 @@
     "eslint-config-next": "^15.5.29",
     "hanja": "^1.1.5",
     "playwright-core": "^1.61.0",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.12"
   },
   "overrides": {
     "sharp": "^0.35.5"

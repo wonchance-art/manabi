@@ -23,7 +23,7 @@ describe('배움 일본어 · 중국어 칸 글꼴', () => {
     it(`${lang}: 문장 · 표현 · 복습 단어는 언어 글꼴로 그린다(규칙 한 줄 · font-family만 · 기본 세리프 규칙보다 뒤)`, () => {
       expect(css).toContain(rule(lang));
       expect(css.split(rule(lang))).toHaveLength(2);
-      for (const base of ['.learn-paragraph__sentence{font:700 19px/1.65 var(--font-serif-kr),serif;', '.learn-paragraph__words{font:700 20px/1.4 var(--font-serif-kr),serif;', '.learn-review__word{font:700 24.8px/1.3 var(--font-serif-kr),serif;']) {
+      for (const base of ['.learn-paragraph__sentence{font:600 19px/1.65 var(--font-serif-kr),serif;', '.learn-paragraph__words{font:600 20px/1.4 var(--font-serif-kr),serif;', '.learn-review__word{font:600 24.8px/1.3 var(--font-serif-kr),serif;']) {
         expect(css.indexOf(base), base).toBeGreaterThan(-1);
         expect(css.indexOf(base), base).toBeLessThan(css.indexOf(rule(lang)));
       }

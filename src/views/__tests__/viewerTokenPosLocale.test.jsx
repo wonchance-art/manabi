@@ -25,7 +25,7 @@ describe('viewer POS display locale',()=>{
     const token=Object.freeze({id:'same-token',pos:'양사',pos_all:'동사·명사',text:'本',meaning:'user meaning'});
     const snapshot=JSON.stringify(token);
     const html=render(locale,token);
-    expect(html).toContain(`font-weight:700">${t(locale,'양사')}`);
+    expect(html).toContain(`font-weight:600">${t(locale,'양사')}`);
     expect(html).toContain(`opacity:0.5">${t(locale,'동사')}`);
     expect(html).toContain(`opacity:0.5">${t(locale,'명사')}`);
     expect(html.indexOf(`>${t(locale,'양사')}<`)).toBeLessThan(html.indexOf(`>${t(locale,'동사')}<`));

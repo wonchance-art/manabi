@@ -200,7 +200,7 @@ body:has(.review-grade-bar) .review-known-undo { bottom:calc(140px + env(safe-ar
 .review-done__waiting { font-size:13px; color:var(--ja); margin:8px 0 0; }
 .review-done__calendar { margin-top:20px; padding:16px 20px; background:var(--paper); border-radius:3px; }
 .review-done__calendar-head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:10px; font-size:.78rem; color:var(--muted); }
-.review-done__calendar-head span:first-child { font-weight:700; color:var(--ink); }
+.review-done__calendar-head span:first-child { font-weight:600; color:var(--ink); }
 .review-done__bars { display:flex; gap:4px; align-items:flex-end; height:50px; }
 .review-done__bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0; }
 /* 복습 끝 마무리(앱 손맛 ②) — 막대가 바닥에서 솟는다. 예전 transition:height는 막대가 처음부터 최종 높이로
@@ -210,7 +210,7 @@ body:has(.review-grade-bar) .review-known-undo { bottom:calc(140px + env(safe-ar
 @keyframes barGrow { from { transform:scaleY(0); } to { transform:scaleY(1); } }
 .review-done__bar.has-count { background:var(--ja); }
 .review-done__bar-day,.review-done__bar-count { font-size:.65rem; color:var(--muted); }
-.review-done__bar-count { font-weight:700; color:var(--ja); }
+.review-done__bar-count { font-weight:600; color:var(--ja); }
 .review-done__actions .btn { min-height:44px; }
 /* 모션 축소: 막대는 처음부터 최종 높이. 전역 규칙이 남기는 delay도 직접 0으로. 제목은 index.css(.review-done__title) 몫. */
 @media (prefers-reduced-motion: reduce) {

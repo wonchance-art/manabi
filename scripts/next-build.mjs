@@ -8,7 +8,8 @@
 //
 // 사용자에게 가는 글꼴은 그대로다: layout의 `next/font/google` 호출은 바꾸지 않고, next가 받던 CSS·woff2만
 // Google 응답 사본으로 준다(vendor/google-fonts/responses.cjs). 사본 갱신은 scripts/fonts/vendor-google-fonts.mjs.
-// e2e 빌드는 이 경로를 쓰지 않는다 — `e2e:build`가 대역(e2e/fixtures/google-fonts-mock.cjs)을 쓴다.
+// e2e 빌드(`e2e:build` · `wall:build`)도 이 진입점을 지난다 — 글꼴은 각자 대역(e2e/fixtures/google-fonts-mock.cjs)을 넘기고(buildEnv가 그대로 둔다),
+// 힙 상한만 같이 받는다(맨 `next build`는 이 컨테이너 기본 힙 2GB에서 OOM — BUNDLE-AUTH-001, 2026-11-08 KST).
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import path from 'node:path';

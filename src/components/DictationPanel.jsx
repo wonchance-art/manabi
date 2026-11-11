@@ -13,7 +13,7 @@ import ViewerModal from './viewer/ViewerModal';
 
 const SEG_STYLE = {
   eq: {},
-  ins: { color: 'var(--primary-light)', fontWeight: 700 }, // 정답에만 — 놓친 글자
+  ins: { color: 'var(--primary-light)', fontWeight: 600 }, // 정답에만 — 놓친 글자
   del: { color: 'var(--warning)', textDecoration: 'line-through' }, // 입력에만 — 잉여
 };
 
@@ -59,7 +59,7 @@ export default function DictationPanel({ sentence, lang, onClose, ttsOpts, draft
 
         {result && (
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 6 }}>
+            <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: 6 }}>
               {revealed ? '원문을 참고한 연습 · ' : ''}{result.correct ? '✓ 완벽해요!' : result.accuracy != null ? `정답률 ${Math.round(result.accuracy * 100)}%` : '채점할 원문이 없어요'}
               {/* 악상·성조 부호만 다른 오답(v2-M) — 받아쓰기는 관용 대신 짚어 준다 */}
               {!result.correct && result.accentOnly && (

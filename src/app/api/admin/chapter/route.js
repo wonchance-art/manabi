@@ -10,10 +10,10 @@
  * 인증: requireAdmin()(쿠키 세션 + profiles.role='admin'). 쓰기는 사용자 세션 클라이언트로 수행해
  * RLS(is_admin())가 최종 방어. service_role 키는 사용하지 않는다.
  */
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { getRefLang } from '@/content/refLangs';
 import { requireAdmin } from '@/lib/supabaseServer';
-import { mergeChapter, isValidOverride, missingStoryIds } from '@/lib/contentOverrides';
+import { CONTENT_OVERRIDES_TAG, mergeChapter, isValidOverride, missingStoryIds } from '@/lib/contentOverrides';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,8 +27,9 @@ function getBaseChapter(lang, slug) {
   return data?.chapter || null;
 }
 
-/** 저장 후 무효화할 경로들 — 해당 챕터 상세 + 교재 목록 */
+/** 저장 후 무효화 — 오버라이드 조회 Data Cache(태그: 그 조회를 쓴 모든 판 — 이웃 장의 이전 · 다음 제목 · 학습 연결 포함) + 해당 챕터 상세 + 교재 목록 */
 function revalidateChapter(lang, slug) {
+  revalidateTag(CONTENT_OVERRIDES_TAG);
   const ref = getRefLang(lang);
   if (ref?.base) revalidatePath(`${ref.base}/grammar/${slug}`);
   revalidatePath('/lessons');

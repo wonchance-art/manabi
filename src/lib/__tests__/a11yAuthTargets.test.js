@@ -59,3 +59,26 @@ describe('뷰어 카드 칸 제목 — h1(자료 제목) 다음 단계 h2', () =
     for (const decl of ['margin:006px', 'font-size:.75rem', 'font-weight:500', 'line-height:1.5', 'color:var(--reader-muted)']) expect(label).toContain(decl);
   });
 });
+
+describe('작은 글자 조작 누르는 범위 44 · 「신규」 배지 대비(A11Y-LAUNCH-001 ③ · ④ A안 — 오너 「권장대로」 2026-11-12 KST, 목업 https://claude.ai/artifact/MAyWiF5LjbMmJaUaRJbgeE)', () => {
+  const css = read('src/index.css');
+  it('칩 단추 · 오늘의 소식 카드 단추 · 뷰어 손님 띠 링크 · 댓글 로그인 단추 — 보이는 크기 그대로, ::before가 위아래로만 넓힌다', () => {
+    const sel = 'button.chip, .suggestion-card__actions .btn--sm, .viewer-guest-banner__cta, .viewer-comments__signin';
+    expect(squash(rule(css, sel))).toContain('position:relative');
+    const before = squash(rule(css, 'button.chip::before, .suggestion-card__actions .btn--sm::before, .viewer-guest-banner__cta::before, .viewer-comments__signin::before'));
+    for (const d of ["content:''", 'position:absolute', 'left:0;right:0', `top:${squash(GROW)}`, `bottom:${squash(GROW)}`]) expect(before).toContain(d);
+    expect(read('src/views/ViewerComments.jsx')).toContain('className="btn btn--secondary btn--sm viewer-comments__signin"');
+  });
+  it('교재 「교재 안내」 펼침 — 같은 꼴', () => {
+    const shell = squash(read('src/components/web/web-shell.css'));
+    expect(shell).toContain('.book-scopesummary{position:relative}');
+    expect(shell).toContain(`.book-scopesummary::before{content:'';position:absolute;left:0;right:0;top:${squash(GROW)};bottom:${squash(GROW)}}`);
+  });
+  it('⋯ 메뉴 항목 · 로그인 입력칸은 보이는 높이 44', () => {
+    expect(squash(rule(css, '.mat-menu__item'))).toContain('min-height:44px');
+    expect(squash(rule(css, '.auth-input'))).toContain('min-height:44px');
+  });
+  it('「신규」 배지 — 바탕은 셸 면 색(4.86:1), 글자는 그대로', () => {
+    expect(css).toContain('.badge--stage-new { background: var(--bg-secondary); color: var(--text-muted); }');
+  });
+});

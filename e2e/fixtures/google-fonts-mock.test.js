@@ -39,7 +39,8 @@ describe('e2e 빌드의 Google Fonts 대역', () => {
   it('e2e:build가 대역을 물린다 — 이 배선이 빠지면 빌드가 다시 383 요청을 던진다', () => {
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
     expect(pkg.scripts['e2e:build']).toContain(`NEXT_FONT_GOOGLE_MOCKED_RESPONSES="$PWD/${MOCK_REL}"`);
-    expect(pkg.scripts['e2e:build']).toContain('next build');
+    // 빌드는 힙 상한 진입점(scripts/next-build.mjs)을 지난다 — 그 진입점은 넘긴 대역을 덮지 않는다(scripts/next-build.test.js).
+    expect(pkg.scripts['e2e:build']).toMatch(/ node scripts\/next-build\.mjs$/);
   });
 
   it('배포 빌드는 그대로 — 제품 글꼴은 실제 Google Fonts를 쓴다', () => {

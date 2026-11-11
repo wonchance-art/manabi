@@ -4,7 +4,7 @@
 // 발행 여부는 여기서 정하지 않는다 — 판이 발행 도장(공개 행)을 확인해, 도장 없는 판본은 동적 화면의 손님과 같은 안내를 그린다.
 // 판본 폴더를 더하거나 빼면 이 표도 고친다(계약: src/lib/__tests__/bookEditionStatic.test.js가 디렉터리 목록과 대조한다).
 export const BUNDLED_EDITIONS = Object.freeze({
-  'japanese-n5': Object.freeze(['7f572327dc67893e9453246c', '8a8c1c1fd452773810abaf8c', 'fdf070fa5123b18cc55f24c7']),
+  'japanese-n5': Object.freeze(['7f572327dc67893e9453246c', '8a8c1c1fd452773810abaf8c', 'fdf070fa5123b18cc55f24c7', '86593008c8f915a0b71aa15e']),
   'japanese-n4': Object.freeze(['f4a6411c0945bbd3f8767af7']),
   'japanese-n3': Object.freeze(['4978c146953f14140bcb49d2']),
 });

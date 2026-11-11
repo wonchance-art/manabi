@@ -318,3 +318,16 @@ e2e 기하는 글꼴에 달려 있다 — **CI 러너와 로컬 개발 컨테이
 - 제목(`h1`–`h3`)은 `text-wrap: balance`로 줄 길이를 고른다. 긴 본문 · 뷰어 토큰 줄에는 `text-wrap`을 쓰지 않는다(조판 · 토큰 위치).
 - `word-break: break-all`은 쓰지 않는다(한국어 · 영어 단어를 아무 데서나 끊는다).
 - 계약: `src/lib/__tests__/lineBreak.test.js`.
+
+## 8. 굵기 (WEIGHT-CANON-001 — 오너 「ㄱㄱ」 2026-11-11 KST, 목업 https://claude.ai/artifact/Xvrjbr3sopXXAcBRvTnoa8)
+
+- **굵기는 400 · 500 · 600 셋.** 700은 **화면 제목(`h1`)과 주 버튼(로즈로 칠한 단추)만** 쓴다. 12px 이하 라벨은 그 자리여도 600.
+- 예외는 둘: 로고(`.gnb__logo` 800) · 푸터 「개인정보 처리방침」(`.site-footer__privacy` 700 — 법정 표시를 다른 링크와 구분).
+- 카드 표제어(뷰어 단어 카드 · 복습 카드 · 담은 표현 목록)도 예외 없이 600.
+- 브라우저 기본 굵게(`h2`–`h6` · `b` · `strong` · `th` = 700)는 `src/index.css`의 `:where(…)` 한 줄이 600으로 맞춘다(명시도 0 — 화면 규칙이 정한 값이 이긴다).
+- **글꼴 사실**: 한글(Noto Sans KR) · 일본어(Noto Sans JP) · 병음(Noto Sans)은 400 · 500 · 700 면만 싣는다. 600을 요청하면 700 면으로 그려져
+  **한글 · 일본어 · 중국어 글자는 600과 700이 같은 픽셀**이다(실측 2026-11-11 KST). 차이는 라틴(Manrope · Inter) 글자 · 숫자에서만 난다.
+  한글을 실제로 600 굵기로 그리려면 600 면 추가(글꼴 선언 · 하위 집합 생성기 · 계약)가 필요하고, 별도 결정이다.
+- 범위 밖: 학습 월드(`src/components/world/**` · `WorldPage.jsx`, `[data-world]`) · 공유 카드 이미지(`opengraph-image.jsx`) ·
+  게시 판본 CSS(`src/content/textbookEditions/**`, 판본 바이트 불변) · 글꼴 선언(`@font-face`).
+- 계약: `src/lib/__tests__/uiConventions.test.js` 「굵기 정본」 — 600을 넘는 값은 허용 목록(h1 · 주 버튼 · 로고 · 개인정보)에만.

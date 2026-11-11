@@ -72,10 +72,23 @@ describe('DeferredZhFontSheets', () => {
     expect(doc.links).toEqual([]);
   });
 
-  it('서버 그림에는 스타일시트(렌더 차단)가 아니라 낮은 우선순위 미리 받기만 실린다', async () => {
+  const preloads = (html) => [...html.matchAll(/<link rel="preload" href="([^"]+)" as="style"( fetchPriority="low")?\/>/g)].map((m) => `${m[1]}${m[2] ? ' low' : ''}`);
+  it('서버 그림에는 스타일시트(렌더 차단)가 아니라 미리 받기만 — 모름(null)은 지금처럼 두 시트를 낮은 우선순위로', async () => {
     const { default: DeferredZhFontSheets } = await load();
     const html = renderToString(<html><head /><body><DeferredZhFontSheets /></body></html>);
     expect(html).not.toMatch(/rel="stylesheet"/);
-    for (const href of [SC, TC]) expect(html).toMatch(new RegExp(`<link rel="preload" href="${href.replace(/\./g, '\\.')}" as="style" fetchPriority="low"/>`));
+    expect(preloads(html)).toEqual([`${SC} low`, `${TC} low`]);
+  });
+
+  // VIEWER-MOBILE-PERF-001 — 운영 교대 A/B(1.6Mbps · CPU 4×): 일본어 · 영어 서버 본문은 두 시트를 빼면 LCP−TTFB 2.39 → 1.90s · 2.33 → 2.00s,
+  // 중국어 서버 본문은 간체를 빼면 2.47 → 3.77s(경계 공개가 시트를 기다린다) — 그래서 간체만 보통 우선순위로 남긴다(경계 조각 위치 2.29s).
+  it('중국어 서버 본문(zh)은 간체 시트만 보통 우선순위로 · 그 밖 서버 본문(other)은 미리 받지 않는다', async () => {
+    const { default: DeferredZhFontSheets } = await load();
+    const zh = renderToString(<html><head /><body><DeferredZhFontSheets known="zh" /></body></html>);
+    expect(zh).not.toMatch(/rel="stylesheet"/);
+    expect(preloads(zh)).toEqual([SC]);
+    const other = renderToString(<html><head /><body><DeferredZhFontSheets known="other" /></body></html>);
+    expect(preloads(other)).toEqual([]);
+    expect(other).not.toMatch(/noto-sans-(sc|tc)/);
   });
 });

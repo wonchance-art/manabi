@@ -26,7 +26,7 @@ export default function RouteError({ error, reset }) {
       justifyContent: 'center', minHeight: '70vh', padding: '40px 24px',
       color: 'var(--text-primary)', textAlign: 'center',
     }}>
-      <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: 8 }}>
+      <h2 style={{ fontSize: '1.4rem', fontWeight: 600, marginBottom: 8 }}>
         {isNetwork ? '인터넷 연결을 확인해 주세요' : '문제가 발생했어요'}
       </h2>
       <p style={{ color: 'var(--text-secondary)', marginBottom: 24, maxWidth: 420, lineHeight: 1.6 }}>

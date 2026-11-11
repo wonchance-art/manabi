@@ -48,4 +48,7 @@ export const ZH_PINYIN_FIX = {
   马马虎虎: 'mǎ mǎ hū hū',
   // 谁 — pinyin-pro는 shuí(又音). 现汉 정음·정답지 18/18 shéi. 1자 토큰이지만 문맥 무관 정답이라 여기(문맥 층 아님).
   谁: 'shéi',
+  // 待会儿 — pinyin-pro가 줄 · 낱말 단독 모두 dài(等待의 음)로 내 검증 패스가 고치지 못한다(suspect). CC-CEDICT dāi huì r ·
+  // 교재 정답 dāi huìr. 얼화 저장 꼴(儿 자리 r — zhErhua)과 같은 꼴로 싣는다(2026-11-12 KST, 운영 토큰 0 — 새 분석만).
+  待会儿: 'dāi huì r',
 };

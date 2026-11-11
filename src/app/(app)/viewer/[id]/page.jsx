@@ -4,6 +4,7 @@ import { readViewerSeed, viewerSeedWithin } from '@/lib/server/viewerSeed';
 import { viewerSsrGuardScript, viewerSsrRow } from '@/lib/viewerSsr';
 import ViewerLoading from '@/components/viewer/ViewerLoading';
 import { ScFontLink } from '@/components/fonts/ScFontLink';
+import DeferredZhFontSheets from '@/components/fonts/DeferredZhFontSheets';
 import ViewerPage from '@/views/ViewerPage';
 import { PRIVATE_ROBOTS, publicMetadata } from '@/lib/seo';
 import { curatorIds, isIndexableMaterial } from '@/lib/server/curatedMaterials';
@@ -75,6 +76,8 @@ async function SeededViewerPage({ params, searchParams }) {
           그 뒤로 밀려 LCP가 14초가 됐다(운영 실측, 클라이언트 경로는 시트가 먼저 붙어 KR 0). precedence 링크라 head로 올라가고 이 경계는
           시트가 온 뒤에 보인다(br 32KB). DeferredZhFontSheets는 같은 href가 있으면 다시 붙이지 않는다. 일본어 · 영어 서버 본문은 그대로. */}
       {ssr && ssr.processed_json?.metadata?.language === 'Chinese' && <ScFontLink />}
+      {/* 중국어 글꼴 시트의 미리 받기 · 붙이는 때 — 서버 본문의 언어로 고른다(VIEWER-MOBILE-PERF-001, DeferredZhFontSheets known). */}
+      <DeferredZhFontSheets known={ssr ? (ssr.processed_json?.metadata?.language === 'Chinese' ? 'zh' : 'other') : null} />
       {ssr && <div className="viewer-ssr-hold"><ViewerLoading /></div>}
       <ViewerPage seed={seed ?? undefined} />
     </>

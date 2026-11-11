@@ -144,7 +144,7 @@ try {
  const inspector=page.locator('.viewer-inspector');
  await inspector.locator('.teaching-word').waitFor();
  const graphic=inspector.locator('.teaching-word-graphic');
- assert(await graphic.locator('.teaching-word-part--hun').count()>0);
+ await graphic.locator('.teaching-word-part--hun').first().waitFor();assert(await graphic.locator('.teaching-word-part--hun').count()>0);
  // WebKit's remote SVG boundingBox can include the SVG root. DOM client rects
  // measure the actual rendered glyphs consistently in both engines.
  await waitFor(()=>graphic.evaluate(el=>{const words=[...el.querySelectorAll('.teaching-word-part--text')].map(t=>t.getBoundingClientRect()),meaning=el.querySelector('.teaching-word-part--meaning').getBoundingClientRect();return words.every(r=>r.width>0)&&meaning.left>Math.max(...words.map(r=>r.right));}));

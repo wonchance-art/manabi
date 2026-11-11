@@ -30,6 +30,7 @@ import { focusIfFree } from '../lib/focusAfterAction';
 import { authEntryHref } from '../lib/authRedirect';
 import { parseAgentText } from '../lib/agentFormat';
 import AgentPromptCard from '../components/quick/AgentPromptCard';
+import { displayReading } from '../lib/erhuaDisplay';
 
 // 서버 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(계약 테스트로 핀).
 const QUICK_MAX_LINES = 100;
@@ -228,7 +229,7 @@ export default function QuickPage() {
 
       {!user ? (
         <div className="card" style={{ padding: '28px 24px', textAlign: 'center' }}>
-          <p style={{ margin: '0 0 6px', fontWeight: 700 }}>빠른 분석은 로그인 후 쓸 수 있어요</p>
+          <p style={{ margin: '0 0 6px', fontWeight: 600 }}>빠른 분석은 로그인 후 쓸 수 있어요</p>
           <p style={{ margin: '0 0 16px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             분석 서버가 로그인 사용자만 받아요 (남용 방지 정책).
           </p>
@@ -327,7 +328,7 @@ export default function QuickPage() {
             <div className="pdf-detail-popup__header">
               <div className="pdf-detail-popup__word" id={popupWordId} lang={htmlLang(language)}>
                 {wordDetail.token.furigana
-                  ? <ruby>{wordDetail.token.text}<rt>{wordDetail.token.furigana}</rt></ruby>
+                  ? <ruby>{wordDetail.token.text}<rt>{displayReading(wordDetail.token.furigana, language)}</rt></ruby>
                   : wordDetail.token.text}
               </div>
               <button type="button" className="pdf-detail-popup__close" aria-label="닫기" onClick={() => setWordDetail(null)}>✕</button>

@@ -11,8 +11,9 @@
 export const ALL_PROVIDERS = Object.freeze(['anthropic', 'gemini', 'groq']);
 export const CLAUDE_ONLY = Object.freeze(['anthropic']);
 
-/** 단어 뜻(분석 사전) — 표제어 · 품사 · 기존 뜻만 실린다. Gemini 대체 유지. */
-export const GEMINI_FALLBACK_ROUTES = Object.freeze(['fetchMeanings', 'verifyMeanings']);
+/** 단어 뜻(분석 사전) — 표제어 · 품사 · 기존 뜻만 실린다. Gemini 대체 유지.
+ *  backfill-ipa: 영어 표제어 목록만 보내 IPA(공유 사전 reading · 단어장 발음)를 채운다 — 같은 사전 경로(IPA-CRON-FIX 2026-11-12 KST). */
+export const GEMINI_FALLBACK_ROUTES = Object.freeze(['fetchMeanings', 'verifyMeanings', 'backfill-ipa']);
 
 /** 사용자 내용 경로 — Claude만. 문서 겸 계약용 목록(여기 없는 새 라벨도 Claude만이다). */
 export const USER_CONTENT_ROUTES = Object.freeze([

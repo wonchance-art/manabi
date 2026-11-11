@@ -10,7 +10,7 @@ import useLibraryOutline from './useLibraryOutline';
 const marks={Japanese:'あ',Chinese:'你',English:'Aa',French:'é'};
 export function LibraryCover({row}){
  const asset=row.assets?.find(item=>item.hash===row.context?.assetHash)||row.assets?.[0];
- return <span className="shelf-cover" data-language={row.language||'unknown'} aria-hidden="true"><small>{row.target_kind==='edition'?'N5':row.target_kind==='book'?'BOOK':row.target_kind==='pdf'?'PDF':asset?.kind?.toUpperCase()||'NOTE'}</small><b>{marks[row.language]||'m.'}</b><i/></span>;
+ return <span className="shelf-cover" data-language={row.language||'unknown'} aria-hidden="true">{(()=>{const label=row.target_kind==='edition'?'N5':row.target_kind==='book'?'BOOK':row.target_kind==='pdf'?'PDF':asset?.kind?.toUpperCase()||null;return label?<small>{label}</small>:null;})()}<b>{marks[row.language]||'m.'}</b><i/></span>;
 }
 export default function LibraryRow({row,ownerId,onMenu,selecting=false,selected=false,disabled=false,onSelect}){
  const [expanded,setExpanded,count,setCount]=useLibraryOutline(row);
