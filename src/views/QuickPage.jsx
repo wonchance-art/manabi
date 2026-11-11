@@ -30,6 +30,7 @@ import { focusIfFree } from '../lib/focusAfterAction';
 import { authEntryHref } from '../lib/authRedirect';
 import { parseAgentText } from '../lib/agentFormat';
 import AgentPromptCard from '../components/quick/AgentPromptCard';
+import { displayReading } from '../lib/erhuaDisplay';
 
 // 서버 캡 미러 — route.js의 MAX_LINES·MAX_LINE_LEN과 같은 값(계약 테스트로 핀).
 const QUICK_MAX_LINES = 100;
@@ -327,7 +328,7 @@ export default function QuickPage() {
             <div className="pdf-detail-popup__header">
               <div className="pdf-detail-popup__word" id={popupWordId} lang={htmlLang(language)}>
                 {wordDetail.token.furigana
-                  ? <ruby>{wordDetail.token.text}<rt>{wordDetail.token.furigana}</rt></ruby>
+                  ? <ruby>{wordDetail.token.text}<rt>{displayReading(wordDetail.token.furigana, language)}</rt></ruby>
                   : wordDetail.token.text}
               </div>
               <button type="button" className="pdf-detail-popup__close" aria-label="닫기" onClick={() => setWordDetail(null)}>✕</button>

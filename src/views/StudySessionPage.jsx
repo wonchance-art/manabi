@@ -34,6 +34,7 @@ import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
 import { authEntryHref } from '../lib/authRedirect';
 import { focusIfFree, focusItemHead, ignoreHeldKey } from '../lib/focusAfterAction';
 import { STUDY_OFFLINE_LINE } from '../lib/studyUnavailable';
+import { displayReading } from '../lib/erhuaDisplay';
 
 /** 문법 일정을 끝내 못 보냈다(재시도 상한 · 오프라인으로 화면 떠남) — copy-standard 실패 + 보존 여부 한 문장. */
 const GRAMMAR_NOT_SAVED = '문법 복습 일정을 저장하지 못했어요. 이 문법은 다음 학습에 다시 나와요.';
@@ -1417,7 +1418,7 @@ export default function StudySessionPage({
             <RefSpeak text={item.word.word_text} lang={lang} size="xs" />
           </div>
           {item.word.furigana && (kanjiCare || phase === 'feedback') && (
-            <div className="fr-quiz__sub">{item.word.furigana}</div>
+            <div className="fr-quiz__sub">{displayReading(item.word.furigana, item.word.language || lang)}</div>
           )}
           <div className="fr-quiz__opts fr-quiz__opts--col" role="group" aria-labelledby={headId}>
             {prepared.options.map(opt => (
@@ -1494,7 +1495,7 @@ export default function StudySessionPage({
             <div className="fr-quiz__answer">
               {firstResults[baseUid(item.uid)]?.ok || gradeTyping(typing, item.word) ? '○' : '×'}{' '}
               <span lang={langCode}>{item.word.word_text}</span>
-              {item.word.furigana && <span style={{ color: 'var(--text-muted)' }}> ({item.word.furigana})</span>}
+              {item.word.furigana && <span style={{ color: 'var(--text-muted)' }}> ({displayReading(item.word.furigana, item.word.language || lang)})</span>}
               {' — '}{item.word.meaning}
               <RefSpeak text={item.word.word_text} lang={lang} size="xs" />
             </div>
