@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { displayReading, joinErhuaPinyin } from '../erhuaDisplay.js';
+import { displayReading, joinErhuaPinyin, splitErhuaPinyin } from '../erhuaDisplay.js';
+import { buildVocabularyCSV, csvToVocabRows } from '../vocabIO.js';
 import { readingLine } from '../reviewCard.js';
 import { splitRuby } from '../splitRuby.js';
 
@@ -59,4 +60,47 @@ describe('표시 자리 배선', () => {
   it('본문 루비는 글자별 그대로 — 哪 nǎ · 儿 r(렌더러 무변경)', () => {
     expect(splitRuby('哪儿', 'nǎ r')).toEqual([{ kanji: '哪', reading: 'nǎ', pinyin: true }, { kanji: '儿', reading: 'r', pinyin: true }]);
   });
+});
+
+describe('CSV 왕복 — 내보내기는 붙인 꼴, 가져오기는 저장 꼴(글자 1 = 음절 1)로', () => {
+  it('splitErhuaPinyin: 붙인 꼴만 되돌리고 실음절 ér은 그대로', () => {
+    expect(splitErhuaPinyin('nǎr', '哪儿')).toBe('nǎ r');
+    expect(splitErhuaPinyin('yì diǎnr', '一点儿')).toBe('yì diǎn r');
+    expect(splitErhuaPinyin('yí huìr', '一会儿')).toBe('yí huì r');
+    expect(splitErhuaPinyin('nǎ r', '哪儿')).toBe('nǎ r');
+    expect(splitErhuaPinyin('nǚ ér', '女儿')).toBe('nǚ ér');
+    expect(splitErhuaPinyin('yīngér', '婴儿')).toBe('yīngér');
+    expect(splitErhuaPinyin('ér zi', '儿子')).toBe('ér zi');
+    expect(splitErhuaPinyin('がくせい', '学生')).toBe('がくせい');
+  });
+  it('buildVocabularyCSV → csvToVocabRows 왕복에서 저장 꼴이 그대로 돌아온다', () => {
+    const v = { id: 'v1', user_id: 'u1', word_text: '哪儿', furigana: 'nǎ r', meaning: '어디', pos: '대명사', language: 'Chinese' };
+    const p = { kind: 'vocabulary-learning', version: 1, source: 'fsrs', memory: { stability: 1, difficulty: 5 }, review: { nextQuestionAt: null }, vocabulary: { id: 'v1', user_id: 'u1' } };
+    const csv = buildVocabularyCSV([v], [p]);
+    expect(csv).toContain('"nǎr"');
+    const [row] = csvToVocabRows(csv, 'u1');
+    expect(row.furigana).toBe('nǎ r');
+    const girl = { ...v, id: 'v2', word_text: '女儿', furigana: 'nǚ ér' };
+    const [back] = csvToVocabRows(buildVocabularyCSV([girl], [{ ...p, vocabulary: { id: 'v2', user_id: 'u1' } }]), 'u1');
+    expect(back.furigana).toBe('nǚ ér');
+  });
+});
+
+describe('읽기 문자열을 그대로 그리는 자리는 공용 함수를 거친다', () => {
+  const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
+  it.each([
+    ['src/views/VocabList.jsx', 'displayReading(v.furigana, v.language)'],
+    ['src/views/VocabDetailCard.jsx', 'displayReading(v.furigana, v.language)'],
+    ['src/lib/reviewCard.js', 'joinErhuaPinyin(reading)'],
+    ['src/views/StudySessionPage.jsx', 'displayReading(item.word.furigana, item.word.language || lang)'],
+    ['src/components/classroom/ClassStudyHistory.jsx', 'joinErhuaPinyin(entry.reading)'],
+    ['src/components/classroom/ClassroomUI.jsx', 'displayReading(entry.reading, lang)'],
+    ['src/views/ViewerPage.jsx', 'displayReading(t.furigana, materialLang)'],
+    ['src/views/ViewerPage.jsx', 'displayReading(g.reading, materialLang)'],
+    ['src/views/PdfViewerPage.jsx', 'displayReading(wordDetail.token.reading, language)'],
+    ['src/lib/vocabIO.js', "displayReading(v.furigana || '', v.language)"],
+    ['src/lib/vocabIO.js', 'splitErhuaPinyin(furigana.trim(), text)'],
+    ['src/views/QuickPage.jsx', 'displayReading(wordDetail.token.furigana, language)'],
+    ['src/views/PdfViewerPage.jsx', 'displayReading(wordDetail.token.furigana, language)'],
+  ])('%s — %s', (f, s) => { expect(read(f)).toContain(s); });
 });

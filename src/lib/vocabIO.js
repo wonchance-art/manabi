@@ -5,6 +5,7 @@ import { detectLangConfident, hasCjkText } from './constants';
 import { cacheVocabSnapshot, getCachedVocabSnapshot } from './offlineCache';
 import { calculateVocabFSRS } from './fsrs';
 import { isVocabularyLearningProjection } from './vocabularyLearningRead';
+import { displayReading, splitErhuaPinyin } from './erhuaDisplay';
 
 /**
  * 저장용 word_text 정규화 — item_key(=user_vocabulary.word_text) 통일 규약.
@@ -260,7 +261,7 @@ export function csvToVocabRows(text, userId) {
     return {
       user_id: userId,
       word_text: text,
-      furigana: furigana.trim(),
+      furigana: splitErhuaPinyin(furigana.trim(), text),
       meaning: meaning.trim(),
       pos: pos.trim(),
       next_review_at: now,
@@ -289,7 +290,7 @@ export function buildVocabularyCSV(vocab, projections) {
       .map(key => [key, v[key] ?? null]));
     const metadata = { format: 'manabi.vocabulary-schedule.v1', vocabularyId: v.id,
       scheduler: p.source, memory: p.memory, review: p.review, originalSchedule };
-    return [v.word_text, v.furigana || '', v.meaning || '', v.pos || '',
+    return [v.word_text, displayReading(v.furigana || '', v.language), v.meaning || '', v.pos || '',
       p.review.nextQuestionAt ?? '', p.memory.stability ?? '', p.memory.difficulty ?? '', JSON.stringify(metadata)];
   });
   return [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');

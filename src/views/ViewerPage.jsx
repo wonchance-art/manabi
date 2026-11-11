@@ -3445,7 +3445,7 @@ export default function ViewerPage({ seed } = {}) {
                 >·</span>
               )}
               {t.text}
-              {t.furigana && <span className="pdf-word-item__reading">{t.furigana}</span>}
+              {t.furigana && <span className="pdf-word-item__reading">{displayReading(t.furigana, materialLang)}</span>}
             </span>
             <span className="pdf-word-item__meaning" onClick={() => handleListWordClick(t)}>{materialLang !== 'Korean' || (t.meaningLocale || t.explanationLocale || 'ko') === effectiveExplanationLocale ? t.meaning : ''}</span>
             {user && learningStorageSupported && koreanSaveReady(t) && (
@@ -4392,7 +4392,7 @@ export default function ViewerPage({ seed } = {}) {
                 return (
                   <li key={g.key} className="reader-words__row">
                     <span className="reader-words__text" lang={contentLangTag}>{g.text}</span>
-                    <span className="reader-words__reading" lang={contentLangTag}>{g.reading}</span>
+                    <span className="reader-words__reading" lang={contentLangTag}>{displayReading(g.reading, materialLang)}</span>
                     <span className="reader-words__meaning">{g.meaning}</span>
                     {canSave && koreanSaveReady(token) && <StatusPill status={wordStatus(g)} onSave={() => saveInlineVocabulary(token)} busy={!!inlineSaving[saveKey]} />}
                   </li>

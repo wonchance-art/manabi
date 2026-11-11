@@ -1417,7 +1417,7 @@ export default function StudySessionPage({
             <RefSpeak text={item.word.word_text} lang={lang} size="xs" />
           </div>
           {item.word.furigana && (kanjiCare || phase === 'feedback') && (
-            <div className="fr-quiz__sub">{item.word.furigana}</div>
+            <div className="fr-quiz__sub">{displayReading(item.word.furigana, item.word.language || lang)}</div>
           )}
           <div className="fr-quiz__opts fr-quiz__opts--col" role="group" aria-labelledby={headId}>
             {prepared.options.map(opt => (
@@ -1494,7 +1494,7 @@ export default function StudySessionPage({
             <div className="fr-quiz__answer">
               {firstResults[baseUid(item.uid)]?.ok || gradeTyping(typing, item.word) ? '○' : '×'}{' '}
               <span lang={langCode}>{item.word.word_text}</span>
-              {item.word.furigana && <span style={{ color: 'var(--text-muted)' }}> ({item.word.furigana})</span>}
+              {item.word.furigana && <span style={{ color: 'var(--text-muted)' }}> ({displayReading(item.word.furigana, item.word.language || lang)})</span>}
               {' — '}{item.word.meaning}
               <RefSpeak text={item.word.word_text} lang={lang} size="xs" />
             </div>
