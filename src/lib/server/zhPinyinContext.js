@@ -36,7 +36,11 @@ const isVerb = (tag) => /^v/.test(tag || '');
 const isNoun = (tag) => /^n/.test(tag || '');
 /** 「…为」 결과 보어를 이끄는 동사 — 이 뒤의 为는 wéi(되다). 为/p 앞이 동사인 자리는 정답이 9:4로
  *  갈려(努力为… '위해'도 동사 뒤) 태그만으론 못 가른다 — 동사 목록이 정밀도다. */
-const RESULT_VERBS = new Set(['任命', '当选', '选', '称', '视', '列', '评', '改', '变', '分', '成', '作', '化', '译', '转', '定', '封', '立', '尊', '推', '选举', '评选', '认定', '指定']);
+const RESULT_VERBS = new Set(['任命', '当选', '选', '称', '视', '列', '评', '改', '变', '分', '成', '作', '化', '译', '转', '定', '封', '立', '尊', '推', '选举', '评选', '认定', '指定',
+  // ZH-PINYIN-CHECK(2026-11-11 KST): 「表现为」(…로 나타나다) — 「在生活中就表现为…」 꼴에서 wèi 오독(운영 실측).
+  '表现']);
+/** 「称 X 为 Y」 — 결과 동사와 为 사이에 목적어가 끼는 꼴(称他为… · 운영 실측). 구두점 없이 4토큰 안이면 wéi. */
+const SPAN_RESULT_VERBS = new Set(['称', '视', '奉', '尊']);
 /** 앞 토큰이 「수량 자리」인가 — zhTokenFix.afterCountSlot과 같은 판정. */
 const isCountSlot = (e) => !!e && (e.tag === 'm' || e.tag === 'mq' || ['这', '那', '哪'].includes(e.word));
 
@@ -80,6 +84,10 @@ export function contextPinyin(entries, i, syllables) {
         if (tag !== 'p') break;
         if (entries.slice(i + 1, i + 4).some((t) => t.word.startsWith('所'))) return ['wéi']; // 为…所… 피동
         if (prev && RESULT_VERBS.has(prev.word)) return ['wéi'];                              // 任命为·当选为
+        for (let k = i - 2; k >= Math.max(0, i - 5); k--) {                                       // 称 X 为 Y
+          if (/^[，。！？；：、,.!?;:]$/.test(entries[k].word)) break;
+          if (SPAN_RESULT_VERBS.has(entries[k].word) && /^v/.test(entries[k].tag || '')) return ['wéi'];
+        }
         break;
       case '长': if (tag === 'a' && next?.word === '得' && next?.tag === 'ud') return ['zhǎng']; break; // 长得像
       case '重': if (tag === 'a' && isVerb(next?.tag)) return ['chóng']; break;   // 重做·重来; 很重은 유지
@@ -107,7 +115,11 @@ export function contextPinyin(entries, i, syllables) {
   // 전체 스위트가 잡았다(tokenizeZh.test 「성어는 원조 유지」).
   if (chars[1] === '得' && !real && tag !== 'i') return syllables.map((syl, k) => (k === 1 ? 'de' : syl));
   // …地 병합 토큰(深深地·静静地·高高兴兴地) — 실단어(土地·当地·各地)가 아니면 말미 地는 상황어 표지.
-  if (last === '地' && chars.length >= 2 && !real) return [...syllables.slice(0, -1), 'de'];
+  // 2자 명사 태그(泽地/n — 늪지 · 운영 실측 zé de 오발, ZH-PINYIN-CHECK 2026-11-11 KST)는 땅(dì)이라 밖이다. 3자 이상(恳切地/n 오태그)은 상황어 그대로.
+  if (last === '地' && chars.length >= 2 && !real && !(chars.length === 2 && /^n/.test(tag || ''))) return [...syllables.slice(0, -1), 'de'];
+  // V着 병합 토큰(打着 · 数着 — jieba가 동사와 지속상 着를 한 토큰으로) — 실단어(着急 · 执着 · 沉着 · 穿着 · 睡着)가 아니면
+  // 着는 지속상 zhe. 운영 실측 打着 dǎ zhuó · 数着 shù zhuó(ZH-PINYIN-CHECK 2026-11-11 KST). 数着는 m으로 오태그된다.
+  if (last === '着' && chars.length >= 2 && chars.length <= 3 && !real && /^(v|m|x)/.test(tag || '')) return [...syllables.slice(0, -1), 'zhe'];
   // 待在… 통짜 관용구(待在家里/i) — 첫 글자만 dāi
   if (chars[0] === '待' && chars[1] === '在') return ['dāi', ...syllables.slice(1)];
   // ── 라운드 7 (경성 정합) — 정답지 전수 대조로 확정된 규칙 셋. 전부 결정적 규칙이라 사전이 아니라 여기.
