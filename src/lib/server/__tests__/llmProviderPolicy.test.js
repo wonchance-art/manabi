@@ -34,7 +34,7 @@ afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(
 
 describe('허용 목록', () => {
   it('단어 뜻(분석 사전) 경로만 모든 제공자, 사용자 내용 경로 · 처음 보는 라벨은 Claude만', () => {
-    expect(GEMINI_FALLBACK_ROUTES).toEqual(['fetchMeanings', 'verifyMeanings']);
+    expect(GEMINI_FALLBACK_ROUTES).toEqual(['fetchMeanings', 'verifyMeanings', 'backfill-ipa']);
     for (const route of GEMINI_FALLBACK_ROUTES) expect(providersFor(route)).toEqual(ALL_PROVIDERS);
     for (const route of USER_CONTENT_ROUTES) {
       expect(providersFor(route), route).toEqual(CLAUDE_ONLY);
@@ -130,6 +130,16 @@ describe('소스 — 모든 callLLM 호출부가 분류된 route 라벨을 단�
     for (const p of proxy.match(/new Set\(\[([^\]]+)\]\)/)[1].match(/'([^']+)'/g).map((q) => q.slice(1, -1))) {
       expect(USER_CONTENT_ROUTES).toContain(`gemini-proxy:${p}`);
     }
+  });
+
+  // IPA-CRON-FIX(2026-11-12 KST): backfill-ipa 크론이 클라이언트용 callGemini(상대 경로 fetch('/api/gemini') + 브라우저 세션)를 써서
+  // 서버에서 매번 예외 → catch가 삼켜 실행 3회가 「ok · 0」으로만 남았다. 서버 코드(라우트 · lib/server)는 callLLM만 쓴다.
+  it('서버 코드(src/app/**/route.js · src/lib/server)는 클라이언트용 callGemini를 가져오지 않는다', () => {
+    const server = files.filter((f) => /[/\\]route\.jsx?$/.test(f) || /src[/\\]lib[/\\]server[/\\]/.test(f));
+    expect(server.length).toBeGreaterThan(50);
+    const hits = server.filter((f) => /import\s*\{[^}]*\bcallGemini\b[^}]*\}\s*from\s*['"][^'"]*gemini(\.js)?['"]/.test(fs.readFileSync(f, 'utf8')))
+      .map((f) => path.relative(ROOT, f));
+    expect(hits).toEqual([]);
   });
 
   it('Gemini를 직접 부르는 서버 코드는 TTS · llm.js · 사전 경로(관리자 사전 · IPA 채우기)뿐이다', () => {

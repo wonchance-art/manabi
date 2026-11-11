@@ -878,6 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **SEC-DEPS-1111 의존성 보안 패치 · 문법 장 Data Cache 1시간 (2026-11-11 KST)** 11/9 로컬 작업(SEC-DEPS-1109 · DATA-CACHE-1109)을 main 16e5cc3f 위로 다시 얹음(오케스트레이터 재개 지시 · 화면 무변화):
+  패치 판만 — vitest 4.1.4 → 4.1.12(@vitest/mocker GHSA-82fw · GHSA-qxg6, 같이 vite 8.3.8) · dompurify 3.4.15 → 3.4.17(critical, excalidraw → mermaid 동적 조각만) ·
+  js-yaml 4.3.1 → 4.3.2(eslintrc, 개발 한정 — 11/9 뒤 새 권고) · source-map-js 1.2.2 · nanoid 3.3.20. npm audit 27 → 21(critical 0). 남은 21: excalidraw 사슬(고친 판 = 0.17.6 내림 · 주 판) ·
+  next/postcss(next 16 주 판) · eslint 도구(brace-expansion 1.1.22는 11/11 21:32 KST 발행 — 2주 숙성 뒤) — 개발 · 동적 조각 한정.
+  Data Cache: contentOverrides REVALIDATE 60 → 3600 + 태그 content-overrides, 관리자 챕터 저장 · 복원이 revalidateTag + revalidatePath(즉시 반영), 문법 장 4개 언어 ISR 3600.
+  content_overrides는 관리자 API로만 쓰인다(마이그레이션 쓰기 0) — 공개 자료(뷰어 · 발견) 캐시는 대상 밖. npm test 11,820 · lint 오류 0 · e2e:build 통과.
 - **ZH-PINYIN-CHECK 중국어 병음 재확인 절차 (2026-11-11 KST)** 오너 「중국어 분석 후 병음 맞는지 다시 확인하는 절차 필요할 듯」 — #1794(Data 세션 묶음을 오케스트레이터 브랜치로 반입 · 검수):
   원인 = pinyin-pro 줄 문맥이 멀쩡한 낱말을 틀리게 냄(200자 넘는 줄을 자른 조각에서 被认为 rèn wèi 등, 재현). 검증 패스 `zhPinyinVerify`(CC-CEDICT 독음 ∌ 줄 병음 ∧ 단독 병음 ∈ 후보일 때만 보정,
   그 밖은 관측 `stats.zhPinyin`) + 규칙 3건(V着 · 2자 명사 …地 · 为 결과 보어). 교재 정답 병음 대조 672 → 648 · 넓은 코퍼스 고침 37 · 깨짐 0. 라이브러리 교체는 배제(단독 호출로 바꾸면 1,513 → 3,017).

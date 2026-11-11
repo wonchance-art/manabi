@@ -48,6 +48,7 @@ describe('② 토크나이저 회귀 표', () => {
     ['大伙儿都来了。', '大伙儿', 'dà huǒ r'],
     ['他心眼儿好。', '心眼儿', 'xīn yǎn r'],
     ['没事儿。', '没事儿', 'méi shì r'],
+    ['我们待会儿见。', '待会儿', 'dāi huì r'],  // 待 dāi(pinyin-pro dài — zhPinyinFix)
     ['我们去玩儿吧。', '玩儿', 'wán r'],
     ['我女儿五岁了。', '女儿', 'nǚ ér'],      // 실음절 ér — 그대로
     ['儿子在上学。', '儿子', 'ér zi'],
@@ -107,8 +108,9 @@ describe('④ 교재 정답 대조 — 얼화 꼴 정렬', () => {
       }
     }
     // 실측(2026-11-11 KST): 160문장 중 정렬 159(얼화 전 9) · 토큰 162 = 정확 86 · 정답 r 생략 73 · 그 밖 3(一块儿 yí/yī · 一点儿 yì/yī · 待会儿 dài/dāi).
+    // 2026-11-12 KST: 待会儿 dāi(zhPinyinFix) 뒤 그 밖 2.
     expect(st.sentences).toBeGreaterThan(140);
     expect(st.aligned / st.sentences).toBeGreaterThan(0.97);
-    expect(st.other).toBeLessThanOrEqual(5);
+    expect(st.other).toBeLessThanOrEqual(4);
   }, 120000);
 });
