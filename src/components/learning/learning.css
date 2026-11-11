@@ -1,5 +1,5 @@
 .learning-links { margin: 16px 0; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); font-size: .9rem; line-height: 1.65; }
-.learning-links summary { cursor: pointer; font-weight: 650; min-height: 40px; }
+.learning-links summary { cursor: pointer; font-weight: 600; min-height: 40px; }
 .learning-links label { display: flex; flex-direction: column; gap: 5px; margin: 10px 0; }
 .learning-links input, .learning-links select { width: 100%; min-width: 0; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary); padding: 10px; font: inherit; font-size: 16px; }
 .learning-links ul { list-style: none; padding: 0; margin: 12px 0; }

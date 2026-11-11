@@ -3,7 +3,7 @@
 .library-header-actions{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
 .library-view-tabs{display:flex;gap:28px;border-bottom:1px solid var(--rule);margin-bottom:34px;flex-wrap:wrap}
 .library-view-tabs a{min-height:48px;display:flex;align-items:center;text-decoration:none;color:var(--muted);font-size:14px;border-bottom:2px solid transparent}
-.library-view-tabs a[aria-current]{color:var(--ink);border-color:var(--ja);font-weight:650}
+.library-view-tabs a[aria-current]{color:var(--ink);border-color:var(--ja);font-weight:600}
 .library-book-mark{display:flex;gap:26px;align-items:center;padding:26px;background:var(--sheet);border:1px solid var(--rule);margin-bottom:50px;min-width:0}
 .library-book-mark__glyph{display:grid;place-items:center;flex:none;width:84px;height:114px;background:var(--ja);color:var(--sheet);font-size:42px;font-family:var(--font-noto-jp),sans-serif;border-left:5px solid color-mix(in srgb,var(--ink) 25%,transparent);box-shadow:4px 4px 0 var(--rule)}
 .library-book-mark>div{min-width:0;flex:1}

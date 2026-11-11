@@ -427,7 +427,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady, open 
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: 4 }}>
                   <span>OCR 진행 중 (p.{ocrProgress.pageNum})</span>
-                  <span style={{ fontWeight: 700 }}>{ocrProgress.current}/{ocrProgress.total}</span>
+                  <span style={{ fontWeight: 600 }}>{ocrProgress.current}/{ocrProgress.total}</span>
                 </div>
                 <div style={{ height: 6, background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
                   <div style={{

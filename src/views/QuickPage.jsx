@@ -229,7 +229,7 @@ export default function QuickPage() {
 
       {!user ? (
         <div className="card" style={{ padding: '28px 24px', textAlign: 'center' }}>
-          <p style={{ margin: '0 0 6px', fontWeight: 700 }}>빠른 분석은 로그인 후 쓸 수 있어요</p>
+          <p style={{ margin: '0 0 6px', fontWeight: 600 }}>빠른 분석은 로그인 후 쓸 수 있어요</p>
           <p style={{ margin: '0 0 16px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             분석 서버가 로그인 사용자만 받아요 (남용 방지 정책).
           </p>

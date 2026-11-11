@@ -41,7 +41,7 @@ export default function DictationPicker({ sentences, savedSet, onPick, onClose }
                   display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
                   border: '1px solid var(--border)', borderRadius: 8,
                 }}>
-                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-muted)', minWidth: 18 }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', minWidth: 18 }}>
                   {i + 1}
                 </span>
                 <span style={{ flex: 1, fontSize: '0.85rem' }}>

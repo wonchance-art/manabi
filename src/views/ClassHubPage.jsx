@@ -152,7 +152,7 @@ export default function ClassHubPage() {
       <button className="classroom-button" onClick={()=>{if(!creating&&!draft.key)setDraft(d=>({...d,key:'c'+crypto.randomUUID().replaceAll('-','').slice(0,12),password:crypto.randomUUID().replaceAll('-','').slice(0,10)}));setCreating(v=>!v);}}>{creating?'닫기':'+ 새 수업'}</button></header>
       {revealed && (
         <div className="card" role="status" style={{ padding: '14px 16px', marginBottom: 14, border: '1px solid var(--primary)' }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>{revealed.name} 공유 암호 — 지금 복사해 두세요</div>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>{revealed.name} 공유 암호 — 지금 복사해 두세요</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', fontSize: '0.9rem' }}>
             <code style={{ fontSize: '1.05rem', padding: '4px 8px', background: 'var(--bg-secondary)', borderRadius: 6 }}>{revealed.password}</code>
             <Button size="sm" variant="secondary" onClick={() => copyText(revealed.password, toast, '암호')}>암호 복사</Button>

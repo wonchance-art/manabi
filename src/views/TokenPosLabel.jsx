@@ -30,7 +30,7 @@ export default function TokenPosLabel({ token, naAdjective = false, sahen = fals
         <span key={p}>
           {i > 0 && <span style={{ opacity: 0.4 }}> · </span>}
           <span style={p === picked
-            ? { color: 'var(--primary)', fontWeight: 700 }
+            ? { color: 'var(--primary)', fontWeight: 600 }
             : { opacity: 0.5 }}>
             {displayPos(p)}
           </span>

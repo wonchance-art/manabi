@@ -33,7 +33,7 @@ export default async function Page({ params }) {
         <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{country.intro}</p>
         {country.id === 'japan' && (
           <p style={{ margin: '10px 0 0' }}>
-            <Link href="/studies/japan/map" style={{ fontWeight: 700, fontSize: '0.88rem' }}>
+            <Link href="/studies/japan/map" style={{ fontWeight: 600, fontSize: '0.88rem' }}>
               🗺 일본학 지도 — 테마별 장소 핀으로 탐색 →
             </Link>
           </p>

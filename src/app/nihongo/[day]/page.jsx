@@ -45,14 +45,14 @@ function Chapter({ c, i }) {
       {/* 🔄 바꿔 쓰기 — 레지스터를 뒤집은 비슷한 표현 */}
       {c.alts?.length ? (
         <div style={{ margin: '10px 0 2px', padding: '10px 12px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-secondary)', border: '1px dashed var(--border)' }}>
-          <div style={{ fontSize: '0.74rem', fontWeight: 800, color: THEME.text, marginBottom: 7 }}>🔄 바꿔 쓰기 · 비슷한 표현</div>
+          <div style={{ fontSize: '0.74rem', fontWeight: 600, color: THEME.text, marginBottom: 7 }}>🔄 바꿔 쓰기 · 비슷한 표현</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
             {c.alts.map((a, k) => (
               <div key={k} style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-                <span style={{ flex: '0 0 auto', fontSize: '0.68rem', fontWeight: 700, color: THEME.text, background: THEME.bg, padding: '1px 8px', borderRadius: 999 }}>
+                <span style={{ flex: '0 0 auto', fontSize: '0.68rem', fontWeight: 600, color: THEME.text, background: THEME.bg, padding: '1px 8px', borderRadius: 999 }}>
                   {a.reg}
                 </span>
-                <span lang="ja" style={{ fontSize: '1rem', fontWeight: 700 }}>
+                <span lang="ja" style={{ fontSize: '1rem', fontWeight: 600 }}>
                   <JaText ja={a.ja} yomi={a.yomi} fallbackPron={false} />
                 </span>
                 <span style={{ fontSize: '0.83rem', color: 'var(--text-secondary)' }}>{a.ko}</span>
@@ -126,7 +126,7 @@ export default function Nihongo42DayPage({ params }) {
       </Link>
 
       <header style={{ marginBottom: 18 }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.03em', color: THEME.text }}>
+        <div style={{ fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.03em', color: THEME.text }}>
           일본어 회화 표현 42
         </div>
         <h1 style={{ fontSize: '1.6rem', margin: '4px 0 0', fontVariantNumeric: 'tabular-nums' }}>

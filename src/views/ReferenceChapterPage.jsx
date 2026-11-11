@@ -127,7 +127,7 @@ function MediaSection({ media, langCode, lang }) {
             flexWrap: 'wrap',
           }}
         >
-          {songTitle && <strong style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{songTitle}</strong>}
+          {songTitle && <strong style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{songTitle}</strong>}
           {artist && <span lang={langCode}>{artist}</span>}
         </div>
       )}
@@ -406,7 +406,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
                 {sec.vocabs?.map((vocab, j) => (
                   <div key={j} style={{ padding: 10, background: 'var(--bg-muted)', borderRadius: 6, fontSize: '0.9rem' }}>
-                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{vocab.word}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{vocab.word}</div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 6 }}>
                       {vocab.meanings.join(', ')}
                     </div>
@@ -444,7 +444,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
               </p>
               {/* 원본 자료 */}
               <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border-muted)' }}>
-                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>원본 대화</h3>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 10 }}>원본 대화</h3>
                 {sec.original?.dialogue?.length ? (
                   <StoryLines body={sec.original.dialogue} lang={lang} langCode={ref.langCode} translationAlwaysVisible compact />
                 ) : (
@@ -460,7 +460,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
               </div>
               {/* 변형 자료 */}
               <div style={{ marginBottom: 20 }}>
-                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 6 }}>다른 상황에서</h3>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 6 }}>다른 상황에서</h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 10 }}>
                   {sec.variant?.transitionNote}
                 </p>
@@ -495,7 +495,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
                 </h2>
               </InlineEdit>
               <div style={{ marginBottom: 16 }}>
-                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>쓰기 연습</h3>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 10 }}>쓰기 연습</h3>
                 <ul style={{ paddingLeft: 20, margin: 0 }}>
                   {sec.writingPrompts?.map((prompt, j) => (
                     <li key={j} style={{ fontSize: '0.9rem', lineHeight: 1.5, marginBottom: 8 }}>
@@ -508,7 +508,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
                 <VocabRegisterCta lang={lang} slug={slug} vocabs={sandwichVocabs} sectionIndex={chapter.sections.findIndex(s => s.type === 'vocabPreview')} />
               )}
               <div>
-                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>선택형 문제</h3>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: 10 }}>선택형 문제</h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                   {sec.quizItems?.length || 0}개 문항
                 </p>
@@ -673,7 +673,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: baseR
 
       {sourceRefs.length > 0 && (
         <section className="card fr-section" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          <h2 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 8 }}>자료 출처</h2>
+          <h2 style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>자료 출처</h2>
           <ul style={{ paddingLeft: 18, margin: 0 }}>
             {sourceRefs.map((ref2, i) => (
               <li key={i}>

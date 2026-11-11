@@ -3442,7 +3442,7 @@ export default function ViewerPage({ seed } = {}) {
               {isMet && (
                 <span
                   title={vt("월드에서 만난 말")} aria-label={vt("월드에서 만난 말")}
-                  style={{ color: 'var(--text-muted)', marginRight: 3, fontWeight: 800 }}
+                  style={{ color: 'var(--text-muted)', marginRight: 3, fontWeight: 600 }}
                 >·</span>
               )}
               {t.text}
@@ -3739,7 +3739,7 @@ export default function ViewerPage({ seed } = {}) {
         let at = 0; // 표제어 안 코드포인트 위치 — 탭한 구간(headPicked) 강조용
         if (!isFitLang(materialLang)) {
           return (
-            <div lang={contentLangTag} style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
+            <div lang={contentLangTag} style={{ fontSize: '1.5rem', fontWeight: 600, lineHeight: 1.3 }}>
               {rubySegs
                 ? rubySegs.map((seg, i) =>
                     seg.kanji ? <ruby key={i}>{seg.kanji}<rt className={seg.pinyin ? ['pinyin-text', showToneColors && pinyinToneClass(seg.reading)].filter(Boolean).join(' ') : undefined} style={{ fontSize: '0.45em', color: showToneColors && seg.pinyin ? undefined : 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
@@ -4706,7 +4706,7 @@ export default function ViewerPage({ seed } = {}) {
           )}
           {reanalyzePanel === 'confirm-full' && (
             <div className="reader-manage" role="group" aria-labelledby="reanalyze-confirm-title">
-              <p id="reanalyze-confirm-title" style={{ fontWeight: 700, margin: '16px 0 6px' }}>{vt("전체 분석을 다시 할까요?")}</p>
+              <p id="reanalyze-confirm-title" style={{ fontWeight: 600, margin: '16px 0 6px' }}>{vt("전체 분석을 다시 할까요?")}</p>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.6 }}>{vt("지금 분석 결과를 새 결과로 바꿔요. 직접 고친 뜻·단어 경계는 같은 자리에 남은 것만 이어져요.")}</p>
               <div className="reanalyze-panel__actions">
                 <button className="btn btn--ghost btn--sm" onClick={() => setReanalyzePanel('menu')}>{vt("취소")}</button>
@@ -4717,7 +4717,7 @@ export default function ViewerPage({ seed } = {}) {
           {reanalyzePanel === 'pick' && (
             <div className="reader-manage reader-manage--pick">
               <div className="reanalyze-panel__header">
-                <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{vt("문단 선택")}</span>
+                <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{vt("문단 선택")}</span>
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{vt('{count}개 선택', {count: selectedParas.size})}</span>
               </div>
               <div className="reanalyze-panel__list">
@@ -5316,11 +5316,11 @@ export default function ViewerPage({ seed } = {}) {
       <style>{`
         .modal__content--markdown { display: flex; flex-direction: column; gap: 8px; }
         .modal__content--markdown p { color: var(--text-primary); line-height: 1.7; }
-        .modal__content--markdown strong { color: var(--primary-light); font-weight: 700; }
+        .modal__content--markdown strong { color: var(--primary-light); font-weight: 600; }
         .modal__content--markdown em { color: var(--accent); font-style: italic; }
         .modal__content--markdown code { background: var(--bg-secondary); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 0.88em; }
-        .md-h2 { font-size: 1.05rem; font-weight: 700; color: var(--primary-light); margin-top: 8px; }
-        .md-h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-top: 6px; }
+        .md-h2 { font-size: 1.05rem; font-weight: 600; color: var(--primary-light); margin-top: 8px; }
+        .md-h3 { font-size: 0.95rem; font-weight: 600; color: var(--accent); margin-top: 6px; }
         .analyzing-banner--error {
           border-color: rgba(255, 107, 107, 0.4);
           background: rgba(255, 107, 107, 0.08);

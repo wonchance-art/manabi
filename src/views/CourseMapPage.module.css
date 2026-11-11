@@ -25,7 +25,7 @@
   margin: 0 0 3px;
   color: var(--text-muted);
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.04em;
 }
 
@@ -119,7 +119,7 @@
   border-radius: 50%;
   color: var(--text-muted);
   font-size: 0.85rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .goalBody {
@@ -139,7 +139,7 @@
   flex-shrink: 0;
   color: var(--text-muted);
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -169,7 +169,7 @@
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   text-align: center;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
@@ -201,7 +201,7 @@
   border-radius: var(--radius-full);
   color: var(--text-secondary);
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
   text-align: center;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
@@ -276,7 +276,7 @@
   background: var(--bg-elevated);
   color: var(--primary-light);
   font-size: 0.8rem;
-  font-weight: 800;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -342,7 +342,7 @@
   border-radius: 50%;
   color: var(--text-muted);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .lessonBody {
@@ -381,7 +381,7 @@
   padding: 2px 7px;
   border-radius: var(--radius-full);
   font-size: 0.65rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.35;
   white-space: nowrap;
 }
@@ -413,7 +413,7 @@
 
 .lessonComplete .lessonMeta {
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .lessonNext {
@@ -424,7 +424,7 @@
 .lessonNext .lessonStatus,
 .lessonNext .lessonMeta {
   color: var(--primary-light);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .empty {

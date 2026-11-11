@@ -2,7 +2,7 @@
 .book-route-list{list-style:none;padding:0;margin:28px 0;counter-reset:none}
 .book-route-list>li{display:grid;grid-template-columns:38px minmax(0,1fr);gap:14px;padding:24px 0;border-top:1px solid var(--line,#e8dade)}
 .book-route-list>li:first-child{border-top:0;padding-top:8px}
-.book-route-number{font-size:14px;font-weight:700;color:var(--mauve,var(--ja));font-variant-numeric:tabular-nums;line-height:2.2}
+.book-route-number{font-size:14px;font-weight:600;color:var(--mauve,var(--ja));font-variant-numeric:tabular-nums;line-height:2.2}
 .book-route-list h3{margin:0 0 8px!important;font-size:19px;line-height:1.6}
 .book-route-list p{margin:8px 0;overflow-wrap:anywhere}
 .book-route-list .page-jump,.book-study-pause .page-jump,.book-recall-links a{display:inline-flex;align-items:center;min-height:44px;white-space:normal;overflow-wrap:anywhere;line-height:1.7}
@@ -20,7 +20,7 @@
 /* The primary reading link and the earlier related scene have distinct roles. */
 .book-kanji-links{grid-column:2;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
 .book-kanji-links a{display:inline-flex;flex-wrap:wrap;align-items:center;min-height:44px;font-size:13px;line-height:1.6;color:var(--mauve,var(--ja));text-underline-offset:4px;overflow-wrap:anywhere}
-.book-kanji-links .kanji-reading-link{font-weight:700}
+.book-kanji-links .kanji-reading-link{font-weight:600}
 .book-kanji-links [lang=ja]{font-size:inherit!important}
 .book-kanji-links a:focus-visible{outline:2px solid var(--mauve,var(--ja));outline-offset:3px}
 .book-reading-content .kanji-card{scroll-margin-top:180px}

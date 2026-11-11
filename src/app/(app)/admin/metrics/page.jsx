@@ -18,7 +18,7 @@ const DAY_OPTIONS = [7, 30, 90];
 function Card({ title, hint, children }) {
   return (
     <section className="card" style={{ padding: '18px 20px', marginBottom: 16 }}>
-      <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 4 }}>{title}</h2>
+      <h2 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: 4 }}>{title}</h2>
       {hint && (
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 14 }}>{hint}</p>
       )}
@@ -32,7 +32,7 @@ function Stat({ label, value, sub }) {
   return (
     <div style={{ flex: 1, minWidth: 120 }}>
       <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: '1.35rem', fontWeight: 700 }}>{value}</div>
+      <div style={{ fontSize: '1.35rem', fontWeight: 600 }}>{value}</div>
       {sub && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>}
     </div>
   );

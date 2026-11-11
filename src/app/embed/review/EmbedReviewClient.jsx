@@ -91,7 +91,7 @@ export default function EmbedReviewClient() {
         <div style={CENTER}>
           <div style={{ ...PANEL, textAlign: 'center' }}>
             <span style={{ fontSize: '1.4rem' }}>🔒</span>
-            <p style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, lineHeight: 1.5 }}>
+            <p style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0, lineHeight: 1.5 }}>
               이 환경에서는 로그인 상태를 저장할 수 없어요
             </p>
             <p style={{ fontSize: '0.74rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
@@ -151,7 +151,7 @@ export default function EmbedReviewClient() {
       <div style={CENTER}>
         <div style={{ ...PANEL, textAlign: 'center' }}>
           <span style={{ fontSize: '1.5rem' }}>{completed ? '🎉' : '🌱'}</span>
-          <p style={{ fontSize: '0.96rem', fontWeight: 700, margin: 0 }}>
+          <p style={{ fontSize: '0.96rem', fontWeight: 600, margin: 0 }}>
             {completed ? `복습 완료 · ${lastDone.right} / ${lastDone.total}` : '닫았어요'}
           </p>
           <p style={{ fontSize: '0.74rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
@@ -207,7 +207,7 @@ function LoginPanel({ onNewTab }) {
 
   return (
     <form onSubmit={submit} style={PANEL}>
-      <span style={{ fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.02em' }}>🪧 즉석 복습</span>
+      <span style={{ fontSize: '0.82rem', fontWeight: 600, letterSpacing: '0.02em' }}>🪧 즉석 복습</span>
       <p style={{ fontSize: '0.74rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
         로그인하면 오늘 복습할 단어가 바로 떠요.
       </p>

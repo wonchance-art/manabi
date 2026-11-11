@@ -60,7 +60,7 @@ export function StoryLines({
         return (
           <div key={i} style={{ margin: '3px 0' }}>
             {showSpeaker && (
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color, letterSpacing: '0.02em', marginBottom: 1 }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color, letterSpacing: '0.02em', marginBottom: 1 }}>
                 {b.speaker}
               </div>
             )}
@@ -177,7 +177,7 @@ function StoryQuestion({ q, langCode }) {
 
   return (
     <li className="fr-quiz__item">
-      <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>{label}</div>
 
       {q.qtype === 'order' ? (() => {
         const assembled = picks.map(i => tiles[i]);
@@ -218,7 +218,7 @@ function StoryQuestion({ q, langCode }) {
             <div lang="ja" style={{ fontSize: '1.05rem', lineHeight: 2, marginBottom: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
               <span>{before}</span>
               {result?.ok
-                ? <span style={{ fontWeight: 700, color: 'var(--accent-text)', margin: '0 2px' }}>{q.fillAnswer}</span>
+                ? <span style={{ fontWeight: 600, color: 'var(--accent-text)', margin: '0 2px' }}>{q.fillAnswer}</span>
                 : <input type="text" lang="ja" value={input} inputMode="text"
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submitFill(); } }}
@@ -279,7 +279,7 @@ function StoryQuestion({ q, langCode }) {
           ○ {q.why || '정답이에요.'}{result.tries > 1 ? ` (${result.tries}회 시도)` : ''}
           {q.qtype === 'order' && q.ko && (
             <div style={{ marginTop: 4 }}>
-              <span lang="ja" style={{ fontWeight: 700 }}>{(q.answerTiles || []).join('')}</span>
+              <span lang="ja" style={{ fontWeight: 600 }}>{(q.answerTiles || []).join('')}</span>
               <span style={{ color: 'var(--text-secondary)', marginLeft: 6 }}>{q.ko}</span>
             </div>
           )}

@@ -253,7 +253,7 @@ function GroupDiscussion({ group, read, myPct, userId }) {
   const total = comments?.length || 0;
   return (
     <div style={{ marginTop: 14 }}>
-      <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6 }}>
+      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
         토론 ({total}) — 내가 읽은 데까지만 보여요
       </div>
       {gated.visible.length > 0 && (
@@ -419,7 +419,7 @@ function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, us
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
             정말 나갈까요?{' '}
             <button type="button" onClick={() => leaveMutation.mutate()} disabled={leaveMutation.isPending}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--warning)', fontWeight: 700, padding: 0 }}>나가기</button>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--warning)', fontWeight: 600, padding: 0 }}>나가기</button>
             {' / '}
             <button type="button" onClick={() => setConfirmLeave(false)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0 }}>취소</button>
@@ -433,7 +433,7 @@ function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, us
       {/* R2 — 이번 주 같이 읽기(목업 A 가운데): 지정 자료·멤버 진도 바·이어 읽기 */}
       <div style={{ marginTop: 14 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)' }}>이번 주 같이 읽기</span>
+          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>이번 주 같이 읽기</span>
           {read?.material && (
             <>
               <span style={{ fontSize: '0.92rem', fontWeight: 600 }}>「{read.material.title}」</span>
@@ -480,7 +480,7 @@ function GroupCard({ group, snapshotRows, snapshotSum, read, goal, weekStart, us
 
       {/* R1 — 이번 주 우리(목업 A 하단): 주간 거울 합계, 등수 없음 */}
       <div style={{ marginTop: 14 }}>
-        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>
+        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>
           이번 주 우리 ({weekRangeLabel({ startMs: snapshotSum?.weekStartMs ?? Date.now(), endMs: (snapshotSum?.weekStartMs ?? Date.now()) + 7 * 86400000 })})
         </div>
         {snapshotsError && parts.length === 0 ? (

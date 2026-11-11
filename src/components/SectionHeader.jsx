@@ -5,7 +5,7 @@ export default function SectionHeader({ icon, title, meta, action, level = 2 }) 
   const Tag = level === 2 ? 'h2' : 'h3';
   return (
     <div className="u-row u-row--between u-mb-sm" style={{ alignItems: 'baseline' }}>
-      <Tag style={{ fontSize: level === 2 ? '1rem' : '0.92rem', fontWeight: 700, margin: 0 }}>
+      <Tag style={{ fontSize: level === 2 ? '1rem' : '0.92rem', fontWeight: 600, margin: 0 }}>
         {icon && <span style={{ marginRight: 6 }}>{icon}</span>}
         {title}
       </Tag>

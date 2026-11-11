@@ -62,7 +62,7 @@ export default function GuidePage() {
           background: 'linear-gradient(135deg, var(--bg-card), var(--bg-elevated))',
         }}
       >
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 10 }}>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 10 }}>
           하루의 흐름
         </h2>
         <p
@@ -84,7 +84,7 @@ export default function GuidePage() {
 
       {/* ── 2. 교재는 참고서 ── */}
       <section className="card" style={{ padding: 24, marginBottom: 20 }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 10 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 10 }}>
           교재는 참고서
         </h2>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
@@ -99,7 +99,7 @@ export default function GuidePage() {
 
       {/* ── 3. 더 하고 싶은 날 — 파트별 연습실 ── */}
       <section className="card" style={{ padding: 24, marginBottom: 20 }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 6 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 6 }}>
           더 하고 싶은 날
         </h2>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 16 }}>
@@ -134,7 +134,7 @@ export default function GuidePage() {
 
       {/* ── 4. 서재와 성장 ── */}
       <section className="card" style={{ padding: 24, marginBottom: 20 }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 10 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 10 }}>
           지난 이야기와 성장
         </h2>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
@@ -149,7 +149,7 @@ export default function GuidePage() {
 
       {/* ── 5. 소소한 팁 ── */}
       <section className="card" style={{ padding: 24 }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 14 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: 14 }}>
           소소한 팁
         </h2>
         <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>

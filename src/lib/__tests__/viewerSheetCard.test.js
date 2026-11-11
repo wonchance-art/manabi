@@ -98,12 +98,12 @@ describe('③ 카드 — 빈 줄을 메타가 쓰고, 뜻이 제 무게를 갖�
     expect(rem(meaning)).toBeGreaterThan(rem(meta));
     expect(rem(meaning), '본문 크기(1rem)보다도 커야 한 단계 올린 것이다').toBeGreaterThan(1);
     expect(meaning, '굵기도 함께 올린다').toMatch(/font-weight/);
-    // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 뜻 줄 「20px 굵게」): 읽기실(.manabi-app) 덮어쓰기까지 20px·700.
+    // AE-R1(VIEWER-V2-ROUNDS-001 §2.1 뜻 줄 「20px 굵게」): 읽기실(.manabi-app) 덮어쓰기까지 20px · 600(굵기 정본 WEIGHT-CANON-001 — 카드 표제어 · 뜻도 예외 없이 600).
     const rules = cssRules('src/components/viewer/reader-controls.css');
     for (const selector of ['.manabi-app .viewer-layout .word-detail-card__meaning {', '.manabi-app .viewer-layout .reader-card-body .word-detail-card__meaning{']) {
       const block = sliceBetween(rules, selector, '}');
       expect(block, selector).toMatch(/font-size:\s*(1\.25rem|20px)/);
-      expect(block, selector).toMatch(/font-weight:\s*700/);
+      expect(block, selector).toMatch(/font-weight:\s*600/);
     }
   });
 
