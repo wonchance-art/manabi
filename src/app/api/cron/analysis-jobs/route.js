@@ -34,11 +34,22 @@ async function handle(request) {
 }
 
 async function analysisTick(supabase, origin, run) {
+  let jobDone = false;
   try {
-    const { more, processed, jobId } = await runAnalysisTick({ supabase });
+    const { more, processed, jobId, done } = await runAnalysisTick({ supabase });
     run.processed += Number(processed) || 0;
     run.detail.job = jobId ?? null;
-    if (more) { await kickAnalysisTick(origin); return; }
+    jobDone = Boolean(done);
+    // ANALYSIS-CHAIN-END-001(2026-11-12 KST): 사슬 끝 일은 「다음 tick이 할 일 없음을 보고」 하던 구조라, 마지막 kick이 닿지 않으면
+    // (11/12 03:40 KST 실측 — 작업을 끝낸 tick 5가 부른 tick 6이 흔적 없음) 뜻 채움 · 난이도가 그날 통째로 빠졌다(A-2 일본어 25편 난이도 빈칸).
+    // 그래서 ① 작업이 방금 끝난 tick은 사슬 끝 일을 여기서 먼저 하고, 맨 끝에 다음 작업을 위해 한 번 부른다.
+    // ② 이어 갈 분석이 남았는데 kick이 실패하면 사슬 끝 일을 여기서 한다(남은 장은 다음 예약 실행이 잇는다). kick 결과는 detail에 남긴다.
+    if (more && !jobDone) {
+      const kicked = await kickAnalysisTick(origin);
+      run.detail.kick = kicked;
+      if (kicked) return;
+      console.warn('[analysis-jobs] next tick kick failed — running chain-end steps in this tick');
+    }
   } catch (error) {
     // 임대는 runAnalysisTick이 풀고, 작업은 다음 깨우기(관리자 화면 · 예약 실행)에서 잇는다.
     console.error('[analysis-jobs] tick failed', error?.message);
@@ -69,6 +80,8 @@ async function analysisTick(supabase, origin, run) {
   run.recorded = true;
   const health = await recordDailyHealth();
   if (health && !health.ok) console.warn('[analysis-jobs] health', JSON.stringify(health.anomalies));
+  // ① 작업이 방금 끝난 tick — 사슬 끝 일을 마친 뒤, 기다리는 다른 작업이 있으면 그 tick이 잡게 한 번 부른다(없으면 그 tick은 할 일 없이 끝난다).
+  if (jobDone) await kickAnalysisTick(origin);
 }
 
 export const GET = handle;

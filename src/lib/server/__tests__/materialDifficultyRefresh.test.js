@@ -130,7 +130,8 @@ describe('배선', () => {
   it('분석 작업 크론이 사슬 끝에서 refreshPublicDifficulty를 부른다', () => {
     const src = fs.readFileSync('src/app/api/cron/analysis-jobs/route.js', 'utf8');
     expect(src).toMatch(/import \{ refreshPublicDifficulty \} from '@\/lib\/server\/materialDifficultyRefresh'/);
-    expect(src).toMatch(/if \(more\) \{ await kickAnalysisTick\(origin\); return; \}[\s\S]*refreshPublicDifficulty\(supabase\)/);
+    // 이어 갈 분석이 남았고 kick이 닿았을 때만 돌아간다 — 작업이 방금 끝났거나 kick이 실패하면 이 tick이 사슬 끝 일을 한다(ANALYSIS-CHAIN-END-001).
+    expect(src).toMatch(/if \(more && !jobDone\) \{\s*const kicked = await kickAnalysisTick\(origin\);\s*run\.detail\.kick = kicked;\s*if \(kicked\) return;[\s\S]*refreshPublicDifficulty\(supabase\)/);
   });
   it('난이도는 fail-soft — 자기 try 안에서 돌고, 남은 것은 진척이 있을 때만 다음 tick을 부른다', () => {
     const src = fs.readFileSync('src/app/api/cron/analysis-jobs/route.js', 'utf8');
@@ -142,5 +143,54 @@ describe('배선', () => {
     const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(`${dir}/${e.name}`) : [`${dir}/${e.name}`]));
     const offenders = ['src/views', 'src/components'].flatMap(walk).filter((f) => /\.(jsx?|tsx?)$/.test(f) && /materialDifficultyRefresh/.test(fs.readFileSync(f, 'utf8')));
     expect(offenders).toEqual([]);
+  });
+});
+
+// ANALYSIS-CHAIN-END-001(2026-11-12 KST): 11/12 03:40 KST 작업을 끝낸 tick 5가 부른 tick 6이 흔적 없이 사라져, 사슬 끝 일(뜻 채움 · 난이도)이
+// 그날 통째로 빠졌다(A-2 일본어 25편 난이도 빈칸). 라우트를 실제로 돌려 「작업이 끝난 tick」 · 「kick 실패」에서도 사슬 끝 일이 도는지 본다.
+describe('사슬 끝 일 — 작업이 끝난 tick · kick 실패에서도 돈다', () => {
+  const setup = async ({ tick, kickOk }) => {
+    vi.resetModules();
+    const calls = [];
+    let pending;
+    vi.doMock('next/server', () => ({ after: (fn) => { pending = fn(); } }));
+    vi.doMock('@/lib/server/auth', () => ({ SERVICE_KEY_MISSING_MESSAGE: 'x' }));
+    vi.doMock('@/lib/server/analysisJobs', () => ({
+      serviceClient: () => ({}),
+      runAnalysisTick: async () => tick,
+      kickAnalysisTick: async () => { calls.push('kick'); return kickOk; },
+    }));
+    vi.doMock('@/lib/server/materialMeaningFill', () => ({ fillPublicEmptyMeanings: async () => { calls.push('meaning'); return { tokens: 0 }; } }));
+    vi.doMock('@/lib/server/materialDifficultyRefresh', () => ({ refreshPublicDifficulty: async () => { calls.push('difficulty'); return { candidates: 25, written: 25, stale: 0, failed: 0, more: false }; } }));
+    const runs = [];
+    vi.doMock('@/lib/server/cronRuns', () => ({ recordCronRun: async (job, run) => { runs.push({ ...run, detail: { ...run.detail } }); }, recordDailyHealth: async () => null }));
+    vi.stubEnv('CRON_SECRET', 's');
+    const { POST } = await import('../../../app/api/cron/analysis-jobs/route.js');
+    const res = await POST(new Request('https://manabi.co.kr/api/cron/analysis-jobs', { method: 'POST', headers: { authorization: 'Bearer s' } }));
+    await pending;
+    vi.unstubAllEnvs();
+    return { res, calls, runs };
+  };
+  it('작업이 방금 끝난 tick: 사슬 끝 일을 먼저 하고, 맨 끝에 한 번 부른다', async () => {
+    const { res, calls, runs } = await setup({ tick: { jobId: 1, processed: 3, more: true, done: true }, kickOk: true });
+    expect(res.status).toBe(202);
+    expect(calls).toEqual(['meaning', 'difficulty', 'kick']);
+    expect(runs).toHaveLength(1);
+    expect(runs[0].detail).toMatchObject({ job: 1, difficulty: { written: 25 } });
+  });
+  it('이어 갈 분석이 남았고 kick이 닿으면 돌아간다(사슬 끝 일은 다음 tick이)', async () => {
+    const { calls, runs } = await setup({ tick: { jobId: 1, processed: 7, more: true }, kickOk: true });
+    expect(calls).toEqual(['kick']);
+    expect(runs).toHaveLength(1);
+    expect(runs[0].detail).toMatchObject({ job: 1, kick: true });
+  });
+  it('kick이 실패하면 이 tick이 사슬 끝 일을 하고, 실패를 detail에 남긴다', async () => {
+    const { calls, runs } = await setup({ tick: { jobId: 1, processed: 7, more: true }, kickOk: false });
+    expect(calls).toEqual(['kick', 'meaning', 'difficulty']);
+    expect(runs[0].detail).toMatchObject({ kick: false, difficulty: { written: 25 } });
+  });
+  it('할 작업이 없는 예약 실행: 지금처럼 사슬 끝 일만', async () => {
+    const { calls } = await setup({ tick: { processed: 0, more: false }, kickOk: true });
+    expect(calls).toEqual(['meaning', 'difficulty']);
   });
 });
