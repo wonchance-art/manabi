@@ -15,6 +15,7 @@
 
 import { pinyin } from 'pinyin-pro';
 import ZH_PINYIN_CHECK from './data/zhPinyinCheck.json';
+import { applyZhErhua } from './zhErhua';
 
 const WORDS = ZH_PINYIN_CHECK.words;
 const BARE = { ā: 'a', á: 'a', ǎ: 'a', à: 'a', ē: 'e', é: 'e', ě: 'e', è: 'e', ī: 'i', í: 'i', ǐ: 'i', ì: 'i', ō: 'o', ó: 'o', ǒ: 'o', ò: 'o', ū: 'u', ú: 'u', ǔ: 'u', ù: 'u', ǖ: 'ü', ǘ: 'ü', ǚ: 'ü', ǜ: 'ü' };
@@ -49,7 +50,8 @@ export function verifyZhSyllables(word, syllables) {
   const chars = [...word];
   const readings = WORDS[word];
   if (chars.length < 2 || /[一不]/.test(word) || !readings || !syllables || syllables.length !== chars.length) return { verdict: 'skip', syllables };
-  const citation = pinyin(word, { toneType: 'symbol', type: 'array' });
+  // 낱말 단독 병음도 얼화 꼴로 — CC-CEDICT 후보가 「nǎ r」이므로 단독 「nǎ ér」로는 합의가 안 된다(zhErhua 안 A).
+  const citation = applyZhErhua(word, pinyin(word, { toneType: 'symbol', type: 'array' }));
   if (accepts(syllables, readings, citation)) return { verdict: 'ok', syllables };
   if (citation.length === chars.length && accepts(citation, readings, citation)) {
     return { verdict: 'fixed', syllables: citation, from: syllables.join(' ') };
