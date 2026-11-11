@@ -198,6 +198,7 @@ import { recordVocabEncounters } from '../components/world/vocabEncounters';
 import { syncVocabEncounters } from '../components/world/vocabEncounterSync';
 import { encounterLookupLang, loadMetWordKeys, loadRefVocabLookup } from '../lib/refVocabLookup';
 import { normalizeRefWordKey } from '../lib/refWordNormalize';
+import { displayReading } from '../lib/erhuaDisplay';
 import { isWordToken, opensWordCard, wordStateOf, wordStateExtraClass } from '../lib/wordState';
 import { buildReaderChunks, chunkCardToken, chunkPatternEntry } from '../lib/jaReaderChunks';
 import { isJaNaAdjective, jaNaNounUseAt } from '../lib/jaNaAdjectives';

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { classLanguage } from '../../lib/classroomModel';
 import './classroom.css';
+import { displayReading } from '../../lib/erhuaDisplay';
 
 export function ClassroomShell({ lang='Japanese', children, board=false, teamHome=false }) {
   return <div className={`classroom-shell${board?' classroom-shell--board':''}${teamHome?' classroom-team-home':''}`} data-language={lang}><div className="classroom-page">{children}</div></div>;

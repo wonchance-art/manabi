@@ -34,6 +34,7 @@ import { ARCHIVED_TEXTBOOK_NOTICE, learnerHref } from '../lib/bookNavigation';
 import { authEntryHref } from '../lib/authRedirect';
 import { focusIfFree, focusItemHead, ignoreHeldKey } from '../lib/focusAfterAction';
 import { STUDY_OFFLINE_LINE } from '../lib/studyUnavailable';
+import { displayReading } from '../lib/erhuaDisplay';
 
 /** 문법 일정을 끝내 못 보냈다(재시도 상한 · 오프라인으로 화면 떠남) — copy-standard 실패 + 보존 여부 한 문장. */
 const GRAMMAR_NOT_SAVED = '문법 복습 일정을 저장하지 못했어요. 이 문법은 다음 학습에 다시 나와요.';

@@ -5,6 +5,7 @@ import {classHistoryReturn,classHistoryState} from '../../lib/classHistoryNaviga
 import {filterClassHistory} from '../../lib/classStudyHistory';
 import {dayLabel} from '../../lib/classBoard';
 import {chapterLabel} from '../../lib/classTeamQueries';
+import { joinErhuaPinyin } from '../../lib/erhuaDisplay';
 
 export default function ClassStudyHistory({notes,coverage=[],chapters,onOpen,onCopy,disabled=()=>false,remote=null,showEmpty=true}) {
   const params=useSearchParams(),initial=classHistoryState(params),restored=useRef(false);
