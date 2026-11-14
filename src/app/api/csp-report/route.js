@@ -15,8 +15,12 @@ const PER_INSTANCE = { limit: 120, windowMs: 60_000 };
 
 const noContent = () => new Response(null, { status: 204, headers: { 'cache-control': 'no-store' } });
 
+// 운영 배포의 보고만 남긴다(SEC-CSP-003) — 미리 보기 배포는 Vercel 도구 막대(vercel.live)가 위반을 쏟아 낸다(7일 집계 53건 중 39건). 운영 DB를 함께 쓰므로 여기서 거른다.
+export const recordsReports = (env = process.env) => env.VERCEL_ENV === 'production';
+
 export async function POST(request) {
   try {
+    if (!recordsReports()) return noContent();
     if (Number(request.headers.get('content-length') || 0) > CSP_BODY_LIMIT) return noContent();
     if (!rateLimit(`csp-report:${getClientKey(request)}`, PER_CLIENT).ok) return noContent();
     if (!rateLimit('csp-report:*', PER_INSTANCE).ok) return noContent();

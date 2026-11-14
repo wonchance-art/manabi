@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { buildReleaseVersion } from './src/lib/releaseVersion.js';
-import { cspReportOnly as buildCspReportOnly } from './src/lib/cspPolicy.js';
+import { cspEnforced as buildCspEnforced, cspReportOnly as buildCspReportOnly } from './src/lib/cspPolicy.js';
 import { htmlLimitedBotsRegex } from './src/lib/htmlBots.js';
 
 // 화면별 글꼴 미리 받기 주소(FONT-HINT-001) — 이번 빌드의 글꼴 입력(NEXT_FONT_GOOGLE_MOCKED_RESPONSES)에서
@@ -119,9 +119,10 @@ const nextConfig = {
       },
     ];
 
-    // CSP는 보고만(Report-Only, SEC-HEADERS-001 → SEC-CSP-002 출처 허용 목록 · 2026-11-07 KST 오케스트레이터 승인 — 관측을 늘리는 일).
-    // 정책 정본은 src/lib/cspPolicy.js · 근거와 단계는 docs/security-csp.md. 강제(Content-Security-Policy) 전환과 nonce 기반 엄격한 script-src는
-    // 오너 결정 항목이다(정적/ISR 판 · 막힌 기능 노출). 보고는 /api/csp-report → 운영 오류 기록(csp.*)으로 모은다.
+    // CSP: 1단계 네 지시어는 강제(SEC-CSP-003, 2026-11-14 KST — 7일 Report-Only 관측 뒤 오케스트레이터 승인), 출처 허용 목록은 보고만(SEC-CSP-002).
+    // 정책 정본은 src/lib/cspPolicy.js · 근거와 단계는 docs/security-csp.md. 2단계 강제와 nonce 기반 엄격한 script-src는 다음 집계 뒤 판단한다.
+    // 보고는 /api/csp-report → 운영 오류 기록(csp.*)으로 모은다(운영 배포만 — 미리 보기 보고는 버린다).
+    const cspEnforced = buildCspEnforced(process.env);
     const cspReportOnly = buildCspReportOnly(process.env);
 
     return [
@@ -135,6 +136,7 @@ const nextConfig = {
           // 다른 출처 창이 이 창을 window.opener로 붙잡지 못하게 — 우리가 연 팝업(새 탭 열기 등)과의 연결은 그대로 둔다(allow-popups).
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
           { key: 'Reporting-Endpoints', value: 'csp="/api/csp-report"' },
+          { key: 'Content-Security-Policy', value: cspEnforced },
           { key: 'Content-Security-Policy-Report-Only', value: cspReportOnly },
         ],
       },

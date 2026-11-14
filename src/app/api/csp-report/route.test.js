@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // SEC-HEADERS-001 — /api/csp-report: 언제나 204(빈 본문) · 두 보고 모양(report-uri · Reporting API)을 정리된 줄로만 저장 ·
 // 저장하는 것은 kind csp.<지시어> · 「지시어 처리: 막힌 것의 출처」 · 경로 틀 · 브라우저 계열(전체 주소 · 쿼리 · sample · IP · 쿠키 없음).
@@ -39,7 +39,15 @@ const modern = [
 ];
 
 describe('/api/csp-report', () => {
-  beforeEach(() => { recordMock.mockReset(); recordMock.mockResolvedValue('recorded'); });
+  beforeEach(() => { recordMock.mockReset(); recordMock.mockResolvedValue('recorded'); vi.stubEnv('VERCEL_ENV', 'production'); });
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  // SEC-CSP-003(2026-11-14 KST) — 운영 배포의 보고만 남긴다. 미리 보기(vercel.live 도구 막대) · 로컬은 같은 운영 DB에 쓰지 않는다.
+  it.each([['preview'], ['development'], [undefined]])('VERCEL_ENV=%s → 저장하지 않고 204', async (env) => {
+    if (env === undefined) vi.stubEnv('VERCEL_ENV', ''); else vi.stubEnv('VERCEL_ENV', env);
+    await expectNoContent(await POST(post(legacy)));
+    expect(recordMock).not.toHaveBeenCalled();
+  });
 
   it('report-uri 모양 → 정리된 한 줄(출처만 · 경로 틀) · 204', async () => {
     await expectNoContent(await POST(post(legacy)));
