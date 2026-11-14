@@ -8,7 +8,26 @@
 > **7일 뒤(2026-11-14 KST)** `csp.*`를 지시어 · 출처별로 집계해 강제 여부를 오너에게 올린다.
 보고 수신은 `/api/csp-report` → 운영 오류 기록 `observe.error_events`(kind `csp.<지시어>`, `src/lib/cspReport.js`)다.
 
-## 1. 지금까지 들어온 보고 (2026-11-07 15:30 KST 집계)
+> **진행 (2026-11-14 KST, SEC-CSP-003)**: 7일 집계(아래 §1) 뒤 1단계 네 지시어를 **강제**(`Content-Security-Policy`)로 옮겼다(오케스트레이터 승인).
+> 출처 허용 목록은 Report-Only 그대로다. 단, `object-src`는 `'none'`이 아니라 **Supabase 저장소 출처(https)**다 — PDF 보기의 기본 경로(`PdfDocument`)가
+> 저장소 서명 URL을 `<embed type="application/pdf">`로 띄우고, Chromium은 `object-src 'none'`에서 그 embed를 막는다(실측: 같은 출처 · 다른 출처 모두 위반 2건, 허용 출처는 0).
+> 보고 수신은 운영 배포(`VERCEL_ENV=production`)만 기록한다.
+
+## 1. 지금까지 들어온 보고
+
+### 7일 집계 (2026-11-07 ~ 11-14 KST)
+
+`observe.error_events` `csp.*`: 8행 · 53건이고 **전부 자동화 브라우저(bot)** 다. 실제 사용자 브라우저 위반은 0건이다.
+
+| 지시어 | 막힌 출처 | 경로 | 건수 | 판정 |
+|---|---|---|---|---|
+| script-src-elem | `https://vercel.live` | /viewer/:id | 33 | 미리 보기 배포(`claude/preview/*`)의 Vercel 도구 막대 — 운영 아님 |
+| frame-src | `https://vercel.live` | /viewer/:id | 6 | 위와 같음 |
+| img-src | `https://i.ytimg.com` | /discover | 7 | 운영 — 2026-11-09 `img-src`에 더함(#1787), 해결 |
+| img-src | `https://www3.nhk.or.jp` | /discover | 6 | 운영 1회(11/08) · 재현 안 됨 — §3 |
+| form-action | `deploy-check.invalid` | /viewer/:id | 1 | 배포 확인 탐침 — 제외 |
+
+### 첫 집계 (2026-11-07 15:30 KST)
 
 - `observe.error_events` 30일: `csp.*`는 1건이다. 배포 확인용으로 일부러 보낸 탐침(`form-action report: https://deploy-check.invalid`)이고, 실제 위반은 0건이다.
 - 관측 기간은 짧다. 보고는 2026-11-06 밤에 켰고, 계정은 9개(7일 로그인 2)다. 「위반 0」은 「쓰임이 적다」와 구별되지 않는다.
@@ -78,13 +97,16 @@ report-uri /api/csp-report; report-to csp
   - 계약 `securityHeaders.test.js` — 지금은 「fetch 계열 지시어 없음」을 고정한다.
 
 ### 알려진 소음 · 위험
-- **Vercel 미리 보기 도구 막대**(`vercel.live`): 미리 보기 배포에서만 뜬다. 운영 정책에는 넣지 않는다. 미리 보기 보고는 `route`로 거르거나 무시한다.
+- **Vercel 미리 보기 도구 막대**(`vercel.live`): 미리 보기 배포에서만 뜬다. 운영 정책에는 넣지 않는다. 수신 경로가 운영 배포(`VERCEL_ENV=production`)의 보고만 기록한다(SEC-CSP-003).
 - **브라우저 확장**: `chrome-extension:` 등은 `cspReport.js`가 출처를 `other`로 줄여 기록한다. 집계 때 뺀다.
 - **학습 월드(Phaser)**: 손님 순회에 없다. 2단계 Report-Only 기간에 `eval` · `wasm` 위반이 보이면 그때 판단한다.
 - **유튜브 썸네일**(`i.ytimg.com`): 함께 읽는 글 · 추천 카드가 YouTube Data API의 썸네일 주소를 그대로 쓴다. LH 기준선(2026-11-09 KST)에서 보고로 잡혀 `img-src`에 더했다.
+- **NHK 이미지**(`www3.nhk.or.jp`): 2026-11-08 /discover에서 한 번(bot) 보고됐다. 이후 손님 순회에서 외부 이미지 요청 0이고, 추천 썸네일(`daily_suggestions`)에도 NHK는 0건이다.
+  코드상 후보는 NHK Easy 목록의 `news_image_uri`(`src/lib/youtube.js`)다. 어느 화면인지 다음 7일 집계 때 확인한다. 확인 전에는 `img-src`를 넓히지 않는다.
+- **dev.to 썸네일**(`media2.dev.to`): 옛 추천 행 265건(마지막 2026-09-04)에 남아 있다. 지금 화면에는 안 나오지만, 다시 나오면 `img-src` 위반이다.
 - **Supabase 저장소 이미지**: 지금 화면은 자체 보관 이미지만 쓴다. 저장소 공개 URL을 화면에 직접 쓰는 기능이 생기면 `img-src`에 더한다.
 
 ## 4. 다음 순서 제안
 1. ~~2단계 목록을 Report-Only로 넓힌다~~ — 2026-11-07 적용(SEC-CSP-002). 계약은 「fetch 계열은 Report-Only에만 · 강제 헤더 없음 · nonce 없음」으로 바뀌었다.
 2. 실제 사용 7일 뒤 `observe.error_events`의 `csp.*`를 지시어 · 출처별로 집계한다. 허용 목록을 고친다.
-3. 1단계(네 지시어) 강제 → 2단계 강제 순서로 옮긴다. 각 단계마다 운영 사후로 화면 순회 · 오류 기록을 확인한다.
+3. ~~1단계(네 지시어) 강제~~ — 2026-11-14 적용(SEC-CSP-003, `object-src`는 저장소 출처). 2단계 강제 · nonce는 다음 7일 집계(미리 보기 보고를 거른 뒤) 뒤 판단한다. 각 단계마다 운영 사후로 화면 순회 · 오류 기록을 확인한다.

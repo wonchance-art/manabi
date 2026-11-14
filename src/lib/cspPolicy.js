@@ -1,8 +1,8 @@
 // CSP 정책 한 곳(SEC-HEADERS-001 → SEC-CSP-002, 2026-11-07 KST) — next.config.mjs가 Report-Only 헤더로 싣고, lib/cspReport가 보고를 받을 지시어를 여기서 안다.
 //
-// 지금은 **보고만** 한다(Content-Security-Policy-Report-Only). 출처 허용 목록(2단계)을 넓혀 실제 위반을 7일 관측한 뒤 강제를 정한다 — 근거 · 단계는
-// docs/security-csp.md. 강제(Content-Security-Policy) 전환과 nonce 기반 엄격한 script-src는 **오너 결정 항목**이다: nonce는 문서마다 동적 렌더를
-// 강제해 정적 · ISR 판을 깨고, 강제는 막힌 기능을 사용자에게 드러낸다. 이 파일은 그 둘을 하지 않는다(계약 securityHeaders.test.js).
+// 1단계 네 지시어(object-src · base-uri · frame-ancestors · form-action)는 **강제**(Content-Security-Policy, SEC-CSP-003 · 2026-11-14 KST)다.
+// 출처 허용 목록(2단계)은 계속 **보고만** 한다(Content-Security-Policy-Report-Only) — 근거 · 단계는 docs/security-csp.md. 2단계 강제와 nonce 기반
+// 엄격한 script-src는 다음 7일 집계 뒤 판단한다(nonce는 문서마다 동적 렌더를 강제해 정적 · ISR 판을 깬다 — 오너 결정 항목). 계약 securityHeaders.test.js.
 //
 // 'unsafe-inline'(script · style)은 Next의 인라인 RSC 흐름 조각 · 루트 첫 스크립트 · JSON-LD(경로마다 11–24개)와 React style 속성 때문이다 —
 // 이 단계의 script-src는 「외부 스크립트 출처」만 본다.
@@ -18,7 +18,40 @@ export function supabaseOrigins(url) {
   }
 }
 
-/** Report-Only 정책의 지시어 → 값. 순서가 헤더 순서다. */
+/**
+ * object-src — <embed> · <object>. 'none'이 아니라 Supabase 저장소 출처(https)만 연다: PDF 보기의 기본 경로(PdfDocument)가
+ * 저장소 서명 URL을 <embed type="application/pdf">로 띄운다(PdfViewerPage). 'none'이면 Chromium이 그 embed를 막는다(SEC-CSP-003 실측,
+ * 2026-11-14 KST — 같은 출처 · 다른 출처 모두). 공개 URL이 없으면 'none'.
+ */
+export function objectSrc(env = process.env) {
+  const [https] = supabaseOrigins(env.NEXT_PUBLIC_SUPABASE_URL);
+  return https || "'none'";
+}
+
+/**
+ * 강제(Content-Security-Policy) 지시어 — 1단계(SEC-CSP-003, 2026-11-14 KST 오케스트레이터 승인 · 7일 Report-Only 관측 뒤). 스크립트 · 스타일을
+ * 건드리지 않아 정적 · ISR 판에 영향이 없다. frame-ancestors 'self'는 X-Frame-Options SAMEORIGIN과 같은 뜻, form-action 'self'는 외부로 보내는
+ * form 0(코드 전수: <form> 31개 모두 action · method 없이 JS 처리, OAuth · 이메일 링크는 화면 이동)이라 막히는 것이 없다.
+ */
+export function cspEnforcedDirectives(env = process.env) {
+  return [
+    ['object-src', objectSrc(env)],
+    ['base-uri', "'self'"],
+    ['frame-ancestors', "'self'"],
+    ['form-action', "'self'"],
+    ['report-uri', '/api/csp-report'],
+    ['report-to', 'csp'],
+  ];
+}
+
+export function cspEnforced(env = process.env) {
+  return cspEnforcedDirectives(env).map(([name, value]) => `${name} ${value}`).join('; ');
+}
+
+/**
+ * Report-Only 정책의 지시어 → 값. 순서가 헤더 순서다. 강제로 옮긴 base-uri · frame-ancestors · form-action은 빼고(두 번 보고하지 않게),
+ * object-src는 남긴다 — 빠지면 Report-Only의 default-src 'self'가 대신 걸려 저장소 PDF embed를 위반으로 보고한다.
+ */
 export function cspReportOnlyDirectives(env = process.env) {
   const supabase = supabaseOrigins(env.NEXT_PUBLIC_SUPABASE_URL);
   return [
@@ -33,10 +66,7 @@ export function cspReportOnlyDirectives(env = process.env) {
     ['frame-src', 'https://www.youtube-nocookie.com'],
     ['worker-src', "'self' blob:"],
     ['manifest-src', "'self'"],
-    ['object-src', "'none'"],
-    ['base-uri', "'self'"],
-    ['frame-ancestors', "'self'"],
-    ['form-action', "'self'"],
+    ['object-src', objectSrc(env)],
     ['report-uri', '/api/csp-report'],
     ['report-to', 'csp'],
   ];

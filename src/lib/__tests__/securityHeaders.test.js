@@ -22,16 +22,42 @@ describe('공통 보안 헤더', () => {
     expect(policy(h['Permissions-Policy'])).toEqual({ camera: '()', microphone: '(self)', geolocation: '()', 'interest-cohort': '()' });
   });
 
-  // SEC-HEADERS-001 → SEC-CSP-002(2026-11-07 KST 오케스트레이터 승인) — CSP는 **보고만**: 출처 허용 목록(fetch 계열 지시어)은 Report-Only 헤더에만 있고,
-  // 강제 헤더(Content-Security-Policy)는 앱 본편에 없다. 강제 전환과 nonce 기반 엄격한 script-src는 오너 결정 항목이다(정적/ISR 판 · 막힌 기능 노출) —
-  // 이 계약은 그 둘이 몰래 들어오지 않게 막는다. 정책 정본은 src/lib/cspPolicy.js, 근거는 docs/security-csp.md.
-  it('앱 본편 — CSP는 Report-Only만(출처 허용 목록 + 보고처) · 강제 CSP 없음 · nonce 없음 · COOP same-origin-allow-popups', () => {
+  // SEC-HEADERS-001 → SEC-CSP-002(2026-11-07) → SEC-CSP-003(2026-11-14 KST 오케스트레이터 승인) — 1단계 네 지시어만 **강제**, 출처 허용 목록(fetch 계열)은
+  // 계속 Report-Only. 2단계 강제와 nonce 기반 엄격한 script-src는 다음 집계 뒤 판단 — 이 계약은 그 둘이 몰래 들어오지 않게 막는다.
+  // 정책 정본은 src/lib/cspPolicy.js, 근거는 docs/security-csp.md.
+  const directivesOf = (value) => Object.fromEntries(value.split(';').map((part) => {
+    const [name, ...values] = part.trim().split(/\s+/);
+    return [name, values.join(' ')];
+  }));
+  it('앱 본편 — 강제 CSP는 1단계 네 지시어 + 보고처뿐(스크립트 · 스타일 · 출처 목록 없음)', () => {
     const h = headerMap(rules.find((rule) => rule.source === '/((?!embed/).*)'));
-    expect(h['Content-Security-Policy']).toBeUndefined(); // 강제 전환은 오너 결정
-    const directives = Object.fromEntries(h['Content-Security-Policy-Report-Only'].split(';').map((part) => {
-      const [name, ...values] = part.trim().split(/\s+/);
-      return [name, values.join(' ')];
-    }));
+    const enforced = directivesOf(h['Content-Security-Policy']);
+    expect(Object.keys(enforced)).toEqual(['object-src', 'base-uri', 'frame-ancestors', 'form-action', 'report-uri', 'report-to']);
+    expect(enforced).toMatchObject({ 'base-uri': "'self'", 'frame-ancestors': "'self'", 'form-action': "'self'", 'report-uri': '/api/csp-report', 'report-to': 'csp' });
+    expect(h['Content-Security-Policy']).not.toMatch(/script-src|style-src|default-src|connect-src|img-src|'unsafe-|'nonce-/);
+    expect(h['X-Frame-Options']).toBe('SAMEORIGIN'); // frame-ancestors 'self'와 같은 뜻 — 옛 브라우저용으로 둔다
+  });
+  it('object-src는 저장소 출처(https)만 — PDF 보기 기본 경로가 서명 URL을 <embed>로 띄운다(\'none\'이면 막힘, 실측)', async () => {
+    const { cspEnforced, objectSrc } = await import('../cspPolicy');
+    expect(objectSrc({ NEXT_PUBLIC_SUPABASE_URL: 'https://abcd.supabase.co' })).toBe('https://abcd.supabase.co');
+    expect(objectSrc({})).toBe("'none'");
+    expect(cspEnforced({ NEXT_PUBLIC_SUPABASE_URL: 'https://abcd.supabase.co' })).toMatch(/^object-src https:\/\/abcd\.supabase\.co; base-uri 'self'; frame-ancestors 'self'; form-action 'self';/);
+    expect(fs.readFileSync('src/components/PdfDocument.jsx', 'utf8')).toContain('type="application/pdf"');
+    expect(fs.readFileSync('src/views/PdfViewerPage.jsx', 'utf8')).toContain("createSignedUrl(");
+  });
+  it('외부로 보내는 form이 없다 — form-action \'self\'가 막을 것이 없다(<form>은 action · method 없이 JS로 처리)', () => {
+    const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => d.isDirectory() ? walk(`${dir}/${d.name}`) : /\.(jsx?|tsx?)$/.test(d.name) && !/\.test\./.test(d.name) ? [`${dir}/${d.name}`] : []);
+    const forms = walk('src').flatMap((file) => (fs.readFileSync(file, 'utf8').match(/<form\b[^>]*>/g) || []).map((tag) => ({ file, tag })));
+    expect(forms.length).toBeGreaterThan(10); // 공허 통과 방지
+    expect(forms.filter(({ tag }) => /\baction=|\bmethod=|formAction/.test(tag))).toEqual([]);
+  });
+  it('앱 본편 — Report-Only는 출처 허용 목록(강제로 옮긴 셋은 뺌) · nonce 없음 · COOP same-origin-allow-popups', () => {
+    const h = headerMap(rules.find((rule) => rule.source === '/((?!embed/).*)'));
+    const directives = directivesOf(h['Content-Security-Policy-Report-Only']);
+    expect(directives['base-uri']).toBeUndefined();
+    expect(directives['frame-ancestors']).toBeUndefined();
+    expect(directives['form-action']).toBeUndefined();
+    expect(directives['object-src']).toBe(directivesOf(h['Content-Security-Policy'])['object-src']); // 빠지면 default-src 'self'가 대신 걸린다
     expect(directives).toMatchObject({
       'default-src': "'self'",
       'script-src': "'self' 'unsafe-inline'",
@@ -42,7 +68,6 @@ describe('공통 보안 헤더', () => {
       'frame-src': 'https://www.youtube-nocookie.com',
       'worker-src': "'self' blob:",
       'manifest-src': "'self'",
-      'object-src': "'none'", 'base-uri': "'self'", 'frame-ancestors': "'self'", 'form-action': "'self'",
       'report-uri': '/api/csp-report', 'report-to': 'csp',
     });
     expect(directives['connect-src'].split(' ')[0]).toBe("'self'");
