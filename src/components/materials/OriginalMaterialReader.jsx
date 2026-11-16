@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { guessStudyLanguage, normalizeSourceUrl, studyLanguageLabel } from '@/lib/materialComposer';
+import { guessStudyLanguage, normalizeSourceUrl, studiesOwnText, studyLanguageLabel } from '@/lib/materialComposer';
 import { documentOf, documentError, openDocumentStudy } from '@/lib/materialDocument';
 import { useStudyLanguages } from '@/lib/useStudyLanguages';
 import { useViewerLanguage } from '@/lib/useViewerLanguage';
@@ -125,6 +125,10 @@ export default function OriginalMaterialReader({ material }) {
   const savedPending = composer.language === 'Korean' && !savedLanguage && koreanChecking;
   const guess = useMemo(() => textOnly && !savedLanguage ? guessStudyLanguage(composer.body, languages) : '', [textOnly, savedLanguage, composer.body, languages]);
   const entryLanguage = picked ?? (savedLanguage || guess);
+  // 이 글 그대로 이미 분석해 둔 자료(FLOW-ADD-B7) — 본문 = 분석 원문 · 같은 언어 · 분석 끝(일부 실패 포함)이면 「이어서 공부하기」.
+  // 누르면 지금처럼 openDocumentStudy가 같은 자료를 돌려줘 학습 화면으로 바로 간다(새 자료 · 새 분석 없음).
+  const continuing = !!savedLanguage && entryLanguage === savedLanguage && studiesOwnText(material)
+    && ['completed', 'partial'].includes(material.processed_json?.status) && material.processed_json?.metadata?.language === savedLanguage;
   async function studyBody(target = language) {
     if (busy || !languages.includes(target)) return;
     setBusy(true); setError('');
@@ -144,7 +148,7 @@ export default function OriginalMaterialReader({ material }) {
     {origin.data&&<PassageSourceFocus material={origin.data} sources={sources}/>}
     <PassageStudy material={material} sources={sources} preferredKey={preferredKey} {...(textOnly ? {
       openerLabel: '일부만 고르기', idleText: '글 전체로 공부하거나 필요한 부분만 골라 보세요.',
-      primary: <button className="manabi-button" disabled={busy || !entryLanguage} aria-describedby={!entryLanguage ? 'original-entry-reason' : undefined} onClick={() => studyBody(entryLanguage)}>{busy ? '여는 중…' : '이 글로 공부하기 ↗'}</button>,
+      primary: <button className="manabi-button" disabled={busy || !entryLanguage} aria-describedby={!entryLanguage ? 'original-entry-reason' : undefined} onClick={() => studyBody(entryLanguage)}>{busy ? '여는 중…' : continuing ? '이어서 공부하기 ↗' : '이 글로 공부하기 ↗'}</button>,
       children: <>
         {!savedLanguage && !savedPending && <StudyLanguageChips id="original-entry-language" languages={languages} value={entryLanguage} guessed={picked === null && !!guess} disabled={busy} onChange={setPicked} />}
         {!entryLanguage && !savedPending && <small id="original-entry-reason" className="original-entry-reason">공부할 언어를 골라 주세요</small>}
