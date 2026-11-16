@@ -878,6 +878,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **주간 트렌드 11/16 KST (WEEKLY-TREND-1116, 1차 출처 · 읽기 전용 조사)** 해당 1건: Node 11/11 보안 릴리스(CVE 16, 주로 HTTP/2 · TLS 서버) — 24.22.2 → 24.22.3 패치,
+  CI `node-version: 24`는 실행 시 최신을 받고 운영은 Vercel 자동 패치(실제 판 확인은 WEB 11/21 집계에). 일정: Vercel Data Cache → Runtime Cache 11/29(코드 변경 0 · 사용량은 오너 대시보드) ·
+  **Next 15 보안 패치 2027-01-31까지 연장**(nextjs.org/support-policy — #1673 Next 16 이전의 실질 기한). 비해당: Next 11/03 GHSA 7건(15.5.29가 패치판) · vite GHSA-p4f5(8.3.8) ·
+  React · Vitest · supabase-js 새 권고 0. 남김: next 내장 postcss 8.4.31 권고(빌드 시점 · 자체 CSS만 — Next 16 때) · eslint 사슬 brace-expansion 1.1.22(11/11 발행, 2주 숙성 뒤 11/25 이후 audit fix) ·
+  Supabase CLI v3(v2는 유지보수 단계 — 2.122.0 고정 유지, 올릴 때 `--remote --yes`) · DOMPurify 3.4.18(전이 · 직접 사용 0, lock 갱신 때). 원칙 문서: `/migration` 명령을 지금 정본으로(옛 프로젝트 이름 · 표 목록 걷고
+  데이터 보정 기본 꼴 · 파일 날짜 규칙 · 행 삭제는 오너 확인) · 정기 순회 프롬프트에 이번 주 교훈(옛 head 알림 · 패치 반입 · 병합 시각 · 실측 전 효과 주장 금지) — 순회는 사용량 경고로 꺼 둔 채.
 - **오케스트레이터 11/12 KST 병합 · 사후** #1800 squash `763af4ea`(00:58 — SEC-DEPS-1111 · DATA-CACHE-1109 · IPA-CRON-FIX · 얼화 사전 캐시 9행 · Wikinews 원천 끄기,
   사후: 마이그레이션 2개 OK · 지문 넷 그대로, IPA 새 코드 판정은 11/13 01:05 실행(오늘 실행은 배포 READY 45초 전 옛 코드) · Wikinews 빈 호출 11/13 00:06 확인 예정) ·
   #1784 squash `f978595a`(02:25 — EN-SOURCE-001 ⓒ 1차 VOA 26편, 사후: id 373–398 · 26/26 분석 · 출처 줄 · 원문 링크 운영 확인) ·
