@@ -1,0 +1,150 @@
+/* 인쇄 학습지(PRINT-SHEET-001 — 오너 승인 목업 2026-11-16 KST, src/views/PrintPage.jsx).
+   화면: 설정 막대 + 종이 모양 미리보기. 인쇄: 같은 마크업을 @page 판으로(설정 막대 · 앱 머리말 · 꼬리말은 숨김).
+   잉크는 먹 하나 — 칠한 바탕 · 급수 색을 쓰지 않는다. 선은 먹을 옅게(color-mix).
+   접힘은 컨테이너 쿼리(뷰포트 쿼리 0 — docs/ui-conventions.md §2), 인쇄 판은 @media print 하나. */
+.print-page {
+  --print-rule: color-mix(in srgb, var(--ink) 38%, transparent);
+  --print-serif: serif;
+  --print-sans: var(--font-noto-kr), 'Noto Sans KR', sans-serif;
+  --print-latin: var(--font-noto-sans), 'Noto Sans', sans-serif;
+  --print-accent: var(--book-mauve-main);
+  --print-wash: var(--book-mauve-wash);
+  container-type: inline-size;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  color: var(--ink);
+}
+.print-page[data-language="Japanese"] { --print-serif: var(--font-print-ja), 'Noto Serif JP', serif; --print-word: var(--font-noto-jp), 'Noto Sans JP', sans-serif; }
+.print-page[data-language="Chinese"] {
+  --print-serif: var(--font-print-zh), 'Noto Serif SC', serif; --print-word: var(--font-noto-sc, 'Noto Sans SC'), 'Noto Sans SC', sans-serif;
+  --print-accent: var(--book-sage-main); --print-wash: var(--book-sage-wash);
+}
+.print-page:is([data-language="English"], [data-language="French"]) { --print-word: var(--print-latin); } /* 라틴 명조는 싣지 않는다 — 기기 serif */
+
+/* ── 불러오기 · 안내(화면 전용) ── */
+.print-state { padding-top: 80px; text-align: center; }
+.print-state h1 { margin: 0 0 8px; font-size: 20px; line-height: 1.4; font-weight: 700; color: var(--ink); }
+.print-state p { margin: 0 auto 20px; max-width: 400px; font-size: 14px; line-height: 1.6; color: var(--muted); }
+.print-state__actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.print-state__actions .btn { min-height: 44px; justify-content: center; }
+
+/* ── 설정 막대(화면 전용) ── */
+.print-controls { max-width: 210mm; margin: 0 auto 24px; }
+.print-controls__back { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-size: 13px; color: var(--muted); text-decoration: none; }
+.print-controls__back:hover { color: var(--ink); }
+.print-controls__back:focus-visible { outline: 2px solid var(--print-accent); outline-offset: 2px; }
+.print-controls__head { margin: 4px 0 16px; }
+.print-controls__head h1 { margin: 0; font-size: 24px; line-height: 1.4; font-weight: 700; }
+.print-controls__head p { margin: 2px 0 0; font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+.print-controls__row { display: flex; flex-wrap: wrap; gap: 16px 28px; padding: 16px 0; border-block: 1px solid var(--rule); }
+.print-choice { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.print-choice__label { font-size: 12px; font-weight: 500; color: var(--muted); }
+.print-choice [role="group"] { display: flex; }
+.print-choice button {
+  min-height: 44px; padding: 0 16px; margin-left: -1px;
+  border: 1px solid var(--rule); border-radius: 0; background: var(--sheet); color: var(--ink);
+  font: inherit; font-size: 14px; white-space: nowrap; cursor: pointer;
+  transition: var(--transition-state, none);
+}
+.print-choice button:first-child { margin-left: 0; border-radius: 4px 0 0 4px; }
+.print-choice button:last-child { border-radius: 0 4px 4px 0; }
+.print-choice button[aria-pressed="true"] { position: relative; z-index: 1; border-color: var(--print-accent); background: var(--print-wash); color: var(--print-accent); font-weight: 600; }
+.print-choice button:focus-visible { position: relative; z-index: 2; outline: 2px solid var(--print-accent); outline-offset: 2px; }
+.print-controls__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; padding-top: 12px; }
+.print-controls__foot p { margin: 0; font-size: 13px; color: var(--muted); }
+/* 주 버튼 = 뷰어 화면들과 같은 .btn--primary(로즈 칠 · 굵기 700 허용 자리 — ui-conventions §8). */
+.print-controls__go { min-height: 44px; justify-content: center; flex: none; }
+
+/* ── 종이(화면 미리보기 = 인쇄 판의 같은 마크업) ── */
+.print-sheet {
+  max-width: 210mm; margin: 0 auto; padding: 18mm 16mm 20mm;
+  background: var(--sheet); border: 1px solid var(--rule);
+  color: var(--ink);
+}
+/* B5 = JIS B5(182×257mm, printSheet.PRINT_PAPER_CSS) — 미리보기 폭 · 여백도 그 판으로. */
+.print-page[data-paper="B5"] .print-sheet { max-width: 182mm; padding: 16mm 14mm 18mm; }
+.print-head { padding-bottom: 4mm; margin-bottom: 7mm; border-bottom: 0.75pt solid var(--print-rule); break-after: avoid; }
+.print-head h2 { margin: 0 0 2mm; font-family: var(--print-serif); font-size: calc(var(--print-body) * 1.6); font-weight: 400; line-height: 1.4; letter-spacing: 0; }
+.print-meta { margin: 0; font-family: var(--print-sans); font-size: 9pt; line-height: 1.6; color: var(--muted); }
+.print-meta--source { overflow-wrap: anywhere; }
+
+.print-body { font-family: var(--print-serif); font-size: var(--print-body); line-height: 2.3; }
+.print-page[data-ruby="none"] .print-body { line-height: 1.95; }
+.print-page:is([data-language="English"], [data-language="French"]) .print-body { line-height: 1.8; }
+.print-body :lang(ja) { line-break: strict; }
+/* 전역 :lang(ja) · :lang(zh)가 요소마다 고딕을 직접 건다 — 본문 문단 안은 명조로 되돌린다. */
+.print-sheet :is(.print-para, .print-heading), .print-sheet :is(.print-para, .print-heading) * { font-family: var(--print-serif); }
+.print-para { margin: 0 0 0.9em; text-indent: 1em; break-inside: avoid; orphans: 2; widows: 2; }
+.print-heading { margin: 0.4em 0 0.6em; font-size: calc(var(--print-body) * 1.25); font-weight: 500; line-height: 1.8; break-after: avoid; }
+/* 요미 = 본체의 절반(JLReq — ui-conventions §1 일본어 요미 조판). */
+.print-body rt { font-size: 0.5em; line-height: 1; font-family: var(--print-serif); color: var(--ink); }
+.print-token:has(.print-ref) { white-space: nowrap; } /* 번호가 줄머리로 떨어지지 않게 낱말과 묶는다 */
+.print-sheet .print-body .print-ref { font-family: var(--print-sans); font-size: 0.55em; line-height: 0; margin: 0 0.1em 0 0.05em; vertical-align: 0.9em; }
+
+/* 중국어 병음 격자(뷰어 ZH-GRID-001과 같은 원칙) — 한자 · 전각 부호 하나가 같은 폭의 한 칸(--print-zh-cell = 가장 넓은 음절 폭,
+   PrintPage ZH_CELL_EM). 낱말 안팎 간격이 같아 「放风 筝」처럼 낱말이 갈라져 보이지 않는다. 병음은 칸 위 가운데(0.5em = PrintPage PINYIN_EM).
+   낱말은 줄에서 갈라지지 않고(nowrap), 닫는 부호는 앞 낱말 · 여는 부호는 뒤 낱말과 함께 넘어간다(PrintPage Paragraph). */
+.print-page[data-language="Chinese"] .print-para { text-indent: 2em; }
+.print-page[data-language="Chinese"]:not([data-ruby="none"]) .print-body { line-height: 2.7; }
+.print-page[data-language="Chinese"]:not([data-ruby="none"]) .print-para { text-indent: calc(var(--print-zh-cell) * 2); }
+.print-page[data-language="Chinese"] .print-token { white-space: nowrap; }
+.print-page[data-language="Chinese"] { --print-zh-cell: calc(var(--print-zh-cell-n, 1) * 1em); }
+/* 뜻풀이 번호는 칸 폭을 차지하지 않는다 — 폭 0 상자(낱말 마지막 칸 바로 뒤 경계)에 담아 경계 위 가운데, 글자 위쪽에 얹는다.
+   칸 양옆 빈자리((칸 − 1em) / 2씩)가 번호 폭(0.55em)보다 넓어 앞뒤 글자에 닿지 않는다. */
+.print-zh-ref { display: inline-block; position: relative; width: 0; height: 1em; text-indent: 0; vertical-align: baseline; }
+.print-sheet .print-body .print-zh-ref > .print-ref { position: absolute; left: 0; top: -0.25em; margin: 0; line-height: 1; vertical-align: baseline; transform: translateX(-50%); }
+.print-zh, .print-zh-word { display: inline-block; position: relative; text-indent: 0; line-height: 1.25; }
+.print-zh { width: var(--print-zh-cell); text-align: center; }
+.print-zh-word > .print-zh { position: static; }
+.print-zh__py {
+  position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%);
+  margin-bottom: 0.15em; font-size: 0.5em; line-height: 1.1; white-space: nowrap; letter-spacing: 0;
+}
+.print-sheet .print-body .print-zh__py { font-family: var(--print-latin); }
+
+/* 해석용: 왼쪽 원문 62% · 오른쪽 뜻풀이 38%, 아래 번역(있으면 글, 없으면 빈 줄 두 줄). 짧은 묶음은 쪽에서 갈라지지 않고,
+   긴 묶음(printSheet.isLongBlock — 쪽의 약 4할 이상)은 원문 · 뜻풀이 칸이 다음 쪽으로 이어진다(쪽 아래가 크게 비지 않게). */
+.print-block { display: grid; grid-template-columns: minmax(0, 62fr) minmax(0, 38fr); column-gap: 6mm; row-gap: 3mm; margin-bottom: 8mm; break-inside: avoid; }
+.print-block[data-long] { break-inside: auto; }
+.print-block[data-long] .print-para { break-inside: auto; orphans: 3; widows: 3; }
+.print-block__main .print-para { margin: 0; }
+.print-gloss { list-style: none; margin: 0.4em 0 0; padding: 0 0 0 4mm; border-left: 0.5pt solid var(--print-rule); display: grid; gap: 1.2mm; align-content: start; font-family: var(--print-sans); font-size: 9pt; line-height: 1.5; }
+/* 한 항목 = 한 줄(넘치면 번호 뒤로 내어 쓴다) — 번호 · 낱말 · 읽기 · 뜻 · 품사 · 급수. */
+.print-gloss li { padding-left: 1.5em; text-indent: -1.5em; break-inside: avoid; }
+.print-gloss li > * { text-indent: 0; }
+.print-gloss__no { display: inline-block; width: 1.5em; }
+.print-gloss__word { font-family: var(--print-word, inherit); font-size: 10pt; font-weight: 500; margin-right: 0.4em; }
+.print-gloss__yomi { font-family: var(--print-word, inherit); font-size: 9pt; color: var(--muted); margin-right: 0.6em; }
+.print-page[data-language="Chinese"] .print-gloss__yomi { font-family: var(--print-latin); }
+.print-gloss__body { overflow-wrap: anywhere; }
+.print-gloss__pos { margin-left: 0.4em; color: var(--muted); white-space: nowrap; } /* 품사 · 급수는 한 덩이로 넘어간다 */
+.print-translate { grid-column: 1 / -1; break-inside: avoid; }
+.print-translate__text { margin: 0; font-family: var(--print-sans); font-size: 10pt; line-height: 1.75; }
+.print-label { display: block; margin: 0 0 0.5mm; font-family: var(--print-sans); font-size: 9pt; font-weight: 600; line-height: 1.4; color: var(--ink); }
+.print-line { display: block; height: 8.5mm; border-bottom: 0.5pt solid var(--print-rule); }
+.print-memo { break-inside: avoid; padding-top: 1mm; }
+.print-memo h3 { margin: 0; }
+
+/* 폰 화면 미리보기: 뜻풀이를 원문 아래로(인쇄 판은 쪽 폭 기준이라 늘 옆에 둔다). */
+@container (max-width: 560px) {
+  .print-controls__row { gap: 10px; padding: 12px 0; }
+  .print-choice { flex: 1 1 100%; flex-direction: row; align-items: center; gap: 8px; }
+  .print-choice__label { flex: none; width: 4.75em; }
+  .print-choice [role="group"] { flex: 1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  .print-choice button { padding: 0 4px; font-size: 13px; }
+  .print-controls__foot { flex-direction: column; align-items: stretch; }
+  .print-sheet, .print-page[data-paper="B5"] .print-sheet { padding: 24px 16px 32px; }
+  .print-block { grid-template-columns: minmax(0, 1fr); }
+  .print-gloss { border-left: 0; padding: 3mm 0 0; border-top: 0.5pt solid var(--print-rule); }
+}
+
+@media print {
+  body:has(.print-page), .manabi-app:has(.print-page) { background: none; }
+  .manabi-app:has(.print-page) :is(.gnb, .mobile-nav, .site-footer, .skip-link, .offline-banner) { display: none !important; }
+  .manabi-app:has(.print-page) .app-layout { padding: 0; min-height: 0; }
+  body:has(.print-page) .toast-container { display: none; }
+  .print-controls { display: none; }
+  .print-page { max-width: none; margin: 0; padding: 0; container-type: normal; }
+  .print-sheet, .print-page[data-paper="B5"] .print-sheet { max-width: none; margin: 0; padding: 0; border: 0; background: none; }
+}
