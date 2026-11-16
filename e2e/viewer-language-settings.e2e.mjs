@@ -458,6 +458,8 @@ test('ordinary Korean import preserves real textarea paste/edit source and exclu
   const context = await browser.newContext({ baseURL: base, viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', serviceWorkers: 'block' });
   context.setDefaultTimeout(config.timeout);
   const audit = await fixture(context, { importMode: true }), page = await context.newPage();
+  // Korean entries follow the account's learning contract (FLOW-ADD-B9) — this fixture account has Korean deployed.
+  await context.route('**/api/learning/capabilities', route => route.fulfill({ json: { version: 1, languages: { Korean: { save: true, review: true, known: true, exclude: true } } } }));
   await context.addInitScript(({ key, origin }) => {
     if (location.origin === origin) localStorage.setItem(key, JSON.stringify({ version: 1, uiLocale: 'zh-TW', explanationLocale: 'zh-TW' }));
   }, { key: VIEWER_LANGUAGE_PREF_KEY, origin: new URL(base).origin });
