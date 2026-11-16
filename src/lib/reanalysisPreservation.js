@@ -322,7 +322,7 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   if (!completeAnalysis(result, rawText)) {
     const coverage = firstAnalysis && result?.sequence?.length ? inspectAnalysisCoverage(rawText, result) : null;
     if (!coverage?.validStructure || coverage.missingIndices.length >= rawText.split('\n').filter(line => line.trim()).length) {
-      throw new Error(firstAnalysis ? '분석을 완료하지 못했어요. 원문은 그대로 있어요.' : '새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 있어요.');
+      throw new Error(firstAnalysis ? '원문은 그대로 있어요.' : '새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 있어요.');
     }
     partialFirst = true;
     result = { ...result, status: 'partial',
