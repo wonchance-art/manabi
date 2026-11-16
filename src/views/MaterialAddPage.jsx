@@ -11,7 +11,8 @@ import { autoSplitParagraphs } from '../lib/splitParagraphs';
 import {
   splitTextIntoChapters, fitChaptersToCap, BODY_CAP_LABEL, looksLikeSentenceList, LINES_PER_REQUEST_CAP,
 } from '../lib/bookSplit';
-import { MAX_BODY_CHARS } from '../lib/materialComposer';
+import { MAX_BODY_CHARS, guessStudyLanguage } from '../lib/materialComposer';
+import { useStudyLanguages } from '../lib/useStudyLanguages';
 import { makeBookKey } from '../lib/bookMeta';
 import { bookKeyForDraft, appendPlanOf, listAppendableBooks, countContentLines } from '../lib/bookAppend';
 import { chapterError } from '../lib/libraryBookChapters';
@@ -33,11 +34,12 @@ import { isCanonicalBookKey } from '../lib/canonicalBookKey';
 import { reducedMotion } from '../lib/reducedMotion';
 
 /** 입구 칩(자료 추가 정돈 R2) — 소스 순서 = 렌더 순서(PDF→EPUB→문장 목록→링크), 아래 렌더와 같은 차례. */
+// 이모지는 걷었다(FLOW-ADD-B8 · unslop) — 칩 글자만으로 입구가 갈린다.
 const ENTRIES = [
-  ['pdf', '📄 PDF'],
-  ['epub', '📚 EPUB'],
-  ['sentences', '📋 문장 목록'],
-  ['link', '🔗 링크'],
+  ['pdf', 'PDF'],
+  ['epub', 'EPUB'],
+  ['sentences', '문장 목록'],
+  ['link', '링크'],
 ];
 
 /** 내용 줄 수 — 문장 목록 자료에서 "몇 문장"의 정본 셈법(빈 줄 제외). */
@@ -92,6 +94,13 @@ function MaterialAddForm() {
   const [rawText, setRawText] = useState('');
   const [visibility, setVisibility] = useState('private');
   const [language, setLanguage] = useState(initialLanguage);
+  // 언어 칩 짐작(FLOW-ADD-B8) — 작성기와 같은 규칙(guessStudyLanguage): 사용자가 고른 값 · 주소 · PDF · EPUB · 초안이 정한 값은 덮지 않는다.
+  const [languageChosen, setLanguageChosen] = useState(() => requestedTarget?.language === initialLanguage);
+  const [languageGuessed, setLanguageGuessed] = useState(false);
+  const chooseLanguage = (next) => { setLanguage(next); setLanguageChosen(true); setLanguageGuessed(false); };
+  // 한국어 입구는 계정 배포 계약(작성기 언어 칩과 같은 useStudyLanguages)일 때만(FLOW-ADD-B9).
+  const { languages: studyLanguageList, koreanChecking } = useStudyLanguages();
+  const koreanReady = studyLanguageList.some(value => viewerLanguageInfo(value)?.code === 'ko');
   const [level, setLevel] = useState(IMPORT_DEFAULT_LEVEL[viewerLanguageInfo(initialLanguage).code] || '');
   const [pdfSource, setPdfSource] = useState(null); // { pdf, pageStart, pageEnd }
   const [epubSource, setEpubSource] = useState(false); // 개인 소장 전자책 반입 — 비공개 고정 근거
@@ -104,8 +113,22 @@ function MaterialAddForm() {
   const isKoreanReading = !isNote && targetLanguage?.code === 'ko';
   const languageOptions = Object.values(VIEWER_LANGUAGES)
     .filter(info => info.capabilities.text === 'supported' && info.capabilities.analysis === 'supported'
+      && (info.code !== 'ko' || koreanReady)
       && (!(isNote || pdfSource || epubSource) || !!LEVELS[info.language]))
     .sort((a, b) => IMPORT_LANGUAGE_ORDER.indexOf(a.code) - IMPORT_LANGUAGE_ORDER.indexOf(b.code));
+  // 본문이 바뀌면 글자로 언어를 짐작한다(FLOW-ADD-B8) — 한국어 · 일본어 · 중국어만 갈린다(라틴 글자는 짐작하지 않고 지금 값 그대로).
+  const guessable = languageOptions.map(info => info.language).join(',');
+  useEffect(() => {
+    if (languageChosen || isNote || pdfSource || epubSource) return;
+    const guess = guessStudyLanguage(rawText, guessable.split(','));
+    if (!guess) return;
+    if (guess !== language) { setLanguage(guess); setLevel(IMPORT_DEFAULT_LEVEL[viewerLanguageInfo(guess)?.code] || ''); }
+    setLanguageGuessed(true);
+  }, [rawText, languageChosen, isNote, pdfSource, epubSource, guessable, language]);
+  // 한국어 계약이 없는 계정이 한국어 상태로 남지 않게 — 확인이 끝난 뒤에만(확인 중에 바꾸지 않는다).
+  useEffect(() => {
+    if (!isNote && targetLanguage?.code === 'ko' && !koreanChecking && !koreanReady) { setLanguage('Japanese'); setLevel('N3 중급'); setLanguageGuessed(false); }
+  }, [isNote, targetLanguage?.code, koreanChecking, koreanReady]);
   // 자료 추가 정돈 R2(#1077 5547576227) — 입구 4장을 칩 한 줄 + 아코디언(한 번에 하나)으로.
   // 펼침 상태는 여기 하나뿐이다. 입구가 스스로 열어 달라고 할 때(딥링크·본문 폼 넘김)는
   // onOpenChange로 올라오고, 내용을 넘겨준 뒤엔 접는다(폼으로 시선을 옮긴다).
@@ -120,7 +143,7 @@ function MaterialAddForm() {
     setOpenEntry('');
     setTitle(`${pdf.title} (p.${pageStart}-${pageEnd})`);
     setRawText(extractedText);
-    if (pdf.language) setLanguage(pdf.language);
+    if (pdf.language) chooseLanguage(pdf.language);
     if (pdf.level) setLevel(pdf.level);
     setVisibility('private'); // PDF 출처는 항상 private
     toast('본문을 추출했어요. 아래에서 확인한 뒤 분석을 시작해 주세요.', 'success');
@@ -192,7 +215,7 @@ function MaterialAddForm() {
     setEpubSource(true);
     setOpenEntry('');
     setVisibility('private');
-    if (epubLang) { setLanguage(epubLang); setLevel(viewerLanguageInfo(epubLang)?.code === 'ko' ? '' : epubLang === 'Japanese' ? 'N3 중급' : epubLang === 'Chinese' ? 'H3 중급' : 'B1 중급'); }
+    if (epubLang) { chooseLanguage(epubLang); setLevel(viewerLanguageInfo(epubLang)?.code === 'ko' ? '' : epubLang === 'Japanese' ? 'N3 중급' : epubLang === 'Chinese' ? 'H3 중급' : 'B1 중급'); }
     // EPUB의 원래 장 구분을 그대로 쓴다 — 길다고 다시 나누지 않는다(쪽 넘김 리더 승인 §5).
     // 저장 상한(MAX_BODY_CHARS)을 넘는 장만 그 장을 문단 경계에서 나누고, 나눴다고 알린다.
     const { chapters: normalized, oversized } = fitChaptersToCap(chapters);
@@ -321,7 +344,7 @@ function MaterialAddForm() {
     setOpenEntry('');
     setTitle(epubTitle);
     setRawText(epubText);
-    if (epubLang) { setLanguage(epubLang); setLevel(viewerLanguageInfo(epubLang)?.code === 'ko' ? '' : epubLang === 'Japanese' ? 'N3 중급' : 'B1 중급'); }
+    if (epubLang) { chooseLanguage(epubLang); setLevel(viewerLanguageInfo(epubLang)?.code === 'ko' ? '' : epubLang === 'Japanese' ? 'N3 중급' : 'B1 중급'); }
     setVisibility('private');
     toast('가져왔어요. 아래에서 확인 후 분석을 시작하세요.', 'success');
     setTimeout(() => {
@@ -342,7 +365,7 @@ function MaterialAddForm() {
       if (typeof draft?.title === 'string' && draft.title.trim()) setTitle(draft.title.trim().slice(0, 120));
       const draftTarget = viewerLanguageInfo(draft?.language);
       if (draftTarget && !(isNote && draftTarget.code === 'ko')) {
-        setLanguage(draftTarget.language);
+        chooseLanguage(draftTarget.language);
         setLevel(draftTarget.code === 'ko' ? '' : draftTarget.language === 'Japanese' ? 'N3 중급' : 'B1 중급');
       }
     } catch { /* 초안이 깨졌으면 빈 폼 그대로 */ }
@@ -733,13 +756,14 @@ function MaterialAddForm() {
                 <button
                   key={key}
                   aria-pressed={language === key}
-                  onClick={() => { setLanguage(key); setLevel(defaultLevel); }}
+                  onClick={() => { chooseLanguage(key); setLevel(defaultLevel); }}
                   className={`toggle-btn ${language === key ? 'toggle-btn--primary' : ''}`}
                 >
                   {label}
                 </button>
               ))}
             </div>
+            {languageGuessed && <small className="import-language-hint">글자를 보고 골랐어요</small>}
           </div>
 
           {!!LEVELS[language]?.length && <div className="form-field">

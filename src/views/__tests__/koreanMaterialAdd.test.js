@@ -33,6 +33,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('../../lib/AuthContext', () => ({ useAuth: () => ({ user: mocks.user, loading: false }) }));
 vi.mock('../../lib/ToastContext', () => ({ useToast: () => mocks.toast }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQueries: mocks.invalidate }) }));
+vi.mock('../../lib/useStudyLanguages', () => ({ useStudyLanguages: () => ({ languages: ['Japanese', 'English', 'Chinese', 'French', 'Korean'], koreanChecking: false }) }));
 vi.mock('../../lib/useViewerLanguage', () => ({ useViewerLanguage: () => ({ explanationLocale: mocks.locale, uiLocale: 'ko' }) }));
 vi.mock('../../lib/analyzeText', () => ({ analyzeText: (...args) => mocks.analyze(...args) }));
 vi.mock('../../lib/supabase', () => ({

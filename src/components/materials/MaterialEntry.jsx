@@ -6,15 +6,18 @@ import MaterialComposer from './MaterialComposer';
 import SuggestionReader from './SuggestionReader';
 import { VIEWER_LANGUAGES, textReadingSupported, viewerLanguageInfo } from '@/lib/viewerLanguage';
 import { LEVELS, MATERIAL_DIRECTION } from '@/lib/constants';
+import { useStudyLanguages } from '@/lib/useStudyLanguages';
 import '@/components/notes/study-notes.css';
 const LegacyImport = dynamic(() => import('@/views/MaterialAddPage'), { loading: () => <p aria-busy="true">가져오기 도구를 여는 중…</p> });
 
 export default function MaterialEntry({ sessionHint = null } = {}) {
   const params = useSearchParams();
+  // 한국어 텍스트 읽기 입구는 작성기 언어 칩과 같은 기준 — 계정 배포 계약이 확인됐을 때만(FLOW-ADD-B9).
+  const { languages: studyLanguageList } = useStudyLanguages();
   // Previously saved recommendation URLs open a reading; new writing still offers a private note.
   if (params.has('suggestion')) return <SuggestionReader key={params.get('suggestion')} id={params.get('suggestion')} from={params.get('from')} />;
   const textReadingLanguages = Object.values(VIEWER_LANGUAGES).filter(info => !LEVELS[info.language]
-    && textReadingSupported(info));
+    && textReadingSupported(info) && studyLanguageList.includes(info.language));
   const requested = viewerLanguageInfo(params.get('language'));
   const isTextReading = params.get('direction') !== MATERIAL_DIRECTION.WRITE && !params.has('pdf') && !params.has('epub')
     && textReadingLanguages.some(info => info.language === requested?.language);
