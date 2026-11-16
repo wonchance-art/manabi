@@ -14,7 +14,7 @@ import LibrarySaveButton from '@/components/library/LibrarySaveButton';
 import {materialActivity} from '@/lib/libraryActivity';
 import { passageOf, sourcePassageHref, passageLocation, correctPassageToken } from '@/lib/sourcePassage';
 import { takePassageAnalysis } from '@/lib/passageAnalysis';
-import { composerOf, shouldReadComposerOriginal } from '@/lib/materialComposer';
+import { composerOf, shouldReadComposerOriginal, studiesOwnText } from '@/lib/materialComposer';
 import Link from 'next/link';
 import { LibraryReturnLink } from '@/components/web/LibraryReaderLink';
 import { readerReturnHref, readerReturnTarget } from '../lib/libraryReturn';
@@ -3383,7 +3383,10 @@ export default function ViewerPage({ seed } = {}) {
   const isDone = status === 'completed' || status === 'partial';
   const needsRecovery = !passageOf(material) && (isStaleAnalysis || (isDone && missingLineCount > 0));
   // 분석 · 복구 배너 글(LOADING-ANNOUNCE-001 ③) — 보이는 줄과 상시 낭독 영역이 같은 글을 쓴다. 복구 숫자만 낭독 쪽이 약 10%마다 바뀐다.
-  const analyzingLine = reanalyze.committing ? '검증한 분석을 저장하고 있어요…' : reanalyzeMutation.isPending ? '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.' : '문단 단위로 분석하고 있어요…';
+  // FLOW-ADD-A4: 처음 분석은 지킬 「기존 자료」가 없다 — 그 문구는 이미 분석된 자료의 재분석에만.
+  const firstAnalysisRun = !material?.processed_json?.sequence?.length;
+  const analyzingLine = reanalyze.committing ? '검증한 분석을 저장하고 있어요…' : reanalyzeMutation.isPending
+    ? (firstAnalysisRun ? '본문을 분석하고 있어요…' : '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.') : '문단 단위로 분석하고 있어요…';
   const recoveryLine = (completed) => (reanalyze.committing
     ? '검증한 분석을 저장하고 있어요…'
     : reanalyze.recovery
@@ -4440,7 +4443,7 @@ export default function ViewerPage({ seed } = {}) {
           {!classStudyActive&&(material?.__local
             ? <Link href={`/class/${material.__team}`} className="viewer-back-link">{vt("← 팀 페이지")}</Link>
             : <LibraryReturnLink className="viewer-back-link viewer-back-link--icon" guest={guestReader} aria-label={vt(backTarget.label)} title={vt(backTarget.label)} data-icon-action><ActionIcon name="back"/></LibraryReturnLink>)}
-          {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:'현재 글과 첨부 원본 ↗'}</Link>}
+          {composerOf(material) && <Link className="viewer-back-link" href={sourcePassageHref(material,originalParams.get('returnTo')) || `/viewer/${composerOf(material)?.parentId || id}?returnTo=${encodeURIComponent(originalParams.get('returnTo') || '/materials?view=owned')}`}>{passageOf(material)?`원본의 ${passageLocation(passageOf(material))}으로 ↗`:studiesOwnText(material)?'원본 화면 ↗':'현재 글과 첨부 원본 ↗'}</Link>}
           {siblingNav && (
             <div className="viewer-series-nav" title={siblingNav.label}>
               {siblingNav.prev ? (
@@ -4487,7 +4490,8 @@ export default function ViewerPage({ seed } = {}) {
       {/* 대화는 채팅 머리 한 줄이 제목·메뉴를 맡는다(ConversationThread) — 읽기 머리·통계는 그리지 않는다. */}
       {!conversation&&<header className="page-header viewer-header">
         <p className="reader-metadata reader-edition">{vt(languageInfo?.labelKo || langNameKo(materialLang))}{material?.processed_json?.metadata?.level ? ` · ${material.processed_json.metadata.level}` : ''} · {vt(material.visibility === 'public' ? '공개 읽기' : '내 자료')}</p>
-        {composerOf(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
+        {/* FLOW-ADD-A4: 원본 행을 학습으로 연 경우(사본 아님)는 같은 글이라 「학습에 사용한 본문」 안내를 쓰지 않는다. */}
+        {composerOf(material) && !studiesOwnText(material) && <p className="reader-metadata">{passageOf(material)?`${passageLocation(passageOf(material))}에서 고른 학습 구간이에요. 원본은 위의 링크에서 열 수 있어요.`:'학습에 사용한 본문이에요. 현재 글은 위의 링크에서 열 수 있어요.'}</p>}
         {titleEditing && user?.id === material?.owner_id && !composerOf(material) ? (
           <form
             onSubmit={e => { e.preventDefault(); updateTitleMutation.mutate(titleDraft); }}
@@ -4770,7 +4774,7 @@ export default function ViewerPage({ seed } = {}) {
         <span className="reader-page-probe" data-page-probe aria-hidden="true" />
         {/* 대화는 못 한 줄을 화면이 알아서 채운다(CONV-CHAT-001 ①) — 분석 · 복구 배너는 conversation.css가 대화 화면(data-chat)에서 숨긴다. */}
         {/* 분석 · 복구 진행 알림 — 영역은 배너 밖에 늘 두고 내용만(LOADING-ANNOUNCE-001 ③). 배너의 보이는 줄은 한 번만 읽히게 숨긴다. */}
-        <span className="sr-only" role="status">{isAnalyzing && !needsRecovery ? vt(analyzingLine) : recoveryShown ? recoveryLine(announcedProgress(reanalyze.recovery?.completed, reanalyze.recovery?.total)) : ''}</span>
+        <span className="sr-only" role="status">{isAnalyzing && !needsRecovery ? vt(analyzingLine) : recoveryShown ? recoveryLine(announcedProgress(reanalyze.recovery?.completed, reanalyze.recovery?.total)) : reanalyze.doneNotice ? vt(reanalyze.doneNotice) : ''}</span>
         {isAnalyzing && !needsRecovery && (
           <div className="analyzing-banner">
             <span className="analyzing-banner__line" aria-hidden="true">{vt(analyzingLine)}</span>

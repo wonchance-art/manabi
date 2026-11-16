@@ -7,6 +7,7 @@ import { reapplyKoreanBoundaries } from './koreanBoundarySplit';
 import { clearRubyLockOnCorrection } from './aozoraRuby';
 import { CANONICAL_LITERATURE_EDIT_BLOCKED, isCanonicalLiteratureMaterial } from './literatureCanonicalProvider'; // 대조표 없는 판정(ROUTE-AUDIT-2 F5)
 import { isArtBookMaterial } from './artBookProvider';
+import { interruptedImportJson } from './materialImport';
 
 const tokenLine = id => analysisTokenLine(id) ?? NaN;
 
@@ -282,12 +283,22 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
     if (!locale) throw new Error('설명 언어를 확인해 주세요.');
     metadata.explanationLocale = locale;
   }
+  // FLOW-ADD-A1(2026-11-16 KST): 처음 분석(분석 결과가 아직 없는 자료)은 지킬 「기존 분석」이 없다 — 한 줄 실패 · 중단 · 연결 끊김으로
+  // 이미 분석한 줄까지 버리지 않고, 옛 가져오기(MaterialAddPage)와 같은 partial(failed_indices = 남은 줄)로 저장한다.
+  // 남은 줄은 뷰어 복구 「이어서 분석」이 잇는다. 이미 분석된 자료의 재분석은 지금처럼 「다 되거나 그대로」다.
+  // 한국어는 원문 위치 재계산(rebaseKoreanSourceSpans)이 전체 일치를 요구해 빼고, 서버 분석 작업(options.replace)은 자기 실패 길이 있어 뺀다.
+  const firstAnalysis = !selected && !original?.sequence?.length && rawText === material.raw_text
+    && metadata.language !== 'Korean' && !options.replace;
+  let lastBatch = null, interrupted = false;
   // 삭제/줄 이동만 있으면 리맵된 분석을 그대로 검증한다. AI 재호출이 필요하지 않다.
-  let result = selected?.length === 0
+  let result;
+  try {
+    result = selected?.length === 0
     ? { ...structuredClone(original), status: 'completed', failed_indices: [] }
     : await analyze(rawText, signal, {
     metadata, existingJson: base ? structuredClone(base) : null, concurrency: 8,
     onBatch: ({ currentJson }) => {
+      if (firstAnalysis) lastBatch = currentJson;
       checkAbort();
       onProgress?.(currentJson.last_idx);
       if (selected) {
@@ -296,12 +307,27 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
       }
     },
   });
-  checkAbort();
+  } catch (error) {
+    // 처음 분석이 중단(화면 떠남 · 「중단」) · 실패로 끝나도 이미 분석한 줄이 있으면 그 줄까지 저장한다.
+    if (!firstAnalysis || !lastBatch?.sequence?.length) throw error;
+    result = interruptedImportJson(rawText, structuredClone(lastBatch));
+    interrupted = true;
+  }
+  if (!interrupted) checkAbort();
   const settledBoundaries = mappedBoundaries && (selected?.length === 0 ? mappedBoundaries
     : settleReanalysisBoundaries(mappedBoundaries, readBoundaryEdits(result), line => !selected || selected.includes(line)));
   if (selected?.length) result = preserveRetainedKoreanLocales(original,
     mergeReanalysisLines(rawText, original, result, selected));
-  if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 있어요.');
+  let partialFirst = false;
+  if (!completeAnalysis(result, rawText)) {
+    const coverage = firstAnalysis && result?.sequence?.length ? inspectAnalysisCoverage(rawText, result) : null;
+    if (!coverage?.validStructure || coverage.missingIndices.length >= rawText.split('\n').filter(line => line.trim()).length) {
+      throw new Error(firstAnalysis ? '분석을 완료하지 못했어요. 원문은 그대로 있어요.' : '새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 있어요.');
+    }
+    partialFirst = true;
+    result = { ...result, status: 'partial',
+      failed_indices: [...new Set([...(result.failed_indices || []), ...coverage.missingIndices])].sort((a, b) => a - b) };
+  }
   // 다시 분석한 줄의 한국어 기록을 새 어절 morphology로 다시 나눈다(후보 밖이면 pending). 조각 id는 아래 보존 단계가 잇는다.
   let koreanSettled = mappedKorean;
   if (mappedKorean && selected?.length !== 0) {
@@ -318,8 +344,10 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
   let json = preserveReanalysisTokens(material, rawText, { ...result, metadata: mergedMetadata }, corrections || []);
   if (settledBoundaries) json = preserveBoundaryBase(json, priorBoundaries, mappedBoundaries, material.processed_json?.metadata, corrections);
   if (metadata.language === 'Korean') json = rebaseKoreanSourceSpans(rawText, json);
-  if (!completeAnalysis(json, rawText)) throw new Error('분석 연결을 확인하지 못했어요. 기존 원문과 분석은 그대로 있어요.');
-  checkAbort();
+  if (partialFirst ? !inspectAnalysisCoverage(rawText, json).validStructure : !completeAnalysis(json, rawText)) {
+    throw new Error('분석 연결을 확인하지 못했어요. 기존 원문과 분석은 그대로 있어요.');
+  }
+  if (!interrupted) checkAbort();
   options.onCommitting?.();
   // options.replace — 저장 경로 바꾸기(서버 분석 작업은 사용자 세션이 없어 작업 확인 저장 canonical_analysis_save로 — CANON-SERVER-ANALYSIS-001).
   // 같은 인자 · 같은 비교 저장(원문 · 분석이 읽은 때 그대로일 때만)이다.

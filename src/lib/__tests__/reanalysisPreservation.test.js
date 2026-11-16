@@ -101,3 +101,63 @@ describe('AD-R4: a corrected meaning clears the meaningCheck marker on reanalysi
     expect(result.dictionary.id_0_0_old.meaningCheck).toBe('doubt');
   });
 });
+
+// FLOW-ADD-A1(2026-11-16 KST) — 처음 분석(분석 결과가 없는 자료)은 지킬 기존 분석이 없다. 한 줄 실패 · 중단 · 연결 끊김으로
+// 이미 분석한 줄을 버리지 않고 partial(failed_indices = 남은 줄)로 저장한다 — 옛 가져오기와 같은 꼴, 뷰어 「이어서 분석」이 잇는다.
+// 이 묶음은 옛 동작(전부 버리고 「기존 원문과 분석은 그대로 있어요」)으로 되돌리면 실패한다.
+describe('first analysis keeps the lines it already analyzed', () => {
+  const fresh = (language = 'Japanese') => ({ id: 9, owner_id: 'owner', raw_text: '雨。\n晴れ。',
+    processed_json: { status: 'saved', sequence: [], dictionary: {}, last_idx: -1, metadata: { language } } });
+  const line0 = () => ({ sequence: ['id_0_0_t', 'br_0_t'], dictionary: { id_0_0_t: { text: '雨。', meaning: '비' }, br_0_t: { text: '\n', pos: '개행' } }, last_idx: 0, failed_indices: [] });
+  const freshClient = (material) => {
+    const q = { select: () => q, eq: () => q, order: () => q, range: async () => ({ data: [], error: null }) };
+    return { from: vi.fn(() => q), rpc: vi.fn(async (name, p) => ({ data: { material: { ...material, raw_text: p.p_raw, processed_json: p.p_json } } })) };
+  };
+
+  it('one failed line → saves the analyzed line as partial with the rest in failed_indices', async () => {
+    const m = fresh(), c = freshClient(m);
+    const analyze = async () => ({ ...line0(), status: 'partial',
+      sequence: [...line0().sequence, 'failed_1_t'], dictionary: { ...line0().dictionary, failed_1_t: { text: '晴れ。', failed: true, pos: '미분석' } }, failed_indices: [1] });
+    const saved = await runPreservedReanalysis(c, m, new AbortController().signal, analyze);
+    expect(c.rpc).toHaveBeenCalledOnce();
+    expect(saved.processed_json.status).toBe('partial');
+    expect(saved.processed_json.failed_indices).toEqual([1]);
+    expect(saved.processed_json.sequence).toContain('id_0_0_t');
+  });
+
+  it('stopped mid-way (leaving the viewer · 「중단」) → saves the batches done so far', async () => {
+    const m = fresh(), c = freshClient(m), controller = new AbortController();
+    const analyze = async (text, signal, { onBatch }) => {
+      onBatch({ currentJson: line0() });
+      controller.abort();
+      onBatch({ currentJson: line0() });
+      throw new Error('unreachable');
+    };
+    const saved = await runPreservedReanalysis(c, m, controller.signal, analyze);
+    expect(c.rpc).toHaveBeenCalledOnce();
+    expect(saved.processed_json.status).toBe('partial');
+    expect(saved.processed_json.failed_indices).toEqual([1]);
+  });
+
+  it('nothing analyzed → no write, and the message does not claim an earlier analysis exists', async () => {
+    const m = fresh(), c = freshClient(m);
+    const analyze = async () => ({ status: 'failed', sequence: ['failed_0_t'], dictionary: { failed_0_t: { text: '雨。', failed: true } }, failed_indices: [0, 1], last_idx: 1 });
+    await expect(runPreservedReanalysis(c, m, new AbortController().signal, analyze)).rejects.toThrow('원문은 그대로 있어요');
+    await expect(runPreservedReanalysis(c, m, new AbortController().signal, analyze)).rejects.not.toThrow('기존 원문과 분석');
+    expect(c.rpc).not.toHaveBeenCalled();
+  });
+
+  it('stopped before any batch → no write', async () => {
+    const m = fresh(), c = freshClient(m), controller = new AbortController();
+    controller.abort();
+    await expect(runPreservedReanalysis(c, m, controller.signal, async () => line0())).rejects.toThrow();
+    expect(c.rpc).not.toHaveBeenCalled();
+  });
+
+  it('Korean first analysis and already-analyzed materials keep 「all or nothing」', async () => {
+    const ko = fresh('Korean'), c = freshClient(ko);
+    const partial = async () => ({ ...line0(), status: 'partial', failed_indices: [1] });
+    await expect(runPreservedReanalysis(c, ko, new AbortController().signal, partial)).rejects.toThrow();
+    expect(c.rpc).not.toHaveBeenCalled();
+  });
+});

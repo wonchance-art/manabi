@@ -70,6 +70,14 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
   const committingRef = useRef(false);
   const [committing, setCommitting] = useState(false);
   const [recovery, setRecovery] = useState(null);
+  // FLOW-ADD-A5: 처음 분석을 마친 알림은 화면 알림(폰에서 첫 단어 카드의 등급 단추를 4초 덮던 것) 대신 낭독 영역으로만 — 배너가 사라지고
+  // 본문이 눌리는 것이 화면의 완료 신호다. 낭독 문구는 5초 뒤 비운다(같은 문구가 다음 완료 때 다시 읽히게).
+  const [doneNotice, setDoneNotice] = useState('');
+  useEffect(() => {
+    if (!doneNotice) return undefined;
+    const timer = setTimeout(() => setDoneNotice(''), 5000);
+    return () => clearTimeout(timer);
+  }, [doneNotice]);
   const queryClient = useQueryClient();
   useEffect(() => () => abortRef.current?.abort(), [materialId]);
   const [confirmState, setConfirmState] = useState(null);
@@ -81,7 +89,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
   const missingIndices = useMemo(() => computeMissingLineIndices(material), [material]);
 
   const mutation = useMutation({
-    onMutate: () => ({ materialId }),
+    onMutate: () => ({ materialId, firstAnalysis: !material?.processed_json?.sequence?.length }),
     // 편집 초안과 리맵된 분석은 성공한 최종 교체 전까지 메모리에만 둔다.
     mutationFn: async ({ fullReset = false, resume = false, selectedLineIndices = null, rawTextOverride = null, baseJsonOverride = null } = {}) => {
       let rawText = rawTextOverride || material?.raw_text;
@@ -128,6 +136,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
       // PR③: 뷰어는 onPendingBoundaries로 목업 문구(3개 언어) + [보기](적용하지 못한 기록 목록)를 띄운다. 없으면 한국어 한 벌.
       else if (pendingBoundaryCount(json) && onPendingBoundaries) onPendingBoundaries(pendingBoundaryCount(json));
       else if (pendingBoundaryCount(json)) toast?.(`분석을 다시 했어요. 직접 고친 단어 경계 ${pendingBoundaryCount(json)}개는 적용하지 못했어요.`, 'warning');
+      else if (scope?.firstAnalysis) setDoneNotice('분석을 마쳤어요');
       else toast?.('분석을 마쳤어요', 'success');
       refetch?.();
     },
@@ -145,6 +154,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
     stale,
     missingIndices,
     committing,
+    doneNotice,
     recovery: recovery?.materialId === materialId && mutation.isPending ? recovery : null,
     request: (opts) => setConfirmState(opts),
     confirm: () => { mutation.mutate(confirmState); setConfirmState(null); },
