@@ -13,7 +13,8 @@ import { LATIN_WORD_LEVELS } from './latinLevelWords';
 export const JA_LEVEL_INDEX_URL = '/api/level-index/japanese';
 
 let jaIndex = null; // Promise<Map<표제어, 레벨 숫자>>
-function japaneseLevels(fetchImpl) {
+/** 표제어 → JLPT 급수(5–1) — 같은 찾기 색인 한 번만 받는다. 인쇄 학습지 뜻풀이 급수(printSheet.printLevelLabel)도 이 표를 쓴다. */
+export function japaneseLevels(fetchImpl = globalThis.fetch) {
   jaIndex ||= fetchImpl(JA_LEVEL_INDEX_URL)
     .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`level-index ${res.status}`))))
     .then((body) => new Map((body?.rows || []).map((row) => [row[0], row[3]])))
