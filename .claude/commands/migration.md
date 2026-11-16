@@ -1,39 +1,39 @@
 # /migration — Supabase 마이그레이션 생성
 
 ## 역할
-이 프로젝트(Anatomy Studio)의 Supabase 마이그레이션 SQL을 생성한다.
+manabi의 Supabase 마이그레이션 SQL을 만든다. 스키마 변경과 운영 데이터 보정이 같은 길(`supabase/migrations/` → main 병합 → `supabase-migrations.yml` db push)로 나간다.
 
 ## 프로젝트 컨텍스트
-- DB: Supabase (PostgreSQL)
-- 주요 테이블: `profiles`, `reading_materials`, `user_vocabulary`, `forum_posts`, `forum_comments`, `forum_post_likes`, `forum_comment_likes`, `notifications`
-- RLS: 모든 테이블에 적용. `auth.uid()` 기반
-- 컨벤션: snake_case, `id uuid DEFAULT gen_random_uuid()`, `created_at timestamptz DEFAULT now()`
+- DB: Supabase(PostgreSQL), 프로젝트 정본 표는 `supabase/migrations/`가 만든 것이다 — 표 이름을 추측하지 말고 최신 마이그레이션 · `information_schema`로 확인한다.
+- RLS: 모든 공개 스키마 표에 적용, `auth.uid()` 기반. 함수는 `SECURITY DEFINER`면 `search_path ''` · 실행 권한을 필요한 역할에만.
+- 학습 계약 지문 넷(core · manual · admission · activity, `fsrs_private.*_hash_live()`)은 어떤 마이그레이션도 바꾸지 않는다 — 사후 검사에서 같은 트랜잭션 안에 다시 잰다.
+
+## 파일 이름 — 날짜는 main의 마지막 마이그레이션보다 뒤
+- `YYYYMMDDHHMMSS_<주제>.sql`. **main에 있는 마지막 파일보다 늦은 시각**으로 만든다. db push(`--include-all` 없음)는 운영에 마지막으로 적용된 것보다 앞선 로컬 파일을 거부해 사슬 전체가 멈춘다
+  (2026-11-12 실측: VOA 반입 `20261109020000`이 그 사이 적용된 `20261112020000` 뒤에 병합되려다 막혀 `20261112040000`으로 옮김).
+- 오래 열린 PR은 병합 직전에 main의 마지막 파일과 다시 비교한다. 날짜만 옮기고 내용은 그대로 둔다(백업 표 · 복원 SQL 이름은 그대로 둬도 된다).
+
+## 운영 데이터 보정 — 기본 꼴 (2026-11 확립)
+1. **고정 대상표**: 고칠 행 · 토큰을 VALUES로 박는다(조건식으로 넓게 고르지 않는다).
+2. **사전 검사**: 지금 값 = 옛 값일 때만 바꾼다. 다르면 그 행만 건너뛰고 NOTICE. 손 보정(`token_corrections` · 뷰어 교정)이 있는 토큰은 건너뛴다.
+3. **백업**: `backup_private.<주제>_<날짜>`에 바꾸기 전 값. RLS on · `REVOKE ALL ... FROM PUBLIC, anon, authenticated`. 백업이 이미 있으면 무변경(멱등).
+4. **사후 검사**(같은 트랜잭션, 어긋나면 RAISE → 전체 롤백): 새 값 · 바꾸지 않은 칸 = 백업 · 다른 행 md5 그대로 · 지문 넷 그대로.
+   - 사용자 자료에 「토큰 이음 = raw_text」를 가정하지 않는다 — 원래부터 다를 수 있다. 「백업과 같음」으로 비교한다(2026-11-11 id 284 실측).
+5. **복원 SQL**: `docs/sql/<주제>-<날짜>-rollback.sql`, 행 · 토큰 단위. 학습 기록이 붙으면 지우지 않고 멈추는 가드(CASCADE 표가 많다).
+6. **계약**: `supabase/tests/<주제>.mjs`(PGlite, 운영 접속 없음) — 적용 · 재적용 무변경 · 사전 검사 건너뜀 · 복원 · 실패 경로. `.github/workflows/ci.yml`에 한 줄 등록.
+7. **사용자 비공개 자료 본문을 저장소에 옮기지 않는다** — 마이그레이션 · 주석 · 검증 기록에는 id · 낱말 단위까지만.
+
+## 하지 않는 것
+- **행 삭제 · 파괴적 변경은 오너 확인 뒤에만.** 백업 · 복원을 갖춘 마이그레이션으로 바꿔도 확인 단계를 건너뛰는 것이 아니다(2026-11-12 고아 10행 — 마이그레이션 판으로 바꾼 것을 보류, CLAUDE.md 지속 승인 「파괴적 데이터 변경은 포함하지 않는다」).
+- 다른 행 md5 사후 검사는 같은 시각에 예약 크론(분석 02:45 · 03:30 KST 전후)이 자료를 쓰면 롤백된다 — 그 시간대를 피해 병합하고, 롤백되면 크론 뒤 워크플로를 다시 돌린다.
 
 ## 요청
 $ARGUMENTS
 
 ## 출력 형식
-
-아래 순서로 출력한다:
-
-### 1. 변경 요약
-무엇을 왜 바꾸는지 1~3줄 설명.
-
-### 2. Migration SQL (실행용)
-```sql
--- ① 테이블/컬럼 변경
--- ② 인덱스
--- ③ RLS 정책 (필요 시)
--- ④ 트리거 (필요 시)
-```
-
-### 3. Rollback SQL
-```sql
--- 롤백 시 실행할 SQL
-```
-
-### 4. 프론트엔드 영향
-변경으로 인해 수정이 필요한 파일과 이유를 나열한다.
-
-### 5. 주의사항
-데이터 유실 위험, 배포 순서, 기타 체크리스트.
+1. **변경 요약** — 무엇을 왜, 1~3줄. 대상 행 수 · 운영 실측(읽기 전용) 근거.
+2. **Migration SQL** — 사전 검사 → 백업 → 변경 → 사후 검사 순.
+3. **Rollback SQL** — `docs/sql/` 파일.
+4. **계약** — PGlite 검사 목록 · ci.yml 줄.
+5. **화면 영향** — 바뀌는 화면이 있으면 목업 게이트(CLAUDE.md)로.
+6. **병합 뒤 사후 확인** — 읽기 전용 질의 목록.
