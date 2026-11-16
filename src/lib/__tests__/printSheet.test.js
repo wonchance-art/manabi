@@ -188,3 +188,12 @@ describe('급수 · 판형 · 긴 묶음 · 출처', () => {
     expect(printAttributionLines({ processed_json: { metadata: {} } })).toEqual([]);
   });
 });
+
+describe('printParagraphs — 본문 첫 줄이 자료 제목과 같으면 빼고 다시 찍지 않는다', () => {
+  const json = { sequence: ['id_0_0', 'br_0', 'id_1_0'], dictionary: { id_0_0: { text: '雨の日' }, br_0: { text: '\n', pos: '개행' }, id_1_0: { text: '朝です。' } } };
+  it('같으면 빼고, 다르면 그대로', () => {
+    expect(printParagraphs(json, '雨の日\n朝です。', { title: '雨の日' }).map((p) => p.lineText)).toEqual(['朝です。']);
+    expect(printParagraphs(json, '雨の日\n朝です。', { title: '晴れ' }).map((p) => p.lineText)).toEqual(['雨の日', '朝です。']);
+    expect(printParagraphs(json, '雨の日\n朝です。').map((p) => p.lineText)).toEqual(['雨の日', '朝です。']);
+  });
+});

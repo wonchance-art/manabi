@@ -170,7 +170,7 @@ export default function PrintPage({ id: rawId }) {
     || (savedOk && exclusionState.isSuccess && (!knownLangCode || knownState.isSuccess));
 
   const literature = useCanonicalLiterature(material);
-  const paragraphs = useMemo(() => printParagraphs(json, material?.raw_text), [json, material?.raw_text]);
+  const paragraphs = useMemo(() => printParagraphs(json, material?.raw_text, { title: material?.title }), [json, material?.raw_text, material?.title]);
   const kuruNext = useMemo(() => kuruNextTexts(json?.sequence, json?.dictionary), [json]);
   const stateOf = useMemo(() => {
     const memo = new Map();

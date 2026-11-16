@@ -47,7 +47,7 @@ export function pickPrintOption(value, list, fallback) {
  * 제목 줄(# 표지 · 휴리스틱 — 뷰어 computeHeadingLevels)은 heading 단계를 달고 # 표지 토큰은 뺀다.
  * @returns {Array<{rawIdx:number, lineText:string, heading:number, tokens:Array<object & {key:string, gap:string}>}>}
  */
-export function printParagraphs(json, rawText) {
+export function printParagraphs(json, rawText, { title = '' } = {}) {
   const dict = json?.dictionary;
   const rawLines = String(rawText ?? '').split('\n');
   const headings = computeHeadingLevels(rawLines);
@@ -69,6 +69,9 @@ export function printParagraphs(json, rawText) {
     const lineText = raw.trim().replace(HEADING_MARK, '');
     out.push({ rawIdx: group.rawIdx, lineText, heading: headings[group.rawIdx] || (marked ? HEADING_MARK.exec(raw.trim())[1].length : 0), tokens });
   }
+  // 본문 첫 줄이 자료 제목과 같으면(가져올 때 첫 줄 = 제목인 자료가 많다) 종이 머리 제목과 겹쳐 두 번 찍히므로 뺀다.
+  const same = (a, b) => String(a).replace(/\s+/gu, '') === String(b).replace(/\s+/gu, '');
+  if (title && out[0] && same(out[0].lineText, title)) out.shift();
   return out;
 }
 
