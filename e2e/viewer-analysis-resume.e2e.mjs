@@ -77,7 +77,7 @@ try {
   const rect=await resume().boundingBox();assert(rect.height>=44);await shot('before-'+width);
   const before=structuredClone(material.processed_json.dictionary.id_0_0_resume),start=commits;
   await resume().focus();await page.keyboard.press('Enter');
-  await page.getByRole('button',{name:'⏹ 중단',exact:true}).waitFor();
+  await page.getByRole('button',{name:'중단',exact:true}).waitFor();
   await shot('during-'+width);
   await page.waitForFunction(()=>!document.querySelector('.analyzing-banner'));
   assert.equal(commits,start+1);assert.deepEqual(material.processed_json.dictionary.id_0_0_resume,before);
@@ -86,7 +86,7 @@ try {
   await shot('after-'+width);await pass('resume preserves corrections and panel at '+width+'px');
  }
  material=original();mode='slow';await open('abort');const before=structuredClone(material),beforeCommit=commits;
- await resume().click();await page.getByRole('button',{name:'⏹ 중단',exact:true}).click();await resume().waitFor();
+ await resume().click();await page.getByRole('button',{name:'중단',exact:true}).click();await resume().waitFor();
  await page.waitForTimeout(1500);assert.equal(commits,beforeCommit);assert.deepEqual(material,before);await pass('stop never replaces the old source');
  // 이 검사는 스크롤 보기에서 잰다(2026-10-17 KST 실측). 1440 기본은 쪽 넘김 보기라 scrollIntoViewIfNeeded로 굴린 가로 위치를
  // 쪽 넘김이 곧바로 쪽 경계로 되돌려(44ms) 「읽던 자리」가 그 낱말이 아니게 된다 — 세로 y 비교가 604px 이동으로 실패하던 까닭이다

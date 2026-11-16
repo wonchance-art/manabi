@@ -140,7 +140,7 @@ describe('⑤ 상시 알림 영역의 보이는 사본 — aria-hidden + 이름 
     ['src/views/ViewerPage.jsx', 'id="viewer-position-notice"', '<div className="error-banner"><span aria-hidden="true">'],
     // 긴 작업 진행(LOADING-ANNOUNCE-001 ③ — loadingAnnounce.test.js)
     ['src/views/ViewerPage.jsx', '<span className="sr-only" role="status">{wordDetail?.loading', '<p className="reader-card-learn__pending" aria-hidden="true">'],
-    ['src/views/ViewerPage.jsx', '<span className="sr-only" role="status">{isAnalyzing', '<span className="analyzing-banner__line" aria-hidden="true">{vt(analyzingLine)}</span>'],
+    ['src/views/ViewerPage.jsx', '<span className="sr-only" role="status">{isAnalyzing', '<span className="analyzing-banner__line" aria-hidden="true">{withCount(vt(analyzingLine), analysisProgress?.processed)}</span>'],
     ['src/views/ViewerPage.jsx', '<span className="sr-only" role="status">{isAnalyzing', '<span className="analyzing-banner__line" aria-hidden="true">{recoveryLine('],
     // 듣기 따라가기 멈춤(목업 listen-resume) — 보이는 칩 글은 「지금 문장으로」라 같은 글의 사본이 없다
     ['src/views/ViewerPage.jsx', '<span className="sr-only" role="status">{listenFollowable && listenStopped', null],

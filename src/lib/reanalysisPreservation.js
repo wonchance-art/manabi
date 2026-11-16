@@ -297,10 +297,11 @@ export async function runPreservedReanalysis(client, material, signal, analyze, 
     ? { ...structuredClone(original), status: 'completed', failed_indices: [] }
     : await analyze(rawText, signal, {
     metadata, existingJson: base ? structuredClone(base) : null, concurrency: 8,
-    onBatch: ({ currentJson }) => {
+    onBatch: ({ currentJson, processed, total }) => {
       if (firstAnalysis) lastBatch = currentJson;
       checkAbort();
-      onProgress?.(currentJson.last_idx);
+      // 뷰어 분석 배너의 「n / m줄」(FLOW-ADD-B6) — 분석기가 센 처리 줄 수 · 전체 줄 수를 그대로 넘긴다.
+      onProgress?.({ processed, total });
       if (selected) {
         const missing = new Set(inspectAnalysisCoverage(rawText, currentJson).missingIndices);
         options.onRecoveryProgress?.({ completed: selected.filter(line => !missing.has(line)).length, total: selected.length });

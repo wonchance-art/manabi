@@ -1950,15 +1950,10 @@ body.is-review-chrome .page-container { padding-top: 8px; }
 
 .progress-bar__fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-  background-size: 200% 100%;
+  /* 한 색 칠(FLOW-ADD-B6 · unslop) — 뷰어 분석 막대와 같은 꼴. 그라디언트 · 반짝임 애니메이션은 걷었다. */
+  background: var(--primary);
   border-radius: 10px;
   transition: width 0.4s ease;
-  animation: progressShimmer 1.5s ease infinite;
-}
-@keyframes progressShimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
 }
 .progress-bar__fill--done {
   background: var(--accent);
@@ -2465,6 +2460,8 @@ a.viewer-badge:hover {
   width: 100%;
   padding: 15px 20px;
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
   justify-content: space-between;
   align-items: center;
   color: var(--primary-light);
@@ -2540,6 +2537,12 @@ a.viewer-badge:hover {
   background: rgba(255, 118, 117, 0.1);
 }
 
+
+/* 분석 진행(FLOW-ADD-B6) — 배너 아래 한 줄 막대. 색은 배너 글자색(currentColor) 하나, 칠 · 빛 없이. 중단 단추는 위험 칠 한 벌. */
+.analyzing-banner__refresh.analyzing-banner__stop { background: var(--danger); }
+.analyzing-banner__bar { flex-basis: 100%; height: 4px; border-radius: 2px; overflow: hidden; background: color-mix(in srgb, currentColor 18%, transparent); }
+.analyzing-banner__bar > div { height: 100%; background: currentColor; transition: width 0.3s ease; }
+@media (prefers-reduced-motion: reduce) { .analyzing-banner__bar > div { transition: none; } }
 
 .analyzing-banner__refresh {
   background: var(--primary);
