@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { studiesOwnText } from '../materialComposer';
+import { sliceBetween } from './helpers/sliceBetween';
 
 const read = (path) => fs.readFileSync(path, 'utf8');
 const original = (over = {}) => ({ raw_text: '雨。', processed_json: { metadata: { composer: { version: 1, role: 'original' } } }, ...over });
@@ -10,7 +11,7 @@ const original = (over = {}) => ({ raw_text: '雨。', processed_json: { metadat
 describe('A3 — 옛 가져오기에서 화면을 떠나 멈춰도 중단 상태를 저장한다', () => {
   it('catch는 화면이 살아 있는지 보기 전에 interruptedImportJson을 저장한다', () => {
     const src = read('src/views/MaterialAddPage.jsx');
-    const catchBlock = src.slice(src.indexOf('const interrupted = interruptedImportJson(record.raw_text, lastJson);') - 400);
+    const catchBlock = sliceBetween(src, '    } catch (err) {\n      // FLOW-ADD-A3', '    } finally {');
     const persist = catchBlock.indexOf('await persistImportAnalysis(supabase, record, interrupted)');
     const bail = catchBlock.indexOf('if (!aliveRef.current) return;');
     expect(persist).toBeGreaterThan(0);
@@ -43,7 +44,7 @@ describe('A5 — 처음 분석 완료는 화면 알림 대신 낭독 영역으�
   it('useReanalyze는 처음 분석 성공에 toast를 띄우지 않고 doneNotice를 둔다(재분석은 그대로 toast)', () => {
     const src = read('src/lib/useReanalyze.js');
     expect(src).toContain('firstAnalysis: !material?.processed_json?.sequence?.length');
-    expect(src).toMatch(/else if \(scope\?\.firstAnalysis\) setDoneNotice\('분석을 마쳤어요'\);\s*else toast\?\.\('분석을 마쳤어요', 'success'\);/);
+    expect(src).toMatch(/else if \(scope\?\.firstAnalysis\) setDoneNotice\('분석이 끝났어요'\);\s*else toast\?\.\('분석을 마쳤어요', 'success'\);/);
     expect(read('src/views/ViewerPage.jsx')).toContain("reanalyze.doneNotice ? vt(reanalyze.doneNotice) : ''");
   });
 });

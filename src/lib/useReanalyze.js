@@ -136,7 +136,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
       // PR③: 뷰어는 onPendingBoundaries로 목업 문구(3개 언어) + [보기](적용하지 못한 기록 목록)를 띄운다. 없으면 한국어 한 벌.
       else if (pendingBoundaryCount(json) && onPendingBoundaries) onPendingBoundaries(pendingBoundaryCount(json));
       else if (pendingBoundaryCount(json)) toast?.(`분석을 다시 했어요. 직접 고친 단어 경계 ${pendingBoundaryCount(json)}개는 적용하지 못했어요.`, 'warning');
-      else if (scope?.firstAnalysis) setDoneNotice('분석을 마쳤어요');
+      else if (scope?.firstAnalysis) setDoneNotice('분석이 끝났어요');
       else toast?.('분석을 마쳤어요', 'success');
       refetch?.();
     },
