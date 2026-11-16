@@ -5256,6 +5256,8 @@ export default function ViewerPage({ seed } = {}) {
         {ttsSupported&&pickedSentence&&<button onClick={()=>setDictationSentence(pickedSentence.text)}><b>{vt("선택 문장 받아쓰기")}</b><span>{vt("지금 지정한 문장으로 시작해요")}</span></button>}
         {isDone&&<><button onClick={()=>setShowReadingTest(true)}><b>{vt("읽기 확인")}</b><span>{vt("전체 자료 · 기존 읽기 확인 기록에 연결돼요")}</span></button>{user&&!conversation&&<button disabled={conversationOpening} onClick={()=>{setActiveModal(null);openConversation();}}><b>{vt("대화")}</b><span>{vt("이 자료를 주제로 대화해요")}</span></button>}</>}
         {!isDone&&<p>{vt("자료 분석이 끝나면 읽기 확인과 대화를 사용할 수 있어요.")}</p>}
+        {/* 인쇄 학습지(PRINT-SHEET-001) — 분석이 끝난 자료만. 팀 사본(기기 안) · 한국어 자료(화면 언어가 한국어가 아닐 수 있다)는 아직 싣지 않는다. */}
+        {isDone&&!isLocalId(id)&&materialLang!=='Korean'&&<Link className="reader-activity-menu__item" href={`/viewer/${encodeURIComponent(id)}/print`}><b>{vt("인쇄")}</b><span>{vt("본문만 또는 해석용 학습지로 종이에 뽑아요")}</span></Link>}
         {/* 툴바 ⋯의 후신(AD-R2 설계 Q1 ③) — 조건·동작은 그대로, 자리만 「학습」 창의 마지막 항목. */}
         {user?.id===material?.owner_id&&!passageOf(material)&&!isAnalyzing&&<button onClick={()=>{setActiveModal(null);setReanalyzePanel('menu');}}><b>{vt("자료 관리")}</b><span>{vt("다시 분석하거나 원문을 고쳐요")}</span></button>}
       </div></ViewerModal>}
