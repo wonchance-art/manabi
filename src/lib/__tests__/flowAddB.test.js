@@ -60,7 +60,12 @@ describe('B8 — 옛 가져오기 언어는 글자로 짐작 · 입구 이모지
 
 describe('B9 — 한국어 입구는 계정 배포 계약일 때만', () => {
   it('작성기 위 링크 · 옛 가져오기 버튼이 작성기 언어 칩과 같은 useStudyLanguages를 따른다', () => {
-    expect(read('src/components/materials/MaterialEntry.jsx')).toContain('&& textReadingSupported(info) && studyLanguageList.includes(info.language));');
+    const entry = read('src/components/materials/MaterialEntry.jsx');
+    expect(entry).toContain('const textReadingLinks = textReadingLanguages.filter(info => studyLanguageList.includes(info.language));');
+    expect(entry).toContain('textReadingLinks.map(info => (');
+    // 주소로 온 길(isTextReading)은 계약 확인에 묶지 않는다 — 확인이 다시 도는 동안 화면이 갈리지 않게.
+    expect(entry).toContain('&& textReadingLanguages.some(info => info.language === requested?.language);');
+    expect(entry).not.toMatch(/const textReadingLanguages = [^;]*studyLanguageList/);
     const page = read('src/views/MaterialAddPage.jsx');
     expect(page).toContain("&& (info.code !== 'ko' || koreanReady)");
     expect(page).toContain("const koreanReady = studyLanguageList.some(value => viewerLanguageInfo(value)?.code === 'ko');");

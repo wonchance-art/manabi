@@ -20,12 +20,13 @@ function elements(tree) {
 describe('discoverable registered text reading entry', () => {
   beforeEach(() => { query.params = new URLSearchParams(); query.korean = true; vi.stubGlobal('React', React); });
 
-  it('한국어 계약이 없는 계정에는 「한국어 텍스트 읽기」 입구를 보이지 않고, 한국어 주소도 작성기로 연다(FLOW-ADD-B9)', () => {
+  it('한국어 계약이 없는(또는 확인 중인) 계정에는 「한국어 텍스트 읽기」 입구를 보이지 않는다 — 주소로 온 길은 같은 가져오기 화면(FLOW-ADD-B9)', () => {
     query.korean = false;
     const initial = elements(MaterialEntry());
     expect(initial.some(node => node.type === 'Link' && node.props.href === '/materials/add?language=ko')).toBe(false);
+    // 확인은 화면이 열릴 때마다 다시 돈다 — 그동안 길이 바뀌면 작성기 ↔ 가져오기가 끝없이 갈린다(e2e 실측). 한국어 선택은 가져오기 화면이 확인 뒤 거둔다.
     query.params.set('language', 'ko');
-    expect(elements(MaterialEntry()).some(node => node.type === 'MaterialComposer')).toBe(true);
+    expect(MaterialEntry().type).toBe('TextImport');
   });
   afterEach(() => vi.unstubAllGlobals());
 
