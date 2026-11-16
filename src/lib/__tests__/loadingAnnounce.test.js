@@ -117,7 +117,7 @@ describe('③ 긴 작업 — 늘 있는 영역 · 약 10%마다', () => {
   it('뷰어: 자세한 설명(AI)과 분석 · 복구 배너는 늘 있는 영역 하나씩, 복구 숫자는 announcedProgress', () => {
     const src = read('src/views/ViewerPage.jsx');
     expect(src).toContain('<span className="sr-only" role="status">{wordDetail?.loading ? vt("상세 설명 만드는 중…") : \'\'}</span>\n        {wordDetail?.loading ? <p className="reader-card-learn__pending" aria-hidden="true">{vt("상세 설명 만드는 중…")}</p>');
-    expect(src).toContain('<span className="sr-only" role="status">{isAnalyzing && !needsRecovery ? vt(analyzingLine) : recoveryShown ? recoveryLine(announcedProgress(reanalyze.recovery?.completed, reanalyze.recovery?.total)) : \'\'}</span>\n        {isAnalyzing && !needsRecovery && (');
+    expect(src).toContain('<span className="sr-only" role="status">{isAnalyzing && !needsRecovery ? vt(analyzingLine) : recoveryShown ? recoveryLine(announcedProgress(reanalyze.recovery?.completed, reanalyze.recovery?.total)) : reanalyze.doneNotice ? vt(reanalyze.doneNotice) : \'\'}</span>\n        {isAnalyzing && !needsRecovery && (');
     expect(src).toContain('<span className="analyzing-banner__line" aria-hidden="true">{vt(analyzingLine)}</span>');
     expect(src).toContain('<span className="analyzing-banner__line" aria-hidden="true">{recoveryLine(reanalyze.recovery?.completed)}</span>');
     expect(src).not.toMatch(/<span role="status" aria-live="polite">\{reanalyze\.committing/);

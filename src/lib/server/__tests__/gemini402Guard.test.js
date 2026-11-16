@@ -170,6 +170,8 @@ describe('② 분석 데이터 보호 — 뜻 빈 완료본을 만들지 않는�
     expect(text.match(/const serviceStop = createServiceStop\(\);/g)).toHaveLength(2);
     expect(text).toContain('throw new Error(data?.error || `HTTP ${res.status}`);');
     const preserve = read('src/lib/reanalysisPreservation.js');
-    expect(preserve).toContain("if (!completeAnalysis(result, rawText)) throw new Error('새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 있어요.');");
+    // FLOW-ADD-A1(2026-11-16 KST): 재분석(이미 분석된 자료)은 그대로 완료 검사에서 멈춘다 — 처음 분석만 partial로 남긴다(reanalysisPreservation.test).
+    expect(preserve).toContain("if (!completeAnalysis(result, rawText)) {");
+    expect(preserve).toContain("throw new Error(firstAnalysis ? '원문은 그대로 있어요.' : '새 분석을 완료하지 못했어요. 기존 원문과 분석은 그대로 있어요.');");
   });
 });

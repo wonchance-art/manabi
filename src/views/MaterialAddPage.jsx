@@ -476,10 +476,15 @@ function MaterialAddForm() {
       setProgress(100);
 
     } catch (err) {
-      if (!aliveRef.current) return;
+      // FLOW-ADD-A3: 화면을 떠나 멈춘 경우에도 중단 상태를 저장한다(최선 시도). 전에는 여기서 바로 빠져
+      // 자료가 「analyzing」으로 굳고, 뷰어가 아무것도 돌지 않는데 최대 3분(isStaleAnalyzing)간 「분석하고 있어요」를 보였다.
       const interrupted = interruptedImportJson(record.raw_text, lastJson);
       analysisJsonRef.current = interrupted;
-      try { await persistImportAnalysis(supabase, record, interrupted); }
+      try {
+        await persistImportAnalysis(supabase, record, interrupted);
+        // 떠난 뒤라면 이미 열린 뷰어 · 서재가 굳은 상태를 들고 있지 않게 그 자료 조회를 다시 받게 한다.
+        if (!aliveRef.current) queryClient.invalidateQueries({ queryKey: ['material', String(record.id)] });
+      }
       catch { if (aliveRef.current) setError('원문은 저장됐지만 분석 결과를 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.'); }
       if (!aliveRef.current) return;
       setAnalysisState('paused');

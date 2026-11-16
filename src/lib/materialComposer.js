@@ -71,6 +71,18 @@ export function composerOf(material) {
   return value?.version === 1 ? value : null;
 }
 
+/**
+ * 원본 행을 그대로 학습으로 연 경우인가(FLOW-ADD-A4, 2026-11-16 KST) — 학습 사본 · 구간이 아니고, 원본을 고친 뒤도 아니어서
+ * 학습 본문 = 지금 글이다. 이때 뷰어는 「학습에 사용한 본문이에요. 현재 글은 위의 링크에서」 안내를 쓰지 않는다(같은 글을 다른 판처럼 읽혔다).
+ * 원본을 고친 뒤(document_json 본문 ≠ raw_text)에는 그 안내가 맞으므로 그대로 둔다.
+ */
+export function studiesOwnText(material) {
+  const composer = composerOf(material);
+  if (!composer || composer.role === 'study' || composer.passage) return false;
+  const body = material.document_json?.version === 1 ? material.document_json.body : material.raw_text;
+  return (body || '') === (material.raw_text || '');
+}
+
 export function shouldReadComposerOriginal(material, params) {
   if (!composerOf(material)) return false;
   if (composerOf(material).role === 'study') return false;
