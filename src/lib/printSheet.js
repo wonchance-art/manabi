@@ -33,6 +33,19 @@ export const PRINT_PAPER_CSS = Object.freeze({ A4: 'A4', B5: '182mm 257mm' });
 
 // 뜻풀이에 싣지 않는 것 — 문법 기능어 · 부호 · 보조 용언. [문장] 탭 단어 줄(조사 · 기호 제외)보다 좁힌다: 종이 한 칸에 8개뿐이다.
 const PRINT_SKIP_POS = new Set(['조동사', '어기조사', '관사', '전치사', '접속사', '접두사', '접미', '허사', '기타', '방위사', '연체사', '대명사', '양사', '수사']);
+// 영어 · 프랑스어 기능어 — 분석기가 동사 · 형용사 · 부사로 달아 품사로는 못 거르는 말(be · have · do · 소유 한정사 · 부정 · 정도 부사 · 대명사).
+// 운영 실측(2026-11-18 KST, VOA 공개 자료 인쇄): 「is · their · not · very · now」가 뜻풀이 8칸을 차지했다.
+const LATIN_FUNCTION_WORDS = new Set([
+  'be', 'am', 'is', 'are', 'was', 'were', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'can', 'could',
+  'shall', 'should', 'may', 'might', 'must', 'a', 'an', 'the', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we',
+  'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their', 'not', 'no', 'and', 'or', 'but', 'so', 'if',
+  'of', 'to', 'in', 'on', 'at', 'by', 'for', 'with', 'from', 'as', 'very', 'too', 'also', 'just', 'now', 'then', 'there', 'here',
+  'than', 'what', 'who', 'which', 'when', 'where', 'how', 'all', 'some', 'any', 'more', 'most',
+  'le', 'la', 'les', "l'", 'un', 'une', 'des', 'du', 'de', "d'", 'et', 'ou', 'mais', 'je', "j'", 'tu', 'il', 'elle', 'on', 'nous',
+  'vous', 'ils', 'elles', 'me', "m'", 'te', "t'", 'se', "s'", 'ce', "c'", 'cet', 'cette', 'ces', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes',
+  'son', 'sa', 'ses', 'notre', 'votre', 'leur', 'leurs', 'ne', "n'", 'pas', 'être', 'avoir', 'est', 'sont', 'a', 'ont', 'que', "qu'",
+  'qui', 'en', 'à', 'au', 'aux', 'dans', 'sur', 'pour', 'par', 'avec', 'y', 'très', 'aussi',
+]);
 const LIGHT_BASE = new Set(['する', 'いる', 'ある', 'なる', 'くれる', 'もらう', 'あげる', 'みる', 'おく', 'しまう', 'ます', 'です', 'だ', 'た']);
 // 줄 앞 마크다운 제목 표지(# · ## · ###) — 뷰어 cleanLineText와 같은 규칙.
 const HEADING_MARK = /^(#{1,3})\s/;
@@ -91,9 +104,13 @@ export function printRubyShown(ruby, state) {
 }
 
 /** 뜻풀이 후보 — [문장] 탭 단어 줄과 같은 거르기(sentenceWordGlosses) 위에 인쇄 전용 기능어 · 보조 용언 거르기. */
-function isPrintGlossToken(token) {
+function isPrintGlossToken(token, language) {
   if (!token || PRINT_SKIP_POS.has(token.pos) || token.failed) return false;
   if (LIGHT_BASE.has(token.base_form || token.text)) return false;
+  if (language === 'English' || language === 'French') {
+    const latin = (s) => String(s || '').toLowerCase().replace(/[’]/gu, "'").trim();
+    if (LATIN_FUNCTION_WORDS.has(latin(token.base_form)) || LATIN_FUNCTION_WORDS.has(latin(token.text))) return false;
+  }
   return /\p{L}/u.test(token.text || '');
 }
 
@@ -119,11 +136,15 @@ export function selectGlosses(paragraphs, { language, isFamiliar = () => false, 
     for (const gloss of sentenceWordGlosses(dictionary, paragraph.tokens.map((t) => t.key), { language })) {
       if (items.length >= max) break;
       const token = dictionary[gloss.tokenId];
-      if (seen.has(gloss.key) || !isPrintGlossToken(token) || isFamiliar(token)) continue;
+      if (seen.has(gloss.key) || !isPrintGlossToken(token, language) || isFamiliar(token)) continue;
       seen.add(gloss.key);
       const word = language === 'Chinese' ? gloss.text : (token.base_form || token.text);
-      const reading = language === 'Chinese' ? gloss.reading
+      let reading = language === 'Chinese' ? gloss.reading
         : (token.furigana && token.furigana !== word && !String(token.furigana).startsWith('/') ? String(token.furigana) : '');
+      // 가나 중심 본문(N5 문법 #1~#9 · 교재 1–9과): 「わたし」의 표제어는 기본형 「私」인데 후리가나가 없어 읽기 칸이 비었다(운영 실측 11/18).
+      // 명사는 가나 표기 = 기본형 읽기이므로 그것을 읽기로 싣는다. 활용하는 말은 가나 표기 ≠ 기본형 읽기라 싣지 않는다.
+      if (language === 'Japanese' && !reading && token.pos === '명사' && token.text !== word
+        && /^[\p{Script=Hiragana}\p{Script=Katakana}ー]+$/u.test(token.text || '') && /\p{Script=Han}/u.test(word)) reading = token.text;
       items.push({ key: gloss.key, tokenKey: gloss.tokenId, word, reading, meaning: glossMeaning(gloss.meaning), pos: token.pos || '' });
       refs.set(gloss.tokenId, items.length);
     }

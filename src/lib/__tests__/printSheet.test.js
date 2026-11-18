@@ -197,3 +197,27 @@ describe('printParagraphs — 본문 첫 줄이 자료 제목과 같으면 빼�
     expect(printParagraphs(json, '雨の日\n朝です。').map((p) => p.lineText)).toEqual(['雨の日', '朝です。']);
   });
 });
+
+describe('뜻풀이 다듬기(운영 실측 2026-11-18 KST)', () => {
+  const para = (tokens) => [{ rawIdx: 0, lineText: '', heading: 0, tokens: tokens.map((t, i) => ({ key: `id_0_${i}`, gap: ' ', ...t })) }];
+  it('영어 기능어(is · their · not · very · now)는 품사가 동사 · 형용사 · 부사여도 싣지 않는다', () => {
+    const [{ items }] = selectGlosses(para([
+      { text: 'Springtime', base_form: 'springtime', meaning: '봄철', pos: '명사' },
+      { text: 'is', base_form: 'be', meaning: '이다', pos: '동사' },
+      { text: 'their', base_form: 'their', meaning: '그들의', pos: '형용사' },
+      { text: 'not', base_form: 'not', meaning: '~아닌', pos: '부사' },
+      { text: 'very', base_form: 'very', meaning: '매우', pos: '부사' },
+      { text: 'bloom', base_form: 'bloom', meaning: '꽃이 피다', pos: '동사' },
+    ]), { language: 'English' });
+    expect(items.map((i) => i.word)).toEqual(['springtime', 'bloom']);
+  });
+  it('가나로 쓴 명사는 한자 기본형 옆에 가나 읽기를 싣는다(활용하는 말은 싣지 않는다)', () => {
+    const [{ items }] = selectGlosses(para([
+      { text: 'わたし', base_form: '私', meaning: '나, 저', pos: '명사' },
+      { text: 'がくせい', base_form: '学生', meaning: '학생', pos: '명사' },
+      { text: 'いきます', base_form: '行く', meaning: '가다', pos: '동사' },
+      { text: 'あなた', base_form: 'あなた', meaning: '당신', pos: '명사' },
+    ]), { language: 'Japanese' });
+    expect(items.map((i) => [i.word, i.reading])).toEqual([['私', 'わたし'], ['学生', 'がくせい'], ['行く', ''], ['あなた', '']]);
+  });
+});
