@@ -6,6 +6,7 @@
 // 번역을 새로 만들지 않는다(AI 0) — 없으면 빈 줄 두 줄이다. 계약: src/lib/__tests__/printSheet.test.js.
 import { readerLineGroups } from './readerSections.js';
 import { computeHeadingLevels } from './headingHeuristics.js';
+import { normalizeRefWordKey } from './refWordNormalize.js';
 import { pickableSentenceUnits } from './sentenceNav.js';
 import { locateLineTokens } from './viewerSentenceLine.js';
 import { sentenceWordGlosses, sentenceTranslationParts } from './viewerSentenceGlosses.js';
@@ -121,22 +122,65 @@ export function glossMeaning(meaning) {
 }
 
 /**
- * 해석용 뜻풀이 — 문단마다 처음 나온 모르는 내용어를 GLOSS_MAX개까지. 앞 문단에서 풀이한 말(같은 사전 키)은 다시 싣지 않는다.
+ * 자료 급수 → 난이도 순위(PRINT-GLOSS-002). 일본어 N5 = 1 … N1 = 5 · 중국어 HSK n = n(7–9 = 7) · 영어 · 프랑스어 A1 = 1 … C2 = 6.
+ * 급수 표기가 없으면 null.
+ */
+export function materialLevelRank(language, level) {
+  const s = String(level || '');
+  if (language === 'Japanese') { const m = /N\s*([1-5])/iu.exec(s); return m ? 6 - Number(m[1]) : null; }
+  if (language === 'Chinese') { const m = /HSK\s*([1-9])/iu.exec(s) || /^([1-6])\s*급/u.exec(s); return m ? Math.min(Number(m[1]), 7) : null; }
+  if (language === 'English' || language === 'French') {
+    const m = /\b(A0|A1|A2|B1|B2|C1|C2)\b/iu.exec(s);
+    return m ? { A0: 1, A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6 }[m[1].toUpperCase()] : null;
+  }
+  return null;
+}
+
+/** 단어 난이도 순위 — materialLevelRank와 같은 눈금. 표에 없으면 null(고유명사 · 표 밖 낱말 — 어려운 쪽으로 둔다). */
+export function wordLevelRank(language, word, { zhLevels = null, jaLevels = null, latinLevels = null } = {}) {
+  if (language === 'Chinese') { const n = zhHskLevelOf(word, zhLevels); return Number.isInteger(n) ? n : null; }
+  if (language === 'Japanese') { const n = jaLevels?.get?.(word); return Number.isInteger(n) && n >= 1 && n <= 5 ? 6 - n : null; }
+  if (language === 'English' || language === 'French') {
+    const table = latinLevels?.[language === 'English' ? 'en' : 'fr'];
+    const key = normalizeRefWordKey(language === 'English' ? 'en' : 'fr', word);
+    const n = table?.get?.(key);
+    return Number.isInteger(n) ? n : null;
+  }
+  return null;
+}
+
+/**
+ * 해석용 뜻풀이 — 문단마다 모르는 내용어를 GLOSS_MAX개까지. 앞 문단에서 풀이한 말(같은 사전 키)은 다시 싣지 않는다.
+ * 난이도 기준(PRINT-GLOSS-002, 오너 「쉬운 거 다 적어버리는 거 아님? 기준이 없나」 2026-11-18 KST):
+ * - rankOf(token, word)가 있으면 자료 급수(minRank)보다 쉬운 말(순위 < minRank)은 싣지 않는다 — N4 자료면 N5 단어, A2 자료면 A1 단어.
+ * - 문단 안에서는 등장 순이 아니라 **어려운 순**으로 상한까지 고르고(표에 없는 말 = 가장 어려움), 번호는 본문 순서로 다시 매긴다.
+ *   전에는 등장 순으로 8칸을 채워 문단 앞쪽 쉬운 말이 칸을 차지하고 뒤 문장은 뜻풀이가 없었다(「중간에 멈춤」).
  * isFamiliar(token) — 아는 단어 · 담은 단어(뷰어 「모르는 단어만」과 같은 판정)면 true.
  * 표제어: 중국어 = 사전 키(sentenceWordGlosses text), 그 밖 = 기본형(활용형 대신) · 읽기 = 그 기본형의 읽기(분석기 furigana가 기본형 읽기다).
  * @returns {Array<{items:Array<{key:string, tokenKey:string, word:string, reading:string, meaning:string, pos:string}>, refs:Map<string, number>}>}
  */
-export function selectGlosses(paragraphs, { language, isFamiliar = () => false, max = GLOSS_MAX } = {}) {
+export function selectGlosses(paragraphs, { language, isFamiliar = () => false, max = GLOSS_MAX, rankOf = null, minRank = null } = {}) {
   const seen = new Set();
   return (paragraphs || []).map((paragraph) => {
     const dictionary = Object.fromEntries(paragraph.tokens.map((t) => [t.key, t]));
     const items = [];
     const refs = new Map();
     if (paragraph.heading) return { items, refs };
+    const candidates = [];
+    const inParagraph = new Set();
     for (const gloss of sentenceWordGlosses(dictionary, paragraph.tokens.map((t) => t.key), { language })) {
-      if (items.length >= max) break;
       const token = dictionary[gloss.tokenId];
-      if (seen.has(gloss.key) || !isPrintGlossToken(token, language) || isFamiliar(token)) continue;
+      if (seen.has(gloss.key) || inParagraph.has(gloss.key) || !isPrintGlossToken(token, language) || isFamiliar(token)) continue;
+      const head = language === 'Chinese' ? gloss.text : (token.base_form || token.text);
+      const rank = rankOf ? rankOf(token, head) : null;
+      if (rankOf && minRank != null && rank != null && rank < minRank) continue;
+      inParagraph.add(gloss.key);
+      candidates.push({ gloss, token, rank, order: candidates.length });
+    }
+    const chosen = rankOf
+      ? [...candidates].sort((a, b) => (b.rank ?? Infinity) - (a.rank ?? Infinity) || a.order - b.order).slice(0, max).sort((a, b) => a.order - b.order)
+      : candidates.slice(0, max);
+    for (const { gloss, token } of chosen) {
       seen.add(gloss.key);
       const word = language === 'Chinese' ? gloss.text : (token.base_form || token.text);
       let reading = language === 'Chinese' ? gloss.reading

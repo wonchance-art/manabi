@@ -3,6 +3,7 @@ import {
   GLOSS_MAX, LONG_BLOCK_CHARS, bookTranslation, cachedTranslationText, glossMeaning, isLongBlock, paragraphTranslations,
   pickPrintOption, PRINT_KINDS, PRINT_PAPER_CSS, printAttributionLines, printLevelLabel, printParagraphs, printRubyShown,
   printWordState, selectGlosses, sentencesByLine,
+  materialLevelRank, wordLevelRank,
 } from '../printSheet.js';
 
 // 인쇄 학습지 선택 규칙(PRINT-SHEET-001) — 문단 · 뜻풀이 · 아는 단어 · 번역 · 급수 · 출처.
@@ -219,5 +220,34 @@ describe('뜻풀이 다듬기(운영 실측 2026-11-18 KST)', () => {
       { text: 'あなた', base_form: 'あなた', meaning: '당신', pos: '명사' },
     ]), { language: 'Japanese' });
     expect(items.map((i) => [i.word, i.reading])).toEqual([['私', 'わたし'], ['学生', 'がくせい'], ['行く', ''], ['あなた', '']]);
+  });
+});
+
+describe('난이도 기준(PRINT-GLOSS-002) — 자료 급수보다 쉬운 말은 빼고, 어려운 순으로 고른다', () => {
+  const para = (tokens) => [{ rawIdx: 0, lineText: '', heading: 0, tokens: tokens.map((t, i) => ({ key: `id_0_${i}`, gap: ' ', ...t })) }];
+  it('materialLevelRank — 일본어 N · 중국어 HSK/급 · 영어 · 프랑스어 CEFR', () => {
+    expect(materialLevelRank('Japanese', 'N4')).toBe(2);
+    expect(materialLevelRank('Japanese', 'N5 기초')).toBe(1);
+    expect(materialLevelRank('Chinese', 'HSK2')).toBe(2);
+    expect(materialLevelRank('Chinese', '3급')).toBe(3);
+    expect(materialLevelRank('English', 'A2 초급')).toBe(2);
+    expect(materialLevelRank('French', 'B1 중급')).toBe(3);
+    expect(materialLevelRank('English', '')).toBeNull();
+  });
+  it('A2 자료: A1 단어(now · word · many)는 빼고, 표 밖 · 어려운 말부터 상한까지, 번호는 본문 순서', () => {
+    const ranks = { now: 1, word: 1, many: 1, renewal: 4, growth: 3, plant: 2, springtime: null };
+    const tokens = Object.keys(ranks).map((w) => ({ text: w, base_form: w, meaning: '뜻', pos: '명사' }));
+    const [{ items }] = selectGlosses(para(tokens), { language: 'English', max: 3, minRank: 2, rankOf: (_t, word) => ranks[word] });
+    expect(items.map((i) => i.word)).toEqual(['renewal', 'growth', 'springtime']);
+  });
+  it('rankOf가 없으면(급수 표가 아직 없음) 지금처럼 등장 순', () => {
+    const tokens = ['a1x', 'b2x', 'c1x'].map((w) => ({ text: w, base_form: w, meaning: '뜻', pos: '명사' }));
+    const [{ items }] = selectGlosses(para(tokens), { language: 'English', max: 2 });
+    expect(items.map((i) => i.word)).toEqual(['a1x', 'b2x']);
+  });
+  it('wordLevelRank — 영어 표는 정본 키(소문자)로 찾고, 일본어 N5 = 1', () => {
+    expect(wordLevelRank('English', 'Growth', { latinLevels: { en: new Map([['growth', 3]]) } })).toBe(3);
+    expect(wordLevelRank('Japanese', '学生', { jaLevels: new Map([['学生', 5]]) })).toBe(1);
+    expect(wordLevelRank('Japanese', '図書館', { jaLevels: new Map() })).toBeNull();
   });
 });
