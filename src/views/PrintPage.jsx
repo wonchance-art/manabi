@@ -30,7 +30,7 @@ import { siteUrl } from '../lib/seo';
 import {
   CIRCLED, PRINT_KINDS, PRINT_PAPERS, PRINT_PAPER_CSS, PRINT_RUBY, PRINT_SIZES, PRINT_SIZE_PT,
   isLongBlock, paragraphTranslations, pickPrintOption, printAttributionLines, printLevelLabel, printParagraphs,
-  printRubyShown, printWordState, selectGlosses, sentencesByLine,
+  printRubyShown, printWordState, selectGlosses, sentencesByLine, materialLevelRank, wordLevelRank,
 } from '../lib/printSheet';
 import '../components/viewer/print-sheet.css';
 
@@ -180,11 +180,7 @@ export default function PrintPage({ id: rawId }) {
       return memo.get(key);
     };
   }, [savedWords, knownWordSet, language]);
-  const glosses = useMemo(() => selectGlosses(paragraphs, {
-    language, isFamiliar: (token) => { const s = stateOf(token); return s.isKnown || s.isSaved; },
-  }), [paragraphs, language, stateOf]);
-
-  // 급수 — 해석용에서만 받는다(중국어 HSK 2026 표 · 일본어 JLPT 찾기 색인, 둘 다 단어 페이지와 같은 정적 자료).
+  // 급수 — 해석용에서만 받는다(중국어 HSK 2026 표 · 일본어 JLPT 찾기 색인 · 영어 · 프랑스어 CEFR 색인, 모두 단어 페이지와 같은 정적 자료).
   const study = kind === 'study';
   const zhLevels = useZhHskLevels(study && language === 'Chinese');
   const [jaLevels, setJaLevels] = useState(null);
@@ -194,6 +190,25 @@ export default function PrintPage({ id: rawId }) {
     import('../lib/levelExampleLookup').then((m) => m.japaneseLevels()).then((map) => { if (alive) setJaLevels(map); }, () => {});
     return () => { alive = false; };
   }, [study, language, jaLevels]);
+  const latinLanguage = language === 'English' || language === 'French';
+  const [latinLevels, setLatinLevels] = useState(null);
+  useEffect(() => {
+    if (!study || !latinLanguage || latinLevels) return undefined;
+    let alive = true;
+    fetch('/api/level-index/latin').then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+      .then((body) => { if (alive) setLatinLevels({ en: new Map(body?.en || []), fr: new Map(body?.fr || []) }); }, () => {});
+    return () => { alive = false; };
+  }, [study, latinLanguage, latinLevels]);
+
+  // 뜻풀이 — 자료 급수보다 쉬운 말은 싣지 않고, 문단 안에서는 어려운 순으로 고른다(PRINT-GLOSS-002). 급수 표기가 없는 자료는 가장 쉬운 단계만 거른다.
+  // 급수 표가 아직 안 왔으면(받는 중 · 실패) 난이도 거름 없이 지금처럼 등장 순 — 빈 뜻풀이보다 낫다.
+  const levelTables = useMemo(() => ({ zhLevels, jaLevels, latinLevels }), [zhLevels, jaLevels, latinLevels]);
+  const tableReady = language === 'Chinese' ? !!zhLevels : language === 'Japanese' ? !!jaLevels : latinLanguage ? !!latinLevels : false;
+  const minRank = materialLevelRank(language, json?.metadata?.level) ?? 2;
+  const glosses = useMemo(() => selectGlosses(paragraphs, {
+    language, isFamiliar: (token) => { const s = stateOf(token); return s.isKnown || s.isSaved; },
+    ...(tableReady ? { rankOf: (_token, word) => wordLevelRank(language, word, levelTables), minRank } : {}),
+  }), [paragraphs, language, stateOf, tableReady, levelTables, minRank]);
 
   // 번역 — 교재 맵, 그다음 이 기기의 뷰어 번역(같은 viewer_tx 키 — 뷰어 cacheScope와 같은 범위). 읽기만 한다.
   const [translations, setTranslations] = useState(null);

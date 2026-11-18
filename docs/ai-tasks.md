@@ -882,6 +882,8 @@
   FLOW-ADD-A #1805 squash `e5288f2`(22:03): 처음 분석 부분 결과 · 중단 진행분 보존(interruptedImportJson 재사용) · 옛 가져오기 analyzing 굳음 · 처음 분석 문구 · 원본 학습 문구(studiesOwnText) ·
   처음 분석 완료 알림 → 낭독 영역. B6~B9(진행률 · 이어서 공부하기 · 언어 짐작 · 한국어 입구)는 디자인 열(목업 Jckh6pgz… 오케스트레이터 대리 검수). C(공부하기 = 자동 분석)는 오너 결정 대기.
   서재 카드 상태 한 줄(미분석 · 일부 실패)은 catalog_sources 반환 열 확장이 필요해 다음 백엔드 묶음 후보.
+  B 묶음 #1806 squash `d3aaf7d`(11/18 — 디자인 세션이 CI 초록 뒤 끊겨 오케스트레이터가 검증 head로 병합). PRINT-SHEET-001 #1807 squash `59d7631`(11/16 23:40, 운영 확인: 손님 VOA · N5 인쇄 200 · 콘솔 0 · A4 PDF).
+  PRINT-GLOSS-002(이 PR): 운영 인쇄에서 본 두 가지 — 영어 · 프랑스어 기능어(is · their · not · very)가 뜻풀이를 차지 · 가나 중심 본문 명사의 읽기 칸이 빔(私 ← わたし).
   PRINT-SHEET-001(이 PR, 오너 「설계」 → 「권장대로 비워 두기 · 목업」 → 「권장대로 진행 · 마무리」, [목업](https://claude.ai/artifact/6ef2gcdjrK3dg4hU95RRbW)): 학습 창 「인쇄」 + /viewer/[id]/print —
   본문만 / 해석용(문단마다 원문 + 번호 뜻풀이 ≤8 · 번역은 교재 번역표 · 기기 사본만, 없으면 빈 줄 · AI 호출 0 계약) · 실제 단어장 · 아는 단어 상태 · HSK/JLPT 급수 · 출처 줄 · A4/JIS B5 ·
   Chrome 쪽 머리 · 꼬리. 선례 조사: 브라우저 인쇄 채택 · Paged.js 보류 · Vivliostyle/Typst rubby(AGPL) · react-pdf/pdfmake/jsPDF(ruby 없음) · 서버 Chromium(Vercel 한도) 배제.

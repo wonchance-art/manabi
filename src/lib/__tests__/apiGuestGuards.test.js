@@ -41,6 +41,7 @@ const GUEST = {
   '/goal-catalog': { guard: 'static' },
   '/level-index/chinese': { guard: 'static' },
   '/level-index/japanese': { guard: 'static' },
+  '/level-index/latin': { guard: 'static' }, // PRINT-GLOSS-002 — 영어 · 프랑스어 CEFR 색인(정적, 레퍼런스 어휘 정본)
   '/level-tiles/[lang]/[level]': { guard: 'static' },
   '/level-words/[lang]/[level]': { guard: 'static' },
   '/zh-ref/[shard]': { guard: 'static' },
