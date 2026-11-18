@@ -12,6 +12,8 @@
 .import-language-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .import-language-options .toggle-btn { padding-inline: 10px; white-space: nowrap; }
 @container (max-width: 600px) { .import-language-options { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* 글자로 짐작한 언어 표시(FLOW-ADD-B8) — 작성기 「글자를 보고 골랐어요」와 같은 말 · 같은 무게. */
+.import-language-hint { display: block; margin-top: 6px; font-size: 12px; color: var(--text-muted); }
 
 /* 지금 디자인으로(오너 「승인 및 수용」 2026-11-04 KST, 시안 https://claude.ai/artifact/BY6Xqfw9Zmgw9x3LQCrSNe).
    기준은 새 자료(material-composer.css): 먹색 큰 제목 · 각진 종이 면 · 선 하나 입력칸 · 알약 고르기(고른 것은 로즈) · 3px 단추.

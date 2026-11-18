@@ -138,6 +138,17 @@ describe('WRITE-STUDY-ENTRY — 원본 화면 분기', () => {
     expect(html).not.toContain('role="radiogroup"');
     expect(html.indexOf('이 글로 공부하기')).toBeLessThan(html.indexOf('original-writing'));
   });
+  it('이 글 그대로 이미 분석해 둔 자료는 「이어서 공부하기 ↗」(FLOW-ADD-B7) — 분석 전 · 언어 다름 · 본문이 바뀐 자료는 그대로', () => {
+    const studied = material({ body: '今日は雨です。', language: 'Japanese' });
+    studied.processed_json = { ...studied.processed_json, status: 'completed', sequence: ['t0'], dictionary: { t0: { text: '今日は雨です。' } } };
+    expect(wrap(<OriginalMaterialReader material={studied} />)).toMatch(/<button class="manabi-button"[^>]*>이어서 공부하기 ↗<\/button>/);
+    const partial = { ...studied, processed_json: { ...studied.processed_json, status: 'partial' } };
+    expect(wrap(<OriginalMaterialReader material={partial} />)).toContain('>이어서 공부하기 ↗</button>');
+    const pending = { ...studied, processed_json: { ...studied.processed_json, status: 'pending' } };
+    expect(wrap(<OriginalMaterialReader material={pending} />)).toContain('>이 글로 공부하기 ↗</button>');
+    const edited = { ...studied, document_json: { version: 1, revision: 'r2', body: '明日は晴れです。', language: 'Japanese', assets: [], links: [], retainedAssets: [], excerpt: '', hasBody: true } };
+    expect(wrap(<OriginalMaterialReader material={edited} />)).toContain('>이 글로 공부하기 ↗</button>');
+  });
   it('언어가 없으면 칩 줄을 펼치고 글자로 짐작해 미리 고른다', () => {
     const html = wrap(<OriginalMaterialReader material={material({ body: '今日は雨です。' })} />);
     expect(html).toContain('role="radiogroup"');

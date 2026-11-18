@@ -3394,6 +3394,10 @@ export default function ViewerPage({ seed } = {}) {
       : reanalyzeMutation.isPending ? '새 분석을 준비하고 있어요. 기존 자료는 그대로 있어요.'
         : missingLineCount > 0 ? `분석이 끝나지 않은 부분이 ${missingLineCount}곳 있어요.` : '분석 결과를 확인하고 마무리할 수 있어요.');
   const recoveryShown = needsRecovery && user?.id === material?.owner_id;
+  // 처음 · 전체 분석 진행(FLOW-ADD-B6) — 옛 가져오기 「읽기 도구 준비 중 · n / m줄」과 같은 꼴. 저장 단계(committing)에는 숫자를 붙이지 않는다.
+  const analysisProgress = reanalyze.committing ? null : reanalyze.progress;
+  // 숫자가 붙으면 줄임표는 뗀다(「분석하고 있어요 · 25 / 50줄」).
+  const withCount = (line, done) => (analysisProgress && Number.isFinite(done) ? `${line.replace(/…$/u, '')} · ${done} / ${analysisProgress.total}${vt("줄")}` : line);
   const isCompleted = readingProgress?.is_completed === true;
   const isWordSaved = isTokenSaved(savedWords, selectedToken, materialLang);
   keyHandlersRef.current = {
@@ -4464,7 +4468,8 @@ export default function ViewerPage({ seed } = {}) {
               보이는 라벨이 이름 안에 든다(Aa는 「Aa 읽기 설정」 — WCAG 2.5.3). ⋯ 자료 관리는 「학습」 창 항목으로(설계 Q1 ③ — 시리즈 내비 + 소유자의
               390px 두 줄 해소), 자동 진행은 바닥 한 자리(단독 버튼 ↔ 문장 이동 막대 안, 설계 Q3 A)로 옮겼다. */}
           <div className="viewer-topbar__tools">
-            {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
+            {/* 중단은 하나만(FLOW-ADD-B6) — 보통은 분석 배너의 「중단」. 대화 화면은 배너를 숨기므로(conversation.css) 여기 둔다. */}
+            {conversation && user?.id === material?.owner_id && reanalyzeMutation.isPending && (
               <button onClick={stopReanalysis} disabled={reanalyze.committing} className="grammar-btn grammar-btn--danger">{vt("분석 중단")}</button>
             )}
             {ttsSupported && <ListenControls assumeSupported={!!ssrFirst.current} text={material?.raw_text} language={materialLang} stopSignal={speechStopKind} playbackRate={TTS_RATES[ttsRate].web} rateLabel={TTS_RATES[ttsRate].label} onRateCycle={()=>settings.setTtsRate(nextTtsRate(ttsRate))} onSentence={handleListenSentence} followActive={listenFollowable} compact uiLocale={uiLocale} />}
@@ -4774,16 +4779,20 @@ export default function ViewerPage({ seed } = {}) {
         <span className="reader-page-probe" data-page-probe aria-hidden="true" />
         {/* 대화는 못 한 줄을 화면이 알아서 채운다(CONV-CHAT-001 ①) — 분석 · 복구 배너는 conversation.css가 대화 화면(data-chat)에서 숨긴다. */}
         {/* 분석 · 복구 진행 알림 — 영역은 배너 밖에 늘 두고 내용만(LOADING-ANNOUNCE-001 ③). 배너의 보이는 줄은 한 번만 읽히게 숨긴다. */}
-        <span className="sr-only" role="status">{isAnalyzing && !needsRecovery ? vt(analyzingLine) : recoveryShown ? recoveryLine(announcedProgress(reanalyze.recovery?.completed, reanalyze.recovery?.total)) : reanalyze.doneNotice ? vt(reanalyze.doneNotice) : ''}</span>
+        <span className="sr-only" role="status">{isAnalyzing && !needsRecovery ? withCount(vt(analyzingLine), announcedProgress(analysisProgress?.processed, analysisProgress?.total)) : recoveryShown ? recoveryLine(announcedProgress(reanalyze.recovery?.completed, reanalyze.recovery?.total)) : reanalyze.doneNotice ? vt(reanalyze.doneNotice) : ''}</span>
         {isAnalyzing && !needsRecovery && (
           <div className="analyzing-banner">
-            <span className="analyzing-banner__line" aria-hidden="true">{vt(analyzingLine)}</span>
+            <span className="analyzing-banner__line" aria-hidden="true">{withCount(vt(analyzingLine), analysisProgress?.processed)}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={() => refetch()} className="analyzing-banner__refresh">{vt("새로고침")}</button>
+              {/* 이 탭에서 도는 분석은 알아서 갱신된다 — 「새로고침」은 다른 탭 · 서버 작업이 분석 중일 때만(FLOW-ADD-B6). */}
+              {!reanalyzeMutation.isPending && <button onClick={() => refetch()} className="analyzing-banner__refresh">{vt("새로고침")}</button>}
               {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
-                <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>{vt("⏹ 중단")}</button>
+                <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh analyzing-banner__stop">{vt("중단")}</button>
               )}
             </div>
+            {analysisProgress && !reanalyze.committing && (
+              <div className="analyzing-banner__bar" aria-hidden="true"><div style={{ width: `${Math.round((analysisProgress.processed / analysisProgress.total) * 100)}%` }} /></div>
+            )}
           </div>
         )}
 
@@ -4792,7 +4801,7 @@ export default function ViewerPage({ seed } = {}) {
             <span className="analyzing-banner__line" aria-hidden="true">{recoveryLine(reanalyze.recovery?.completed)}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               {reanalyzeMutation.isPending
-                ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>{vt("⏹ 중단")}</button>
+                ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh analyzing-banner__stop">{vt("중단")}</button>
                 : <button onClick={() => reanalyze.mutation.mutate({ resume: true })} className="analyzing-banner__refresh" style={{ background: 'var(--reader-accent)' }}>{vt("▶ 이어서 분석")}</button>
               }
             </div>
@@ -4804,7 +4813,7 @@ export default function ViewerPage({ seed } = {}) {
             <span>{composerOf(material) ? '저장한 본문이에요. 표현을 공부할 때 분석을 시작해 주세요.' : '이 챕터는 아직 분석 전이에요 — 원문은 그대로 읽을 수 있어요.'}</span>
             {user?.id === material?.owner_id && (
               reanalyzeMutation.isPending
-                ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>{vt("⏹ 중단")}</button>
+                ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh analyzing-banner__stop">{vt("중단")}</button>
                 : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">{composerOf(material) ? '본문 분석하기' : '이 챕터 분석하기'}</button>
             )}
           </div>
@@ -4814,7 +4823,7 @@ export default function ViewerPage({ seed } = {}) {
           <div className="analyzing-banner analyzing-banner--error">
             <span>{vt("분석하지 못했어요.")}</span>
             {reanalyzeMutation.isPending
-              ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>{vt("⏹ 중단")}</button>
+              ? <button onClick={stopReanalysis} disabled={reanalyze.committing} className="analyzing-banner__refresh analyzing-banner__stop">{vt("중단")}</button>
               : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">{vt("재분석")}</button>
             }
           </div>

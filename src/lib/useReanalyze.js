@@ -70,6 +70,8 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
   const committingRef = useRef(false);
   const [committing, setCommitting] = useState(false);
   const [recovery, setRecovery] = useState(null);
+  // 이 탭에서 도는 분석의 처리 줄 수(FLOW-ADD-B6) — 배너 「n / m줄」 · 막대 · 낭독 영역이 같은 값을 쓴다.
+  const [progress, setProgress] = useState(null);
   // FLOW-ADD-A5: 처음 분석을 마친 알림은 화면 알림(폰에서 첫 단어 카드의 등급 단추를 4초 덮던 것) 대신 낭독 영역으로만 — 배너가 사라지고
   // 본문이 눌리는 것이 화면의 완료 신호다. 낭독 문구는 5초 뒤 비운다(같은 문구가 다음 완료 때 다시 읽히게).
   const [doneNotice, setDoneNotice] = useState('');
@@ -111,6 +113,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
       abortRef.current?.abort();
       abortRef.current = controller;
       setRecovery(null);
+      setProgress(null);
       try {
         const { analyzeText, runPreservedReanalysis } = await loadAnalysisEngine();
         const record = await runPreservedReanalysis(supabase, material, controller.signal, analyzeText, {
@@ -120,6 +123,10 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
           onRecoveryProgress: progress => {
             if (activeId.current === materialId && abortRef.current === controller) setRecovery({ ...progress, materialId });
           },
+        }, step => {
+          if (activeId.current === materialId && abortRef.current === controller && Number.isFinite(step?.total) && step.total > 0) {
+            setProgress({ processed: Math.min(step.processed, step.total), total: step.total, materialId });
+          }
         });
         queryClient.setQueryData(['material', String(materialId)], record);
         return record.processed_json;
@@ -131,7 +138,9 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
       if (activeId.current !== scope?.materialId) return;
       if (json?.__passageNotAcquired) { refetch?.(); return; }
       if (json?.status === 'failed') toast?.('분석하지 못했어요. 원문은 그대로 남아 있어요.', 'error');
-      else if (json?.status === 'partial') toast?.('일부 줄은 분석을 다시 시도해야 해요.', 'warning');
+      // 일부 실패는 뷰어 복구 배너(「분석이 끝나지 않은 부분이 n곳 있어요 ▶ 이어서 분석」)가 같은 말을 이미 한다(FLOW-ADD-B6) —
+      // 배너가 없는 학습 구간(passage)에서만 알린다.
+      else if (json?.status === 'partial') { if (passageOf(material)) toast?.('일부 줄은 분석을 다시 시도해야 해요.', 'warning'); }
       // AD-R3: 직접 고친 단어 경계를 적용하지 못했으면 조용히 넘기지 않고 개수를 알린다(기록은 pending으로 남는다).
       // PR③: 뷰어는 onPendingBoundaries로 목업 문구(3개 언어) + [보기](적용하지 못한 기록 목록)를 띄운다. 없으면 한국어 한 벌.
       else if (pendingBoundaryCount(json) && onPendingBoundaries) onPendingBoundaries(pendingBoundaryCount(json));
@@ -156,6 +165,7 @@ export function useReanalyze({ materialId, material, refetch, toast, explanation
     committing,
     doneNotice,
     recovery: recovery?.materialId === materialId && mutation.isPending ? recovery : null,
+    progress: progress?.materialId === materialId && mutation.isPending ? progress : null,
     request: (opts) => setConfirmState(opts),
     confirm: () => { mutation.mutate(confirmState); setConfirmState(null); },
     cancel: () => setConfirmState(null),

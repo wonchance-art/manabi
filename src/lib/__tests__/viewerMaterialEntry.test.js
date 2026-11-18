@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as React from 'react';
 
-const query = vi.hoisted(() => ({ params: new URLSearchParams() }));
+const query = vi.hoisted(() => ({ params: new URLSearchParams(), korean: true }));
+// 한국어 입구는 계정 배포 계약(useStudyLanguages)일 때만(FLOW-ADD-B9) — 기본은 계약이 있는 계정.
+vi.mock('../../lib/useStudyLanguages', () => ({ useStudyLanguages: () => ({ languages: ['Japanese', 'English', 'Chinese', 'French', ...(query.korean ? ['Korean'] : [])], koreanChecking: false }) }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => query.params }));
 vi.mock('next/dynamic', () => ({ default: () => 'TextImport' }));
 vi.mock('next/link', () => ({ default: 'Link' }));
@@ -16,7 +18,16 @@ function elements(tree) {
 }
 
 describe('discoverable registered text reading entry', () => {
-  beforeEach(() => { query.params = new URLSearchParams(); vi.stubGlobal('React', React); });
+  beforeEach(() => { query.params = new URLSearchParams(); query.korean = true; vi.stubGlobal('React', React); });
+
+  it('한국어 계약이 없는(또는 확인 중인) 계정에는 「한국어 텍스트 읽기」 입구를 보이지 않는다 — 주소로 온 길은 같은 가져오기 화면(FLOW-ADD-B9)', () => {
+    query.korean = false;
+    const initial = elements(MaterialEntry());
+    expect(initial.some(node => node.type === 'Link' && node.props.href === '/materials/add?language=ko')).toBe(false);
+    // 확인은 화면이 열릴 때마다 다시 돈다 — 그동안 길이 바뀌면 작성기 ↔ 가져오기가 끝없이 갈린다(e2e 실측). 한국어 선택은 가져오기 화면이 확인 뒤 거둔다.
+    query.params.set('language', 'ko');
+    expect(MaterialEntry().type).toBe('TextImport');
+  });
   afterEach(() => vi.unstubAllGlobals());
 
   it('offers the registered Korean text-reading link on the ordinary composer entry', () => {

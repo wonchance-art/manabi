@@ -33,6 +33,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('../../lib/AuthContext', () => ({ useAuth: () => ({ user: mocks.user, loading: false }) }));
 vi.mock('../../lib/ToastContext', () => ({ useToast: () => mocks.toast }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQueries: mocks.invalidate }) }));
+vi.mock('../../lib/useStudyLanguages', () => ({ useStudyLanguages: () => ({ languages: ['Japanese', 'English', 'Chinese', 'French', ...(mocks.korean === 'ready' ? ['Korean'] : [])], koreanChecking: mocks.korean === 'checking' }) }));
 vi.mock('../../lib/useViewerLanguage', () => ({ useViewerLanguage: () => ({ explanationLocale: mocks.locale, uiLocale: 'ko' }) }));
 vi.mock('../../lib/analyzeText', () => ({ analyzeText: (...args) => mocks.analyze(...args) }));
 vi.mock('../../lib/supabase', () => ({
@@ -83,7 +84,7 @@ describe('Korean ordinary text reading import', () => {
   let cleanups;
   beforeEach(() => {
     Object.assign(hooks, { slots: [], cursor: 0, effects: [], mounted: false });
-    mocks.params.clear(); mocks.locale = 'ko'; mocks.user = { id: 'owner' };
+    mocks.params.clear(); mocks.locale = 'ko'; mocks.user = { id: 'owner' }; mocks.korean = 'ready';
     for (const key of ['toast', 'push', 'invalidate', 'insert', 'analyze']) mocks[key].mockReset();
     mocks.analyze.mockImplementation(async (_text, _signal, options) => ({ ...options.existingJson, status: 'completed' }));
     cleanups = [];
@@ -133,6 +134,19 @@ describe('Korean ordinary text reading import', () => {
     fill('학교에 갔어요.');
     await button('저장하고 읽기 준비').props.onClick();
     expect(mocks.insert.mock.calls[0][0][0].processed_json.metadata).toMatchObject({ language: 'Korean', level: '', explanationLocale: 'zh-CN' });
+  });
+
+  it('FLOW-ADD-B9: 한국어 주소로 와도 계약이 없는 계정은 확인을 마친 뒤 한국어 선택을 거두고, 확인 중에는 바꾸지 않는다', () => {
+    mocks.params.set('language', 'ko'); mocks.korean = 'checking';
+    mount();
+    expect(elements(RenderMaterialAdd()).some(node => node.type === 'button' && node.props.children === '한국어')).toBe(false);
+    // 확인 중에는 한국어 그대로(급수 단추 없음) — 일본어로 바꿨다면 급수 단추가 생긴다.
+    const levelButtons = () => elements(RenderMaterialAdd()).filter(node => node.props.className === 'level-btn' || node.props.className?.startsWith('level-btn ')).length;
+    expect(levelButtons()).toBe(0);
+    Object.assign(hooks, { slots: [], cursor: 0, effects: [], mounted: false }); mocks.korean = 'none';
+    mount();
+    expect(selectedLanguage()).toBe('일본어');
+    expect(levelButtons()).toBeGreaterThan(0);
   });
 
   it.each(['book', 'pdf', 'epub'])('does not promote language query to Korean for the existing %s source flow', source => {
