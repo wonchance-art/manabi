@@ -878,6 +878,11 @@
 
 ## Claude (claude/*)
 ### doing
+- **CLS-COMPOSER-001 저장 순간 관문 밀림 · 불러오는 칸 자리 (2026-11-21 KST)** 운영 vitals.cls(composer-gate 0.18 · 0.61)를 로컬 프로덕션 빌드 + 대역으로 재현:
+  저장 완료 → 짧은 「저장됨」 관문으로 접힌 한 프레임(0.1초 미만) 뒤 뷰어로 이동 — CLS PC 0.40 · 폰 0.84 → 고친 뒤 0.00(이동 중에는 작성기 + 단계 문구, 이동 실패 때만 관문).
+  초안 불러오는 상태 칸은 화면 높이만큼 자리(대역 첫 그림 PC 0.055 → 0.032 · 폰 0.11 → 0.067). 계약 clsLoadingReserve.test.
+  · 보류(재현 0): 뷰어 surface--furi-off · word-token--new — 5경로(이어서 분석 · 분석 진행 받기 · 쪽/스크롤 · 후리가나 켬/끔 · 낱말 카드 + API 지연)와 11/16 판 모두 0–0.02. 같은 출처가 실사용자에게서 다시 잡히면 재개.
+  · /materials 목록 site-footer 0.30: 정상 대역에서는 PC 0.04 · 폰 0.08–0.10(조회 실패 · 재시도 경로에서만 220px 밀림 재현) — 고치지 않음, 관측 계속.
 - **SITE-URL-APEX-001 · CI-NODE-LATEST (2026-11-21 KST, WEB 11/21 집계)** CSP 2차 7일: 실제 사용자 위반 0 · enforce 위반 0 · bot img-src 298건 전부 apex(https://manabi.co.kr) —
   운영 canonical · og:url · og:image · sitemap이 apex로 나가(운영 NEXT_PUBLIC_SITE_URL이 www가 아님) www 문서의 og:image가 img-src(self)에 걸림. 환경 변수 대신 정본 siteUrl()이
   apex를 대표 도메인(www, DOMAIN-CANONICAL-001)으로 맞춤(이 PR, 계약 seoMeta). CI setup-node check-latest(캐시 24.22.2 → 최신 24.x, 11/10 보안 릴리스).
