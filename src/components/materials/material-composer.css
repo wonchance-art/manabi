@@ -52,6 +52,8 @@
 .composer-after { display: flex; flex-direction: column; gap: 8px; padding: 20px 0; font-size: 11px; line-height: 1.8; color: var(--muted); }
 .composer-after a { align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; color: inherit; }
 .composer-gate { max-width: 740px; margin: 70px auto; padding: 24px; color: var(--ink); }
+/* 불러오는 상태 칸(role=status)은 곧 작성기(화면보다 길다)로 바뀐다 — 한 줄 높이로 서 있으면 푸터가 화면 안에 떴다가 밀린다(CLS-COMPOSER-001 실측 PC 0.05 · 폰 0.11). 화면 높이만큼 자리를 잡아 둔다. */
+.composer-gate[role="status"] { min-height: 100dvh; }
 .composer-gate h1 { font-size: 32px; line-height: 1.4; overflow-wrap: anywhere; }
 .composer-gate p { line-height: 1.9; color: var(--muted); }
 .composer-gate .manabi-link { margin: 14px; min-height: 44px; background: transparent; border: none; }
