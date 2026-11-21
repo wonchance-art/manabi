@@ -67,6 +67,10 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
   const [linkInput, setLinkInput] = useState('');
   const [anotherTab, setAnotherTab] = useState(false);
   const [conflict, setConflict] = useState(false);
+  // 저장 뒤 자동으로 뷰어 · 학습 화면으로 넘어가는 동안(CLS-COMPOSER-001, 2026-11-21 KST): 짧은 「저장됨」 관문으로 바꾸면 긴 작성기가 접히는
+  // 한 프레임(0.1초 미만) 뒤 이동해, 그 한 번에 화면 전체가 밀렸다(실측 CLS PC 0.40 · 폰 0.84). 이동 중에는 작성기와 단계 문구를 그대로 두고,
+  // 넘어가지 못했을 때(모음집 담기 실패 · 오류)만 관문을 보인다.
+  const [leaving, setLeaving] = useState(false);
   const fileInput = useRef(null);
   const titleField = useRef(null);
   const linkField = useRef(null);
@@ -224,10 +228,10 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       queryClient.invalidateQueries({ queryKey: ['materials'] });
       await queryClient.invalidateQueries({ queryKey: ['material', String(record.id)] });
       if (!alive.current) return;
-      draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage(study ? '저장했어요. 학습 화면을 열고 있어요…' : '저장했어요. 자료를 열고 있어요…');
+      setLeaving(true); draftRef.current = saved; setDraft(saved); setDraftStatus('서재에 저장됨'); setStage(study ? '저장했어요. 학습 화면을 열고 있어요…' : '저장했어요. 자료를 열고 있어요…');
       if(saved.collectionId){
         try { await addToCollection(supabase,ownerId,saved.collectionId,{target_kind:'material',target_id:String(record.id)}); }
-        catch { if(alive.current)setError('자료는 저장했지만 모음집에 담지 못했어요. 자료를 다시 저장할 필요는 없어요.'); return; }
+        catch { if(alive.current){setLeaving(false);setError('자료는 저장했지만 모음집에 담지 못했어요. 자료를 다시 저장할 필요는 없어요.');} return; }
         queryClient.invalidateQueries({queryKey:['personal-library',ownerId]});
       }
       if (study) {
@@ -239,7 +243,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
         return;
       }
       router.push(`/viewer/${record.id}?returnTo=${encodeURIComponent(returnTo)}`);
-    } catch (err) { if (alive.current) { setError(documentError(err) || composerError(err)); setConflict(err?.message === 'EDIT_CONFLICT'); } }
+    } catch (err) { if (alive.current) { setLeaving(false); setError(documentError(err) || composerError(err)); setConflict(err?.message === 'EDIT_CONFLICT'); } }
     finally { submitRef.current = false; if (alive.current) setBusy(false); }
   }
 
@@ -281,7 +285,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
 
   if (anotherTab) return <section className="composer-gate"><h1>다른 탭에서 작성 중이에요.</h1><p>초안이 서로 덮어써지지 않도록 한 탭에서 작성해 주세요.</p><button className="manabi-button" onClick={() => window.location.reload()}>다른 편집기를 닫고 다시 열기</button><Link className="manabi-link" href="/materials?view=owned">내 서재로</Link></section>;
   if (!draft) return <div className="composer-gate" role="status">{draftStatus}</div>;
-  if (draft.savedId) return <section className="composer-gate"><p className="manabi-eyebrow">내 서재 / 저장됨</p><h1>{composerTitle(draft)}</h1><p>서재에 저장된 자료예요.</p>{error&&<p role="alert">{error}</p>}{draft.collectionId&&<button className="manabi-button" disabled={busy} onClick={retryMembership}>{busy?'담는 중…':'모음집에 담기 다시 시도'}</button>}<Link className="manabi-button" href={`/viewer/${draft.savedId}?returnTo=${encodeURIComponent(returnTo)}`}>자료 열기 ↗</Link><button className="manabi-link" onClick={startNew}>자료 추가</button></section>;
+  if (draft.savedId && !leaving) return <section className="composer-gate"><p className="manabi-eyebrow">내 서재 / 저장됨</p><h1>{composerTitle(draft)}</h1><p>서재에 저장된 자료예요.</p>{error&&<p role="alert">{error}</p>}{draft.collectionId&&<button className="manabi-button" disabled={busy} onClick={retryMembership}>{busy?'담는 중…':'모음집에 담기 다시 시도'}</button>}<Link className="manabi-button" href={`/viewer/${draft.savedId}?returnTo=${encodeURIComponent(returnTo)}`}>자료 열기 ↗</Link><button className="manabi-link" onClick={startNew}>자료 추가</button></section>;
   const locked = busy || draft.frozen;
   return <section className="material-composer" aria-labelledby="composer-heading">
     <div className="composer-top"><Link href={editing ? `/viewer/${scope}?returnTo=${encodeURIComponent(returnTo)}` : returnTo}>{editing ? '← 자료로 돌아가기' : '← 내 서재'}</Link><span>나만 보기</span></div>
@@ -305,7 +309,7 @@ export function ComposerForm({ ownerId, material = null, returnTo = '/materials?
       {notice && !error && <p className="composer-notice" role="status">{notice}</p>}
       {error && <div className="composer-error" role="alert">{error}{draft.frozen && !conflict && <p>저장 결과가 확정될 때까지 내용을 그대로 둬요. 아래에서 다시 저장해 주세요.</p>}{conflict && <div className="composer-conflict-actions"><button type="button" onClick={downloadDraft}>내 초안 텍스트 내려받기</button><button type="button" onClick={reloadLatest}>최신 글로 다시 수정</button></div>}</div>}
       {draft.collectionId&&<p className="composer-info">저장한 뒤 ‘{collections.data?.find(c=>c.id===draft.collectionId)?.name||'선택한 모음집'}’에 담아요.</p>}
-      <footer className="composer-save"><span role="status">{busy ? stage : draftStatus}</span><ComposerSaveActions study={composerStudyState(draft, languages, { note: writeNote })} editing={editing} frozen={draft.frozen} busy={busy} intent={intent} disabled={busy || preparing || conflict} onStudy={() => submit(null, 'study')} /></footer>
+      <footer className="composer-save"><span role="status">{busy || leaving ? stage : draftStatus}</span><ComposerSaveActions study={composerStudyState(draft, languages, { note: writeNote })} editing={editing} frozen={draft.frozen} busy={busy} intent={intent} disabled={busy || preparing || conflict} onStudy={() => submit(null, 'study')} /></footer>
     </form>
     <div className="composer-after"><span>{editing ? '첨부를 빼도 이전 원본은 보관돼요. 새 본문으로 학습하면 별도의 학습 기록으로 이어져요.' : '저장한 뒤 바로 읽을 수 있어요. 표현 학습은 읽는 화면에서 시작해요.'}</span>{!editing && <Link href="/materials/add?advanced=1">기존 책에 이어 붙이기·문장 목록 ↗</Link>}</div>
   </section>;
