@@ -878,6 +878,10 @@
 
 ## Claude (claude/*)
 ### doing
+- **SITE-URL-APEX-001 · CI-NODE-LATEST (2026-11-21 KST, WEB 11/21 집계)** CSP 2차 7일: 실제 사용자 위반 0 · enforce 위반 0 · bot img-src 298건 전부 apex(https://manabi.co.kr) —
+  운영 canonical · og:url · og:image · sitemap이 apex로 나가(운영 NEXT_PUBLIC_SITE_URL이 www가 아님) www 문서의 og:image가 img-src(self)에 걸림. 환경 변수 대신 정본 siteUrl()이
+  apex를 대표 도메인(www, DOMAIN-CANONICAL-001)으로 맞춤(이 PR, 계약 seoMeta). CI setup-node check-latest(캐시 24.22.2 → 최신 24.x, 11/10 보안 릴리스).
+  NHK news_image_uri는 호출처 0인 죽은 경로라 관측 목록에서 뺌. 2단계 CSP 강제는 이 수정 뒤 7일 관측 후. CLS 뷰어 2건(furi-off · word-token--new) · composer-gate 2회 → WEB 조사 착수.
 - **글 올리기 → 뷰어 흐름 · 인쇄 학습지 (2026-11-16 KST)** 오너 「글 올리고 뷰어에서 진행하기까지 개선할 점」 → 실제 빌드 점검 10건(A 오류 · B 화면 · C 결정).
   FLOW-ADD-A #1805 squash `e5288f2`(22:03): 처음 분석 부분 결과 · 중단 진행분 보존(interruptedImportJson 재사용) · 옛 가져오기 analyzing 굳음 · 처음 분석 문구 · 원본 학습 문구(studiesOwnText) ·
   처음 분석 완료 알림 → 낭독 영역. B6~B9(진행률 · 이어서 공부하기 · 언어 짐작 · 한국어 입구)는 디자인 열(목업 Jckh6pgz… 오케스트레이터 대리 검수). C(공부하기 = 자동 분석)는 오너 결정 대기.

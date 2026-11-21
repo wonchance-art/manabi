@@ -114,7 +114,9 @@ const disallowed = (urlPath) => ROBOTS_DISALLOW.some((prefix) => urlPath === pre
 
 describe('정본 주소 한 곳 — siteUrl / canonicalFor', () => {
   it('운영 값(NEXT_PUBLIC_SITE_URL)을 출처로 정규화하고, 없으면 기본값', () => {
-    expect(siteUrl('https://manabi.co.kr/')).toBe('https://manabi.co.kr');
+    // SITE-URL-APEX-001: 대표 도메인(www)과 어긋난 apex 운영 값은 www로 — apex는 308이라 canonical · og:image가 리다이렉트 주소가 된다.
+    expect(siteUrl('https://manabi.co.kr/')).toBe(DEFAULT_SITE_URL);
+    expect(siteUrl('https://example.vercel.app')).toBe('https://example.vercel.app'); // 미리 보기 등 다른 호스트는 그대로
     expect(siteUrl('https://www.manabi.co.kr/x?y')).toBe('https://www.manabi.co.kr');
     expect(siteUrl('')).toBe(DEFAULT_SITE_URL);
     expect(siteUrl(undefined)).toBe(DEFAULT_SITE_URL);

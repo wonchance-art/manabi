@@ -27,6 +27,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          # 러너 캐시 판 대신 최신 24.x(보안 릴리스 반영 — 11/18 CI가 캐시 24.22.2를 써서 24.22.3을 놓친 실측).
+          check-latest: true
           cache: npm
 
       - run: npm ci
@@ -118,6 +120,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          # 러너 캐시 판 대신 최신 24.x(보안 릴리스 반영 — 11/18 CI가 캐시 24.22.2를 써서 24.22.3을 놓친 실측).
+          check-latest: true
           cache: npm
 
       - run: npm ci

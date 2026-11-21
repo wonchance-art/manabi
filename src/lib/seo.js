@@ -14,7 +14,11 @@ export const DEFAULT_SITE_URL = 'https://www.manabi.co.kr';
 export function siteUrl(value = process.env.NEXT_PUBLIC_SITE_URL) {
   const raw = typeof value === 'string' && value.trim() ? value.trim() : DEFAULT_SITE_URL;
   try {
-    return new URL(raw).origin;
+    const url = new URL(raw);
+    // 대표 도메인 결정(www)과 어긋난 운영 값(www 없는 apex)은 www로 맞춘다 — apex는 www로 308이라 canonical · og:image가
+    // 리다이렉트 주소를 가리키고, og:image가 www 문서의 CSP img-src('self')에 걸렸다(SITE-URL-APEX-001, 11/21 KST 운영 집계 298건).
+    if (url.hostname === new URL(DEFAULT_SITE_URL).hostname.replace(/^www\./, '')) return DEFAULT_SITE_URL;
+    return url.origin;
   } catch {
     return DEFAULT_SITE_URL;
   }
