@@ -896,6 +896,14 @@
   PRINT-SHEET-001(이 PR, 오너 「설계」 → 「권장대로 비워 두기 · 목업」 → 「권장대로 진행 · 마무리」, [목업](https://claude.ai/artifact/6ef2gcdjrK3dg4hU95RRbW)): 학습 창 「인쇄」 + /viewer/[id]/print —
   본문만 / 해석용(문단마다 원문 + 번호 뜻풀이 ≤8 · 번역은 교재 번역표 · 기기 사본만, 없으면 빈 줄 · AI 호출 0 계약) · 실제 단어장 · 아는 단어 상태 · HSK/JLPT 급수 · 출처 줄 · A4/JIS B5 ·
   Chrome 쪽 머리 · 꼬리. 선례 조사: 브라우저 인쇄 채택 · Paged.js 보류 · Vivliostyle/Typst rubby(AGPL) · react-pdf/pdfmake/jsPDF(ruby 없음) · 서버 Chromium(Vercel 한도) 배제.
+- **주간 트렌드 11/23 KST (WEEKLY-TREND-1123, 1차 출처 · 읽기 전용 조사)** 긴급 0건. Next 11/16–19 GHSA 등재 7건은 11/03 배치가 Advisory DB에 늦게 오른 것
+  (15.x 3건은 15.5.29 패치판 · 4건은 16 전용) · 새 Next 15.5.x · Node 24.x 릴리스 없음(Node 24 Maintenance LTS 10/20부터 · 2028-04-30 종료).
+  발주(WEB SEC-DEPS 11/25+ 묶음): excalidraw 체인 override — lodash-es 4.18.1(4.17.21 정확 고정, GHSA-r5fr · xxjr) · nanoid 3.3.20 / 5.1.16(3.3.3 · 4.0.2 정확 고정, GHSA 4건),
+  audit 14 → 6(lock 사본 실측) · 판 데이터는 기기 IndexedDB · 호출부 인자 없는 nanoid()라 노출 사실상 0. supabase-js ^2.119.2(11/19 Storage 키 `../` 차단, 2주 숙성 뒤) ·
+  DOMPurify 범위 안 3.4.18. 배제: katex low(0.18.2는 mermaid 범위 밖) · DOMPurify 3.5.0(Breaking 동작 변경) · `npm audit fix`의 excalidraw 0.17.6(다운그레이드) ·
+  Vercel PR 전용 프리뷰 프리셋(`git.deploymentEnabled`가 상위 호환) · Supabase 브랜치 병합 권한(브랜칭 안 씀). 원칙 문서: CLAUDE.md 목업 면제(오너 11/6 「오류를 잡는 작업은 일단 바로 진행해」 —
+  순회 프롬프트에만 있던 결정) · AGENTS.md 실측 교훈 11/23 2건(상한 있는 선택 목록은 기준으로 먼저 · 성능 고침은 PC · 폰 전후 같은 조건) · /pr-cycle 결과 수치는 PR 본문 · push는 PR 때만.
+  순회 프롬프트에 이번 주 교훈(중복 패치 반입 전 main 대조 · 구독 번호 대조 · 기준 없는 목업 반려 · 손님 화면 확인 표기) — 순회는 꺼 둔 채.
 - **주간 트렌드 11/16 KST (WEEKLY-TREND-1116, 1차 출처 · 읽기 전용 조사)** 해당 1건: Node 11/11 보안 릴리스(CVE 16, 주로 HTTP/2 · TLS 서버) — 24.22.2 → 24.22.3 패치,
   CI `node-version: 24`는 실행 시 최신을 받고 운영은 Vercel 자동 패치(실제 판 확인은 WEB 11/21 집계에). 일정: Vercel Data Cache → Runtime Cache 11/29(코드 변경 0 · 사용량은 오너 대시보드) ·
   **Next 15 보안 패치 2027-01-31까지 연장**(nextjs.org/support-policy — #1673 Next 16 이전의 실질 기한). 비해당: Next 11/03 GHSA 7건(15.5.29가 패치판) · vite GHSA-p4f5(8.3.8) ·
