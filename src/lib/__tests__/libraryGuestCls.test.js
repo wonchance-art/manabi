@@ -21,7 +21,8 @@ describe('화면 — 추천은 목록이 정해진 뒤에만', () => {
     const fetcher = sliceBetween(page, 'async function fetchMaterials(', '\nconst PAGE_SIZE');
     const start = fetcher.indexOf("const guestCatalog = tab === 'public' && !userId ? guestBookCatalogRows(supabase) : null;");
     expect(start).toBeGreaterThan(0);
-    expect(start).toBeLessThan(fetcher.indexOf('const { data, error } = await query;'));
+    // 목록 조회는 정본 완전 조회(LIB-FIX-001) — 책 장 메타가 그보다 먼저 출발한다.
+    expect(start).toBeLessThan(fetcher.indexOf('await readCompleteLegacyRows(buildQuery'));
     expect(fetcher).toContain('catalog: guestCatalog');
   });
 });

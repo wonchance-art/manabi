@@ -89,43 +89,50 @@ const MATERIAL_LIST_COLS = 'id, title, created_at, visibility, owner_id, process
 function fetchMaterialsWithoutDirection(args) { return fetchMaterials({ ...args, withDirection: false }); }
 
 async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic = false, withDirection = true, withDocument = true }) {
-  let query = supabase
-    .from('reading_materials')
-    // direction(U R3) — 컬럼 미적용 환경은 PostgREST가 400을 내므로 아래 폴백이 direction 없이 다시 조회한다
-    .select(withDirection ? `${MATERIAL_LIST_COLS}, direction` : MATERIAL_LIST_COLS)
-    .order('created_at', { ascending: false });
-  // Add only current-document summary fields; its full body stays out of list payloads.
-  if (withDocument) query = query.select(`${MATERIAL_LIST_COLS}${withDirection ? ', direction' : ''}, document_revision:document_json->>revision, document_language:document_json->>language, document_excerpt:document_json->>excerpt, document_assets:document_json->assets, document_has_body:document_json->hasBody`);
+  if (tab !== 'public' && !userId) return [];
+  // 정본 완전 조회(readCompleteLegacyRows — created_at · id 순 page · exact count) — PostgREST 기본 상한(1000행)에 조용히 잘리지 않게
+  // (LIB-FIX-001 · 2026-11-24 KST). 순서는 아래에서 최신순으로 뒤집는다(전: order created_at desc 한 번 조회).
+  const buildQuery = () => {
+    let query = supabase
+      .from('reading_materials')
+      // direction(U R3) — 컬럼 미적용 환경은 PostgREST가 400을 내므로 아래 폴백이 direction 없이 다시 조회한다
+      .select(withDirection ? `${MATERIAL_LIST_COLS}, direction` : MATERIAL_LIST_COLS, { count: 'exact' });
+    // Add only current-document summary fields; its full body stays out of list payloads.
+    if (withDocument) query = query.select(`${MATERIAL_LIST_COLS}${withDirection ? ', direction' : ''}, document_revision:document_json->>revision, document_language:document_json->>language, document_excerpt:document_json->>excerpt, document_assets:document_json->assets, document_has_body:document_json->hasBody`, { count: 'exact' });
 
-  // 은퇴 표식이 붙은 자료만 뺀다(제목 모양으로는 숨기지 않는다 — SEED-EXPOSE-001)
-  query = withoutRetiredSeries(query);
+    // 은퇴 표식이 붙은 자료만 뺀다(제목 모양으로는 숨기지 않는다 — SEED-EXPOSE-001)
+    query = withoutRetiredSeries(query);
 
-  if (tab === 'public') {
-    query = query.eq('visibility', 'public');
-  } else {
-    if (!userId) return [];
-    query = query.eq('owner_id', userId);
-    if (!includeOwnedPublic) query = query.eq('visibility', 'private');
-  }
+    if (tab === 'public') {
+      query = query.eq('visibility', 'public');
+    } else {
+      query = query.eq('owner_id', userId);
+      if (!includeOwnedPublic) query = query.eq('visibility', 'private');
+    }
 
-  if (searchQuery) {
-    query = query.ilike('title', `%${searchQuery}%`);
-  }
-  if (langFilter !== 'all' && !withDocument) {
-    query = query.eq('processed_json->metadata->>language', langFilter);
-  }
-  if (levelFilter !== 'all') {
-    query = query.eq('processed_json->metadata->>level', levelFilter);
-  }
+    if (searchQuery) {
+      query = query.ilike('title', `%${searchQuery}%`);
+    }
+    if (langFilter !== 'all' && !withDocument) {
+      query = query.eq('processed_json->metadata->>language', langFilter);
+    }
+    if (levelFilter !== 'all') {
+      query = query.eq('processed_json->metadata->>level', levelFilter);
+    }
+    return query;
+  };
 
   // 비로그인 「함께 읽는 글」의 책 장 메타는 목록 조회와 나란히 출발한다(전: 목록 응답 뒤에 출발 — 운영 0.7–0.8초 직렬 대기).
   const guestCatalog = tab === 'public' && !userId ? guestBookCatalogRows(supabase) : null;
-  const { data, error } = await query;
-  if (error) {
-    if (withDocument && /document_json/.test(error.message || '')) return fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic, withDirection, withDocument: false });
+  let data;
+  try {
+    // page는 기본 1000 — 지금 규모(공개 158 · 계정 최대 138편)는 전처럼 요청 한 번이고, 넘을 때만 이어 읽는다(손님 첫 그림 경로라 page를 늘리지 않는다).
+    data = (await readCompleteLegacyRows(buildQuery, { orderBy: ['created_at', 'id'] })).reverse();
+  } catch (error) {
+    if (withDocument && /document_json/.test(error?.message || '')) return fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic, withDirection, withDocument: false });
     // U R3: direction 컬럼 미적용 환경(마이그레이션은 오너 수동) — 컬럼 없이 같은 조회를 한 번 더.
     // etym/hanja·writing_practice 신규 컬럼 폴백과 같은 패턴. 그 환경엔 노트가 없으므로 결과는 같다.
-    if (withDirection && /column|schema|direction/i.test(error.message || '')) {
+    if (withDirection && /column|schema|direction/i.test(error?.message || '')) {
       const retry = await fetchMaterialsWithoutDirection({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic });
       return retry;
     }
@@ -343,13 +350,12 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
   const { data: pdfs = [], isLoading: pdfsLoading, error: pdfsError, refetch: refetchPdfs } = useQuery({
     queryKey: ['my-pdfs', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // 정본 완전 조회 — 1000행 상한에 조용히 잘리지 않게(LIB-FIX-001). 최신순은 받은 뒤 뒤집는다.
+      const data = (await readCompleteLegacyRows(() => supabase
         .from('uploaded_pdfs')
-        .select('id, title, page_count, created_at, thumbnail_path, last_page_read')
-        .eq('owner_id', user.id)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return filterActiveSources(supabase,user.id,data||[],'pdf');
+        .select('id, title, page_count, created_at, thumbnail_path, last_page_read', { count: 'exact' })
+        .eq('owner_id', user.id), { orderBy: ['created_at', 'id'] })).reverse();
+      return filterActiveSources(supabase,user.id,data,'pdf');
     },
     // PDF 탭이 없어졌으므로 `내 자료`에서 돈다. 새 쿼리가 아니라 **도는 시점**이 바뀐
     // 것이다 — 그리고 그 탭이 이제 로그인 사용자의 기본값이다.
@@ -360,11 +366,11 @@ export default function MaterialsPage({ libraryView = null, sessionHint = false 
   const { data: progressMap = { completed: new Set(), inProgress: new Map() }, error: progressError, refetch: refetchProgress } = useQuery({
     queryKey: ['reading-progress-list', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // 정본 완전 조회 — 1000행 상한에 조용히 잘리지 않게(LIB-FIX-001). 순서는 쓰지 않는다(지도로 모은다).
+      const data = await readCompleteLegacyRows(() => supabase
         .from('reading_progress')
-        .select('material_id, is_completed, last_token_idx')
-        .eq('user_id', user.id);
-      if (error) throw error;
+        .select('id, material_id, is_completed, last_token_idx', { count: 'exact' })
+        .eq('user_id', user.id));
       const completed = new Set();
       const inProgress = new Map();
       for (const r of (data || [])) {

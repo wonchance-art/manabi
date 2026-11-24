@@ -73,8 +73,9 @@ describe('자료실 (MaterialsPage)', () => {
 
   it('direction 컬럼 미적용 환경 폴백 — 컬럼 없이 같은 조회를 한 번 더(기존 자료 동작 불변)', () => {
     expect(list).toContain("const MATERIAL_LIST_COLS = 'id, title, created_at, visibility, owner_id, processed_json, source_pdf_id, page_start, page_end';");
-    expect(list).toContain('.select(withDirection ? `${MATERIAL_LIST_COLS}, direction` : MATERIAL_LIST_COLS)');
-    expect(list).toContain('if (withDirection && /column|schema|direction/i.test(error.message || \'\')) {');
+    // 1000행 상한 대응(정본 완전 조회 — LIB-FIX-001)으로 exact count가 붙고, 오류는 완전 조회가 던진 것을 받는다 — 폴백 동작은 그대로다.
+    expect(list).toContain(".select(withDirection ? `${MATERIAL_LIST_COLS}, direction` : MATERIAL_LIST_COLS, { count: 'exact' })");
+    expect(list).toContain('if (withDirection && /column|schema|direction/i.test(error?.message || \'\')) {');
     expect(list).toContain('fetchMaterialsWithoutDirection({ tab, userId, langFilter, levelFilter, searchQuery, includeOwnedPublic })');
   });
 });
