@@ -148,7 +148,8 @@ describe('components C-04~C-13 reliability fixes', () => {
     expect(() => unwrapAccountExportResults(missing)).toThrow('pdfs');
 
     // 학습 기록도 묶음에 든다 — 방침 §5 「내 데이터 전체」(STATS-MAP-001). 빠지면 부분 묶음으로 거절한다.
-    for (const key of ['review_events', 'fsrs_cards', 'fsrs_operations', 'encounters', 'known_words', 'chapter_progress']) {
+    for (const key of ['review_events', 'fsrs_cards', 'fsrs_operations', 'encounters', 'known_words', 'chapter_progress',
+      'library_folders', 'library_folder_items', 'library_item_state', 'library_bookmarks']) {
       expect(EXPORT_KEYS).toContain(key);
       const short = [...ok];
       short[EXPORT_KEYS.indexOf(key)] = undefined;
