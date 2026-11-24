@@ -85,6 +85,8 @@ jobs:
       - run: node supabase/tests/zh-erhua-dict-cache.mjs
       - run: node supabase/tests/wikinews-sources-off.mjs
       - run: node supabase/tests/voa-learning-english-import.mjs
+      - run: node supabase/tests/library-level-sort-rank.mjs
+      - run: node supabase/tests/library-hide-conversations-chain.mjs
       - run: node scripts/verification/n4-book-support.mjs
       - run: node scripts/verification/n3-book-support.mjs
       - run: node supabase/tests/korean-capability-repin.mjs

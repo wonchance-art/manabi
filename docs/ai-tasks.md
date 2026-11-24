@@ -896,6 +896,14 @@
   PRINT-SHEET-001(이 PR, 오너 「설계」 → 「권장대로 비워 두기 · 목업」 → 「권장대로 진행 · 마무리」, [목업](https://claude.ai/artifact/6ef2gcdjrK3dg4hU95RRbW)): 학습 창 「인쇄」 + /viewer/[id]/print —
   본문만 / 해석용(문단마다 원문 + 번호 뜻풀이 ≤8 · 번역은 교재 번역표 · 기기 사본만, 없으면 빈 줄 · AI 호출 0 계약) · 실제 단어장 · 아는 단어 상태 · HSK/JLPT 급수 · 출처 줄 · A4/JIS B5 ·
   Chrome 쪽 머리 · 꼬리. 선례 조사: 브라우저 인쇄 채택 · Paged.js 보류 · Vivliostyle/Typst rubby(AGPL) · react-pdf/pdfmake/jsPDF(ruby 없음) · 서버 Chromium(Vercel 한도) 배제.
+- **서재 오류 3건 (LIB-FIX-001, 2026-11-24 KST · 오너 「서재 파일 관리 모자라지 않나」 점검 → 오류 수정은 목업 없이, Data 반입)**
+  ① 급수순이 글자순(N1이 N5 앞) → `library_private.material_level_rank`(= LEVELS · levelRank, 없는 급수 끝 · 다른 정렬 불변 · 마이그레이션 20261124010000 · PGlite 10)
+  ② 계정 내보내기에 서재 폴더 · 폴더 항목 · 항목 상태(휴지통 · 즐겨찾기 · 바꾼 이름) · 책갈피 ③ 「자료 상세 보기」 목록 · PDF · 읽기 진도 1000행 조용한 잘림 → 정본 완전 조회.
+  같은 PR PRINT-GLOSS-003: 인쇄 뜻풀이 기준 급수가 중국어 저장 값(「H5 고급」)을 못 읽어 기본값 2로 떨어지던 것.
+  확인(docs/verification/lib-fix-001-20261124.md): catalog_sources 296편 226ms(1,000편대 재측정) · library-hide-conversations.sql은 운영에만(사슬 맞춤 마이그레이션 후속) ·
+  관리자 자료 삭제 단추는 늘 0행(트리거 · 정책) — 화면 변화라 서재 개편 목업에 함께.
+  서재 개편(목록 하나로 · 행 진도/분석 상태 · 상태 탭 · 보관 · 자동 보기 · 폴더 순서/휴지통)은 오너 목업 승인 대기 — 선례 조사: 상태 레인 · 보관/휴지통 분리 · 다대다 모음집 채택,
+  미리 정한 자동 보기 부분 채택, 별도 태그 · 중첩 확장 · 사용자 질의 문법 배제(Zotero · Readwise · wallabag · Readeck · Lute · LingQ · Readlang).
 - **주간 트렌드 11/23 KST (WEEKLY-TREND-1123, 1차 출처 · 읽기 전용 조사)** 긴급 0건. Next 11/16–19 GHSA 등재 7건은 11/03 배치가 Advisory DB에 늦게 오른 것
   (15.x 3건은 15.5.29 패치판 · 4건은 16 전용) · 새 Next 15.5.x · Node 24.x 릴리스 없음(Node 24 Maintenance LTS 10/20부터 · 2028-04-30 종료).
   발주(WEB SEC-DEPS 11/25+ 묶음): excalidraw 체인 override — lodash-es 4.18.1(4.17.21 정확 고정, GHSA-r5fr · xxjr) · nanoid 3.3.20 / 5.1.16(3.3.3 · 4.0.2 정확 고정, GHSA 4건),

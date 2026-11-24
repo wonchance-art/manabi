@@ -67,7 +67,8 @@ describe('쿼리 다이어트 계약', () => {
     // U R3부터 목록 컬럼은 상수 MATERIAL_LIST_COLS 하나로 모이고, select는 direction 유무만 분기한다.
     const sel = /const MATERIAL_LIST_COLS = '([^']*)'/.exec(materials)?.[1];
     expect(sel, '자료실 목록 컬럼 상수를 못 읽었다').toBeTruthy();
-    expect(materials).toMatch(/from\('reading_materials'\)[\s\S]{0,200}\.select\(withDirection \? `\$\{MATERIAL_LIST_COLS\}, direction` : MATERIAL_LIST_COLS\)/);
+    // 1000행 상한 대응(정본 완전 조회 — LIB-FIX-001)으로 exact count가 붙었다 — 목록 컬럼 상수 하나라는 의도는 그대로다.
+    expect(materials).toMatch(/from\('reading_materials'\)[\s\S]{0,200}\.select\(withDirection \? `\$\{MATERIAL_LIST_COLS\}, direction` : MATERIAL_LIST_COLS(?:, \{ count: 'exact' \})?\)/);
     expect(sel, '전 컬럼은 금지').not.toBe('*');
     expect(sel, 'due 배지가 dictionary·sequence를 쓰므로 통짜가 맞다').toContain('processed_json');
     // 큰 컬럼을 새로 끌어들이지 않는다 — 목록이 쓰지 않는 본문성 컬럼 금지

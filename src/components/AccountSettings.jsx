@@ -5,7 +5,7 @@
  *
  *   계정
  *   ┌ 비밀번호 바꾸기                        › ┐  → 시트(현재 비밀번호 확인 — AUTH-GUIDE-001 H)
- *   └ 내 데이터 내보내기            파일로 받기 ↓ ┘  → 바로 내려받기(표 7개 정본 완전 조회) — 다음 화면이 아니라 파일이라 ↓
+ *   └ 내 데이터 내보내기            파일로 받기 ↓ ┘  → 바로 내려받기(EXPORT_TABLES 전부 정본 완전 조회) — 다음 화면이 아니라 파일이라 ↓
  *   [              로그아웃              ]          → AuthContext 관문(AUTH-ROUTER-REFRESH-001). 값이 빠진 줄처럼 보여 따로 한 칸
  *   …
  *   계정 삭제                                     ← 맨 아래 따로. 확인창 「계정을 영구 삭제할까요?」 + 「삭제」 입력
@@ -47,6 +47,12 @@ const EXPORT_TABLES = [
   ['reading_activity', 'library_reading_activity', 'owner_id', { key: ['target_kind', 'target_id'] }],
   ['reading_positions', 'original_reading_positions', 'owner_id', { key: ['material_id', 'source_key'] }],
   ['achievements', 'user_achievements', 'user_id'],
+  // 서재 정리(LIB-FIX-001 · 2026-11-24 KST): 폴더 · 폴더에 담은 항목 · 항목 상태(휴지통 · 즐겨찾기 · 바꾼 이름) · 책갈피가 빠져 있었다.
+  // 본인 행만 — 네 표 모두 RLS 「owner_id = auth.uid()」 읽기 정책 그대로(새 경로 없음).
+  ['library_folders', 'library_collections', 'owner_id'],
+  ['library_folder_items', 'library_collection_items', 'owner_id', { key: ['collection_id', 'target_kind', 'target_id'] }],
+  ['library_item_state', 'library_item_state', 'owner_id', { key: ['target_kind', 'target_id'] }],
+  ['library_bookmarks', 'library_bookmarks', 'owner_id', { key: ['material_id'] }],
 ];
 export const EXPORT_KEYS = ['profile', ...EXPORT_TABLES.map(([name]) => name)];
 

@@ -1,3 +1,4 @@
+import { LEVELS } from '../constants.js';
 import { describe, expect, it } from 'vitest';
 import {
   GLOSS_MAX, LONG_BLOCK_CHARS, bookTranslation, cachedTranslationText, glossMeaning, isLongBlock, paragraphTranslations,
@@ -230,6 +231,13 @@ describe('난이도 기준(PRINT-GLOSS-002) — 자료 급수보다 쉬운 말�
     expect(materialLevelRank('Japanese', 'N5 기초')).toBe(1);
     expect(materialLevelRank('Chinese', 'HSK2')).toBe(2);
     expect(materialLevelRank('Chinese', '3급')).toBe(3);
+    // 운영 저장 값(LEVELS 그대로) — 전에는 전부 null이라 중국어 인쇄가 기본값 2로 걸렀다(LIB-FIX-001 실측).
+    expect(materialLevelRank('Chinese', 'H5 고급')).toBe(5);
+    expect(materialLevelRank('Chinese', 'H1 기초')).toBe(1);
+    expect(materialLevelRank('Chinese', 'OT 입문')).toBe(1);
+    for (const [language, levels] of Object.entries(LEVELS)) {
+      for (const level of levels) expect(materialLevelRank(language, level), `${language} ${level}`).not.toBeNull();
+    }
     expect(materialLevelRank('English', 'A2 초급')).toBe(2);
     expect(materialLevelRank('French', 'B1 중급')).toBe(3);
     expect(materialLevelRank('English', '')).toBeNull();

@@ -223,11 +223,19 @@ describe('⑤ 단어장 1000행 상한 — 브라우저 조회가 조용히 잘�
     expect(read('src/views/PdfViewerPage.jsx')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\.from\('user_vocabulary'\)\s*\.select\('id, word_text, base_form', \{ count: 'exact' \}\)/);
     expect(read('src/lib/vocabIO.js')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\s*\.from\('vocabulary_with_exclusions'\)\s*\.select\('\*', \{ count: 'exact' \}\)/);
     expect(read('src/lib/weeklyReportRows.js')).toMatch(/readCompleteLegacyRows\(\(\) => supabase\.from\('user_vocabulary'\)\.select\('id, created_at, source_material_id, source_ref', \{ count: 'exact' \}\)/);
+    // 자료실 「자료 상세 보기」(?tools=1) 목록 · PDF · 읽기 진도도 1000행에 조용히 잘리지 않게(LIB-FIX-001 · 2026-11-24 KST).
+    const materialsPage = read('src/views/MaterialsPage.jsx');
+    expect(materialsPage).toMatch(/readCompleteLegacyRows\(buildQuery, \{ orderBy: \['created_at', 'id'\] \}\)\)\.reverse\(\)/);
+    expect(materialsPage).toMatch(/readCompleteLegacyRows\(\(\) => supabase\s*\.from\('uploaded_pdfs'\)\s*\.select\('id, [^']*', \{ count: 'exact' \}\)/);
+    expect(materialsPage).toMatch(/readCompleteLegacyRows\(\(\) => supabase\s*\.from\('reading_progress'\)\s*\.select\('id, [^']*', \{ count: 'exact' \}\)/);
+    expect(materialsPage).not.toMatch(/\.from\('(uploaded_pdfs|reading_progress)'\)[^;]*\.order\('created_at', \{ ascending: false \}\);\s*if \(error\)/);
     const account = read('src/components/AccountSettings.jsx');
     // 표 목록(EXPORT_TABLES) 한 곳 → 전부 exportRows(정본 완전 조회)로 읽는다. 학습 기록 표도 같은 길(STATS-MAP-001).
     expect(account).toMatch(/\.\.\.EXPORT_TABLES\.map\(\(\[, table, ownerColumn, options\]\) => exportRows\(table, ownerColumn, user\.id, options\)\)/);
     for (const table of ['user_vocabulary', 'reading_materials', 'reading_progress', 'grammar_notes', 'writing_practice', 'uploaded_pdfs',
-      'review_events', 'fsrs_cards', 'fsrs_operations', 'user_vocab_encounters', 'user_known_words', 'user_ref_progress']) {
+      'review_events', 'fsrs_cards', 'fsrs_operations', 'user_vocab_encounters', 'user_known_words', 'user_ref_progress',
+      // 서재 정리 — 폴더 · 폴더 항목 · 항목 상태(휴지통 · 즐겨찾기 · 바꾼 이름) · 책갈피(LIB-FIX-001)
+      'library_collections', 'library_collection_items', 'library_item_state', 'library_bookmarks']) {
       expect(account, table).toMatch(new RegExp(`\\['\\w+', '${table}', '(user_id|owner_id)'`));
     }
     expect(account).not.toMatch(/supabase\.from\('(user_vocabulary|reading_materials|reading_progress|grammar_notes|writing_practice|uploaded_pdfs)'\)\.select\('\*'\)/);

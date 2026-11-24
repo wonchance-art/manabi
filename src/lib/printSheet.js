@@ -128,7 +128,13 @@ export function glossMeaning(meaning) {
 export function materialLevelRank(language, level) {
   const s = String(level || '');
   if (language === 'Japanese') { const m = /N\s*([1-5])/iu.exec(s); return m ? 6 - Number(m[1]) : null; }
-  if (language === 'Chinese') { const m = /HSK\s*([1-9])/iu.exec(s) || /^([1-6])\s*급/u.exec(s); return m ? Math.min(Number(m[1]), 7) : null; }
+  if (language === 'Chinese') {
+    // 운영 저장 값은 LEVELS 그대로 「H5 고급」 · 「OT 입문」이다(LIB-FIX-001 실측 2026-11-24 KST — 전에는 「HSK n」 · 「n급」만 읽어
+    // 중국어 자료 전부가 급수 없음 → 기본값 2로 떨어졌다). OT(입문)는 HSK 1급보다 아래라 1 — 거르는 낱말이 없다.
+    if (/^OT\b/iu.test(s)) return 1;
+    const m = /HSK\s*([1-9])/iu.exec(s) || /^H\s*([1-9])\b/iu.exec(s) || /^([1-6])\s*급/u.exec(s);
+    return m ? Math.min(Number(m[1]), 7) : null;
+  }
   if (language === 'English' || language === 'French') {
     const m = /\b(A0|A1|A2|B1|B2|C1|C2)\b/iu.exec(s);
     return m ? { A0: 1, A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6 }[m[1].toUpperCase()] : null;
