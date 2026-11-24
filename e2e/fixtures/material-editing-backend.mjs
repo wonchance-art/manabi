@@ -28,6 +28,17 @@ export async function fixture({width=1440,height=1000,reducedMotion='reduce',gue
  let failNextInsert=false,loseNextReply=false,failUpload=false,analysisCalls=0,loseEdit=false,failEdit=false;
  const cors={'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,PATCH,DELETE,OPTIONS,HEAD','access-control-expose-headers':'content-range'};
  const json=(route,value,status=200,extra={})=>route.fulfill({status,contentType:'application/json',headers:{...cors,...extra},body:JSON.stringify(value)});
+ // 목록 GET — 실제 PostgREST처럼 order · offset · limit을 따르고, Prefer count=exact면 content-range에 전체 수를 싣는다
+ // (LIB-FIX-001: 자료 상세 보기 목록 · PDF · 읽기 진도가 정본 완전 조회로 바뀌어 개수가 없으면 「조회 불가」로 멈춘다).
+ const list=(route,items)=>{
+  const req=route.request(),url=new URL(req.url());
+  const order=(url.searchParams.get('order')||'').split(',').filter(Boolean).map(part=>{const [col,dir]=part.split('.');return {col,desc:dir==='desc'};});
+  const sorted=order.length?[...items].sort((a,b)=>{for(const {col,desc} of order){const x=a[col],y=b[col];if(x===y)continue;const c=x==null?1:y==null?-1:(typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y)));return desc?-c:c;}return 0;}):items;
+  const offset=Number(url.searchParams.get('offset')||0),limit=url.searchParams.has('limit')?Number(url.searchParams.get('limit')):sorted.length;
+  const page=sorted.slice(offset,offset+limit);
+  const counted=/count=exact/.test(req.headers().prefer||'');
+  return json(route,page,200,counted?{'content-range':page.length?`${offset}-${offset+page.length-1}/${sorted.length}`:`*/${sorted.length}`}:{});
+ };
  await context.route('**/auth/v1/**',r=>json(r,new URL(r.request().url()).pathname.endsWith('/user')?user:session));
  await context.route('**/api/analyze',r=>{analysisCalls++;return json(r,{error:'NO_AUTOMATIC_ANALYSIS'},500);});
  await context.route('**/api/learning/exclusions',r=>r.request().method()==='GET'?json(r,{items:[]}):r.continue());
@@ -75,10 +86,10 @@ export async function fixture({width=1440,height=1000,reducedMotion='reduce',gue
    }));
    if(req.method()==='PATCH'){if(failEdit){failEdit=false;return json(route,{message:'write unavailable'},503);}found.forEach(row=>Object.assign(row,req.postDataJSON()));if(loseEdit){loseEdit=false;return route.abort('failed');}return json(route,found.map(row=>({id:row.id})));}
    if(req.method()==='HEAD')return route.fulfill({status:200,headers:{...cors,'content-range':`0-${Math.max(0,found.length-1)}/${found.length}`}});
-   return json(route,req.headers().accept?.includes('vnd.pgrst.object')?found[0]||null:found);
+   return req.headers().accept?.includes('vnd.pgrst.object')?json(route,found[0]||null):list(route,found);
   }
   if(req.method()==='HEAD')return route.fulfill({status:200,headers:{...cors,'content-range':'*/0'}});
-  return json(route,[]);
+  return req.method()==='GET'?list(route,[]):json(route,[]);
  });
  await context.route('**/storage/v1/**',async route=>{
   const req=route.request(),url=new URL(req.url()),p=url.pathname;
