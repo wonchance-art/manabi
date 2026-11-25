@@ -878,6 +878,13 @@
 
 ## Claude (claude/*)
 ### doing
+- **SEC-DEPS-1125 의존성 보안 묶음 (2026-11-25 KST)** 오케스트레이터 11/21 · 11/23 주간 트렌드(화면 변화 0 · 배포 1회): npm audit 21 → 6(critical 0 · high 11 → 1).
+  eslint 사슬 audit fix(@typescript-eslint 8.63 → 8.74 올림 · minimatch 11.0.9 · brace-expansion 5.1.0, 최상위 brace-expansion 1.1.16 → 1.1.22 — lock 항목 재해석, package.json 무변경).
+  overrides: lodash-es 4.18.1(GHSA-r5fr · xxjr) · excalidraw nanoid 3.3.20 · mermaid-to-excalidraw nanoid 5.1.16(GHSA-mwcw · 28wg · 2v37 · xwg4, 4→5 메이저 — 동적 조각에만, 호출부 인자 없는 nanoid()) ·
+  dompurify 3.4.18 고정(npm update가 3.5.0으로 올려 고정 — 3.5.0 Breaking 5건 대기). excalidraw 0.17.6 다운그레이드 제안은 쓰지 않음.
+  남은 6: excalidraw · mermaid-to-excalidraw · katex · mermaid(low — katex 0.18.2는 mermaid ^0.16 범위 밖) · next · postcss(Next 16 주 판) — 배제.
+  확인: npm test 11,934 · lint 오류 0 · e2e:build · teaching-board e2e(설명판 요소 · 묶음 · 되돌리기 · 백업, 런타임 오류 0) · study-notes e2e(학습 노트 캔버스, UI 오류 0).
+  · 다음 묶음(12/3 이후, 2주 숙성): @supabase/supabase-js ^2.119.2(Storage 키 ../ 차단) — 2.119.0 auth 변경 회귀 확인(로그아웃 · PDF/원본 업로드 · signed URL).
 - **CLS-COMPOSER-001 저장 순간 관문 밀림 · 불러오는 칸 자리 (2026-11-21 KST)** 운영 vitals.cls(composer-gate 0.18 · 0.61)를 로컬 프로덕션 빌드 + 대역으로 재현:
   저장 완료 → 짧은 「저장됨」 관문으로 접힌 한 프레임(0.1초 미만) 뒤 뷰어로 이동 — CLS PC 0.40 · 폰 0.84 → 고친 뒤 0.00(이동 중에는 작성기 + 단계 문구, 이동 실패 때만 관문).
   초안 불러오는 상태 칸은 화면 높이만큼 자리(대역 첫 그림 PC 0.055 → 0.032 · 폰 0.11 → 0.067). 계약 clsLoadingReserve.test.
